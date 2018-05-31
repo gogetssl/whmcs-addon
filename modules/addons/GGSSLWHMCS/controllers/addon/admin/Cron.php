@@ -18,17 +18,17 @@ class Cron extends main\mgLibs\process\AbstractController
         //get all completed ssl orders
         $sslOrders = $this->getSSLOrders();        
         foreach ($sslOrders as $sslService)
-        {     
+        {  
             $serviceID = $sslService->serviceid;
             
             //if service is montlhy, one time, free skip it
             if($this->checkServiceBillingPeriod($serviceID)) continue;       
-            
+
             //if service is synchronized skip it
             if ($this->checkIfSynchronized($serviceID)) continue;                
             
             $order = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid); 
-             //if certificate is active
+            //if certificate is active
             if ($order['status'] == 'active')
             {
                 //update whmcs service next due date
@@ -37,7 +37,18 @@ class Cron extends main\mgLibs\process\AbstractController
 
                 //set ssl certificate as synchronized
                 $this->setSSLServiceAsSynchronized($serviceID);
+                
+                //set ssl certificate as terminated if expired  
+                if(strtotime($order['valid_till']) < strtotime(date('Y-m-d')))
+                {
+                     $this->setSSLServiceAsTerminated($serviceID);
+                }
 
+                $updatedServices[] = $serviceID;
+            }
+            if ($order['status'] == 'expired')
+            {
+                $this->setSSLServiceAsTerminated($serviceID);
                 $updatedServices[] = $serviceID;
             }
         }
@@ -138,6 +149,13 @@ class Cron extends main\mgLibs\process\AbstractController
         $sslService->save();
     }
 
+    private function setSSLServiceAsTerminated($serviceID)
+    {
+        $service         = \WHMCS\Service\Service::findOrFail($serviceID);
+        $service->status = 'terminated';
+        $service->save();
+    }
+    
     private function checkIfSynchronized($serviceID)
     {
         $result     = false;

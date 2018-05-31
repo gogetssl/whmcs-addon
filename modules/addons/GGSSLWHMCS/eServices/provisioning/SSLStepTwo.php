@@ -6,6 +6,9 @@ use Exception;
 
 class SSLStepTwo {
 
+    // allow *.domain.com as SAN for products
+    const PRODUCTS_WITH_ADDITIONAL_SAN_VALIDATION = array(100, 99, 63);
+    
     private $p;
     private $errors = [];
     
@@ -60,7 +63,10 @@ class SSLStepTwo {
         $sansDomains    = $this->p['fields']['sans_domains'];
         $sansDomains    = \MGModule\GGSSLWHMCS\eHelpers\SansDomains::parseDomains($sansDomains);
         
-        $invalidDomains = \MGModule\GGSSLWHMCS\eHelpers\Domains::getInvalidDomains($sansDomains);
+        $apiProductId     = $this->p[ConfigOptions::API_PRODUCT_ID];
+        
+        $invalidDomains = \MGModule\GGSSLWHMCS\eHelpers\Domains::getInvalidDomains($sansDomains, in_array($apiProductId, self::PRODUCTS_WITH_ADDITIONAL_SAN_VALIDATION));
+             
         if (count($invalidDomains)) {
             throw new Exception(\MGModule\GGSSLWHMCS\mgLibs\Lang::T('incorrectSans') . implode(', ', $invalidDomains));
         }

@@ -56,7 +56,7 @@ class SSLStepTwoJS {
     }
 
     private function SSLStepTwoJS() {
-     
+    
         $decodedCSR   = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($_POST['csr']);
         if($decodedCSR['error']) {
             throw new Exception(\MGModule\GGSSLWHMCS\mgLibs\Lang::T('incorrectCSR'));
@@ -64,8 +64,7 @@ class SSLStepTwoJS {
         $mainDomain       = $decodedCSR['csrResult']['CN'];
         $domains = $mainDomain . PHP_EOL . $_POST['fields']['sans_domains'];
         $sansDomains = \MGModule\GGSSLWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));
-        $this->fetchApprovalEmailsForSansDomains($sansDomains);
-        
+        $this->fetchApprovalEmailsForSansDomains($sansDomains);        
         if(\MGModule\GGSSLWHMCS\eHelpers\Whmcs::isWHMCS73()) {
             if(isset($_POST['privateKey']) && $_POST['privateKey'] != null) {            
                 $privKey = decrypt($_POST['privateKey']);

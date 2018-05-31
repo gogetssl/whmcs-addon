@@ -445,6 +445,7 @@
                     if(typeof node !== 'undefined') {
                         domain = node.textContent;
                     }
+                    domain = domain.replace("*", "___"); 
                     if(this.value === 'email') {
                         if(key === 0) {                            
                             newMethods[domain] = $('select[name="newApproverEmailInput_'+key+'"]')[2].value;

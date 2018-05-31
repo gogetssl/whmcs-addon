@@ -244,7 +244,7 @@ class Addon extends main\mgLibs\process\AbstractMainDriver{
                 // display the page or not
                 if(strpos($catName, "documentation" )=== false){
                     $className = self::I()->getMainNamespace()."\\controllers\\".self::I()->getType()."\\".'admin'."\\".ucfirst($catName);
-                    $controller = new $className();
+                    $controller = new $className();                    
                     if(method_exists($controller, "isActive") && !$controller->{"isActive"}())
                         continue;
                     

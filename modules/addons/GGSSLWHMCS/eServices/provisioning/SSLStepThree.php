@@ -37,6 +37,7 @@ class SSLStepThree {
 
     public function run() {
         try {
+            $this->decodeSanAprroverEmailsAndMethods($_POST);            
             $this->setMainDomainDcvMethod($_POST); 
             $this->setSansDomainsDcvMethod($_POST);    
             $this->SSLStepThree();
@@ -48,12 +49,46 @@ class SSLStepThree {
         $this->p['fields']['dcv_method']  = $post['dcvmethodMainDomain']; 
     }
 
-    private function setSansDomainsDcvMethod($post) {
+    private function decodeSanAprroverEmailsAndMethods($post) {
+        if(isset($post['dcvmethod']))
+        {
+            $newDcvMethodArray = array();
+            foreach($post['dcvmethod'] as $domain => $method)
+            {
+                if(strpos($domain, '___') !== FALSE)
+                {
+
+                    $domain = str_replace('___', '*', $domain);
+                }
+                $newDcvMethodArray[$domain] = $method;
+            }
+            
+            $_POST['dcvmethod'] = $newDcvMethodArray;
+        }
+        if(isset($post['approveremails']))
+        {
+            $newApproverEmailsArray = array();
+            foreach($post['approveremails'] as $domain => $method)
+            {
+                if(strpos($domain, '___') !== FALSE)
+                {
+
+                    $domain = str_replace('___', '*', $domain);
+                }
+                $newApproverEmailsArray[$domain] = $method;
+            }
+            
+            $_POST['approveremails'] = $newApproverEmailsArray;
+        }
         
+    }
+    
+    private function setSansDomainsDcvMethod($post) {     
         if(isset($post['dcvmethod']) && is_array($post['dcvmethod'])) {            
             $this->p['sansDomansDcvMethod'] = $post['dcvmethod'];
         }
     }
+    
     private function SSLStepThree() {
         
         $this->loadSslConfig();
@@ -203,7 +238,7 @@ class SSLStepThree {
             unset($order['approver_emails']);
         }
         
-        $orderType = $this->p['fields']['order_type'];
+        $orderType = $this->p['fields']['order_type'];        
         switch ($orderType)
         {
             case 'renew':

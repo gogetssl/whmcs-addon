@@ -53,7 +53,7 @@ function GGSSLWHMCS_SSLStepTwoJS($params) {
 }
 
 function GGSSLWHMCS_SSLStepThree($params) {
-    $SSLStepThree = new \MGModule\GGSSLWHMCS\eServices\provisioning\SSLStepThree($params);
+   $SSLStepThree = new \MGModule\GGSSLWHMCS\eServices\provisioning\SSLStepThree($params);
     return $SSLStepThree->run();
 }
 

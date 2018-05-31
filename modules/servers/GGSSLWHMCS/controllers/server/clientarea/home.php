@@ -151,13 +151,30 @@ class home extends main\mgLibs\process\AbstractController {
         $ssl        = new main\eRepository\whmcs\service\SSL();
         $sslService = $ssl->getByServiceId($serviceId);
         
-                
+        if(isset($input['newDcvMethods']))
+        {
+            $newDcvMethodArray = array();
+            foreach($input['newDcvMethods'] as $domain => $method)
+            {
+                if(strpos($domain, '___') !== FALSE)
+                {
+
+                    $domain = str_replace('___', '*', $domain);
+                }
+                $newDcvMethodArray[$domain] = $method;
+            }
+            
+            $input['newDcvMethods']= $newDcvMethodArray;
+        }
+       
         foreach ($input['newDcvMethods'] as $domain => $newMethod) {
             $data = [
                 'new_method'      => $newMethod, 
                 'domain'          => $domain
             ];
             try {
+                
+
                 $response = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->changeValidationMethod($sslService->remoteid, $data);   
             } catch (\Exception $ex) {
                 if(strpos($ex->getMessage(), 'Function is locked for') !== false ) {

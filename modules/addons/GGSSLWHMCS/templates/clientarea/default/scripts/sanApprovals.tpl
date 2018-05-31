@@ -25,12 +25,14 @@
             if (x === 0) {
                 return 'name="dcvmethodMainDomain"';
             }
+            domain = domain.replace("*", "___");
             return 'name="dcvmethod[' + domain + ']"';
         }
         function getNameForSelectEmail(x, domain) {
             if (x === 0) {
                 return 'name="approveremail"';
             }
+            domain = domain.replace("*", "___");            
             return 'name="approveremails[' + domain + ']"';
         }
         function getTable(tableBegin, tableEnd, body) {
@@ -84,6 +86,7 @@
             var method = this.value;
             var selectName = this.name;
             var domain = selectName.replace('dcvmethod', '');
+            
             if(domain === 'MainDomain') {
                 if(method !== 'EMAIL') {
                     $('select[name="approveremail"]').addClass('hidden');
@@ -91,6 +94,7 @@
                     $('select[name="approveremail"]').removeClass('hidden');   
                 }
             } else {
+                domain = domain.replace("*", "___"); 
                 if(method !== 'EMAIL') {
                     $('select[name="approveremails'+domain+'"]').addClass('hidden');   
                 } else {
