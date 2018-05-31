@@ -7,18 +7,23 @@ use Exception;
 class Product {
 
     private $webServerMap = [
-        'comodo'   => 1,
-        'rapidssl' => 2,
-        'thawte'   => 2,
-        'symantec' => 2,
-        'geotrust' => 2,
+        'comodo'          => 1,
+        'comodo_ggssl'    => 1,
+        'comodo_ukrnames' => 1,
+        'comodo_dondca'   => 1,
+        'comodo_shino'    => 1,
+        'comodo_comssl'   => 1,
+        'rapidssl'        => 2,
+        'thawte'          => 2,
+        'symantec'        => 2,
+        'geotrust'        => 2,
     ];
 
     public function getWebServerTypeId() {
         if (isset($this->webServerMap[$this->brand])) {
             return $this->webServerMap[$this->brand];
         }
-        throw new Exception('Provided brand are not supported.');
+        throw new Exception('Provided brand is not supported.');
     }
     
     public function isOrganizationRequired() {

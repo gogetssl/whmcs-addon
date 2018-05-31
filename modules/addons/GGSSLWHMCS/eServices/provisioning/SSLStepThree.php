@@ -93,10 +93,13 @@ class SSLStepThree {
             
             //get available periods for product
             $productAvailavlePeriods = $apiProduct->getPeriods();
-            
             //if certificate have monthly billing cycle available
             if(in_array('1', $productAvailavlePeriods)) {
                 $billingPeriods['Monthly'] = 1;
+            } else {
+                if(!in_array('12', $productAvailavlePeriods)) {
+                    $billingPeriods['Monthly'] = $productAvailavlePeriods[0];
+                }                
             }
             
             //one time billing set period to 12 months if avaiable else leave max period
