@@ -1,0 +1,239 @@
+<?php
+
+namespace MGModule\GGSSLWHMCS\controllers\server\clientarea;
+
+use MGModule\GGSSLWHMCS as main;
+
+/**
+ * Description of home
+ *
+ * @author Michal Czech <michael@modulesgarden.com>
+ */
+class home extends main\mgLibs\process\AbstractController {
+
+    function indexHTML($input, $vars = array()) {
+        try {
+            
+            $serviceId  = $input['params']['serviceid'];
+            $userid = $input['params']['userid'];
+            $ssl        = new main\eRepository\whmcs\service\SSL();
+            $sslService = $ssl->getByServiceId($serviceId);
+           
+            if(is_null($sslService)) {
+                throw new \Exception('An error occurred please contact support');
+            }
+
+            $url = \MGModule\GGSSLWHMCS\eRepository\whmcs\config\Config::getInstance()->getConfigureSSLUrl($sslService->id);
+            
+            $privateKey = $sslService->getPrivateKey();            
+            if($privateKey) {
+                $vars['privateKey'] = $privateKey;
+            } 
+            if ($sslService->status !== 'Awaiting Configuration') {
+                try {
+                    
+                    $orderStatus = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);  
+                    
+                    if(!empty($orderStatus['partner_order_id'])) {
+                        $vars['partner_order_id'] = ($orderStatus['partner_order_id']);
+                    }
+                    if(!empty($orderStatus['product_id'])) {
+                        $apiRepo       = new \MGModule\GGSSLWHMCS\eRepository\gogetssl\Products();
+                        $apiProduct    = $apiRepo->getProduct($orderStatus['product_id']);
+                        $vars['brand'] = $apiProduct->brand;
+                    }
+                    if(!empty($orderStatus['approver_method'])) {                        
+                        $vars['approver_method'] = ($orderStatus['approver_method']);
+                    }
+                    
+                    $dcv_method = array_keys($vars['approver_method']);
+                    if($dcv_method[0] != null) {
+                        $vars['dcv_method'] = $dcv_method[0];
+                    if($dcv_method[0] == 'http' || $dcv_method[0] == 'https'){
+                       $vars['approver_method'][$dcv_method[0]]['content'] = explode(PHP_EOL, $vars['approver_method'][$dcv_method[0]]['content']);
+                    }
+                    } else {
+                        $vars['dcv_method'] = 'email';
+                    }
+                    //if (!empty($orderStatus['csr_code'])) {
+                    //    $vars['csr'] = ($orderStatus['csr_code']);
+                    //}
+
+                    //if (!empty($orderStatus['crt_code'])) {
+                    //    $vars['crt'] = ($orderStatus['crt_code']);
+                    //}
+                    if (!empty($orderStatus['ca_code'])) {
+                        $vars['ca'] = ($orderStatus['ca_code']);
+                    }
+                    
+                    if (!empty($orderStatus['domain'])) {
+                        $vars['domain'] = $orderStatus['domain'];
+                    }
+                    
+                    /*if (!empty($orderStatus['san'])) {
+                        foreach ($orderStatus['san'] as $san) {
+                            $vars['sans'][] = $san['san_name'];
+                        }
+                        $vars['sans'] = implode('<br>', $vars['sans']);
+                    }*/
+                    if (!empty($orderStatus['san'])) {
+                        foreach ($orderStatus['san'] as $san) {
+                            $vars['sans'][$san['san_name']]['san_name'] = $san['san_name'];
+                            $vars['sans'][$san['san_name']]['method'] = $san['validation_method'];
+                            switch ($san['validation_method']) {
+                                case 'dns':
+                                    $vars['sans'][$san['san_name']]['san_validation'] = $san['validation']['dns']['record'];
+                                    break;
+                                case 'http':
+                                    $vars['sans'][$san['san_name']]['san_validation'] = $san['validation']['http'];
+                                    $vars['sans'][$san['san_name']]['san_validation']['content'] = explode(PHP_EOL, $san['validation']['http']['content']);
+                                    break;
+                                case 'https':
+                                    $vars['sans'][$san['san_name']]['san_validation'] = $san['validation']['https'];                                    
+                                    $vars['sans'][$san['san_name']]['san_validation']['content'] = explode(PHP_EOL, $san['validation']['https']['content']);
+                                    break;
+                                default:
+                                    $vars['sans'][$san['san_name']]['san_validation'] = $san['validation']['email'];
+                                    break;
+                            }
+                        }                        
+                    }
+                    
+                    $vars['activationStatus'] = $orderStatus['status'];
+                } catch (\Exception $ex) {
+                    $vars['error'] = 'Can not load order details';
+                }
+            } 
+            
+            $vars['configurationStatus'] = $sslService->status;
+            $vars['configurationURL']    = $url;
+            $vars['allOk']               = true;
+            $vars['assetsURL'] = main\Server::I()->getAssetsURL();
+            $vars['serviceid'] = $serviceId;
+            $vars['userid'] = $userid;
+            
+        } catch (\Exception $ex) {
+            $vars['error'] = $ex->getMessage();
+        }
+
+        return array(
+            'tpl'  => 'home'
+            , 'vars' => $vars
+        );
+
+    }
+
+    function testHTML($input, $vars = array()) {
+        return array(
+            'tpl'  => 'test'
+            , 'vars' => $vars
+        );
+
+    }
+    public function resendValidationEmailJSON($input, $vars = array()) {
+        $ssl = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
+        $serviceSSL = $ssl->getByServiceId($input['id']);
+        $response = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->resendValidationEmail($serviceSSL->remoteid);
+        
+        return array(
+            'success' => $response['message']
+        );        
+    }
+    function revalidateJSON($input, $vars = array()) {
+        $serviceId  = $input['params']['serviceid'];
+        $ssl        = new main\eRepository\whmcs\service\SSL();
+        $sslService = $ssl->getByServiceId($serviceId);
+        
+                
+        foreach ($input['newDcvMethods'] as $domain => $newMethod) {
+            $data = [
+                'new_method'      => $newMethod, 
+                'domain'          => $domain
+            ];
+            try {
+                $response = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->changeValidationMethod($sslService->remoteid, $data);   
+            } catch (\Exception $ex) {
+                if(strpos($ex->getMessage(), 'Function is locked for') !== false ) {
+                   $message = substr($ex->getMessage(), 0, -1) . ' for the domain: ' . $domain . '.'; 
+                } else {
+                    $message = $domain.': '.$ex->getMessage();
+                }
+                
+                return array(
+                    'success' => 0,
+                    'msg'     => $message
+                );
+            }                      
+        } 
+        
+        return array(
+            'success' => $response['success'],
+            'msg'     => $response['message']
+        );
+    }
+    public function getApprovalEmailsForDomainJSON($input, $vars = array()) {
+                
+        $domainEmails = [];
+        
+        if($input['brand'] == 'geotrust') {
+            $apiDomainEmails             = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getDomainEmailsForGeotrust($input['domain']);
+            $domainEmails = $apiDomainEmails['GeotrustApprovalEmails'];
+        } else {
+            $apiDomainEmails             = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getDomainEmails($input['domain']);
+            $domainEmails = $apiDomainEmails['ComodoApprovalEmails'];
+        }    
+        $result = [
+            'success' => 1,
+            'domainEmails' => $domainEmails
+        ];
+        
+        return $result;
+    }
+    function changeApproverEmailJSON($input, $vars = array()) {
+        
+        $sslRepo   = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
+        $ssService = $sslRepo->getByServiceId($input['serviceId']);
+        
+        $data = [
+            'approver_email' => $input['newEmail']
+        ]; 
+        
+        $response = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->changeValidationEmail($ssService->remoteid, $data);          
+        
+        return array(
+            'success' => $response['success'],
+            'msg'     => $response['success_message']
+        ); 
+        
+    }
+    function getPrivateKeyJSON($input, $vars = array()) {
+        $sslRepo   = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
+        $sslService = $sslRepo->getByServiceId($input['params']['serviceid']);
+        $privateKey = $sslService->getPrivateKey();
+        
+        if($privateKey = $sslService->getPrivateKey()) {
+            $result = array(
+                'success'     => 1,
+                'privateKey'  => decrypt($privateKey)
+            ); 
+        } else {
+            $result = array(
+                'success'   => 0,
+                'message'   => main\mgLibs\Lang::getInstance()->T('Can not get Private Key, please refresh page or contact support')
+            ); 
+        }
+        
+        return $result;        
+    }
+    function getPasswordJSON($input, $vars = array()) {
+        //do something with input
+        unset($input);
+        unset($vars);
+
+        return array(
+            'password' => 'fuNPassword'
+        );
+
+    }
+
+}
