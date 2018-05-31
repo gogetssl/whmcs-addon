@@ -49,6 +49,17 @@
                                 </div>
                             {/if}
                             <div class="form-group">
+                                <label class="control-label col-sm-2">{$MGLANG->T('autoSetup')}</label>
+                                <div class="col-sm-10">
+                                    <select name="product[{$product->id}][autosetup]" class="form-control">
+                                        <option value="order" {if $product->autosetup == 'order'}selected=""{/if}>{$MGLANG->T('autoSetupOrder')}</option>  
+                                        <option value="payment" {if $product->autosetup == 'payment'}selected=""{/if}>{$MGLANG->T('autoSetupPayment')}</option> 
+                                        <option value="on" {if $product->autosetup == 'on'}selected=""{/if}>{$MGLANG->T('autoSetupOn')}</option> 
+                                        <option value="" {if $product->autosetup == ''}selected=""{/if}>{$MGLANG->T('autoSetupOff')}</option> 
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
                                 <label class="control-label col-sm-2">{$MGLANG->T('months')}</label>
                                 <div class="col-sm-10">
                                     <div class="maxMonths">{$product->apiConfig->peroids}</div>

@@ -39,6 +39,11 @@ $_LANG['addonAA']['productsConfiguration']['productName']         = 'Product Nam
 $_LANG['addonAA']['productsConfiguration']['configurableOptions'] = 'Configurable Options:';
 $_LANG['addonAA']['productsConfiguration']['createConfOptions']   = 'Generate';
 $_LANG['addonAA']['productsConfiguration']['editPrices']          = 'Edit Prices';
+$_LANG['addonAA']['productsConfiguration']['autoSetup']            = 'Auto Setup:';
+$_LANG['addonAA']['productsConfiguration']['autoSetupOrder']       = 'Automatically setup the product as soon as an order is placed';
+$_LANG['addonAA']['productsConfiguration']['autoSetupPayment']     = 'Automatically setup the product as soon as the first payment is received';
+$_LANG['addonAA']['productsConfiguration']['autoSetupOn']          = 'Automatically setup the product when you manually accept a pending order';
+$_LANG['addonAA']['productsConfiguration']['autoSetupOff']         = 'Do not automatically setup this product';
 $_LANG['addonAA']['productsConfiguration']['months']              = 'Max Months:';
 $_LANG['addonAA']['productsConfiguration']['enableSans']          = 'Enable SANs:';
 $_LANG['addonAA']['productsConfiguration']['includedSans']        = 'Included SANs:';
@@ -73,7 +78,13 @@ $_LANG['addonAA']['productsCreator']['singleProductCreator'] = 'Single Product C
 $_LANG['addonAA']['productsCreator']['goGetSSLProduct']      = 'GoGetSSL Product:';
 $_LANG['addonAA']['productsCreator']['productName']          = 'Product Name:';
 $_LANG['addonAA']['productsCreator']['productGroup']         = 'Product Group:';
+$_LANG['addonAA']['productsCreator']['autoSetup']            = 'Auto Setup:';
+$_LANG['addonAA']['productsCreator']['autoSetupOrder']       = 'Automatically setup the product as soon as an order is placed';
+$_LANG['addonAA']['productsCreator']['autoSetupPayment']     = 'Automatically setup the product as soon as the first payment is received';
+$_LANG['addonAA']['productsCreator']['autoSetupOn']          = 'Automatically setup the product when you manually accept a pending order';
+$_LANG['addonAA']['productsCreator']['autoSetupOff']         = 'Do not automatically setup this product';
 $_LANG['addonAA']['productsCreator']['months']               = ' Months:';
+
 
 
 $_LANG['addonAA']['productsCreator']['enableSans']   = 'Enable SANs:';

@@ -53,13 +53,13 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
      * Module version
      * @var string
      */
-    public $version = '1.0.6';
+    public $version = '1.0.7';
 
     /**
      * Module author
      * @var string
      */
-    public $author = '<a href="http://www.modulesgarden.com" targer="_blank">ModulesGarden</a>';
+    public $author = 'GOGETSSL';
 
     /**
      * Table prefix. This prefix is used in database models. You have to change it! 

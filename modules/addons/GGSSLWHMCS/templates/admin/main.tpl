@@ -35,7 +35,7 @@
                 var navbar_width_hide_names    = 0;
                 var resized_logo    = false;
                 var mg_logo         = jQuery('.logo-default').attr( "src" );
-                var mg_logo_cog     = mg_logo.replace("mg-logo.png","mg-logo-cog.png");
+                //var mg_logo_cog     = mg_logo.replace("mg-logo.png","mg-logo-cog.png");
                 
                 function NavigationSet() {
                     var navbar_height = jQuery('.page-header').height();
@@ -161,7 +161,6 @@
                     </div>
                     
                     <div class="modulename-logo">
-                        <a href="http://www.modulesgarden.com" target="_blank"><img src="{$assetsURL}/img/mg-logo.png" alt="logo" class="logo-default"></a>
                     </div>
                 </div>
             </div>

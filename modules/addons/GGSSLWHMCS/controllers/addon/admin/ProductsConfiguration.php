@@ -39,14 +39,12 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
                 $apiConfig->name            = $apiProduct->product;
                 $apiConfig->peroids         = max($apiProduct->getPeriods());
                 $apiConfig->availablePeriods= $apiProduct->getPeriods();
-                //var_dump('<pre>',$apiConfig->availablePeriods,'</pre>');
                 $apiConfig->isSanEnabled    = $apiProduct->isSanEnabled();
                 $products[$key]->apiConfig  = $apiConfig;
                 $products[$key]->confOption = main\eServices\ConfigurableOptionService::getForProduct($product->id);
             }
 
             $vars['products'] = $products;
-            
             $vars['products_count'] = count($vars['products']);
 
             if (!empty($apiProducts['products']) && is_array($apiProducts['products'])) {
@@ -67,7 +65,7 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
     }
 
     public function saveProducts($input = array(), $vars = array()) {
-
+        
         $productModel = new \MGModule\GGSSLWHMCS\models\productConfiguration\Repository();
         foreach ($input['product'] as $key => $value) {
             $productModel->updateProducDetails($key, $value);
@@ -81,7 +79,8 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
     }
 
     public function enableProductJSON($input, $vars = array()) {
-        if (!empty(trim($input['productId']))) {
+        $productId = trim($input['productId']);
+        if (!empty($productId)) {
 
             $productId = trim($input['productId']);
 
@@ -99,7 +98,8 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
     }
 
     public function disableProductJSON($input, $vars = array()) {
-        if (!empty(trim($input['productId']))) {
+        $productId = trim($input['productId']);
+        if (!empty($productId)) {
 
             $productId = trim($input['productId']);
 
@@ -120,8 +120,9 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
 
         if ($this->checkToken()) {
             try {
-
-                if (empty(trim($input['login'])) || empty(trim($input['password'])))
+                $login = trim($input['login']);
+                $password = trim($input['password']);
+                if (empty($login) || empty($password))
                     throw new \Exception('empty_fields');
 
                 $login = $input['login'];
@@ -138,8 +139,9 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
     }
 
     public function testConnectionJSON($input = [], $vars = []) {
-
-        if (!empty(trim($input['login'])) && !empty(trim($input['password']))) {
+        $login = trim($input['login']);
+        $password = trim($input['password']);
+        if (!empty($login) && !empty($password)) {
 
             $login = trim($input['login']);
             $password = trim($input['password']);

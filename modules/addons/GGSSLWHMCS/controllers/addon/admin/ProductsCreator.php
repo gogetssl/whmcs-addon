@@ -62,13 +62,12 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
             'paytype'    => $input['paytype'] ? $input['paytype'] : 'recurring',
             'servertype' => 'GGSSLWHMCS',
             'hidden'     => '1',
-            'autosetup'  => 'payment',
+            'autosetup'  => $input['autosetup'],
             C::API_PRODUCT_ID => $input[C::API_PRODUCT_ID],
             C::API_PRODUCT_MONTHS => $input[C::API_PRODUCT_MONTHS],
             C::PRODUCT_ENABLE_SAN => $input[C::PRODUCT_ENABLE_SAN] ? $input[C::PRODUCT_ENABLE_SAN] : '',
             C::PRODUCT_INCLUDED_SANS => $input[C::PRODUCT_INCLUDED_SANS] ? $input[C::PRODUCT_INCLUDED_SANS] : 0,
         ];
-        
         $productModel = new \MGModule\GGSSLWHMCS\models\productConfiguration\Repository();
         $newProductId = $productModel->createNewProduct($productData);
         foreach ($input['currency'] as $key => $value) {
@@ -127,6 +126,7 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
             $input[C::PRODUCT_INCLUDED_SANS] = '0';
             $input['paytype'] = $apiProduct->getPayType();
             $input['currency'] = $dummyCurrencies;
+            $input['autosetup'] = ($apiProduct->getPayType() == 'free') ? 'order' : 'payment' ;
             $this->saveProduct($input);
         }
 
@@ -137,7 +137,9 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
         if ($this->checkToken()) {
             try {
 
-                if (empty(trim($input['login'])) || empty(trim($input['password'])))
+                $login = trim($input['login']);
+                $password = trim($input['password']);
+                if (empty($login) || empty($password))
                     throw new Exception('empty_fields');
 
                 $login = $input['login'];
@@ -259,5 +261,4 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
             'modal' => $creator->getHTML()
         );
     }
-
 }

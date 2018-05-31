@@ -86,6 +86,7 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository {
         $update[C::PRODUCT_ENABLE_SAN]    = $params[C::PRODUCT_ENABLE_SAN] ? $params[C::PRODUCT_ENABLE_SAN] : '';
         $update[C::PRODUCT_INCLUDED_SANS] = $params[C::PRODUCT_INCLUDED_SANS] ? $params[C::PRODUCT_INCLUDED_SANS] : '0';
         $update['paytype']                = $params['paytype'];
+        $update['autosetup']              = $params['autosetup'];
         return Capsule::table('tblproducts')->where('id', $productId)->update($update);
     }
 

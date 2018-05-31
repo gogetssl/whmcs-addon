@@ -42,6 +42,18 @@
                     </select>
                 </div>
             </div>
+                    
+            <div class="form-group">
+                <label class="control-label col-sm-2">{$MGLANG->T('autoSetup')}</label>
+                <div class="col-sm-10">
+                    <select name="autosetup" class="form-control">
+                        <option value="order">{$MGLANG->T('autoSetupOrder')}</option>  
+                        <option value="payment">{$MGLANG->T('autoSetupPayment')}</option> 
+                        <option value="on">{$MGLANG->T('autoSetupOn')}</option> 
+                        <option value="" selected="" >{$MGLANG->T('autoSetupOff')}</option> 
+                    </select>
+                </div>
+            </div>
 
             <div class="form-group">
                 <label class="control-label col-sm-2">{$MGLANG->T('months')}</label>

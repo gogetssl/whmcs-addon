@@ -26,6 +26,10 @@ class SSLStepThree {
     
     function __construct(&$params) {
         $this->p = &$params;
+		
+        if(!isset($this->p['model'])) {
+            $this->p['model'] = \WHMCS\Service\Service::find($this->p['serviceid']);
+        }
        
     }
 
@@ -49,6 +53,7 @@ class SSLStepThree {
         }
     }
     private function SSLStepThree() {
+        
         $this->loadSslConfig();
         $this->loadApiProduct();
         $this->orderCertificate();
@@ -98,8 +103,6 @@ class SSLStepThree {
         $order['server_count']       = -1; // Required . amount of servers, for Unlimited pass “-1”
         $order['approver_email']     = ($order['dcv_method'] == 'email') ? $this->p['approveremail'] : ''; // Required . amount of servers, for Unlimited pass “-1”
         $order['webserver_type']     = $this->p['servertype']; // Required . webserver type, can be taken from getWebservers method
-        
-        
                         
         $order['admin_firstname']    = $this->p['firstname']; // Required
         $order['admin_lastname']     = $this->p['lastname']; // Required
