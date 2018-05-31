@@ -75,27 +75,78 @@
                                 <tr style="text-align:center;font-weight:bold">
                                     <td></td>
                                     <td></td>
-                                    <td>{$MGLANG->T('pricingMonthly')}</td>
-                                    <td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingQuarterly')}</td>
-                                    <td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingSemiAnnually')}</td>
-                                    <td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingAnnually')}</td>
-                                    <td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingBiennially')}</td>
-                                    <td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingTriennially')}</td>
+                                    <td class="pricing_1">{$MGLANG->T('pricingMonthly')}</td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_3">{$MGLANG->T('pricingQuarterly')}</td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_6">{$MGLANG->T('pricingSemiAnnually')}</td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_12">{$MGLANG->T('pricingAnnually')}</td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_24">{$MGLANG->T('pricingBiennially')}</td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_36">{$MGLANG->T('pricingTriennially')}</td>
                                 </tr>
                                 {foreach from=$currencies item=currency}
                                 <input type="hidden" name="currency[{$currency->id}][currency]" value="{$currency->id}" required/>
                                 <tr style="text-align:center" bgcolor="#ffffff" currency="{$currency->code}">
                                     <td rowspan="3" bgcolor="#efefef"><b>{$currency->code}</b></td>
                                     <td>{$MGLANG->T('pricingSetupFee')}</td>
-                                    <td><input name="currency[{$currency->id}][msetupfee]" id="setup_{$currency->code}_monthly" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$currency->id}][qsetupfee]" id="setup_{$currency->code}_quarterly" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$currency->id}][ssetupfee]" id="setup_{$currency->code}_semiannually" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$currency->id}][asetupfee]" id="setup_{$currency->code}_annually" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$currency->id}][bsetupfee]" id="setup_{$currency->code}_biennially" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$currency->id}][tsetupfee]" id="setup_{$currency->code}_triennially" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text"></td>
+                                    <td class="pricing_1" align="center">
+                                        <input name="currency[{$currency->id}][msetupfee]" id="setup_{$currency->code}_monthly" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text">
+                                    </td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_3" align="center">
+                                        <input name="currency[{$currency->id}][qsetupfee]" id="setup_{$currency->code}_quarterly" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text">
+                                    </td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_6" align="center">
+                                        <input name="currency[{$currency->id}][ssetupfee]" id="setup_{$currency->code}_semiannually" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text">
+                                    </td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_12" align="center">
+                                        <input name="currency[{$currency->id}][asetupfee]" id="setup_{$currency->code}_annually" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text">
+                                    </td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_24" align="center">
+                                        <input name="currency[{$currency->id}][bsetupfee]" id="setup_{$currency->code}_biennially" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text">
+                                    </td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_36" align="center">
+                                        <input name="currency[{$currency->id}][tsetupfee]" id="setup_{$currency->code}_triennially" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text">
+                                    </td>
                                 </tr>
                                 <tr style="text-align:center" bgcolor="#ffffff" currency="{$currency->code}">
                                     <td>{$MGLANG->T('pricingPrice')}</td>
-                                    <td><input name="currency[{$currency->id}][monthly]" id="pricing_{$currency->code}_monthly" size="10" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$currency->id}][quarterly]" id="pricing_{$currency->code}_quarterly" size="10" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$currency->id}][semiannually]" id="pricing_{$currency->code}_semiannually" size="10" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$currency->id}][annually]" id="pricing_{$currency->code}_annually" size="10" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$currency->id}][biennially]" id="pricing_{$currency->code}_biennially" size="10" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$currency->id}][triennially]" id="pricing_{$currency->code}_triennially" size="10" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text"></td>
+                                    <td class="pricing_1" align="center">
+                                        <input name="currency[{$currency->id}][monthly]" id="pricing_{$currency->code}_monthly" size="10" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text">
+                                    </td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_3" align="center">
+                                        <input name="currency[{$currency->id}][quarterly]" id="pricing_{$currency->code}_quarterly" size="10" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text">
+                                    </td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_6" align="center">
+                                        <input name="currency[{$currency->id}][semiannually]" id="pricing_{$currency->code}_semiannually" size="10" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text">
+                                    </td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_12" align="center">
+                                        <input name="currency[{$currency->id}][annually]" id="pricing_{$currency->code}_annually" size="10" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text">
+                                    </td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_24" align="center">
+                                        <input name="currency[{$currency->id}][biennially]" id="pricing_{$currency->code}_biennially" size="10" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text">
+                                    </td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_36" align="center">
+                                        <input name="currency[{$currency->id}][triennially]" id="pricing_{$currency->code}_triennially" size="10" value="0.00" style="" class="form-control input-inline input-100 text-center" type="text">
+                                    </td>
                                 </tr>
                                 <tr style="text-align:center" bgcolor="#ffffff">
                                     <td>{$MGLANG->T('pricingEnable')}</td>
-                                    <td><input class="pricingtgl" currency="{$currency->code}" data-pricing-id="{$currency->id}" cycle="monthly" type="checkbox"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input class="pricingtgl" currency="{$currency->code}" cycle="quarterly" type="checkbox"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input class="pricingtgl" currency="{$currency->code}" data-pricing-id="{$currency->pricing_id}" cycle="semiannually" type="checkbox"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input class="pricingtgl" currency="{$currency->code}" cycle="annually" type="checkbox"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input class="pricingtgl" currency="{$currency->code}" cycle="biennially" type="checkbox"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input class="pricingtgl" currency="{$currency->code}" cycle="triennially" type="checkbox"></td>
+                                    <td class="pricing_1">
+                                        <input class="pricingtgl" currency="{$currency->code}" data-pricing-id="{$currency->id}" cycle="monthly" type="checkbox">
+                                    </td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_3">
+                                        <input class="pricingtgl" currency="{$currency->code}" cycle="quarterly" type="checkbox">
+                                    </td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_6">
+                                        <input class="pricingtgl" currency="{$currency->code}" data-pricing-id="{$currency->pricing_id}" cycle="semiannually" type="checkbox">
+                                    </td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_12">
+                                        <input class="pricingtgl" currency="{$currency->code}" cycle="annually" type="checkbox">
+                                    </td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_24">
+                                        <input class="pricingtgl" currency="{$currency->code}" cycle="biennially" type="checkbox">
+                                    </td>
+                                    <td style="display: table-cell;" class="prod-pricing-recurring pricing_36">
+                                        <input class="pricingtgl" currency="{$currency->code}" cycle="triennially" type="checkbox">
+                                    </td>
                                 </tr>
                             {/foreach}
                             </tbody>
@@ -135,7 +186,6 @@
         $(document).ready(function () {
 
             $(".pricingtgl").each(function (no, item) {
-
                 if ($(item).is(":checked")) {
 
                 } else {
@@ -205,12 +255,23 @@
                     peroids = peroids.toString();
                 }
 
-                peroids = peroids.split(',');
-
+                peroids = peroids.split(',');                
                 for (var i = 0; i < peroids.length; i++) {
                     options = options + getOptionInputHtml({value: peroids[i], name: peroids[i]});
                 }
-                monthsInput.html(options);
+                monthsInput.html(options);                
+                changePrincingOptions(peroids)
+                
+            }
+            function changePrincingOptions(peroids){
+                var AllPeriodsInMonths = ["1", "3" , "6", "12", "24", "36"];
+                for (var i = 0; i < AllPeriodsInMonths.length; i++) {
+                    if(jQuery.inArray( AllPeriodsInMonths[i], peroids ) == -1) {
+                        $('.pricing_' + AllPeriodsInMonths[i]).hide();
+                    } else {
+                         $('.pricing_' + AllPeriodsInMonths[i]).show();
+                    }
+                }
             }
 
             buildMonthsInput(apiProductInput);
@@ -225,7 +286,14 @@
                 configureSansEnableInput($(this));
                 buildMonthsInput($(this));
             });
-
+            $('#api_product').bind('change', function(){
+                var options = $('#months option');
+                var periods = $.map(options ,function(option) {
+                    return option.value;
+                });
+                
+                changePrincingOptions(periods)
+            })
         });
     {/literal}
 </script>

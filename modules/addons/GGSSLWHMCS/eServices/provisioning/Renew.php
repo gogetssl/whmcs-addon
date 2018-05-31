@@ -58,9 +58,14 @@ class Renew {
 
     private function getOrderParams() {        
         $billingPeriods = array(
-            'Annually'  =>  12,
-            'Biennially'  =>  24,
-            'Triennially'  =>  36,
+            'Free Account'  =>  $this->p[ConfigOptions::API_PRODUCT_MONTHS],
+            'One Time'  =>  $this->p[ConfigOptions::API_PRODUCT_MONTHS],
+            'Monthly'       =>  1,
+            'Quarterly'     =>  3,
+            'Semi-Annually' =>  6,
+            'Annually'      =>  12,
+            'Biennially'    =>  24,
+            'Triennially'   =>  36,
         );
         
         $p = &$this->sslService->configdata;

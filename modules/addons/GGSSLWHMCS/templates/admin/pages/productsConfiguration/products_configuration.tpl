@@ -48,11 +48,11 @@
                                     </div>
                                 </div>
                             {/if}
-
                             <div class="form-group">
                                 <label class="control-label col-sm-2">{$MGLANG->T('months')}</label>
                                 <div class="col-sm-10">
                                     <div class="maxMonths">{$product->apiConfig->peroids}</div>
+                                    <input type="hidden" name="product[{$product->id}][configoption2]" value="{$product->apiConfig->peroids}"></input>
                                     <!--<select name="product[{$product->id}][configoption2]" class="form-control">
                                         {foreach from=$product->apiConfig->peroids item=peroid}
                                             <option {if $product->configoption2 == $peroid}selected{/if} value="{$peroid}">{$peroid}</option>
@@ -104,33 +104,120 @@
                             <div class="form-group" id="mg-js-pricing-group-{$product->id}" {if $product->paytype == 'free'}style="display: none;"{/if}>
                                 <label class="control-label col-sm-2">{$MGLANG->T('pricing')}</label>
                                 <div class="col-sm-10">
-
+                                    
                                     <div class="product_prices">
                                         <table class="table">
                                             <tbody>
                                                 <tr style="text-align:center;font-weight:bold">
                                                     <td></td>
                                                     <td></td>
-                                                    <td>{$MGLANG->T('pricingMonthly')}</td>
-                                                    <td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingQuarterly')}</td>
-                                                    <td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingSemiAnnually')}</td>
-                                                    <td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingAnnually')}</td>
-                                                    <td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingBiennially')}</td>
-                                                    <td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingTriennially')}</td>
+                                                    {if in_array('1',$product->apiConfig->availablePeriods)}<td>{$MGLANG->T('pricingMonthly')}</td>{/if}
+                                                    {if in_array('3',$product->apiConfig->availablePeriods)}<td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingQuarterly')}</td>{/if}
+                                                    {if in_array('6',$product->apiConfig->availablePeriods)}<td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingSemiAnnually')}</td>{/if}
+                                                    {if in_array('12',$product->apiConfig->availablePeriods)}<td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingAnnually')}</td>{/if}
+                                                    {if in_array('24',$product->apiConfig->availablePeriods)}<td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingBiennially')}</td>{/if}
+                                                    {if in_array('36',$product->apiConfig->availablePeriods)}<td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingTriennially')}</td>{/if}
                                                 </tr>
                                                 {foreach from=$product->pricing item=pricing}
                                                     <tr style="text-align:center" bgcolor="#ffffff" currency="{$pricing->code}">
                                                         <td rowspan="3" bgcolor="#efefef"><b>{$pricing->code}</b></td>
                                                         <td>{$MGLANG->T('pricingSetupFee')}</td>
-                                                        <td><input name="currency[{$pricing->pricing_id}][msetupfee]" id="setup_{$pricing->code}_monthly_{$pricing->pricing_id}" value="{$pricing->msetupfee}" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$pricing->pricing_id}][qsetupfee]" id="setup_{$pricing->code}_quarterly_{$pricing->pricing_id}" value="{$pricing->qsetupfee}" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$pricing->pricing_id}][ssetupfee]" id="setup_{$pricing->code}_semiannually_{$pricing->pricing_id}" value="{$pricing->ssetupfee}" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$pricing->pricing_id}][asetupfee]" id="setup_{$pricing->code}_annually_{$pricing->pricing_id}" value="{$pricing->asetupfee}" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$pricing->pricing_id}][bsetupfee]" id="setup_{$pricing->code}_biennially_{$pricing->pricing_id}" value="{$pricing->bsetupfee}" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$pricing->pricing_id}][tsetupfee]" id="setup_{$pricing->code}_triennially_{$pricing->pricing_id}" value="{$pricing->tsetupfee}" style="" class="form-control input-inline input-100 text-center" type="text"></td>
+                                                        {if in_array('1',$product->apiConfig->availablePeriods)}
+                                                            <td>
+                                                                <input name="currency[{$pricing->pricing_id}][msetupfee]" id="setup_{$pricing->code}_monthly_{$pricing->pricing_id}" value="{$pricing->msetupfee}" style="" class="form-control input-inline input-100 text-center" type="text">
+                                                            </td>
+                                                        {/if}                                                        
+                                                        {if in_array('3',$product->apiConfig->availablePeriods)}
+                                                            <td style="display: table-cell;" class="prod-pricing-recurring">
+                                                                <input name="currency[{$pricing->pricing_id}][qsetupfee]" id="setup_{$pricing->code}_quarterly_{$pricing->pricing_id}" value="{$pricing->qsetupfee}" style="" class="form-control input-inline input-100 text-center" type="text">
+                                                            </td> 
+                                                        {/if} 
+                                                        {if in_array('6',$product->apiConfig->availablePeriods)}
+                                                            <td style="display: table-cell;" class="prod-pricing-recurring">
+                                                                <input name="currency[{$pricing->pricing_id}][ssetupfee]" id="setup_{$pricing->code}_semiannually_{$pricing->pricing_id}" value="{$pricing->ssetupfee}" style="" class="form-control input-inline input-100 text-center" type="text">
+                                                            </td>
+                                                        {/if} 
+                                                        {if in_array('12',$product->apiConfig->availablePeriods)}
+                                                            <td style="display: table-cell;" class="prod-pricing-recurring">
+                                                                <input name="currency[{$pricing->pricing_id}][asetupfee]" id="setup_{$pricing->code}_annually_{$pricing->pricing_id}" value="{$pricing->asetupfee}" style="" class="form-control input-inline input-100 text-center" type="text">
+                                                            </td>
+                                                        {/if} 
+                                                        {if in_array('24',$product->apiConfig->availablePeriods)}
+                                                            <td style="display: table-cell;" class="prod-pricing-recurring">
+                                                                <input name="currency[{$pricing->pricing_id}][bsetupfee]" id="setup_{$pricing->code}_biennially_{$pricing->pricing_id}" value="{$pricing->bsetupfee}" style="" class="form-control input-inline input-100 text-center" type="text">
+                                                            </td>
+                                                        {/if} 
+                                                        {if in_array('36',$product->apiConfig->availablePeriods)}
+                                                            <td style="display: table-cell;" class="prod-pricing-recurring">
+                                                                <input name="currency[{$pricing->pricing_id}][tsetupfee]" id="setup_{$pricing->code}_triennially_{$pricing->pricing_id}" value="{$pricing->tsetupfee}" style="" class="form-control input-inline input-100 text-center" type="text">
+                                                            </td>
+                                                        {/if} 
                                                     </tr>
                                                     <tr style="text-align:center" bgcolor="#ffffff" currency="{$pricing->code}">
                                                         <td>{$MGLANG->T('pricingPrice')}</td>
-                                                        <td><input name="currency[{$pricing->pricing_id}][monthly]" id="pricing_{$pricing->code}_monthly_{$pricing->pricing_id}" size="10" value="{$pricing->monthly}" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$pricing->pricing_id}][quarterly]" id="pricing_{$pricing->code}_quarterly_{$pricing->pricing_id}" size="10" value="{$pricing->quarterly}" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$pricing->pricing_id}][semiannually]" id="pricing_{$pricing->code}_semiannually_{$pricing->pricing_id}" size="10" value="{$pricing->semiannually}" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$pricing->pricing_id}][annually]" id="pricing_{$pricing->code}_annually_{$pricing->pricing_id}" size="10" value="{$pricing->annually}" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$pricing->pricing_id}][biennially]" id="pricing_{$pricing->code}_biennially_{$pricing->pricing_id}" size="10" value="{$pricing->biennially}" style="" class="form-control input-inline input-100 text-center" type="text"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input name="currency[{$pricing->pricing_id}][triennially]" id="pricing_{$pricing->code}_triennially_{$pricing->pricing_id}" size="10" value="{$pricing->triennially}" style="" class="form-control input-inline input-100 text-center" type="text"></td>
+                                                        {if in_array('1',$product->apiConfig->availablePeriods)}
+                                                        <td>
+                                                            <input name="currency[{$pricing->pricing_id}][monthly]" id="pricing_{$pricing->code}_monthly_{$pricing->pricing_id}" size="10" value="{$pricing->monthly}" style="" class="form-control input-inline input-100 text-center" type="text">
+                                                        </td>
+                                                        {/if}
+                                                        {if in_array('3',$product->apiConfig->availablePeriods)}
+                                                        <td style="display: table-cell;" class="prod-pricing-recurring">
+                                                            <input name="currency[{$pricing->pricing_id}][quarterly]" id="pricing_{$pricing->code}_quarterly_{$pricing->pricing_id}" size="10" value="{$pricing->quarterly}" style="" class="form-control input-inline input-100 text-center" type="text">
+                                                        </td>
+                                                        {/if}
+                                                        {if in_array('6',$product->apiConfig->availablePeriods)}
+                                                        <td style="display: table-cell;" class="prod-pricing-recurring">
+                                                            <input name="currency[{$pricing->pricing_id}][semiannually]" id="pricing_{$pricing->code}_semiannually_{$pricing->pricing_id}" size="10" value="{$pricing->semiannually}" style="" class="form-control input-inline input-100 text-center" type="text">
+                                                        </td>
+                                                        {/if}
+                                                        {if in_array('12',$product->apiConfig->availablePeriods)}
+                                                        <td style="display: table-cell;" class="prod-pricing-recurring">
+                                                            <input name="currency[{$pricing->pricing_id}][annually]" id="pricing_{$pricing->code}_annually_{$pricing->pricing_id}" size="10" value="{$pricing->annually}" style="" class="form-control input-inline input-100 text-center" type="text">
+                                                        </td>
+                                                        {/if} 
+                                                        {if in_array('24',$product->apiConfig->availablePeriods)}
+                                                        <td style="display: table-cell;" class="prod-pricing-recurring">
+                                                            <input name="currency[{$pricing->pricing_id}][biennially]" id="pricing_{$pricing->code}_biennially_{$pricing->pricing_id}" size="10" value="{$pricing->biennially}" style="" class="form-control input-inline input-100 text-center" type="text">
+                                                        </td>
+                                                        {/if} 
+                                                        {if in_array('36',$product->apiConfig->availablePeriods)}
+                                                        <td style="display: table-cell;" class="prod-pricing-recurring">
+                                                            <input name="currency[{$pricing->pricing_id}][triennially]" id="pricing_{$pricing->code}_triennially_{$pricing->pricing_id}" size="10" value="{$pricing->triennially}" style="" class="form-control input-inline input-100 text-center" type="text">
+                                                        </td>
+                                                        {/if}
                                                     </tr>
                                                     <tr style="text-align:center" bgcolor="#ffffff">
                                                         <td>{$MGLANG->T('pricingEnable')}</td>
-                                                        <td><input class="pricingtgl" currency="{$pricing->code}" data-pricing-id="{$pricing->pricing_id}" cycle="monthly" type="checkbox" {if $pricing->monthly gte 0} checked="checked" {/if}></td><td style="display: table-cell;" class="prod-pricing-recurring"><input data-pricing-id="{$pricing->pricing_id}" class="pricingtgl" currency="{$pricing->code}" cycle="quarterly" {if $pricing->quarterly gte 0} checked="checked" {/if} type="checkbox"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input class="pricingtgl" currency="{$pricing->code}" {if $pricing->semiannually gte 0} checked="checked" {/if} data-pricing-id="{$pricing->pricing_id}" cycle="semiannually" type="checkbox"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input class="pricingtgl" currency="{$pricing->code}" data-pricing-id="{$pricing->pricing_id}" cycle="annually" {if $pricing->annually gte 0} checked="checked" {/if} type="checkbox"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input class="pricingtgl" data-pricing-id="{$pricing->pricing_id}" currency="{$pricing->code}" {if $pricing->biennially gte 0} checked="checked" {/if} cycle="biennially" type="checkbox"></td><td style="display: table-cell;" class="prod-pricing-recurring"><input class="pricingtgl" data-pricing-id="{$pricing->pricing_id}" currency="{$pricing->code}" cycle="triennially" {if $pricing->triennially gte 0} checked="checked" {/if} type="checkbox"></td>
+                                                        {if in_array('1',$product->apiConfig->availablePeriods)}
+                                                            <td>
+                                                                <input class="pricingtgl" currency="{$pricing->code}" data-pricing-id="{$pricing->pricing_id}" cycle="monthly" type="checkbox" {if $pricing->monthly gte 0} checked="checked" {/if}>
+                                                            </td>
+                                                        {/if}
+                                                        {if in_array('3',$product->apiConfig->availablePeriods)}
+                                                            <td style="display: table-cell;" class="prod-pricing-recurring">
+                                                                <input data-pricing-id="{$pricing->pricing_id}" class="pricingtgl" currency="{$pricing->code}" cycle="quarterly" {if $pricing->quarterly gte 0} checked="checked" {/if} type="checkbox">
+                                                            </td>
+                                                        {/if}
+                                                        {if in_array('6',$product->apiConfig->availablePeriods)}
+                                                            <td style="display: table-cell;" class="prod-pricing-recurring">
+                                                                <input class="pricingtgl" currency="{$pricing->code}" {if $pricing->semiannually gte 0} checked="checked" {/if} data-pricing-id="{$pricing->pricing_id}" cycle="semiannually" type="checkbox">
+                                                            </td>
+                                                        {/if}
+                                                        {if in_array('12',$product->apiConfig->availablePeriods)}
+                                                            <td style="display: table-cell;" class="prod-pricing-recurring">
+                                                                <input class="pricingtgl" currency="{$pricing->code}" data-pricing-id="{$pricing->pricing_id}" cycle="annually" {if $pricing->annually gte 0} checked="checked" {/if} type="checkbox">
+                                                            </td>
+                                                        {/if}
+                                                        {if in_array('24',$product->apiConfig->availablePeriods)}
+                                                            <td style="display: table-cell;" class="prod-pricing-recurring">
+                                                                <input class="pricingtgl" data-pricing-id="{$pricing->pricing_id}" currency="{$pricing->code}" {if $pricing->biennially gte 0} checked="checked" {/if} cycle="biennially" type="checkbox">
+                                                            </td>
+                                                        {/if}
+                                                        {if in_array('36',$product->apiConfig->availablePeriods)}
+                                                            <td style="display: table-cell;" class="prod-pricing-recurring">
+                                                                <input class="pricingtgl" data-pricing-id="{$pricing->pricing_id}" currency="{$pricing->code}" cycle="triennially" {if $pricing->triennially gte 0} checked="checked" {/if} type="checkbox">
+                                                            </td>
+                                                        {/if}
                                                     </tr>
                                                 {/foreach}
                                             </tbody>

@@ -22,7 +22,8 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository {
                     [
                         'api_login'         => $params['api_login'],
                         'api_password'      => $params['api_password'],
-                        'use_admin_contact' => $params['use_admin_contact'],
+                        'use_admin_contact' => $params['use_admin_contact'],                                        
+                        'display_csr_generator' => $params['display_csr_generator'],
                         'tech_firstname'    => $params['tech_firstname'],
                         'tech_lastname'     => $params['tech_lastname'],
                         'tech_organization' => $params['tech_organization'],
@@ -41,7 +42,8 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository {
                     [
                         'api_login'         => $params['api_login'],
                         'api_password'      => $params['api_password'],
-                        'use_admin_contact' => $params['use_admin_contact'],
+                        'use_admin_contact' => $params['use_admin_contact'],                        
+                        'display_csr_generator' => $params['display_csr_generator'],
                         'tech_firstname'    => $params['tech_firstname'],
                         'tech_lastname'     => $params['tech_lastname'],
                         'tech_organization' => $params['tech_organization'],
@@ -64,6 +66,7 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository {
                 $table->string('api_login');
                 $table->string('api_password');
                 $table->boolean('use_admin_contact');
+                $table->boolean('display_csr_generator');
                 $table->string('tech_firstname');
                 $table->string('tech_lastname');
                 $table->string('tech_organization');

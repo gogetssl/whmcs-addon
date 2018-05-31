@@ -41,6 +41,16 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         ));
         
         $field        = new main\mgLibs\forms\LegendField();
+        $field->name  = 'csr_generator_legend';
+        $form->addField($field);
+        
+        $field = new main\mgLibs\forms\CheckboxField();
+        $field->name = 'display_csr_generator';
+        $field->options = ['displayCsrGenerator'];
+        $field->value = $input['display_csr_generator'] ? ['displayCsrGenerator'] : [''];
+        $form->addField($field);
+        
+        $field        = new main\mgLibs\forms\LegendField();
         $field->name  = 'tech_legend';
         $form->addField($field);
 
@@ -171,6 +181,11 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
                     $input['use_admin_contact'] = true;
                 } else {
                     $input['use_admin_contact'] = false;
+                }
+                if(isset($input['display_csr_generator'])) {
+                    $input['display_csr_generator'] = true;
+                } else {
+                    $input['display_csr_generator'] = false;
                 }
                 $apiConfigRepo = new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository();
                 $apiConfigRepo->setConfiguration($input);

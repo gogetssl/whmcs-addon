@@ -21,8 +21,8 @@ class SSLStepOne {
         }
     }
 
-    private function SSLStepOne() {
-         
+    private function SSLStepOne() {    
+        
         $fields['additionalfields'] = [];
         $apiProductId  = $this->p[ConfigOptions::API_PRODUCT_ID];
         $apiRepo       = new \MGModule\GGSSLWHMCS\eRepository\gogetssl\Products();
@@ -39,24 +39,10 @@ class SSLStepOne {
         
         $sansLimit    = $includedSans + $boughtSans;        
 
-        /*$onlyEmailValidationFoBrands = [
-            'geotrust',
-            'thawte',
-            'rapidssl',
-            'symantec'
-        ];
-        $methodTypesArray = [
-            'EMAIL',
-            'HTTP',
-            'HTTPS',
-            'DNS'
-        ]; 
-        if(in_array($apiProduct->brand, $onlyEmailValidationFoBrands)) {
-            $methodTypesArray = ['EMAIL'];
-        }
         
-        $methodTypes = json_encode($methodTypesArray);
-        $fields['additionalfields'][\MGModule\GGSSLWHMCS\eRepository\gogetssl\DcvMethod::getTitle()] = \MGModule\GGSSLWHMCS\eRepository\gogetssl\DcvMethod::getFields();*/
+        $apiConf = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get();        
+        $displayCsrGenerator = $apiConf->display_csr_generator;    
+        
         if (!$sanEnabledForWHMCSProduct) {
             $sansLimit = 0;
         } 
@@ -73,7 +59,7 @@ class SSLStepOne {
         //$dcvMethodScript    = \MGModule\GGSSLWHMCS\eServices\ScriptService::getDcvMethodScript($methodTypes, (empty(json_decode($fillVarsJSON)))?json_encode($_POST['fields']['dcv_method']):$fillVarsJSON);
         $webServerTypeSctipt  = \MGModule\GGSSLWHMCS\eServices\ScriptService::getWebServerTypeSctipt($apiWebServersJSON);
         $autoFillFieldsScript = \MGModule\GGSSLWHMCS\eServices\ScriptService::getAutoFillFieldsScript($fillVarsJSON);
-        $generateCsrModalScript = \MGModule\GGSSLWHMCS\eServices\ScriptService::getGenerateCsrModalScript($fillVarsJSON, $countriesForGenerateCsrForm);
+        $generateCsrModalScript = ($displayCsrGenerator) ? \MGModule\GGSSLWHMCS\eServices\ScriptService::getGenerateCsrModalScript($fillVarsJSON, $countriesForGenerateCsrForm) : '';
         //when server type is not selected exception
         if(isset($_POST['privateKey']) && $_POST['privateKey'] != null && empty(json_decode($fillVarsJSON))) {
             $autoFillPrivateKeyField = \MGModule\GGSSLWHMCS\eServices\ScriptService::getAutoFillPrivateKeyField($_POST['privateKey']);
