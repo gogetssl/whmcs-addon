@@ -86,8 +86,11 @@ class SSLStepTwo {
     }
     
     private function validateFields() {
-        if (!empty(trim($this->p['orgname'])) AND empty(trim($this->p['jobtitle']))) {
+        if (empty(trim($this->p['jobtitle']))) {
             $this->errors[] = 'You did not enter Administrative Job Title.';
+        }
+        if (empty(trim($this->p['orgname']))) {
+            $this->errors[] = 'You did not enter Organization Name.';
         }
     }
     
@@ -110,7 +113,6 @@ class SSLStepTwo {
                 'value' => $this->p[$value]
             ];
         } 
-       
         foreach ($b as $value) {
             
             if($value == 'fields[dcv_method]') {

@@ -6,5 +6,7 @@
         
         $('#divhideme').closest('.form-horizontal').remove();
         $('input, textarea, select').addClass('form-control');
+        
+        $('.help-block').remove();
     });
 </script>

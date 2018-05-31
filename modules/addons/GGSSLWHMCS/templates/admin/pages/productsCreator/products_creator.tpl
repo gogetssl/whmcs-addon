@@ -55,7 +55,7 @@
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group hidden">
                 <label class="control-label col-sm-2">{$MGLANG->T('months')}</label>
                 <div class="col-sm-10">
                     <select name="configoption2" class="form-control" id="months">
