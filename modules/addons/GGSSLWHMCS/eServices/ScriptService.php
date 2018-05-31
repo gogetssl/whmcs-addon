@@ -52,8 +52,8 @@ class ScriptService {
         return TemplateService::buildTemplate(self::AUTO_FILL, ['fillVars' => addslashes($fillVarsJSON)]);
     }
 
-    public static function getSanEmailsScript($apiSanEmailsJSON, $fillVarsJSON = null) {
-        return TemplateService::buildTemplate(self::SAN_EMAILS, ['sanEmails' => addslashes($apiSanEmailsJSON), 'fillVars' => addslashes($fillVarsJSON)]);
+    public static function getSanEmailsScript($apiSanEmailsJSON, $fillVarsJSON = null, $brand = null) {
+        return TemplateService::buildTemplate(self::SAN_EMAILS, ['sanEmails' => addslashes($apiSanEmailsJSON), 'fillVars' => addslashes($fillVarsJSON), 'brand' => addslashes($brand)]);
     }
 
     public static function getAdminServiceScript($vars) {

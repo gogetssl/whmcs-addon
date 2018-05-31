@@ -172,7 +172,7 @@ function GGSSLWHMCS_ClientArea(array $params) {
 function GGSSLWHMCS_ClientAreaCustomButtonArray() {
     $lang = \MGModule\GGSSLWHMCS\mgLibs\Lang::getInstance();
     return [
-        $lang->T('reissueCertificate') => 'ClientAreaCustomReissueCertificate'
+        $lang->T('Reissue Certificate') => 'ClientAreaCustomReissueCertificate'
         //$lang->T('contactDetails')     => 'ClientAreaCustomContactDetails'
     ];
 }

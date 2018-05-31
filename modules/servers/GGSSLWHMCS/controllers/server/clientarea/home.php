@@ -59,9 +59,9 @@ class home extends main\mgLibs\process\AbstractController {
                     //    $vars['csr'] = ($orderStatus['csr_code']);
                     //}
 
-                    //if (!empty($orderStatus['crt_code'])) {
-                    //    $vars['crt'] = ($orderStatus['crt_code']);
-                    //}
+                    if (!empty($orderStatus['crt_code'])) {
+                        $vars['crt'] = ($orderStatus['crt_code']);
+                    }
                     if (!empty($orderStatus['ca_code'])) {
                         $vars['ca'] = ($orderStatus['ca_code']);
                     }

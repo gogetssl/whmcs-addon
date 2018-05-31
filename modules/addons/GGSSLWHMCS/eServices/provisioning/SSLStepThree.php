@@ -3,7 +3,7 @@
 namespace MGModule\GGSSLWHMCS\eServices\provisioning;
 
 use Exception;
-
+use \MGModule\GGSSLWHMCS\models\whmcs\service\Service as Service;
 class SSLStepThree {
 
     /**
@@ -129,13 +129,13 @@ class SSLStepThree {
         
         $sanEnabledForWHMCSProduct = $this->p[ConfigOptions::PRODUCT_ENABLE_SAN] === 'on';
         
+        $decodedCSR   = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->p['csr']);
         if ($sanEnabledForWHMCSProduct AND count($_POST['approveremails'])) {
             
             $sansDomains = $this->p['configdata']['fields']['sans_domains'];
             $sansDomains = \MGModule\GGSSLWHMCS\eHelpers\SansDomains::parseDomains($sansDomains);
             //if entered san is the same as main domain
             if(count($sansDomains) != count($_POST['approveremails'])) {
-                $decodedCSR   = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->p['csr']);
                 foreach($sansDomains as $key => $domain) {                    
                     if($decodedCSR['csrResult']['CN'] == $domain) {
                         unset($sansDomains[$key]);   
@@ -162,6 +162,9 @@ class SSLStepThree {
         
         $addedSSLOrder = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLOrder($order);
         
+        //update domain column in tblhostings
+        $service = new Service($this->p['serviceid']);
+        $service->save(array('domain' => $decodedCSR['csrResult']['CN']));
         
         $this->sslConfig->setRemoteId($addedSSLOrder['order_id']);        
         $this->sslConfig->setApproverEmails($order['approver_emails']); 

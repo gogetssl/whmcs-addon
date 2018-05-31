@@ -167,8 +167,11 @@
                         {if $dcv_method == 'email' && !$sans}
                             <button type="button" id="btnChange_Approver_Email" class="btn btn-default" style="margin:2px">{$MGLANG->T('changeValidationEmail')}</button>
                         {/if}
-                        <button type="button" id="btnRevalidate" class="btn btn-default" style="margin:2px">{$MGLANG->T('revalidate')}</button>
-
+                        {if $activationStatus !== 'active'}
+                            <button type="button" id="btnRevalidate" class="btn btn-default" style="margin:2px">{$MGLANG->T('revalidate')}</button>
+                        {else}
+                            <a class="btn btn-default" role="button" href="" id="Action_Custom_Module_Button_Reissue_Certificate">{$MGLANG->T('reissueCertificate')}</a>
+                        {/if}                        
                         <!--<button type="button" id="{if $dcv_method == 'email'}btnChange_Approver_Email{else}btnRevalidate{/if}" class="btn btn-default" style="margin:2px">{if $dcv_method == 'email'}{$MGLANG->T('changeValidationEmail')}{else}{$MGLANG->T('revalidate')}{/if}</button>-->
                         {if $privateKey}
                         <button type="button" id="getPrivateKey" class="btn btn-default" style="margin:2px">{$MGLANG->T('getPrivateKeyBtn')}</button>
@@ -181,11 +184,14 @@
     <script type="text/javascript">
         $(document).ready(function () {
             {if $activationStatus !== 'active'} 
-                $('#Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Reissue_Certificate').remove();
+                //$('#Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Reissue_Certificate').remove();
             {else}
                 $('#resend-validation-email').remove();
                 $('#btnChange_Approver_Email').remove();
             {/if}
+            var reissueUrl= $('#Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Reissue_Certificate').attr('href');
+            $('#Action_Custom_Module_Button_Reissue_Certificate').prop('href', reissueUrl);
+            $('#Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Reissue_Certificate').remove();
         });
     </script>
     
