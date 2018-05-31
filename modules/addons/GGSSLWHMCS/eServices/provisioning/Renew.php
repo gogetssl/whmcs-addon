@@ -38,7 +38,7 @@ class Renew {
     private function renewCertificate() {
         $this->loadSslService();
         $this->loadApiProduct();
-        $addSSLRenewOrder = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLRenewOrder($this->getOrderParams());
+        $addSSLRenewOrder = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLRenewOrder($this->getOrderParams());        
     }
 
     private function loadSslService() {
@@ -70,7 +70,7 @@ class Renew {
         
         $p = &$this->sslService->configdata;
         $f = &$p['fields'];
-
+        
         $order                   = [];
         $order['dcv_method']     = 'email';        
         $order['product_id']     = $this->p[ConfigOptions::API_PRODUCT_ID]; // Required

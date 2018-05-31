@@ -45,8 +45,8 @@ class SSLStepTwoJS {
     }    
 
     private function setBrand($params) {
-        if(isset($params['brand']) &&  $params['brand'] != null){
-            $this->brand = $params['brand'];
+        if(isset($params['sslbrand']) &&  $params['sslbrand'] != null){
+            $this->brand = $params['sslbrand'];
         }
     }
     

@@ -2,7 +2,7 @@
 <script type="text/javascript">
     $(document).ready(function () {
         var brand = JSON.parse('{$brand}');
-        $('textarea[name="csr"]').closest('.form-group').after('<input class="form-control" type="hidden" name="brand" value="' + brand + '" />');
+        $('textarea[name="csr"]').closest('.form-group').after('<input class="form-control" type="hidden" name="sslbrand" value="' + brand + '" />');
 
         var element = $('#divhideme').closest('.form-group');
         //for control template       

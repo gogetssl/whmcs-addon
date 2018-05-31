@@ -53,7 +53,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
      * Module version
      * @var string
      */
-    public $version = '1.0.16';
+    public $version = '1.0.17';
 
     /**
      * Module author
@@ -182,6 +182,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
         eServices\EmailTemplateService::createConfigurationTemplate();
         eServices\EmailTemplateService::createCertyficateTemplate();
         eServices\EmailTemplateService::createExpireNotificationTemplate();
+        eHelpers\Invoice::createInfosTable();
     }
 
     /**

@@ -44,11 +44,11 @@ function GGSSLWHMCS_SSLStepTwo($params) {
     $SSLStepTwo = new \MGModule\GGSSLWHMCS\eServices\provisioning\SSLStepTwo($params);
     if(isset($_POST['privateKey']) && $_POST['privateKey'] != null) {
         $SSLStepTwo->setPrivateKey($_POST['privateKey']);
-    }
+    }    
     return $SSLStepTwo->run();
 }
 function GGSSLWHMCS_SSLStepTwoJS($params) {
-    $SSLStepTwoJS = new \MGModule\GGSSLWHMCS\eServices\provisioning\SSLStepTwoJS($params);
+    $SSLStepTwoJS = new \MGModule\GGSSLWHMCS\eServices\provisioning\SSLStepTwoJS($params);    
     return $SSLStepTwoJS->run();
 }
 
