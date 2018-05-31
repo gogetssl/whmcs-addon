@@ -54,14 +54,15 @@ class Invoice
     }
     
     public function getInvoiceCreatedInfo($invoiceId, $orderIdNull = true) {
-        $conditions = ['invoice_id' => $invoiceId ];
+        
+        $wherePart = ' WHERE invoice_id = ' . $invoiceId;        
         
         if ($orderIdNull == true) {
-            $conditions['order_id'] = 0;
+            $wherePart .= ' AND order_id = 0 ';
         }
-        
-        return Query::select(['*'], self::INVOICE_INFOS_TABLE_NAME, $conditions)->fetch();
+        return Query::query('SELECT * FROM ' . self::INVOICE_INFOS_TABLE_NAME . $wherePart)->fetch();
     }
+    
     protected static function getNewInvoiceCreatedInfo($newServiceId, $orderId = null) {
         $wherePart = ' WHERE new_service_id = ' . $newServiceId;        
         
