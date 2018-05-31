@@ -45,27 +45,27 @@
                                                   </div>\n\
                                                   <div class="form-group">\n\
                                                     <label class="control-label" for="ST">'+'{$MGLANG->T('stateLabel')}'+'</label>\n\
-                                                    <input class="form-control generateCsrInput"  id="stateOrProvinceName" placeholder="Texas" name="ST" required="" type="text">\n\
+                                                    <input class="form-control generateCsrInput"  id="stateOrProvinceName" placeholder="'+'{$MGLANG->T('statePlaceholder')}'+'" name="ST" required="" type="text">\n\
                                                   </div>\n\
                                                   <div class="form-group">\n\
                                                     <label class="control-label" for="L">'+'{$MGLANG->T('localityLabel')}'+'</label>\n\
-                                                    <input class="form-control generateCsrInput" id="localityName" placeholder="San Antonio" name="L" required="" type="text">\n\
+                                                    <input class="form-control generateCsrInput" id="localityName" placeholder="'+'{$MGLANG->T('localityPlaceholder')}'+'" name="L" required="" type="text">\n\
                                                   </div>\n\
                                                   <div class="form-group">\n\
                                                     <label class="control-label" for="O">'+'{$MGLANG->T('organizationLabel')}'+'</label>\n\
-                                                    <input class="form-control generateCsrInput" id="organizationName" placeholder="Big Bob\'s Beepers" name="O" required="" type="text">\n\
+                                                    <input class="form-control generateCsrInput" id="organizationName" placeholder="'+'{$MGLANG->T('organizationPlaceholder')}'+'" name="O" required="" type="text">\n\
                                                   </div>\n\
                                                   <div class="form-group">\n\
                                                     <label class="control-label" for="OU">'+'{$MGLANG->T('organizationanUnitLabel')}'+'</label>\n\
-                                                    <input class="form-control generateCsrInput" id="organizationalUnitName" placeholder="Marketing" name="OU" required="" type="text">\n\
+                                                    <input class="form-control generateCsrInput" id="organizationalUnitName" placeholder="'+'{$MGLANG->T('organizationanUnitPlaceholder')}'+'" name="OU" required="" type="text">\n\
                                                   </div>\n\
                                                   <div class="form-group">\n\
                                                     <label class="control-label" for="CN">'+'{$MGLANG->T('commonNameLabel')}'+'</label>\n\
-                                                    <input class="form-control generateCsrInput" id="commonName" placeholder="example.com" name="CN" required="" type="text">\n\
+                                                    <input class="form-control generateCsrInput" id="commonName" placeholder="'+'{$MGLANG->T('commonNamePlaceholder')}'+'" name="CN" required="" type="text">\n\
                                                   </div>\n\
                                                   <div class="form-group">\n\
                                                     <label class="control-label" for="EA">'+'{$MGLANG->T('emailAddressLabel')}'+'</label>\n\
-                                                    <input class="form-control generateCsrInput" id="emailAddress" placeholder="example@example.com" name="EA" required="" type="text">\n\
+                                                    <input class="form-control generateCsrInput" id="emailAddress" placeholder="'+'{$MGLANG->T('emailAddressPlaceholder')}'+'" name="EA" required="" type="text">\n\
                                                   </div>\n\
                                               </div>\n\
                                             <div class="col-md-1"></div>\n\

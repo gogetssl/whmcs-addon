@@ -62,14 +62,14 @@ class SSLStepTwo {
         
         $invalidDomains = \MGModule\GGSSLWHMCS\eHelpers\Domains::getInvalidDomains($sansDomains);
         if (count($invalidDomains)) {
-            throw new Exception('Folowed SAN domains are incorrect: ' . implode(', ', $invalidDomains));
+            throw new Exception(\MGModule\GGSSLWHMCS\mgLibs\Lang::T('incorrectSans') . implode(', ', $invalidDomains));
         }
         
         $includedSans = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS];
         $boughtSans   = (int) $this->p['configoptions'][ConfigOptions::OPTION_SANS_COUNT];
         $sansLimit = $includedSans + $boughtSans;
         if (count($sansDomains) > $sansLimit) {
-            throw new Exception('Exceeded limit of SAN domains');
+            throw new Exception(\MGModule\GGSSLWHMCS\mgLibs\Lang::T('sanLimitExceeded'));
         }
     }
 
@@ -78,19 +78,19 @@ class SSLStepTwo {
         $decodeCSR = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($csr);
         
         if($decodeCSR['error']) {
-            throw new Exception('Incorrect CSR');
+            throw new Exception(\MGModule\GGSSLWHMCS\mgLibs\Lang::T('incorrectCSR'));
         }
     }
     
     private function validateFields() {
         if (empty(trim($this->p['jobtitle']))) {
-            $this->errors[] = 'You did not enter Administrative Job Title.';
+            $this->errors[] = \MGModule\GGSSLWHMCS\mgLibs\Lang::T('adminJobTitleMissing');
         }
         if (empty(trim($this->p['orgname']))) {
-            $this->errors[] = 'You did not enter Organization Name.';
+            $this->errors[] = \MGModule\GGSSLWHMCS\mgLibs\Lang::T('organizationNameMissing');
         }
         if (empty(trim($this->p['fields']['order_type']))) {
-            $this->errors[] = 'You did not select Order Type.';
+            $this->errors[] = \MGModule\GGSSLWHMCS\mgLibs\Lang::T('orderTypeMissing');
         }
     }
     

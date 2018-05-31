@@ -17,16 +17,16 @@ class San {
      * * textarea
      */
     public static function getTitle() {
-        return 'SANs';
+        return \MGModule\GGSSLWHMCS\mgLibs\Lang::getInstance()->T('sansTitle');
     }
 
     public static function getFields($limit) {
         $fields                 = [];
         $fields['sans_domains'] = [
-            'FriendlyName' => 'SAN Domains' . sprintf(' (%s)', $limit),
+            'FriendlyName' => \MGModule\GGSSLWHMCS\mgLibs\Lang::getInstance()->T('sansFreindlyName') . sprintf(' (%s)', $limit),
             'Type'         => 'textarea',
             'Size'         => '30',
-            'Description'  => '<br>If you want add any SANs put them here (every SAN in separate line)',
+            'Description'  => '<br>' . \MGModule\GGSSLWHMCS\mgLibs\Lang::getInstance()->T('sansDescription'),
             'Required'     => false,
 
         ];

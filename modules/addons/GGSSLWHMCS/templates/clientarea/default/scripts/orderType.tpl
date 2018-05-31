@@ -12,7 +12,7 @@
                 optionsHtml = '',
                 optionAttributes = '';
         
-        optionsHtml = '<option value="" selected>Please choose one...</option>';        
+        optionsHtml = '<option value="" selected>'+'{$MGLANG->T('Please choose one...')}'+'</option>';        
         for (var i = 0; i < orderTypes.length; i++) {  
             var type =  orderTypes[i];
             var lang =  '';

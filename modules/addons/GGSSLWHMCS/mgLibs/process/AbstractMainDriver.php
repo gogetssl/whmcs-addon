@@ -83,7 +83,7 @@ abstract class AbstractMainDriver{
             self::$_instance = new $class();
             self::$_instance->_mainNamespace = substr(__NAMESPACE__,0,  strpos(__NAMESPACE__, '\mgLibs'));
             self::$_instance->_mainDIR = call_user_func(array($class,'getMainDIR'));
-            
+
             $class= self::$_instance->_mainNamespace.'\Configuration';
             
             self::$_instance->_configuration = new $class();

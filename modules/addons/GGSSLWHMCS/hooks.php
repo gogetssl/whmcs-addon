@@ -50,3 +50,13 @@ add_hook('ClientLogin', 1, function($vars) {
     }
 });
 
+add_hook('InvoicePaid', 1, function($vars) {
+    require_once dirname(dirname(dirname(__DIR__))) . DIRECTORY_SEPARATOR . 'init.php';
+    require_once 'Loader.php';
+    
+
+    $loader = new \MGModule\GGSSLWHMCS\Loader();
+    $invoiceGenerator = new \MGModule\GGSSLWHMCS\eHelpers\Invoice();
+    
+    $invoiceGenerator->invoicePaid($vars['invoiceid']);
+});

@@ -589,12 +589,12 @@ class Addon extends main\mgLibs\process\AbstractMainDriver{
         return '<JSONRESPONSE#'.json_encode($content).'#ENDJSONRESPONSE>';
     }
     
-    static function cron($input){       
+    static function cron($input, $action='index'){       
         try{
             self::I()->isAdmin(true);
             self::I()->setMainLangContext();
             
-            self::I()->runControler('Cron','index',$input,'CRON');
+            self::I()->runControler('Cron', $action, $input,'CRON');
         } catch (\Exception $ex) {
             self::dump($ex);
             main\mgLibs\error\Register::register($ex);

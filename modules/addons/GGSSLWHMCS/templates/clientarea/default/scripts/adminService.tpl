@@ -188,7 +188,7 @@
                     data = JSON.parse(ret);
                     if (data.success === 1) {
                         var  htmlOptions = [];
-                        htmlOptions += '<option>Please choose one...</option>';
+                        htmlOptions += '<option>'+'{$MGLANG->T('Please choose one...')}'+'</option>';
                         var domainEmails = data.domainEmails;
                         for (var i = 0; i < domainEmails.length; i++) {  
                             htmlOptions += '<option value="' + domainEmails[i] + '">' + domainEmails[i] + '</option>';                                        
@@ -523,7 +523,7 @@
         }
 
         function renderWebServers(list) {
-            optionsHtml = optionsHtml + '<option value="0">Please choose one...</option>';
+            optionsHtml = optionsHtml + '<option value="0">'+'{$MGLANG->T('Please choose one...')}'+'</option>';
             for (var i = 0; i < list.length; i++) {
                 optionsHtml = optionsHtml + '<option value="' + list[i].id + '">' + list[i].software + '</option>';
             }

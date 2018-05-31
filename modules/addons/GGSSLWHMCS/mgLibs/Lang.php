@@ -145,14 +145,23 @@ class Lang
      * @param string $lang Lang Name
      */
     public static function loadLang($lang)
-    {
-        $file = self::getInstance()->dir . DS . $lang . '.php';
+    {    
+        $originalLanguageFile = self::getInstance()->dir . DS . $lang . '.php';
+        if (file_exists($originalLanguageFile))
+        {
+            include $originalLanguageFile;
+            self::getInstance()->langs       = array_merge(self::getInstance()->langs, $_LANG);
+            self::getInstance()->currentLang = $lang;
+        } 
+        
+        $file = self::getInstance()->dir . DS . 'overrides' . DS . $lang . '.php';
+        
         if (file_exists($file))
         {
             include $file;
             self::getInstance()->langs       = array_merge(self::getInstance()->langs, $_LANG);
             self::getInstance()->currentLang = $lang;
-        }
+        } 
     }
 
     /**
@@ -292,7 +301,7 @@ class Lang
     public static function absoluteT()
     {
         $lang = self::getInstance()->langs;
-
+        
         $returnLangArray = false;
 
         foreach (func_get_args() as $find)

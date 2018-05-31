@@ -53,7 +53,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
      * Module version
      * @var string
      */
-    public $version = '1.0.12';
+    public $version = '1.0.14';
 
     /**
      * Module author
@@ -181,6 +181,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
         $apiConfigRepo->createApiConfigurationTable();
         eServices\EmailTemplateService::createConfigurationTemplate();
         eServices\EmailTemplateService::createCertyficateTemplate();
+        eServices\EmailTemplateService::createExpireNotificationTemplate();
     }
 
     /**
@@ -192,6 +193,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
         $apiConfigRepo->dropApiConfigurationTable();
         eServices\EmailTemplateService::deleteConfigurationTemplate();
         eServices\EmailTemplateService::deleteCertyficateTemplate();
+        eServices\EmailTemplateService::deleteExpireNotificationTemplate();
     }
 
     /**
@@ -200,6 +202,10 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
      */
     function upgrade($vars) {
         $version = $vars['version'];
+        
+        eServices\EmailTemplateService::createExpireNotificationTemplate();
+        
+        eHelpers\Invoice::createInfosTable();
     }
 
 }

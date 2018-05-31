@@ -6,7 +6,7 @@
                 optionAttributes = '';
 
         if (selectedServerId === '0') {
-            optionsHtml = '<option value="" selected>Please choose one...</option>';
+            optionsHtml = '<option value="" selected>'+'{$MGLANG->T('Please choose one...')}'+'</option>';
         }
 
         for (var i = 0; i < serverTypes.length; i++) {

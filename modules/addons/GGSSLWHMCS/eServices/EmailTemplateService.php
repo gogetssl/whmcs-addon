@@ -5,6 +5,7 @@ namespace MGModule\GGSSLWHMCS\eServices;
 class EmailTemplateService {
     
     const CONFIGURATION_TEMPLATE_ID = 'GoGetSSL - Configuration Required';
+    const EXPIRATION_TEMPLATE_ID = 'GoGetSSL - Service Expiration';
     const SEND_CERTIFICATE_TEMPLATE_ID = 'GoGetSSL - Send Certificate';
 
     
@@ -54,4 +55,25 @@ class EmailTemplateService {
         return \MGModule\GGSSLWHMCS\eModels\whmcs\EmailTemplate::whereName($name)->first();
     }
     
+     
+    public static function createExpireNotificationTemplate() {
+        if(!is_null(self::getTemplate(self::EXPIRATION_TEMPLATE_ID))) {
+            return 'Template exist, nothing to do here';
+        }
+        $newTemplate          = new \MGModule\GGSSLWHMCS\eModels\whmcs\EmailTemplate();
+        $newTemplate->type    = 'product';
+        $newTemplate->name    = self::EXPIRATION_TEMPLATE_ID;
+        $newTemplate->subject = 'Service Expiration Notification - {$service_domain}';
+        $newTemplate->message = '<p>Dear {$client_name},</p><p>We would like to inform You about your service <strong>#{$service_id}</strong>  is going to expire in {$expireDaysLeft} days.</p><p>{$signature}</p>';
+        $newTemplate->custom  = 1;
+        $newTemplate->save();
+    }
+    
+    public static function deleteExpireNotificationTemplate() {
+        $template = self::getTemplate(self::EXPIRATION_TEMPLATE_ID);
+        if(is_null($template)) {
+            return 'Template not exist, nothing to do here';
+        }
+        $template->delete();
+    }
 }

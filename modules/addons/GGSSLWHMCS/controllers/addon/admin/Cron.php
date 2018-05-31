@@ -14,7 +14,7 @@ class Cron extends main\mgLibs\process\AbstractController
         $updatedServices = [];
 
         $this->sslRepo = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
-
+        
         //get all completed ssl orders
         $sslOrders = $this->getSSLOrders();
         foreach ($sslOrders as $sslService)
@@ -26,7 +26,7 @@ class Cron extends main\mgLibs\process\AbstractController
             
             //if service is synchronized skip it
             if ($this->checkIfSynchronized($serviceID)) continue;                
-            
+                
             $order = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);            
             //if certificate is active
             if ($order['status'] == 'active')
@@ -45,6 +45,49 @@ class Cron extends main\mgLibs\process\AbstractController
         echo '<br />Number of synchronized services: ' . count($updatedServices);
         
         logActivity("GGSSL WHMCS: Synchronization completed. Number of synchronized services: " . count($updatedServices));
+        
+        return array();
+    }
+    
+    public function notifyCRON($input, $vars = array())
+    {
+
+        $this->sslRepo = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
+        
+        //get all completed ssl orders
+        $sslOrders = $this->getSSLOrders();
+        
+        $synchServicesId = array_map(function($row) { $config = json_decode($row->configdata); if (isset($config->synchronized)) { return $row->serviceid; } }, $sslOrders);
+        
+        
+        $services              = \WHMCS\Service\Service::whereIn('id', $synchServicesId)->get();
+        
+        $emailSendsCount = 0;
+        
+        $packageLists = [];
+        $serviceIDs = [];
+        
+        foreach ($services as $srv)
+        {     
+            
+            //service was synchronized, so we can base on nextduedate, that should be the same as valid_till
+            if ( ($daysLeft = $this->checkOrderExpireDate($srv->nextduedate) ) >= 0) {
+                $emailSendsCount += $this->sendExpireNotfiyEmail($srv->id, $daysLeft);
+            }
+            //if it is 90 days, we create invoice
+            if ($daysLeft == 90) {
+                $packageLists[$srv->packageid][] = $srv;
+                $serviceIDs[] = $srv->id;
+            }
+        }
+        $invoicesCreatedCount = $this->createAutoInvoice($packageLists, $serviceIDs);
+        
+        echo 'Notifier completed.' . PHP_EOL;
+        echo '<br />Number of emails send: ' . $emailSendsCount . PHP_EOL;
+        echo '<br />Number of invoiced created: ' . $invoicesCreatedCount . PHP_EOL;
+        
+        logActivity("GGSSL WHMCS: Notifier completed. Number of emails send: " . $emailSendsCount);
+        logActivity("GGSSL WHMCS: Notifier completed. Number of invoiced created: " . $invoicesCreatedCount);
         
         return array();
     }
@@ -96,4 +139,71 @@ class Cron extends main\mgLibs\process\AbstractController
         
         return $skip;
     }
+    
+    public function checkOrderExpireDate($expireDate) {
+        $expireDaysNotify = array_flip(array('90', '60', '30', '15', '10', '7', '3', '1', '0'));
+        
+        if (stripos($expireDate, ':') === false) {
+            $expireDate .= ' 23:59:59';
+        }
+        $expire = new \DateTime($expireDate);
+        $today = new \DateTime();
+        
+        $diff = $expire->diff($today, false);
+        if ($diff->invert == 0) {
+            //if date from past
+            return -1;
+        }
+        
+        return isset($expireDaysNotify[$diff->days]) ? $diff->days : -1;
+    }
+    
+    public function sendExpireNotfiyEmail($serviceId, $daysLeft) {
+        $command = 'SendEmail';
+        
+        $postData = array(
+            'id' => $serviceId,
+            'messagename' => main\eServices\EmailTemplateService::EXPIRATION_TEMPLATE_ID,
+            'customvars' => base64_encode(serialize(array("expireDaysLeft" => $daysLeft) )),
+        );
+        
+        $adminUserName = main\eHelpers\Admin::getAdminUserName();
+
+        $results = localAPI($command, $postData, $adminUserName);
+        
+        $resultSuccess = $results['result'] == 'success';
+        if (!$resultSuccess) {
+            logActivity('GGSSL WHMCS Notifier: Error while sending customer notifications (service ' . $serviceId . '): ' . $results['message'], 0);
+        }
+        return $resultSuccess;
+    }
+
+    
+    public function createAutoInvoice($packages, $serviceIds) {
+        if (empty($packages)) {
+            return 0;
+        }
+            
+        $products    = \WHMCS\Product\Product::whereIn('id', array_keys($packages) )->get();
+        
+        $invoiceGenerator = new main\eHelpers\Invoice();
+        
+        $servicesAlreadyAdded = $invoiceGenerator->checkInvoiceAlreadyCreated($serviceIds);
+        
+        $invoiceCounter = 0;
+        foreach ($products as $prod) {
+            
+            foreach ($packages[$prod->id] as $service) {
+                //have product, service
+                
+                if (isset($servicesAlreadyAdded[$service->id])) {
+                    continue;
+                }
+                $invoiceCounter += $invoiceGenerator->createInvoice($service, $prod);
+            }
+        }
+        
+        return $invoiceCounter;
+    }
+    
 }

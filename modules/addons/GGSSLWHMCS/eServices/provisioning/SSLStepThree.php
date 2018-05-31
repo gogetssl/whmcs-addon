@@ -17,7 +17,9 @@ class SSLStepThree {
      * @var \MGModule\GGSSLWHMCS\eModels\whmcs\service\SSL
      */
     private $sslConfig;
-
+    
+    private $invoiceGenerator;
+    
     /**
      *
      * @var \MGModule\GGSSLWHMCS\eModels\gogetssl\Product 
@@ -29,6 +31,8 @@ class SSLStepThree {
         if(!isset($this->p['model'])) {
             $this->p['model'] = \WHMCS\Service\Service::find($this->p['serviceid']);
         }
+        
+        $this->invoiceGenerator = new \MGModule\GGSSLWHMCS\eHelpers\Invoice();
     }
 
     public function run() {
@@ -219,6 +223,9 @@ class SSLStepThree {
         $this->sslConfig->setApproverEmails($order['approver_emails']); 
         //$this->sslConfig->setApproverEmails($order['approver_emails']); 
         $this->sslConfig->save();
+        
+        //try to mark previous order as completed if it is autoinvoiced and autocreated product
+        $this->invoiceGenerator->markPreviousOrderAsCompleted($this->p['serviceid']);
         
         \MGModule\GGSSLWHMCS\eServices\FlashService::set('GGSSL_WHMCS_SERVICE_TO_ACTIVE', $this->p['serviceid']);
     }
