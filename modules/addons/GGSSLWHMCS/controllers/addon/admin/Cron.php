@@ -149,9 +149,12 @@ class Cron extends main\mgLibs\process\AbstractController
 
     private function updateServiceNextDueDate($serviceID, $date)
     {
-        $service              = \WHMCS\Service\Service::findOrFail($serviceID);
-        $service->nextduedate = $date;
-        $service->save();
+        $service              = \WHMCS\Service\Service::find($serviceID);
+        if(!empty($service))
+        {
+            $service->nextduedate = $date;
+            $service->save();
+        }
     }
 
     private function setSSLServiceAsSynchronized($serviceID)
@@ -163,9 +166,12 @@ class Cron extends main\mgLibs\process\AbstractController
 
     private function setSSLServiceAsTerminated($serviceID)
     {
-        $service         = \WHMCS\Service\Service::findOrFail($serviceID);
-        $service->status = 'terminated';
-        $service->save();
+        $service         = \WHMCS\Service\Service::find($serviceID);
+        if(!empty($service))
+        {
+            $service->status = 'terminated';
+            $service->save();
+        }
     }
     
     private function checkIfSynchronized($serviceID)
@@ -250,8 +256,10 @@ class Cron extends main\mgLibs\process\AbstractController
             foreach ($packages[$prod->id] as $service) {
                 //have product, service                
                 if (isset($servicesAlreadyAdded[$service->id])) {
-                    if($jsonAction)                   
-                        return array('invoiceID' => ($invoiceGenerator->getLatestCreatedInvoiceInfo($service->id))['invoice_id']);
+                    if($jsonAction)     
+                    {
+                        return array('invoiceID' => $invoiceGenerator->getLatestCreatedInvoiceInfo($service->id)['invoice_id']);
+                    }
                     continue;
                 }
                 $invoiceCounter += $invoiceGenerator->createInvoice($service, $prod, $getInvoiceID);
