@@ -25,7 +25,7 @@ class ConfigOptions {
     const PRODUCT_INCLUDED_SANS = 'configoption4';
     const OPTION_SANS_COUNT     = 'sans_count'; // sans_count|SANs http://puu.sh/vXXx3/d08fdb2c2f.png
 
-    function __construct(&$params) {
+    function __construct(&$params = null) {
         $this->p = &$params;
     }
 
