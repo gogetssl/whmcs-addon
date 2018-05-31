@@ -16,7 +16,7 @@ class Cron extends main\mgLibs\process\AbstractController
         $this->sslRepo = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
         
         //get all completed ssl orders
-        $sslOrders = $this->getSSLOrders();
+        $sslOrders = $this->getSSLOrders();        
         foreach ($sslOrders as $sslService)
         {     
             $serviceID = $sslService->serviceid;
@@ -26,9 +26,9 @@ class Cron extends main\mgLibs\process\AbstractController
             
             //if service is synchronized skip it
             if ($this->checkIfSynchronized($serviceID)) continue;                
-                
-            $order = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);            
-            //if certificate is active
+            
+            $order = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid); 
+             //if certificate is active
             if ($order['status'] == 'active')
             {
                 //update whmcs service next due date
@@ -49,33 +49,53 @@ class Cron extends main\mgLibs\process\AbstractController
         return array();
     }
     
-    public function notifyCRON($input, $vars = array())
+    public function notifyCRON($input, $vars = array()) // tutaj
     {
-
+       
         $this->sslRepo = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
         
         //get all completed ssl orders
-        $sslOrders = $this->getSSLOrders();
-        
-        $synchServicesId = array_map(function($row) { $config = json_decode($row->configdata); if (isset($config->synchronized)) { return $row->serviceid; } }, $sslOrders);
-        
-        
-        $services              = \WHMCS\Service\Service::whereIn('id', $synchServicesId)->get();
-        
+        $sslOrders = $this->getSSLOrders();        
+        $synchServicesId = array_map(
+                function($row) 
+                { 
+                    $config = json_decode($row->configdata); 
+                    if (isset($config->synchronized)) 
+                    { 
+                        return $row->serviceid;                    
+                    }   
+                    else
+                    {
+                        return \WHMCS\Service\Service::where('id', $row->serviceid)->where('billingcycle', 'One Time')->first()['id']; 
+                    }
+                }, $sslOrders);
+               
+        $services        = \WHMCS\Service\Service::whereIn('id', $synchServicesId)->get();        
+                
         $emailSendsCount = 0;
         
         $packageLists = [];
         $serviceIDs = [];
         
         foreach ($services as $srv)
-        {     
+        {              
+            //get days left to expire from WHMCS
             
+            $daysLeft = $this->checkOrderExpireDate($srv->nextduedate);
+            //if service is One Time and nextduedate is setted as 0000-00-00 get valid_till from GoGet API
+            if($srv->billingcycle == 'One Time' && $srv->nextduedate = '0000-00-00')
+            { 
+                $sslOrder = $this->getSSLOrders($srv->id)[0];
+                $order = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslOrder->remoteid);                 
+                $daysLeft = $this->checkOrderExpireDate($order['valid_till']);                     
+            }
+
             //service was synchronized, so we can base on nextduedate, that should be the same as valid_till
-            if ( ($daysLeft = $this->checkOrderExpireDate($srv->nextduedate) ) >= 0) {
+            if ( $daysLeft >= 0) {
                 $emailSendsCount += $this->sendExpireNotfiyEmail($srv->id, $daysLeft);
             }
-            //if it is 90 days, we create invoice
-            if ($daysLeft == 90) {
+            //if it is 90 days, we create invoice, do not create fo One Time services
+            if ($daysLeft == 90 && $srv->billingcycle != 'One Time') {
                 $packageLists[$srv->packageid][] = $srv;
                 $serviceIDs[] = $srv->id;
             }
@@ -92,11 +112,14 @@ class Cron extends main\mgLibs\process\AbstractController
         return array();
     }
 
-    private function getSSLOrders()
+    private function getSSLOrders($serviceID = null)
     {
         $where = [
             'status' => 'Completed'
         ];
+        
+        if($serviceID != NULL)
+            $where['serviceid'] = $serviceID;
 
         return $this->sslRepo->getBy($where);
     }
@@ -130,9 +153,9 @@ class Cron extends main\mgLibs\process\AbstractController
     {
         $skipPeriods = ['Monthly', 'One Time', 'Free Account'];
         $skip = false;
-        
-        $service              = \WHMCS\Service\Service::findOrFail($serviceID);
-        if(in_array($service->billingcycle, $skipPeriods))
+        $service = \WHMCS\Service\Service::find($serviceID);
+       
+        if(in_array($service->billingcycle, $skipPeriods) || $service == null)
         {
             $skip = true;
         }
@@ -142,7 +165,7 @@ class Cron extends main\mgLibs\process\AbstractController
     
     public function checkOrderExpireDate($expireDate) {
         $expireDaysNotify = array_flip(array('90', '60', '30', '15', '10', '7', '3', '1', '0'));
-        
+       
         if (stripos($expireDate, ':') === false) {
             $expireDate .= ' 23:59:59';
         }

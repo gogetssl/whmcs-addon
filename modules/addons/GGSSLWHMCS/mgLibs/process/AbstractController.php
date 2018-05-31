@@ -13,7 +13,7 @@ abstract class AbstractController {
     public $mgToken = null;
     private $registredValidationErros = array();
             
-    function __construct($input) {
+    function __construct($input = null) {
         if(isset($input['mg-token']))
         {
             $this->mgToken = $input['mg-token'];
