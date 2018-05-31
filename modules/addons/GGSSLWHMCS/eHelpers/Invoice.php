@@ -63,13 +63,12 @@ class Invoice
         return Query::select(['*'], self::INVOICE_INFOS_TABLE_NAME, $conditions)->fetch();
     }
     protected static function getNewInvoiceCreatedInfo($newServiceId, $orderId = null) {
-        $conditions = ['new_service_id' => $newServiceId ];
+        $wherePart = ' WHERE new_service_id = ' . $newServiceId;        
         
         if ($orderId != null) {
-            $conditions['order_id'] = $orderId;
+            $wherePart .= ' AND order_id = ' . $orderId;
         }
-        
-        return Query::select(['*'], self::INVOICE_INFOS_TABLE_NAME, $conditions)->fetch();
+        return Query::query('SELECT * FROM ' . self::INVOICE_INFOS_TABLE_NAME . $wherePart)->fetch();
     }
     
     protected function getNextDueDate($currentDueDate, $dateFormat = 'Y-m-d') {
