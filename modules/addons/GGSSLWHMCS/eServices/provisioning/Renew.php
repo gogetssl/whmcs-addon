@@ -93,20 +93,24 @@ class Renew {
         $order['admin_region']       = $p->state;
         //$order['admin_fax']          = $cf['firstname']; // required for OV SSL certificates
 
+        
+        //id use administrative unchecked get tech contsact details from module configuration otherwise use client details
         $apiConf                    = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get();
-        $order['tech_firstname']    = $apiConf->tech_firstname; // Required
-        $order['tech_lastname']     = $apiConf->tech_lastname; // Required
-        $order['tech_organization'] = $apiConf->tech_organization; // required for OV SSL certificates
-        $order['tech_addressline1'] = $apiConf->tech_addressline1;
-        $order['tech_phone']        = $apiConf->tech_phone; // Required
-        $order['tech_title']        = $apiConf->tech_title; // Required
-        $order['tech_email']        = $apiConf->tech_email; // Required
-        $order['tech_city']         = $apiConf->tech_city; // required for OV SSL certificates
-        $order['tech_country']      = $apiConf->tech_country; // required for OV SSL certificates
-        $order['tech_fax']          = $apiConf->tech_fax;
-        $order['tech_postalcode']   = $apiConf->tech_postalcode;
-        $order['tech_region']       = $apiConf->tech_region;
-
+        $useAdminContact = $apiConf->use_admin_contact;
+       
+        $order['tech_firstname']    = ($useAdminContact) ? $p->firstname : $apiConf->tech_firstname; // Required
+        $order['tech_lastname']     = ($useAdminContact) ? $p->lastname : $apiConf->tech_lastname; // Required
+        $order['tech_organization'] = ($useAdminContact) ? $p->orgname : $apiConf->tech_organization; // required for OV SSL certificates
+        $order['tech_addressline1'] = ($useAdminContact) ? $p->address1 : $apiConf->tech_addressline1;
+        $order['tech_phone']        = ($useAdminContact) ? $p->phonenumber : $apiConf->tech_phone; // Required
+        $order['tech_title']        = ($useAdminContact) ? $p->jobtitle : $apiConf->tech_title; // Required
+        $order['tech_email']        = ($useAdminContact) ? $p->email : $apiConf->tech_email; // Required
+        $order['tech_city']         = ($useAdminContact) ? $p->city : $apiConf->tech_city; // required for OV SSL certificates
+        $order['tech_country']      = ($useAdminContact) ? $p->country : $apiConf->tech_country; // required for OV SSL certificates
+        $order['tech_fax']          = ($useAdminContact) ? '' : $apiConf->tech_fax;
+        $order['tech_postalcode']   = ($useAdminContact) ? $p->postcode : $apiConf->tech_postalcode;
+        $order['tech_region']       = ($useAdminContact) ? $p->state : $apiConf->tech_region;
+ 
         if ($this->apiProduct->isOrganizationRequired()) {
             $order['org_name']         = $f->org_name;
             $order['org_division']     = $f->org_division;

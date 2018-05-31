@@ -689,7 +689,7 @@
                 var noEmailError = '';
                 $.each(newMethods,function(key, value){
                     if(value === '{$MGLANG->T('pleaseChooseOne')}' || value === '{$MGLANG->T('loading')}') {                       
-                        noEmailError = '{$MGLANG->T('noEmailSelectedForDomain')}' + key;
+                        noEmailError = '{$MGLANG->T('noEmailSelectedForDomain')}' + key.replace("___", "*");
                         return true;                        
                     }
                 });

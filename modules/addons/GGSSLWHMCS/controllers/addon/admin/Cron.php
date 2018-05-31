@@ -16,7 +16,7 @@ class Cron extends main\mgLibs\process\AbstractController
         $this->sslRepo = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
         
         //get all completed ssl orders
-        $sslOrders = $this->getSSLOrders();        
+        $sslOrders = $this->getSSLOrders();           
         foreach ($sslOrders as $sslService)
         {  
             $serviceID = $sslService->serviceid;            
@@ -30,7 +30,7 @@ class Cron extends main\mgLibs\process\AbstractController
             }
             //if service is montlhy, one time, free skip it
             if($this->checkServiceBillingPeriod($serviceID)) continue;       
-
+            
             //if service is synchronized skip it
             if ($this->checkIfSynchronized($serviceID)) continue;                
             //if certificate is active
@@ -138,7 +138,8 @@ class Cron extends main\mgLibs\process\AbstractController
     private function getSSLOrders($serviceID = null)
     {
         $where = [
-            'status' => 'Completed'
+            'status' => 'Completed',
+            'module' => 'GGSSLWHMCS'
         ];
         
         if($serviceID != NULL)

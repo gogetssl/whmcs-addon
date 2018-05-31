@@ -53,7 +53,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
      * Module version
      * @var string
      */
-    public $version = '1.0.23';
+    public $version = '1.0.24';
 
     /**
      * Module author
@@ -208,7 +208,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
         eServices\EmailTemplateService::updateConfigurationTemplate();
         eHelpers\Invoice::createInfosTable();
         $apiConfigRepo = new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository();
-        $apiConfigRepo->updateApiConfigurationTable();
+        $apiConfigRepo->updateApiConfigurationTable();        
     }
 
 }

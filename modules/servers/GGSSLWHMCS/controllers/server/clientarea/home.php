@@ -200,7 +200,6 @@ class home extends main\mgLibs\process\AbstractController {
             {
                 if(strpos($domain, '___') !== FALSE)
                 {
-
                     $domain = str_replace('___', '*', $domain);
                 }
                 $newDcvMethodArray[$domain] = $method;
@@ -214,12 +213,15 @@ class home extends main\mgLibs\process\AbstractController {
                 'new_method'      => $newMethod, 
                 'domain'          => $domain
             ];
-            try {
-                
-
-                $response = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->changeValidationMethod($sslService->remoteid, $data);   
+            try 
+            {  
+                $response = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->changeValidationMethod($sslService->remoteid, $data);
             } catch (\Exception $ex) {
                 if(strpos($ex->getMessage(), 'Function is locked for') !== false ) {
+                    if(strpos($domain, '___') !== FALSE)
+                    {
+                        $domain = str_replace('___', '*', $domain);
+                    }
                    $message = substr($ex->getMessage(), 0, -1) . ' for the domain: ' . $domain . '.'; 
                 } else {
                     $message = $domain.': '.$ex->getMessage();

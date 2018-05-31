@@ -13,10 +13,11 @@ class Domains {
     
     public static function additionalValidation($domain)
     {
-
-        return (preg_match("/(\*[1]*)(\.[a-z\d](-*[a-z\d])*)(\.([a-z\d](-*[a-z\d])*))*$/i", $domain) 
-                && substr_count($domain, '.') == 2 
-                && substr_count($domain, '*') == 1);
+        //wildcars multilevel domains validation
+        return (preg_match("/^(\*\.)?([a-z\d](-*[a-z\d])*)(\.([a-z\d](-*[a-z\d])*))+$/i", $domain) //valid chars check
+                && preg_match("/^.{1,253}$/", $domain) //overall length check
+                && preg_match("/^[^\.]{1,63}(\.[^\.]{1,63})*$/", $domain)   );
+        
     }
 
     public static function getInvalidDomains(array $domains, $additionalValidation = false) {
