@@ -121,7 +121,7 @@ class ClientReissueCertificate {
         $mainDomain                   = $decodeCSR['csrResult']['CN'];
         $domains                      = $mainDomain . PHP_EOL . $this->post['sans_domains'];
         $parseDomains                 = \MGModule\GGSSLWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));
-        $SSLStepTwoJS                 = new SSLStepTwoJS();
+        $SSLStepTwoJS                 = new SSLStepTwoJS($this->p);
         $this->vars['approvalEmails'] = json_encode($SSLStepTwoJS->fetchApprovalEmailsForSansDomains($parseDomains));
         $this->vars['brand'] = json_encode($this->getCertificateBrand());
     }

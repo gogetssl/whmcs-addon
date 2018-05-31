@@ -121,7 +121,7 @@ class AdminReissueCertificate extends Ajax {
         $mainDomain   = $decodeCSR['csrResult']['CN'];
         $domains      = $mainDomain . PHP_EOL . $this->p['sanDomains'];
         $parseDomains = \MGModule\GGSSLWHMCS\eHelpers\SansDomains::parseDomains($domains);
-        $SSLStepTwoJS = new SSLStepTwoJS();
+        $SSLStepTwoJS = new SSLStepTwoJS($this->p);
         $this->response(true, 'Approve Emails', $SSLStepTwoJS->fetchApprovalEmailsForSansDomains($parseDomains));
 
     }

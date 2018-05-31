@@ -25,7 +25,7 @@ class SSLStepTwoJS {
         }
         try {
             $this->setBrand($_POST);
-            $this->SSLStepTwoJS();
+            $this->SSLStepTwoJS($this->p);
             
             return \MGModule\GGSSLWHMCS\eServices\ScriptService::getSanEmailsScript(json_encode($this->domainsEmailApprovals), json_encode(\MGModule\GGSSLWHMCS\eServices\FlashService::getFieldsMemory($_GET['cert'])), json_encode($this->brand));
         } catch (Exception $ex) {
