@@ -15,24 +15,32 @@ class SSL extends \Illuminate\Database\Eloquent\Model {
     }
 
     public function getConfigdataAttribute($value) {
-        return unserialize($value);
-
+        if(\MGModule\GGSSLWHMCS\eHelpers\Whmcs::isWHMCS73()) {
+            $value = json_decode($value);
+        } else {
+            $value = unserialize($value);
+        }
+        
+        return $value;
     }
 
     public function setConfigdataAttribute($value) {
-        $this->attributes['configdata'] = serialize($value);
-
+        if(\MGModule\GGSSLWHMCS\eHelpers\Whmcs::isWHMCS73()) {
+            $value = json_encode($value);
+        } else {
+            $value = serialize($value);
+        }
+        $this->attributes['configdata'] = $value;
     }
 
     public function setConfigdataKey($key, $value) {
-        $c                = $this->configdata;
+        $c                = (array)$this->configdata;
         $c[$key]          = $value;
         $this->configdata = $c;
-
     }
 
     public function getConfigdataKey($key) {
-        $c = $this->configdata;
+        $c = (array)$this->configdata;
         return $c[$key];
 
     }
@@ -101,21 +109,21 @@ class SSL extends \Illuminate\Database\Eloquent\Model {
     }
 
     public function setSansDomains($domains) {
-        $fileds                 = $this->getConfigdataKey('fields');
+        $fileds                 =  (array)$this->getConfigdataKey('fields');
         $fileds['sans_domains'] = $domains;
         $this->setConfigdataKey('fields', $fileds);
 
     }
 
     public function setApproverEmails($emails) {
-        $fileds                   = $this->getConfigdataKey('fields');
+        $fileds                   = (array)$this->getConfigdataKey('fields');
         $fileds['approveremails'] = $emails;
         $this->setConfigdataKey('fields', $fileds);
 
     }
 
     public function setApproverEmail($email) {
-        $fileds                  = $this->getConfigdataKey('fields');
+        $fileds                  =  (array)$this->getConfigdataKey('fields');
         $fileds['approveremail'] = $email;
         $this->setConfigdataKey('fields', $fileds);
 

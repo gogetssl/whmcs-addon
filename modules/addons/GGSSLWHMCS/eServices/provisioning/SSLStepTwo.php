@@ -15,7 +15,6 @@ class SSLStepTwo {
 
     public function run() {
         try {
-            
             $this->SSLStepTwo();
             
         } catch (Exception $ex) {
@@ -49,10 +48,8 @@ class SSLStepTwo {
         $this->validateSansDomains();
         $this->validateFields(); 
         $this->validateCSR(); 
-        if(isset($this->p['privateKey']) && $this->p['privateKey'] != null) {
-            
+        if(isset($this->p['privateKey']) && $this->p['privateKey'] != null) {            
             $privKey = decrypt($this->p['privateKey']);
-            
             $GenerateSCR = new \MGModule\GGSSLWHMCS\eServices\provisioning\GenerateCSR($this->p, $_POST);
             $GenerateSCR->savePrivateKeyToDatabase($this->p['serviceid'], $privKey);  
         }
@@ -92,6 +89,9 @@ class SSLStepTwo {
         if (empty(trim($this->p['orgname']))) {
             $this->errors[] = 'You did not enter Organization Name.';
         }
+        if (empty(trim($this->p['fields']['order_type']))) {
+            $this->errors[] = 'You did not select Order Type.';
+        }
     }
     
     private function storeFieldsAutoFill() {
@@ -102,7 +102,7 @@ class SSLStepTwo {
             'postcode', 'country', 'phonenumber','privateKey'];
 
         $b = [
-            'fields[dcv_method]', 'sans_domains', 'org_name', 'org_division', 'org_duns', 'org_addressline1',
+            'order_type', 'sans_domains', 'org_name', 'org_division', 'org_duns', 'org_addressline1',
             'org_city', 'org_country', 'org_fax', 'org_phone', 'org_postalcode', 'org_regions'
         ];
         
@@ -115,10 +115,10 @@ class SSLStepTwo {
         } 
         foreach ($b as $value) {
             
-            if($value == 'fields[dcv_method]') {
+            if($value == 'fields[order_type]') {
                 $fields[] = [
                     'name' => sprintf('%s', $value),
-                    'value' => $this->p['fields']['dcv_method']
+                    'value' => $this->p['fields']['order_type']
                 ];
             } else {
                 $fields[] = [
@@ -128,7 +128,7 @@ class SSLStepTwo {
             }
             
         }   
-        
+
         \MGModule\GGSSLWHMCS\eServices\FlashService::setFieldsMemory($_GET['cert'], $fields);
     }
     

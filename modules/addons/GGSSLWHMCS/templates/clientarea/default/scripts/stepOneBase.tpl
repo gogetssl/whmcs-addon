@@ -23,7 +23,7 @@
         jobTitleInput.parent().html(jobTitleInput);        
         //for simplicity template
         if(jobTitleInput.parent().find('label').length === 0) {            
-            $( "p:contains('SANs')").remove();
+            //$( "p:contains('SANs')").remove();
             jobTitleInput.before(jobTitleLabel);
         }
         if($('textarea[name="fields[sans_domains]"]').length > 1) {

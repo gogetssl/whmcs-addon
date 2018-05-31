@@ -56,6 +56,8 @@ class ClientReissueCertificate {
     }
     public function run() {
         
+        $this->setMainDomainDcvMethod($_POST); 
+        $this->setSansDomainsDcvMethod($_POST); 
         return $this->miniControler();
 
     }
@@ -93,6 +95,17 @@ class ClientReissueCertificate {
 
     }
 
+    private function setMainDomainDcvMethod($post) {
+        $this->post['dcv_method']  = $post['dcvmethodMainDomain']; 
+    }
+
+    private function setSansDomainsDcvMethod($post) {
+        
+        if(isset($post['dcvmethod']) && is_array($post['dcvmethod'])) {            
+            $this->post['sansDomansDcvMethod'] = $post['dcvmethod'];
+        }
+    }
+    
     private function stepOneForm() {
         $this->validateWebServer();
         $this->validateSanDomains();
@@ -104,27 +117,56 @@ class ClientReissueCertificate {
         $domains                      = $mainDomain . PHP_EOL . $this->post['sans_domains'];
         $parseDomains                 = \MGModule\GGSSLWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));
         $SSLStepTwoJS                 = new SSLStepTwoJS();
-        $this->vars['approvalEmails'] = $SSLStepTwoJS->fetchApprovalEmailsForSansDomains($parseDomains);
+        $this->vars['approvalEmails'] = json_encode($SSLStepTwoJS->fetchApprovalEmailsForSansDomains($parseDomains));
+        $this->vars['brand'] = json_encode($this->getCertificateBrand());
     }
-
+    
     private function stepTwoForm() {
-        $data = [
-            'webserver_type' => $this->post['webservertype'],
-            'approver_email' => $this->post['approveremail'],
-            'csr'            => $this->post['csr'],
-        ];
-
+        $data['dcv_method'] = strtolower($this->post['dcv_method']);
+        $data['webserver_type'] = $this->post['webservertype'];
+        $data['approver_email'] = ($data['dcv_method'] == 'email') ? $this->post['approveremail'] : '';
+        $data['csr'] = $this->post['csr'];        
+        
+        $brandsWithOnlyEmailValidation = ['geotrust','thawte','rapidssl','symantec'];   
+        
         $sansDomains = [];
         
         $this->validateWebServer();
+        
+        $decodedCSR   = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->post['csr']);
         if ($this->getSansLimit() AND count($_POST['approveremails'])) {
             $this->validateSanDomains();
             $sansDomains             = \MGModule\GGSSLWHMCS\eHelpers\SansDomains::parseDomains($this->post['sans_domains']);
+            //if entered san is the same as main domain
+            if(count($sansDomains) != count($_POST['approveremails'])) {
+                foreach($sansDomains as $key => $domain) {                    
+                    if($decodedCSR['csrResult']['CN'] == $domain) {
+                        unset($sansDomains[$key]);   
+                    }                     
+                }
+            }
             $data['dns_names']       = implode(',', $sansDomains);
             $data['approver_emails'] = implode(',', $_POST['approveremails']);
+            
+            if(!empty($sanDcvMethods = $this->getSansDomainsValidationMethods())) {
+                $i = 0;
+                foreach($_POST['approveremails'] as $domain => $approveremail) {
+                    if($sanDcvMethods[$i] != 'EMAIL') {
+                        $_POST['approveremails']["$domain"] = strtolower($sanDcvMethods[$i]);
+                    }
+                    $i++;
+                }
+                $data['approver_emails'] = implode(',', $_POST['approveremails']);
+            } 
+        }
+        
+        //if brand is 'geotrust','thawte','rapidssl','symantec' do not send dcv method for sans        
+        if(in_array($brand, $brandsWithOnlyEmailValidation)) {
+            unset($data['approver_emails']);
         }
 
-        $orderStatus = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($this->sslService->remoteid);
+        $orderStatus = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($this->sslService->remoteid);        
+        
         if (count($sansDomains) > $orderStatus['total_domains'] AND $orderStatus['total_domains'] >= 0) {
             $count = count($sansDomains) - $orderStatus['total_domains'];
             \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSslSan($this->sslService->remoteid, $count);
@@ -135,15 +177,34 @@ class ClientReissueCertificate {
         $this->sslService->setConfigdataKey('servertype', $data['webserver_type']);
         $this->sslService->setConfigdataKey('csr', $data['csr']);
         $this->sslService->setConfigdataKey('approveremail', $data['approver_email']);
+        $this->sslService->setConfigdataKey('private_key', '');
         $this->sslService->setApproverEmails($data['approver_emails']);
         $this->sslService->setSansDomains($data['dns_names']);
         $this->sslService->save();
 
     }
     
+    private function getSansDomainsValidationMethods() {  
+        $data = [];
+        foreach ($this->post['sansDomansDcvMethod'] as $newMethod) { 
+            $data[] = $newMethod;   
+        }
+        return $data;
+    }
+    
     private function validateWebServer() {
         if($this->post['webservertype'] == 0) {
             throw new Exception(\MGModule\GGSSLWHMCS\mgLibs\Lang::getInstance()->T('mustSelectServer'));
+        }
+    }
+    
+    
+    private function getCertificateBrand()
+    {
+        if(!empty($this->p[ConfigOptions::API_PRODUCT_ID])) {
+            $apiRepo       = new \MGModule\GGSSLWHMCS\eRepository\gogetssl\Products();
+            $apiProduct    = $apiRepo->getProduct($this->p[ConfigOptions::API_PRODUCT_ID]);
+            return $apiProduct->brand;
         }
     }
 

@@ -26,11 +26,9 @@ class SSLStepThree {
     
     function __construct(&$params) {
         $this->p = &$params;
-		
         if(!isset($this->p['model'])) {
             $this->p['model'] = \WHMCS\Service\Service::find($this->p['serviceid']);
         }
-       
     }
 
     public function run() {
@@ -198,7 +196,17 @@ class SSLStepThree {
             unset($order['approver_emails']);
         }
         
-        $addedSSLOrder = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLOrder($order);
+        $orderType = $this->p['fields']['order_type'];
+        switch ($orderType)
+        {
+            case 'renew':
+                $addedSSLOrder = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLRenewOrder($order);
+                break;            
+            case 'new':
+            default:                
+                $addedSSLOrder = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLOrder($order);
+                break;
+        }
         
         //update domain column in tblhostings
         $service = new Service($this->p['serviceid']);

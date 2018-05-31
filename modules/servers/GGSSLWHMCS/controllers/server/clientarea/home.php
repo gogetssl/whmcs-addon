@@ -102,6 +102,12 @@ class home extends main\mgLibs\process\AbstractController {
                     }
                     
                     $vars['activationStatus'] = $orderStatus['status'];
+                    
+                    //valid from
+                    $vars['validFrom'] = $orderStatus['valid_from'];
+                    //expires
+                    $vars['validTill'] = $orderStatus['valid_till'];
+                    
                 } catch (\Exception $ex) {
                     $vars['error'] = 'Can not load order details';
                 }

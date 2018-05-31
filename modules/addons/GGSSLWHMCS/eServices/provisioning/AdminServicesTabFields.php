@@ -51,8 +51,12 @@ class AdminServicesTabFields {
             $orderStatus = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
             
             $return['Domain'] = $orderStatus['domain'];
-            $return['Order Status'] = ucfirst($orderStatus['status']);
-            $return['Order Status Description'] = $orderStatus['status_description'] ? $orderStatus['status_description'] : '-';
+            $return['Order Status'] = ucfirst($orderStatus['status']);   
+            $return['Order Status Description'] = $orderStatus['status_description'] ? $orderStatus['status_description'] : '-';            
+            if($orderStatus['status'] == 'active') {                
+                $return['Valid From'] = $orderStatus['valid_from'];
+                $return['Expires'] = $orderStatus['valid_till'];
+            }
             
             foreach ($orderStatus['san'] as $key => $san) {
                 $return['SAN ' . ($key + 1)] = sprintf('%s / %s', $san['san_name'], $san['status_description']);

@@ -9,9 +9,10 @@ class ScriptService {
     const ADMIN_SERVICE = 'scripts/adminService';
     const AUTO_FILL     = 'scripts/autoFill';
     const PRIVATE_KEY_FILL = 'scripts/privateKeyFill';
+    const ORDER_TYPE_FILL = 'scripts/orderTypeFill';
     const OPTION_ERROR  = 'scripts/configOptionsError';
     const STEP_ONE_BASE = 'scripts/stepOneBase';
-    const DCV_METHOD    = 'scripts/dcvMethod';
+    const ORDER_TYPE    = 'scripts/orderType';
     const GENERATE_CSR_MODAL    = 'scripts/generateCsrModal';
 
 
@@ -32,11 +33,10 @@ class ScriptService {
     public static function getStepOneBaseScript($brand) {
         return TemplateService::buildTemplate(self::STEP_ONE_BASE, ['brand' => json_encode($brand)]);
     }
-    public static function getDcvMethodScript($methodsJSON, $fillVarsJSON, $brand) {
-        return TemplateService::buildTemplate(self::DCV_METHOD,[
-                    'methodTypes'       => addslashes($methodsJSON),
+    public static function getOrderTypeScript($orderTypes, $fillVarsJSON) {
+        return TemplateService::buildTemplate(self::ORDER_TYPE,[
                     'fillVars'          => addslashes($fillVarsJSON),
-                    'brand'             => addslashes($brand)
+                    'orderTypes'        => json_encode($orderTypes)
         ]);
     }
     public static function getGenerateCsrModalScript($fillVarsJSON, $countriesForGenerateCsrForm) {
@@ -47,6 +47,9 @@ class ScriptService {
     }    
     public static function getAutoFillPrivateKeyField($privateKey) {
         return TemplateService::buildTemplate(self::PRIVATE_KEY_FILL, ['privateKey' => $privateKey]);
+    }
+    public static function getAutoFillOrderTypeField($orderType) {
+        return TemplateService::buildTemplate(self::ORDER_TYPE_FILL, ['orderType' => $orderType]);
     }
     public static function getAutoFillFieldsScript($fillVarsJSON) {
         return TemplateService::buildTemplate(self::AUTO_FILL, ['fillVars' => addslashes($fillVarsJSON)]);

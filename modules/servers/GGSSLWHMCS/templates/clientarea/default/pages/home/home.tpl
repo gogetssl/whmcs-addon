@@ -66,6 +66,16 @@
                     </td>
                 </tr>
             {/if}
+            {if $activationStatus === 'active'}            
+                <tr>
+                    <td class="text-left">{$MGLANG->T('validFrom')}</td>
+                    <td class="text-left">{$validFrom}</td>
+                </tr>
+                <tr>
+                    <td class="text-left">{$MGLANG->T('validTill')}</td>
+                    <td class="text-left">{$validTill}</td>
+                </tr>
+            {/if}
             {if $domain}
                 <tr>
                     <td class="text-left">{$MGLANG->T('domain')}</td>
@@ -155,13 +165,13 @@
             {/if}
             {if $ca}
                 <tr>
-                    <td class="text-left">{$MGLANG->T('certificate')}</td>
+                    <td class="text-left">{$MGLANG->T('ca_chain')}</td>
                     <td class="text-left"><textarea onfocus="this.select()" rows="5" class="form-control">{$ca}</textarea></td>
                 </tr>
             {/if}            
             {if $csr}
                 <tr>
-                    <td class="text-left">{$MGLANG->T('crs')}</td>
+                    <td class="text-left">{$MGLANG->T('csr')}</td>
                     <td class="text-left"><textarea onfocus="this.select()" rows="5" class="form-control">{$csr}</textarea></td>
                 </tr>
             {/if}
