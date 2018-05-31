@@ -1373,3 +1373,10 @@ table#product_configuration input{
 .maxMonths {
     padding-top: 7px;
 }
+.cronSynchronizationInfo .text-danger{
+    margin-left: 15px;
+}
+.cronSynchronizationInfo input{
+    max-width:  89%;
+    margin-left: 25px;
+}

@@ -24,6 +24,7 @@ class AdminServicesTabFields {
     private function adminServicesTabFields() {
         $return = [];
         $return['JS/HTML'] = \MGModule\GGSSLWHMCS\eServices\ScriptService::getAdminServiceScript($this->getServiceVars());
+        
         return array_merge($return, $this->getCertificateDetails());
     }
     
@@ -71,6 +72,7 @@ class AdminServicesTabFields {
         
         return [
             'serviceid' => $this->p['serviceid'],
+            'email'     => $this->p['clientsdetails']['email'],
             'userid'    => $this->p['userid'],
             'sansLimit' => $sansLimit,
         ];

@@ -38,12 +38,12 @@ class CreateAccount {
         $sslModel->module         = 'GGSSLWHMCS';
         $sslModel->certtype       = '';
         $sslModel->completiondate = '';
-        $sslModel->status         = 'Awaiting Configuration';
+        $sslModel->status         = 'Awaiting Configuration';        
         $sslModel->save();
 
         sendMessage(\MGModule\GGSSLWHMCS\eServices\EmailTemplateService::CONFIGURATION_TEMPLATE_ID, $this->p['serviceid'], [
-            'ssl_configuration_link' => \MGModule\GGSSLWHMCS\eRepository\whmcs\config\Config::getInstance()->getConfigureSSLLink($sslModel->id),
-            'ssl_configuration_url'  => \MGModule\GGSSLWHMCS\eRepository\whmcs\config\Config::getInstance()->getConfigureSSLUrl($sslModel->id),
+            'ssl_configuration_link' => \MGModule\GGSSLWHMCS\eRepository\whmcs\config\Config::getInstance()->getConfigureSSLLink($sslModel->id, $sslModel->serviceid ),
+            'ssl_configuration_url'  => \MGModule\GGSSLWHMCS\eRepository\whmcs\config\Config::getInstance()->getConfigureSSLUrl($sslModel->id, $sslModel->serviceid ),
         ]);
 
     }

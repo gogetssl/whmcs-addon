@@ -26,4 +26,12 @@ class SSL {
     public function getByServiceId($id) {
         return Model::whereServiceId($id)->first();
     }
+    
+    /**
+     * @param string $status
+     * @return \MGModule\GGSSLWHMCS\eModels\whmcs\service\SSL
+     */
+    public function getBy($where) {    
+        return Model::getWhere($where)->get();
+    }
 }

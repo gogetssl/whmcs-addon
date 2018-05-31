@@ -36,7 +36,7 @@ class SSLStepThree {
     public function run() {
         try {
             $this->setMainDomainDcvMethod($_POST); 
-            $this->setSansDomainsDcvMethod($_POST);               
+            $this->setSansDomainsDcvMethod($_POST);    
             $this->SSLStepThree();
         } catch (Exception $ex) {            
             $this->redirectToStepOne($ex->getMessage());
@@ -78,9 +78,9 @@ class SSLStepThree {
         
         $billingPeriods = array(
             'Free Account'  =>  $this->p[ConfigOptions::API_PRODUCT_MONTHS],
-            'One Time'  =>  $this->p[ConfigOptions::API_PRODUCT_MONTHS],
-            'Monthly'       =>  1,
-            'Quarterly'    =>  3,
+            'One Time'      =>  $this->p[ConfigOptions::API_PRODUCT_MONTHS],
+            'Monthly'       =>  12,
+            'Quarterly'     =>  3,
             'Semi-Annually' =>  6,
             'Annually'      =>  12,
             'Biennially'    =>  24,
@@ -92,8 +92,21 @@ class SSLStepThree {
             $apiRepo       = new \MGModule\GGSSLWHMCS\eRepository\gogetssl\Products();
             $apiProduct    = $apiRepo->getProduct($this->p[ConfigOptions::API_PRODUCT_ID]);
             $brand = $apiProduct->brand;
+            
+            //get available periods for product
+            $productAvailavlePeriods = $apiProduct->getPeriods();
+            
+            //if certificate have monthly billing cycle available
+            if(in_array('1', $productAvailavlePeriods)) {
+                $billingPeriods['Monthly'] = 1;
+            }
+            
+            //one time billing set period to 12 months if avaiable else leave max period
+            if(in_array('12', $productAvailavlePeriods)) {
+                $billingPeriods['One Time'] = 12;
+            }
         }
-                    
+
         $order               = [];
         $order['dcv_method'] = strtolower($this->p['fields']['dcv_method']);
        
@@ -141,13 +154,13 @@ class SSLStepThree {
             $order['org_duns']         = $org['org_duns'];
             $order['org_addressline1'] = $org['org_addressline1'];
             $order['org_city']         = $org['org_city'];
-            $order['org_country']      = $org['org_country'];
+            $order['org_country']      = \MGModule\GGSSLWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountryCodeByName($org['org_country']);
             $order['org_fax']          = $org['org_fax'];
             $order['org_phone']        = $org['org_phone'];
             $order['org_postalcode']   = $org['org_postalcode'];
             $order['org_region']       = $org['org_regions'];
         }
-        
+
         $sanEnabledForWHMCSProduct = $this->p[ConfigOptions::PRODUCT_ENABLE_SAN] === 'on';
         
         $decodedCSR   = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->p['csr']);
@@ -165,6 +178,7 @@ class SSLStepThree {
             }
             $order['dns_names']       = implode(',', $sansDomains);
             $order['approver_emails'] = implode(',', $_POST['approveremails']);
+
             if(!empty($sanDcvMethods = $this->getSansDomainsValidationMethods())) {
                 $i = 0;
                 foreach($_POST['approveremails'] as $domain => $approveremail) {
@@ -183,6 +197,7 @@ class SSLStepThree {
         if(in_array($brand, $brandsWithOnlyEmailValidation)) {
             unset($order['approver_emails']);
         }
+        
         $addedSSLOrder = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLOrder($order);
         
         //update domain column in tblhostings

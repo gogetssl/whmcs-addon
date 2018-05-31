@@ -276,7 +276,7 @@
                 
             }
             function changePrincingOptions(peroids){
-                var AllPeriodsInMonths = ["1", "3" , "6", "12", "24", "36"];
+                var AllPeriodsInMonths = [ "3" , "6", "12", "24", "36"];
                 for (var i = 0; i < AllPeriodsInMonths.length; i++) {
                     if(jQuery.inArray( AllPeriodsInMonths[i], peroids ) == -1) {
                         $('.pricing_' + AllPeriodsInMonths[i]).hide();

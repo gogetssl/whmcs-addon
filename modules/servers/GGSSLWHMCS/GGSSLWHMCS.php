@@ -25,6 +25,16 @@ function GGSSLWHMCS_CreateAccount($params) {
     return $createAccount->run();
 }
 
+function GGSSLWHMCS_SuspendAccount($params) {
+    $suspendAccount = new MGModule\GGSSLWHMCS\eServices\provisioning\SuspendAccount($params);
+    return $suspendAccount->run();
+}
+
+function GGSSLWHMCS_UnsuspendAccount($params) {
+    $unsuspendAccount = new MGModule\GGSSLWHMCS\eServices\provisioning\UnsuspendAccount($params);
+    return $unsuspendAccount->run();
+}
+
 function GGSSLWHMCS_SSLStepOne($params) {
     $SSLStepOne = new MGModule\GGSSLWHMCS\eServices\provisioning\SSLStepOne($params);
     return $SSLStepOne->run();

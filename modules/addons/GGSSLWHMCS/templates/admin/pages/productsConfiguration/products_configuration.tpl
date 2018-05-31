@@ -122,7 +122,7 @@
                                                 <tr style="text-align:center;font-weight:bold">
                                                     <td></td>
                                                     <td></td>
-                                                    {if in_array('1',$product->apiConfig->availablePeriods)}<td>{$MGLANG->T('pricingMonthly')}</td>{/if}
+                                                    <td class="prod-pricing-monthly-onetime">{$MGLANG->T('pricingMonthly')}</td>
                                                     {if in_array('3',$product->apiConfig->availablePeriods)}<td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingQuarterly')}</td>{/if}
                                                     {if in_array('6',$product->apiConfig->availablePeriods)}<td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingSemiAnnually')}</td>{/if}
                                                     {if in_array('12',$product->apiConfig->availablePeriods)}<td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingAnnually')}</td>{/if}
@@ -133,11 +133,9 @@
                                                     <tr style="text-align:center" bgcolor="#ffffff" currency="{$pricing->code}">
                                                         <td rowspan="3" bgcolor="#efefef"><b>{$pricing->code}</b></td>
                                                         <td>{$MGLANG->T('pricingSetupFee')}</td>
-                                                        {if in_array('1',$product->apiConfig->availablePeriods)}
-                                                            <td>
-                                                                <input name="currency[{$pricing->pricing_id}][msetupfee]" id="setup_{$pricing->code}_monthly_{$pricing->pricing_id}" value="{$pricing->msetupfee}" style="" class="form-control input-inline input-100 text-center" type="text">
-                                                            </td>
-                                                        {/if}                                                        
+                                                        <td class="prod-pricing-monthly-onetime">
+                                                            <input name="currency[{$pricing->pricing_id}][msetupfee]" id="setup_{$pricing->code}_monthly_{$pricing->pricing_id}" value="{$pricing->msetupfee}" style="" class="form-control input-inline input-100 text-center" type="text">
+                                                        </td>                                                      
                                                         {if in_array('3',$product->apiConfig->availablePeriods)}
                                                             <td style="display: table-cell;" class="prod-pricing-recurring">
                                                                 <input name="currency[{$pricing->pricing_id}][qsetupfee]" id="setup_{$pricing->code}_quarterly_{$pricing->pricing_id}" value="{$pricing->qsetupfee}" style="" class="form-control input-inline input-100 text-center" type="text">
@@ -166,11 +164,9 @@
                                                     </tr>
                                                     <tr style="text-align:center" bgcolor="#ffffff" currency="{$pricing->code}">
                                                         <td>{$MGLANG->T('pricingPrice')}</td>
-                                                        {if in_array('1',$product->apiConfig->availablePeriods)}
-                                                        <td>
+                                                        <td class="prod-pricing-monthly-onetime">
                                                             <input name="currency[{$pricing->pricing_id}][monthly]" id="pricing_{$pricing->code}_monthly_{$pricing->pricing_id}" size="10" value="{$pricing->monthly}" style="" class="form-control input-inline input-100 text-center" type="text">
                                                         </td>
-                                                        {/if}
                                                         {if in_array('3',$product->apiConfig->availablePeriods)}
                                                         <td style="display: table-cell;" class="prod-pricing-recurring">
                                                             <input name="currency[{$pricing->pricing_id}][quarterly]" id="pricing_{$pricing->code}_quarterly_{$pricing->pricing_id}" size="10" value="{$pricing->quarterly}" style="" class="form-control input-inline input-100 text-center" type="text">
@@ -199,11 +195,9 @@
                                                     </tr>
                                                     <tr style="text-align:center" bgcolor="#ffffff">
                                                         <td>{$MGLANG->T('pricingEnable')}</td>
-                                                        {if in_array('1',$product->apiConfig->availablePeriods)}
-                                                            <td>
-                                                                <input class="pricingtgl" currency="{$pricing->code}" data-pricing-id="{$pricing->pricing_id}" cycle="monthly" type="checkbox" {if $pricing->monthly gte 0} checked="checked" {/if}>
-                                                            </td>
-                                                        {/if}
+                                                        <td class="prod-pricing-monthly-onetime">
+                                                            <input class="pricingtgl" currency="{$pricing->code}" data-pricing-id="{$pricing->pricing_id}" cycle="monthly" type="checkbox" {if $pricing->monthly gte 0} checked="checked" {/if}>
+                                                        </td>
                                                         {if in_array('3',$product->apiConfig->availablePeriods)}
                                                             <td style="display: table-cell;" class="prod-pricing-recurring">
                                                                 <input data-pricing-id="{$pricing->pricing_id}" class="pricingtgl" currency="{$pricing->code}" cycle="quarterly" {if $pricing->quarterly gte 0} checked="checked" {/if} type="checkbox">
@@ -320,9 +314,38 @@
                     element.removeAttr('disabled')
                     element.removeClass('disabled');
                 }
+                                
+                function showOneTime(element, type) {    
+                    //element.find('.prod-pricing-recurring').css('display', 'none');   
+                    element.find("input[cycle='monthly']").removeClass('disabled');
+                    element.find("input[cycle='monthly']").removeAttr('disabled');
+                    
+                    if(element.find("input[cycle='monthly']").hasClass('monthly')) {   
+                        if(type !== 'free') {
+                            $(element).find("input[cycle='monthly']").prop('checked', false);
+                        }
+                        element.find("input[cycle='monthly']").removeClass('monthly');
+                    }                    
+                    element.find("input[cycle='monthly']").addClass('onetime');
+                }
+                
+                function hideOneTime(element, type) {      
+                    //element.find('.prod-pricing-recurring').removeAttr('style'); 
+                    /*if(parseFloat(element.find('.prod-pricing-monthly-onetime').find('input')[1].value) < 0) {                        
+                        element.find("input[cycle='monthly']").prop('checked', false);
+                    } */  
+                    if(element.find("input[cycle='monthly']").hasClass('onetime') || type === null) {                        
+                        $(element).find("input[cycle='monthly']").prop('checked', false);                                           
+                        element.find("input[cycle='monthly']").removeClass('onetime');
+                    }  
+                    
+                    element.find("input[cycle='monthly']").addClass('monthly');
+                }
 
-                function setAsOneTime(select) {
-                    var pc = select.closest('.product-container');
+                function setAsOneTime(select, type = null) {
+                    var pc = select.closest('.product-container');                    
+                    //disablePrices(pc.find("input[cycle='monthly']"));
+                    showOneTime(pc, type);
                     disablePrices(pc.find("input[cycle='quarterly']"));
                     disablePrices(pc.find("input[cycle='semiannually']"));
                     disablePrices(pc.find("input[cycle='annually']"));
@@ -331,14 +354,17 @@
                     initFields();
                 }
 
-                function setAsNonOneTime(select) {
-                    var pc = select.closest('.product-container');
+                function setAsNonOneTime(select, type = null) {
+                    var pc = select.closest('.product-container');                
+                    //enablePrices(pc.find("input[cycle='monthly']"));                    
+                    hideOneTime(pc, type);    
                     enablePrices(pc.find("input[cycle='quarterly']"));
                     enablePrices(pc.find("input[cycle='semiannually']"));
                     enablePrices(pc.find("input[cycle='annually']"));
                     enablePrices(pc.find("input[cycle='biennially']"));
                     enablePrices(pc.find("input[cycle='semiannually']"));
                     enablePrices(pc.find("input[cycle='triennially']"));
+                    initFields();
                 }
 
 
@@ -360,16 +386,16 @@
                 });
 
                 function showHidePricing(select) {
-                    var productId = select.data('id');
+                    var productId = select.data('id');                    
                     var type = select.val();
                     if (type === 'free') {
                         setAsNonOneTime(select);
                         $('#mg-js-pricing-group-' + productId).hide();
                     } else if (type === 'onetime') {
-                        setAsOneTime(select);
+                        setAsOneTime(select, type);
                         $('#mg-js-pricing-group-' + productId).show();
                     } else {
-                        setAsNonOneTime(select);
+                        setAsNonOneTime(select, type);
                         $('#mg-js-pricing-group-' + productId).show();
                     }
                 }
@@ -378,8 +404,8 @@
                     showHidePricing($(this));
                 });
 
-                $('.mg-js-pricing-select').on('change', function () {
-                    showHidePricing($(this));
+                $('.mg-js-pricing-select').on('change', function () {                    
+                    showHidePricing($(this), true);
                 });
             });
         {/literal}

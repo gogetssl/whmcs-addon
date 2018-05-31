@@ -25,7 +25,7 @@ class home extends main\mgLibs\process\AbstractController {
                 throw new \Exception('An error occurred please contact support');
             }
 
-            $url = \MGModule\GGSSLWHMCS\eRepository\whmcs\config\Config::getInstance()->getConfigureSSLUrl($sslService->id);
+            $url = \MGModule\GGSSLWHMCS\eRepository\whmcs\config\Config::getInstance()->getConfigureSSLUrl($sslService->id, $serviceId);
             
             $privateKey = $sslService->getPrivateKey();            
             if($privateKey) {

@@ -5,6 +5,10 @@ $_LANG['generalError'] = 'Something has gone wrong. Check logs and contact admin
 
 //ggssl configuration
 $_LANG['addonAA']['pagesLabels']['label']['apiConfiguration']                   = 'Configuration';
+$_LANG['addonAA']['apiConfiguration']['cronSynchronization']['header']          = 'Cron Synchronization';
+$_LANG['addonAA']['apiConfiguration']['cronSynchronization']['pleaseNote']      = 'Please Note:';
+$_LANG['addonAA']['apiConfiguration']['cronSynchronization']['info']            = 'In order to enable automatic synchronization, please set up a following cron command line (every hour suggested):';
+$_LANG['addonAA']['apiConfiguration']['cronSynchronization']['commandLine']['cronFrequency']   = '0 */1 * * *';
 $_LANG['addonAA']['apiConfiguration']['item']['header']                         = 'API Configuration';
 $_LANG['addonAA']['apiConfiguration']['item']['api_login']['label']             = 'Login';
 $_LANG['addonAA']['apiConfiguration']['item']['api_password']['label']          = 'Password';
@@ -91,7 +95,7 @@ $_LANG['addonAA']['productsCreator']['enableSans']   = 'Enable SANs:';
 $_LANG['addonAA']['productsCreator']['includedSans'] = 'Included SANs:';
 
 $_LANG['addonAA']['productsCreator']['pricing']             = 'Pricing:';
-$_LANG['addonAA']['productsCreator']['pricingMonthly']      = 'Monthly';
+$_LANG['addonAA']['productsCreator']['pricingMonthly']      = 'One Time/Monthly';
 $_LANG['addonAA']['productsCreator']['pricingQuarterly']    = 'Quarterly';
 $_LANG['addonAA']['productsCreator']['pricingSemiAnnually'] = 'Semi-Annually';
 $_LANG['addonAA']['productsCreator']['pricingAnnually']     = 'Annually';

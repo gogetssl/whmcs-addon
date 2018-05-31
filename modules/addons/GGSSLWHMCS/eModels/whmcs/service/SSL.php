@@ -2,12 +2,14 @@
 
 namespace MGModule\GGSSLWHMCS\eModels\whmcs\service;
 
+use Illuminate\Database\Capsule\Manager as Capsule;
+
 class SSL extends \Illuminate\Database\Eloquent\Model {
 
     public $timestamps = false;
     protected $table   = 'tblsslorders';
-
-    public function scopeWhereServiceId($query, $id) {
+    
+    public function scopeWhereServiceId($query, $id) {     
         $query->where('serviceid', '=', $id);
 
     }
@@ -117,6 +119,19 @@ class SSL extends \Illuminate\Database\Eloquent\Model {
         $fileds['approveremail'] = $email;
         $this->setConfigdataKey('fields', $fileds);
 
+    }    
+    
+    public function getWhere($where) {   
+        $query = Capsule::table('tblsslorders');
+        
+        if (!empty($where))
+        {
+            foreach ($where as $column => $value)
+            {
+                $query = $query->where("$column",'=',"$value");
+            }
+        }
+                
+        return $query;
     }
-
 }

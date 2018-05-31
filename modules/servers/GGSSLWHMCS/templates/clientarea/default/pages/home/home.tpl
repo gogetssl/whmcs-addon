@@ -1,6 +1,6 @@
 <style>
     .sansTable {
-        max-width: 619px !important;
+        max-width: 100% !important;
         overflow-x:auto;
         border-collapse: collapse;
         border-style: hidden;   
@@ -18,8 +18,15 @@
     .table {
         margin-bottom: 0px !important;
     }
-    
-    
+    .modal .btn {
+        margin: 2px !important;
+    }
+    #Action_Custom_Module_Button_Reissue_Certificate {
+        margin: 2px !important;
+    }
+    #viewPrivateKey h4 {
+        text-align: left !important;
+    }
 </style>
 <script type="text/javascript" src="{$assetsURL}/js/mgLibs.js"></script>    
 {if $allOk === true}
@@ -140,18 +147,18 @@
                     <td class="text-left">{$sans}</td>
                 </tr>-->
             {/if}
-            {if $ca}
-                <tr>
-                    <td class="text-left">{$MGLANG->T('certificate')}</td>
-                    <td class="text-left"><textarea onfocus="this.select()" rows="5" class="form-control">{$ca}</textarea></td>
-                </tr>
-            {/if}
             {if $crt}
                 <tr>
                     <td class="text-left">{$MGLANG->T('crt')}</td>
                     <td class="text-left"><textarea onfocus="this.select()" rows="5" class="form-control">{$crt}</textarea></td>
                 </tr>
             {/if}
+            {if $ca}
+                <tr>
+                    <td class="text-left">{$MGLANG->T('certificate')}</td>
+                    <td class="text-left"><textarea onfocus="this.select()" rows="5" class="form-control">{$ca}</textarea></td>
+                </tr>
+            {/if}            
             {if $csr}
                 <tr>
                     <td class="text-left">{$MGLANG->T('crs')}</td>
@@ -840,6 +847,10 @@
                         }
                     }, false);
                 });
-            });   
+                
+                //for template simplicity modal header bug
+                var color = $('#modalRevalidate').find('.panel-heading').css('background-color');
+                $('#viewPrivateKey').find('.panel-heading').css('background-color', color);
+            });
         {/literal}
     </script>

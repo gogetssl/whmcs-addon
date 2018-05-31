@@ -165,6 +165,8 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         
         $vars['form'] = $form->getHTML();
         
+        //get cron command line
+        $vars['cronCommandLine'] = 'php -q '.ROOTDIR.DS.'modules'.DS.'addons'.DS.'GGSSLWHMCS'.DS.'cron'.DS.'cron.php';
 
         return array
             (

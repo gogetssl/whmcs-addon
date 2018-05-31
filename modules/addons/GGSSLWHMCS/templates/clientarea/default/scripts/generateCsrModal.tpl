@@ -6,7 +6,19 @@
         for (var key in countries) {
             countryOptions += '<option value="' + key + '">'+ countries[key] + '</option>'
         }
-        $('.main-content form').append('\
+        //for control template
+        if($('#internal-content form').length > 0) {
+            var element = $('#internal-content form');
+        }
+        //for six template
+        else if($('.main-content form').length > 0) {
+            var element = $('.main-content form');
+        }
+        //for flare template
+        else if($('#main-body form').length > 0) {
+            var element = $('#main-body form');
+        }
+        element.append('\
                         <div class="modal fade" id="modalGenerateCsr" role="dialog" aria-hidden="true">\n\
                             <div class="modal-dialog">\n\
                                 <div class="modal-content panel panel-primary">\n\
@@ -71,13 +83,8 @@
                             </div\n\
                        </div>');  
         
-    });
-</script>
-
-<script type="text/javascript">
-    $(document).ready(function () {
-        $('#modalgenerateCsrSubmit').prop('disabled',true);
-                
+   
+        $('#modalgenerateCsrSubmit').prop('disabled',true);                
         $.urlParam = function(name){
             var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
             if (results==null){
@@ -88,7 +95,7 @@
             }
         }
         var cert = $.urlParam('cert');
-        $('#inputCsr').after('<div align="middle"><button type="button" id="generateCsrBtn" class="btn btn-default" style="margin:5px">{$MGLANG->T('Generate CSR')}</button></div>');
+        $('textarea[name="csr"]').after('<div align="middle"><button type="button" id="generateCsrBtn" class="btn btn-default" style="margin:5px">{$MGLANG->T('Generate CSR')}</button></div>');
         var token = $('input[name="token"]').val();
         var serviceUrl = 'configuressl.php?cert=' + cert + '&action=generateCsr&json=1&token=' + token,
         generateCsrBtn = $('#generateCsrBtn'),        
@@ -156,7 +163,7 @@
         }
 
         function showSuccessAlert(msg) {           
-            $('.main-content').find('form').before('<div class="alert alert-success" id="generateCsrSuccess">\n\
+            element.before('<div class="alert alert-success" id="generateCsrSuccess">\n\
                                             <strong>Success!</strong> <span>'+ msg +'</span>\n\
                                         </div>');
         }
@@ -265,11 +272,14 @@
                     data = JSON.parse(ret);
                     if (data.success === 1) {
                         showSuccessAlert(data.msg);
-                        $('#inputCsr').empty();
-                        $('#inputCsr').remove();
-                        $('label[for="inputCsr"]').after('<textarea name="csr" id="inputCsr" rows="7" class="form-control">'+data.public_key+'</textarea>');
+                        var csrTextarea = $('textarea[name="csr"]');
+                        var generateCsrBtn = $('#generateCsrBtn');
+                        
+                        csrTextarea.empty();
+                        csrTextarea.remove();
+                        generateCsrBtn.before('<textarea name="csr" id="inputCsr" rows="7" class="form-control">'+data.public_key+'</textarea>');
                         $('input[name="privateKey"]').remove();
-                        $('#inputCsr').closest('.form-group').after('<input class="form-control" type="hidden" name="privateKey" value="'+data.private_key+'" />');
+                        $('textarea[name="csr"]').closest('.form-group').after('<input class="form-control" type="hidden" name="privateKey" value="'+data.private_key+'" />');
                         closeModal(generateCsrModal);
                         
                     } else {
@@ -293,11 +303,11 @@
         bindSubmitBtn();
     });
     var fillVars = JSON.parse('{$fillVars}');
-    
     for (var i = 0; i < fillVars.length; i++) {
         if(fillVars[i].name === 'privateKey') {
             $('input[name="privateKey"]').remove();
-            $('#inputCsr').closest('.form-group').after('<input class="form-control" type="hidden" name="privateKey" value="'+fillVars[i].value+'" />');
+            $('textarea[name="csr"]').closest('.form-group').after('<input class="form-control" type="hidden" name="privateKey" value="'+fillVars[i].value+'" />');
         }        
-    }    
+    }
+    
 </script>

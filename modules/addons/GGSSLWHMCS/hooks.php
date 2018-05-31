@@ -39,4 +39,14 @@ add_hook('ClientAreaHeadOutput', 1, function($params) {
         });
     </script>';
 });
+add_hook('ClientLogin', 1, function($vars) {     
+    
+    if(isset($_REQUEST['redirectToProductDetails'], $_REQUEST['serviceID']) && $_REQUEST['redirectToProductDetails'] === 'true' && is_numeric($_REQUEST['serviceID'])) {
+        $ca = new \WHMCS_ClientArea();
+        if($ca->isLoggedIn()) {
+            header('Location: clientarea.php?action=productdetails&id=' . $_REQUEST['serviceID']);
+            die();
+        }        
+    }
+});
 

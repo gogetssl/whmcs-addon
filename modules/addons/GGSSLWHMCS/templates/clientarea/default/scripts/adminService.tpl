@@ -6,6 +6,14 @@
             hideMe.closest('tr').hide();
         }
         hideJsHtmlInjection();
+        
+        $('#profileContent').find('#frm1').after('<form id="loginAndRedirectForm" target="_blank" action="../dologin.php?language=" action="POST"><input type="hidden" name="redirectToProductDetails" value="true"/><input type="hidden" name="username" value="{$email}"/><input type="hidden" name="serviceID" value="{$serviceid}"/></form>');
+        $('#btnManage_SSL').removeAttr('onclick');
+        $('#btnManage_SSL').on('click', function(e) { 
+            //$('#modcmdbtns').css('opacity', '0.2');
+            //$('#modcmdworking').css('display', 'block').css('text-align', 'left').css('position', 'relative').css('left', '50px').css('bottom', '60px').css('z-index', '1');    
+            $('#loginAndRedirectForm').submit();
+        });
     });
 </script>
 

@@ -26,7 +26,7 @@ class ConfigurableOptionService {
 
         $option   = [
             'gid'        => $optionGroupId,
-            'optionname' => provisioning\ConfigOptions::OPTION_SANS_COUNT . "|Count of SAN's",
+            'optionname' => provisioning\ConfigOptions::OPTION_SANS_COUNT . "|Additional SAN's",
             'optiontype' => 4,
             'qtyminimum' => 0,
             'qtymaximum' => 10,

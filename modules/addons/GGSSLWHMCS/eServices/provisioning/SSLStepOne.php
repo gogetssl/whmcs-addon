@@ -10,7 +10,6 @@ class SSLStepOne {
 
     function __construct(&$params) {        
         $this->p = &$params;
-
     }
 
     public function run() {
@@ -68,7 +67,7 @@ class SSLStepOne {
         $fields['additionalfields']['<br />']['<br />'] = [
             'Description' => $stepOneBaseScript . $webServerTypeSctipt . $autoFillFieldsScript . $generateCsrModalScript .$autoFillPrivateKeyField,
         ];
-        
+
         return $fields;
 
     }

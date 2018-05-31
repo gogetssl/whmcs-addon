@@ -16,6 +16,16 @@ Proin malesuada eros in risus accumsan euismod. Vivamus lacinia pellentesque nun
 
 <div class="panel panel-default">
     <div class="panel-body">
+        <form class="form-horizontal normal-form">
+            <div class="form-group">
+                <div class="col-lg-12 cronSynchronizationInfo">
+                    <legend>{$MGLANG->T('cronSynchronization','header')}</legend>
+                    <span class="text-danger bold">{$MGLANG->T('cronSynchronization','pleaseNote')}</span>
+                    <span>{$MGLANG->T('cronSynchronization', 'info')}</span><br />
+                    <input type="text" class="form-control" value="{$MGLANG->T('cronSynchronization', 'commandLine', 'cronFrequency')} {$cronCommandLine}" readonly="">                    
+                </div>
+            </div>
+        </form>
         {$form} 
     </div>
 </div>
@@ -23,19 +33,20 @@ Proin malesuada eros in risus accumsan euismod. Vivamus lacinia pellentesque nun
 <script>
     {literal}
         $(document).ready(function () {
-            $('input[name="use_admin_contact[]"]').on('click', function(){
+            $('input[name="use_admin_contact[]"]').on('click', function () {
                 //$('input[name="use_admin_contact[]"]').prop('checked', true);
-                 if(!$(this).is(":checked")) {   
-                     $('input[id^="item_default_tech_"]').prop('readonly', false).prop('required',true);  
-                     $('#item_default_tech_country').prop('disabled', false).prop('required',true); 
-                     $('#techCountrHidden').remove();
-                 } else { 
-                     var defaultCountry = $('#item_default_tech_country').val();
-                     $('#item_default_tech_country').before('<input id="techCountrHidden" name="tech_country" value="' + defaultCountry +'" class="form-control" type="hidden">');
-                     $('input[id^="item_default_tech_"]').prop('readonly', true).prop('required', false); 
-                     $('#item_default_tech_country').prop('disabled', true).prop('required', false);; 
-                     
-                 }
+                if (!$(this).is(":checked")) {
+                    $('input[id^="item_default_tech_"]').prop('readonly', false).prop('required', true);
+                    $('#item_default_tech_country').prop('disabled', false).prop('required', true);
+                    $('#techCountrHidden').remove();
+                } else {
+                    var defaultCountry = $('#item_default_tech_country').val();
+                    $('#item_default_tech_country').before('<input id="techCountrHidden" name="tech_country" value="' + defaultCountry + '" class="form-control" type="hidden">');
+                    $('input[id^="item_default_tech_"]').prop('readonly', true).prop('required', false);
+                    $('#item_default_tech_country').prop('disabled', true).prop('required', false);
+                    ;
+
+                }
             });
             jQuery('button[name="testConnection"]').click(function () {
 

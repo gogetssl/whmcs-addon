@@ -47,6 +47,12 @@
                     selectBegin = '<div class="form-group"><select style="width:80%;" type="text" name="selectName" class="form-control">',
                     selectEnd = '</select></div>',
                     x = 0;
+            
+            //for template control
+            if(template.find('.panel').length > 0) {
+                template = $('input[value="loading..."]').closest('.panel-body').find('div');
+            }
+            
             if(jQuery.inArray(brand, onlyEmailValidationFoBrands) < 0){
                 selectDcvMethod = '<div class="form-group"><select style="width:65%;" type="text" name="selectName" class="form-control"><option value="EMAIL">'+'{$MGLANG->T('dropdownDcvMethodEmail')}'+'</option><option value="HTTP">'+'{$MGLANG->T('dropdownDcvMethodHttp')}'+'</option><option value="HTTPS">'+'{$MGLANG->T('dropdownDcvMethodHttps')}'+'</option><option value="DNS">'+'{$MGLANG->T('dropdownDcvMethodDns')}'+'</option></select>' ;
             } else { 
@@ -70,6 +76,7 @@
                 x++;
             });
             template.before(getTable(tableBegin, tableEnd, fullHtml));
+            template.remove();
         }
         
         replaceRadioInputs(JSON.parse('{$sanEmails}'));

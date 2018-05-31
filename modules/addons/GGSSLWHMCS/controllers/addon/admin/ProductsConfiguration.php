@@ -41,7 +41,7 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
                 $apiConfig->availablePeriods= $apiProduct->getPeriods();
                 $apiConfig->isSanEnabled    = $apiProduct->isSanEnabled();
                 $products[$key]->apiConfig  = $apiConfig;
-                $products[$key]->confOption = main\eServices\ConfigurableOptionService::getForProduct($product->id);
+                $products[$key]->confOption = main\eServices\ConfigurableOptionService::getForProduct($product->id);                
             }
 
             $vars['products'] = $products;
