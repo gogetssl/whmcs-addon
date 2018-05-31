@@ -113,6 +113,9 @@ class ClientReissueCertificate {
         $this->validateSanDomains();
         $decodeCSR = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->post['csr']);
         if ($decodeCSR['error']) {
+            if(isset($decodeCSR['description']))
+                throw new Exception($decodeCSR['description']);
+            
             throw new Exception(\MGModule\GGSSLWHMCS\mgLibs\Lang::getInstance()->T('incorrectCSR'));
         }
         $mainDomain                   = $decodeCSR['csrResult']['CN'];

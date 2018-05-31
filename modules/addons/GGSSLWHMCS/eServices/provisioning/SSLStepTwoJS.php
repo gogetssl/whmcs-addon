@@ -59,6 +59,9 @@ class SSLStepTwoJS {
     
         $decodedCSR   = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($_POST['csr']);
         if($decodedCSR['error']) {
+            if(isset($decodedCSR['description']))
+                throw new Exception($decodedCSR['description']);
+            
             throw new Exception(\MGModule\GGSSLWHMCS\mgLibs\Lang::T('incorrectCSR'));
         }
         $mainDomain       = $decodedCSR['csrResult']['CN'];

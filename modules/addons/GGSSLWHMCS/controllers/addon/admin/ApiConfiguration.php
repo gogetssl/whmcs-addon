@@ -41,6 +41,52 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         ));
         
         $field        = new main\mgLibs\forms\LegendField();
+        $field->name  = 'renewal_settings_legend';
+        $form->addField($field);
+        
+        $field = new main\mgLibs\forms\CheckboxField();
+        $field->name = 'auto_renew_invoice_reccuring';
+        $field->options = ['auto_renew_invoice_reccuring'];
+        $field->value = $input['auto_renew_invoice_reccuring'] ? ['auto_renew_invoice_reccuring'] : [''];
+        $field->inline = true;
+        $field->colWidth = 4;
+        $field->continue = true;
+        $field->enableDescription = true;
+        $form->addField($field);
+        
+        
+        $field = new main\mgLibs\forms\CheckboxField();
+        $field->name = 'send_expiration_notification_reccuring';
+        $field->options = ['send_expiration_notification_reccuring'];
+        $field->value = $input['send_expiration_notification_reccuring'] ? ['send_expiration_notification_reccuring'] : [''];
+        $field->inline = true;
+        $field->colWidth = 6;
+        $field->continue = false;
+        $field->enableDescription = true;
+        $form->addField($field);
+        
+        $field = new main\mgLibs\forms\CheckboxField();
+        $field->name = 'auto_renew_invoice_one_time';
+        $field->options = ['auto_renew_invoice_one_time'];
+        $field->value = $input['auto_renew_invoice_one_time'] ? ['auto_renew_invoice_one_time'] : [''];
+        $field->inline = true;
+        $field->colWidth = 4;
+        $field->continue = true;
+        $field->enableDescription = true;
+        $form->addField($field);
+        
+        
+        $field = new main\mgLibs\forms\CheckboxField();
+        $field->name = 'send_expiration_notification_one_time';
+        $field->options = ['send_expiration_notification_one_time'];
+        $field->value = $input['send_expiration_notification_one_time'] ? ['send_expiration_notification_one_time'] : [''];
+        $field->inline = true;
+        $field->colWidth = 6;
+        $field->continue = false;
+        $field->enableDescription = true;
+        $form->addField($field);
+        
+        $field        = new main\mgLibs\forms\LegendField();
         $field->name  = 'csr_generator_legend';
         $form->addField($field);
         
@@ -179,16 +225,23 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
     function saveItemHTML($input, $vars = array()) {
         if ($this->checkToken()) {
             try {
-                if(isset($input['use_admin_contact'])) {
-                    $input['use_admin_contact'] = true;
-                } else {
-                    $input['use_admin_contact'] = false;
+                $checkFieldsArray = array(
+                    'use_admin_contact', 
+                    'display_csr_generator',
+                    'auto_renew_invoice_one_time',
+                    'auto_renew_invoice_reccuring',
+                    'send_expiration_notification_reccuring',
+                    'send_expiration_notification_one_time'
+                    );
+                foreach($checkFieldsArray as $field)
+                {
+                    if(isset($input[$field])) {
+                        $input[$field] = true;
+                    } else {
+                        $input[$field] = false;
+                    }
                 }
-                if(isset($input['display_csr_generator'])) {
-                    $input['display_csr_generator'] = true;
-                } else {
-                    $input['display_csr_generator'] = false;
-                }
+                
                 $apiConfigRepo = new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository();
                 $apiConfigRepo->setConfiguration($input);
             } catch (\Exception $ex) {

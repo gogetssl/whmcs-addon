@@ -1380,3 +1380,6 @@ table#product_configuration input{
     max-width:  89%;
     margin-left: 25px;
 }
+.mg-wrapper .help-block {
+    display: inline !important;
+}

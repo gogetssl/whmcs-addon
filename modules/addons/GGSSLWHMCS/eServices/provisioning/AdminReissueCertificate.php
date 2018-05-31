@@ -113,6 +113,9 @@ class AdminReissueCertificate extends Ajax {
         $this->validateServerType();
         $decodeCSR    = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->p['csr']);
         if($decodeCSR['error']) {
+            if(isset($decodeCSR['description']))
+                throw new Exception($decodeCSR['description']);
+            
             throw new Exception('Incorrect CSR');
         }
         $mainDomain   = $decodeCSR['csrResult']['CN'];

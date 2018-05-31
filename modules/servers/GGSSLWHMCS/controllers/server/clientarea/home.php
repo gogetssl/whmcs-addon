@@ -14,7 +14,8 @@ class home extends main\mgLibs\process\AbstractController {
     function indexHTML($input, $vars = array()) {
         try {
             
-            $serviceId  = $input['params']['serviceid'];
+            $serviceId  = $input['params']['serviceid'];            
+            $serviceBillingCycle = $input['params']['templatevars']['billingcycle'];            
             $userid = $input['params']['userid'];
             $ssl        = new main\eRepository\whmcs\service\SSL();
             $sslService = $ssl->getByServiceId($serviceId);
@@ -106,7 +107,14 @@ class home extends main\mgLibs\process\AbstractController {
                     //valid from
                     $vars['validFrom'] = $orderStatus['valid_from'];
                     //expires
-                    $vars['validTill'] = $orderStatus['valid_till'];
+                    $vars['validTill'] = $orderStatus['valid_till'];                    
+                    //service billing cycle                   
+                    $vars['serviceBillingCycle'] = $serviceBillingCycle;                    
+                    $vars['displayRenewButton'] = false;
+                    $today = date('Y-m-d');
+                    $diffDays =  abs(strtotime($orderStatus['valid_till']) - strtotime($today))/86400;      
+                    if($diffDays > 90)
+                        $vars['displayRenewButton'] = true;
                     
                 } catch (\Exception $ex) {
                     $vars['error'] = 'Can not load order details';
@@ -137,6 +145,40 @@ class home extends main\mgLibs\process\AbstractController {
         );
 
     }
+    
+    public function renewJSON($input, $vars = array()) {
+        
+        try
+        {      
+            $errorInvoiceExist = false;
+            $cron = new \MGModule\GGSSLWHMCS\controllers\addon\admin\Cron();            
+            $service = \WHMCS\Service\Service::where('id', $input['id'])->get();            
+            $result = $cron->createAutoInvoice(array($input['params']['pid'] => $service), $input['id'], true);
+            if(is_array($result) && isset($result['invoiceID']))
+            {
+                $existInvoiceID = $result['invoiceID'];
+                $errorInvoiceExist =  \MGModule\GGSSLWHMCS\mgLibs\Lang::getInstance()->T('Related invoice already exist.');
+            }
+        }
+        catch(Exception $e)
+        {
+            return array(
+                'error' => $e->getMessage(),
+            );   
+        }
+        if($errorInvoiceExist)
+            return array(
+                'error' => $errorInvoiceExist,                
+                'invoiceID' => $existInvoiceID
+            );
+            
+        return array(
+            'success' => true,
+            'msg' =>  main\mgLibs\Lang::getInstance()->T('A new invoice has been successfully created. '),
+            'invoiceID' => $result
+        );        
+    }
+    
     public function resendValidationEmailJSON($input, $vars = array()) {
         $ssl = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
         $serviceSSL = $ssl->getByServiceId($input['id']);

@@ -82,8 +82,11 @@ class SSLStepTwo {
     private function validateCSR() {
         $csr = $this->p['csr'];
         $decodeCSR = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($csr);
-        
+       
         if($decodeCSR['error']) {
+            if(isset($decodeCSR['description']))
+                throw new Exception($decodeCSR['description']);
+                
             throw new Exception(\MGModule\GGSSLWHMCS\mgLibs\Lang::T('incorrectCSR'));
         }
     }

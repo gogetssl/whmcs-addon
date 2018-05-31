@@ -2011,7 +2011,7 @@
   box-sizing: border-box; }
 .mg-wrapper input[type="radio"],
 .mg-wrapper input[type="checkbox"] {
-  margin: 4px 0 0;
+  margin: 10px 0 0;
   margin-top: 1px \9;
   line-height: normal; }
 .mg-wrapper input[type="file"] {

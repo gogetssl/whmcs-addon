@@ -21,7 +21,11 @@ class EmailTemplateService {
         $newTemplate->custom  = 1;
         $newTemplate->save();
     }
-    
+    public static function updateConfigurationTemplate() {        
+        $template          =  \MGModule\GGSSLWHMCS\eModels\whmcs\EmailTemplate::whereName(self::CONFIGURATION_TEMPLATE_ID)->first();        
+        $template->message = '<p>Dear {$client_name},</p><p>Thank you for your order for an SSL Certificate{if $service_domain} related to domain: {$service_domain}{/if}. Before you can use your certificate, it requires configuration which can be done at the URL below.</p><p>{$ssl_configuration_link}</p><p>Instructions are provided throughout the process but if you experience any problems or have any questions, please open a ticket for assistance.</p><p>{$signature}</p>';
+        $template->save();
+    }
     public static function deleteConfigurationTemplate() {
         $template = self::getTemplate(self::CONFIGURATION_TEMPLATE_ID);
         if(is_null($template)) {

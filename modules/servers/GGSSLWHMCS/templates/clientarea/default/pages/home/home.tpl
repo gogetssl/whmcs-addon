@@ -178,7 +178,9 @@
             <tr id="additionalActionsTr">
                 <td class="text-left">{$MGLANG->T('Actions')}</td>
                 <td id="additionalActionsTd" class="text-left">
-                    
+                    {if $serviceBillingCycle == 'One Time' && $displayRenewButton}
+                        <button type="button" id="btnRenew" class="btn btn-default" style="margin:2px">{$MGLANG->T('renew')}</button>
+                    {/if}
                     {if $dcv_method == 'email'}
                         <button type="button" id="resend-validation-email" class="btn btn-default" style="margin:2px">{$MGLANG->T('resendValidationEmail')}</button>
                     {/if}
@@ -214,6 +216,226 @@
         });
     </script>
     
+    <!--RENEW MODAL-->
+    <div class="modal fade" id="modalRenew" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content panel panel-primary">
+                <div class="modal-header panel-heading">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                        <span class="sr-only">{$MGLANG->T('Close')}</span>
+                    </button>
+                    <h4 class="modal-title">{$MGLANG->T('renewModalTitle')}</h4>
+                </div>
+                <div class="modal-body panel-body" id="modalRenewBody">
+                    
+                    <div class="alert alert-success hidden" id="modalRenewSuccess">
+                        <strong>Success!</strong> <span></span>
+                    </div>
+                    <div class="alert alert-danger hidden" id="modalRenewDanger">
+                        <strong>Error!</strong> <span></span>
+                    </div>
+                    <form class="form-horizontal" role="form" id="modalRenewForm">
+                            <div class="col-sm-12" style="padding: 25px;">
+                                {$MGLANG->T('renewModalConfirmInformation')}
+                            </div> 
+                    </form>
+                </div>
+                <div class="modal-footer panel-footer">
+                    <button type="button" id="modalRenewSubmit" class="btn btn-primary">
+                        {$MGLANG->T('Submit')}
+                    </button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        {$MGLANG->T('Close')}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            
+            var serviceUrl = 'clientarea.php?action=productdetails&id={$serviceid}&json=1',
+                    renewBtn = $('#btnRenew'),
+                    renewForm,
+                    renewModal,
+                    renewBody,
+                    renewInput,
+                    renewDangerAlert,
+                    renewSuccessAlert,
+                    renewSubmitBtn,
+                    body = $('body');
+            
+            function assignModalElements(init) {
+                renewModal = $('#modalRenew');
+                renewBody = $('#modalRenewBody');
+
+                if (init) {
+                    renewBody.contents()
+                    .filter(function(){
+                        return this.nodeType === 8;
+                    })
+                    .replaceWith(function(){
+                        return this.data;
+                    });
+                }
+
+                if (!init) {
+                    renewForm = $('#modalRenewForm');
+                    renewSubmitBtn = $('#modalRenewSubmit');
+                    //renewInput = $('.modalRenewInput');
+                    renewBody = $('#modalRenewBody');
+                    renewDangerAlert = $('#modalRenewDanger');
+                    renewSuccessAlert = $('#modalRenewSuccess');
+                }
+            }
+
+            function moveModalToBody() {
+                
+                body.append(renewModal.clone());
+                assignModalElements(false);                
+                renewModal.remove();
+            }
+
+            function unbindOnClickForrenewBtn() {
+                renewBtn.attr('onclick', '');
+            }
+
+            function bindModalFrorenewBtn() {
+                renewBtn.off().on('click', function () {
+                    renewModal.modal('show');
+                    show(renewSubmitBtn);
+                    show(renewForm);
+                    hideAll();
+                });
+            }
+
+            function bindSubmitBtn() {
+                renewSubmitBtn.off().on('click', function () {
+                    submitrenewModal();
+                });
+            }
+
+            function showSuccessAlert(msg) {
+                var reloadInfo = '{$MGLANG->T('redirectToInvoiceInformation')}'
+                show(renewSuccessAlert);
+                hide(renewDangerAlert);                
+                renewSuccessAlert.children('span').html(msg + ' ' + reloadInfo);
+            }
+
+            function showDangerAlert(msg) {
+                hide(renewSuccessAlert);
+                show(renewDangerAlert);
+                renewDangerAlert.children('span').html(msg);
+            }
+
+            function addSpiner(element) {
+                element.append('<i class="fa fa-spinner fa-spin"></i>');
+            }
+
+            function removeSpiner(element) {
+                element.find('.fa-spinner').remove();
+            }
+
+            function show(element) {
+                element.removeClass('hidden');
+            }
+
+            function hide(element) {
+                element.addClass('hidden');
+            }
+
+            function enable(element) {
+                element.removeAttr('disabled')
+                element.removeClass('disabled');
+            }
+
+            function disable(element) {
+                element.attr("disabled", true);
+                element.addClass('disabled');
+            }
+
+            function hideAll() {
+                hide(renewDangerAlert);
+                hide(renewSuccessAlert);
+            }
+
+            function anErrorOccurred() {
+                showDangerAlert('{$MGLANG->T('anErrorOccurred')}');
+            }
+
+            function isJsonString(str) {
+                try {
+                    JSON.parse(str);
+                } catch (e) {
+                    return false;
+                }
+                return true;
+            }
+            
+            function resize(element) {
+                element.css('height', "");
+            }
+
+            function submitrenewModal() {
+                addSpiner(renewSubmitBtn);
+                disable(renewSubmitBtn);
+                
+                var data = {
+                    renewModal: 'yes',
+                    serviceId: {$serviceid},
+                    userID: {$userid},
+                    'mg-action': 'renew'
+                };
+                $.ajax({
+                    url: serviceUrl,
+                    data: data,
+                    json: 1,
+                    success: function (ret) {
+                        var data;
+                        ret = ret.replace("<JSONRESPONSE#", "");
+                        ret = ret.replace("#ENDJSONRESPONSE>", "");
+                        if (!isJsonString(ret)) {
+                            anErrorOccurred();
+                            return;
+                        }
+                        data = JSON.parse(ret);
+                        if (data.success === 1 || data.success === true) {
+                            showSuccessAlert(data.data.msg);
+                            hide(renewSubmitBtn);
+                            resize(renewBody);
+                            hide(renewForm);   
+                            window.setTimeout(function(){ window.location.replace('viewinvoice.php?id=' + data.data.invoiceID) }, 5000);
+                        } else {    
+                            if(typeof data.data.invoiceID !== 'undefined')
+                            {   
+                                var reloadInfo = '{$MGLANG->T('redirectToInvoiceInformation')}'
+                                showDangerAlert(data.error + ' ' + reloadInfo);
+                                window.setTimeout(function(){ window.location.replace('viewinvoice.php?id=' + data.data.invoiceID) }, 5000);
+                            } else {
+                                showDangerAlert(data.error);
+                            } 
+                        }
+                    },
+                    error: function (jqXHR, errorText, errorThrown) {
+                        anErrorOccurred();
+                    },
+                    complete: function () {
+                        removeSpiner(renewSubmitBtn);
+                        enable(renewSubmitBtn);
+                    }
+                });
+            }
+            
+            assignModalElements(true);
+            moveModalToBody();
+            renewForm.trigger("reset");
+            unbindOnClickForrenewBtn();
+            bindModalFrorenewBtn();
+            bindSubmitBtn(); 
+        });
+    </script>
+    <!--END RENEW MODAL-->
     <div class="modal fade" id="modalRevalidate" role="dialog" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content panel panel-primary">

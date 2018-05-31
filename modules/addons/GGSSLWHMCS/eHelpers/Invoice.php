@@ -72,6 +72,11 @@ class Invoice
         return Query::query('SELECT * FROM ' . self::INVOICE_INFOS_TABLE_NAME . $wherePart)->fetch();
     }
     
+    public static function getLatestCreatedInvoiceInfo($serviceId) {
+        $wherePart = ' WHERE service_id = ' . $serviceId;        
+        
+        return Query::query('SELECT invoice_id FROM ' . self::INVOICE_INFOS_TABLE_NAME . $wherePart . ' ORDER BY id DESC LIMIT 1')->fetch();
+    }
     protected function getNextDueDate($currentDueDate, $dateFormat = 'Y-m-d') {
         
         $datetime = new DateTime($currentDueDate);
@@ -81,24 +86,48 @@ class Invoice
         return $datetime->format($dateFormat);
     }
     
-    public function createInvoice($service, $product) {
+    public function createInvoice($service, $product, $returnInvoiceID = false) {
         
         $dateFormat = 'Y-m-d';
         
         $dateInvoice = date($dateFormat);
         
-        $startDate = $service->nextduedate;
-        $endDate = $this->getNextDueDate($service->nextduedate, $dateFormat);
-        
-        $invoiceItemDescription = $product->name . ($service->domain ? ' - ' . $service->domain : '' ) . ' (' . $startDate . ' - ' . $endDate . ') - Renewal';
-                
+        if($service->billingcycle != 'One Time'){
+            $itemamount = $service->amount;
+            $startDate = $service->nextduedate;
+            $endDate = $this->getNextDueDate($service->nextduedate, $dateFormat);
+
+            $invoiceItemDescription = $product->name . ($service->domain ? ' - ' . $service->domain : '' ) . ' (' . $startDate . ' - ' . $endDate . ') - Renewal';
+        } 
+        else
+        {      
+            //get client currency id
+            $clientRepo = new \MGModule\GGSSLWHMCS\models\whmcs\clients\Client($service->userid);
+            $clientCurrencyID = $clientRepo->getCurrencyId();
+            
+            //get product pricing
+            $productID = $service->packageid;           
+            $productRepo = new \MGModule\GGSSLWHMCS\models\productConfiguration\Repository();     
+            $productPricing = $productRepo->getProductPricing($productID);
+            //get proper pricing related to client pricing
+            foreach($productPricing as $pricing)
+            {
+                if($pricing->currency == $clientCurrencyID)
+                {
+                    $itemamount = ($pricing->monthly == '-1.00') ? 0 : $pricing->monthly;
+                }
+            }
+            
+            $invoiceItemDescription = $product->name . ($service->domain ? ' - ' . $service->domain : '' ) .' - Renewal';
+        }
+
         $postData = array(
             'userid' => $service->userid,
             'sendinvoice' => true,
             'date' => $dateInvoice,
             'duedate' => $dateInvoice,
             'itemdescription1' => $invoiceItemDescription,
-            'itemamount1' => $service->amount,
+            'itemamount1' => $itemamount,
         );
         
         $adminUserName = Admin::getAdminUserName();
@@ -108,12 +137,15 @@ class Invoice
         $invoiceId = $results['invoiceid'];
         
         $this->saveInvoiceInfo($service->userid, $invoiceId, $service->id, $product->id);
-        
+       
+        if($returnInvoiceID)
+            return $invoiceId;
+            
         return $results['result'] == 'success';
     }
     
     public function invoicePaid($invoicId) {
-        
+     
         Query::useCurrentConnection();
         
         $invoiceInfo = $this->getInvoiceCreatedInfo($invoicId);
@@ -139,6 +171,8 @@ class Invoice
             return false;
         }
         Query::update(self::INVOICE_INFOS_TABLE_NAME, ['order_id' => $newOrderId, 'new_service_id' => $productId, 'status' => 'added'], ['id' => $invoiceInfo['id']]);
+        //link invoice id with newly created order
+        Query::update('tblorders', ['invoiceid' => $invoicId], ['id' => $newOrderId]);
         
         $moduleCreated = $this->moduleCreate($productId);
         if ($moduleCreated) {

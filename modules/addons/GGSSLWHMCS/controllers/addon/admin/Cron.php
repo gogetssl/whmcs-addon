@@ -19,16 +19,22 @@ class Cron extends main\mgLibs\process\AbstractController
         $sslOrders = $this->getSSLOrders();        
         foreach ($sslOrders as $sslService)
         {  
-            $serviceID = $sslService->serviceid;
+            $serviceID = $sslService->serviceid;            
             
+            $order = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid); 
+            
+            if ($order['status'] == 'expired')
+            {
+                $this->setSSLServiceAsTerminated($serviceID);
+                $updatedServices[] = $serviceID;
+            }
             //if service is montlhy, one time, free skip it
             if($this->checkServiceBillingPeriod($serviceID)) continue;       
 
             //if service is synchronized skip it
             if ($this->checkIfSynchronized($serviceID)) continue;                
-            
-            $order = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid); 
             //if certificate is active
+            
             if ($order['status'] == 'active')
             {
                 //update whmcs service next due date
@@ -46,11 +52,7 @@ class Cron extends main\mgLibs\process\AbstractController
 
                 $updatedServices[] = $serviceID;
             }
-            if ($order['status'] == 'expired')
-            {
-                $this->setSSLServiceAsTerminated($serviceID);
-                $updatedServices[] = $serviceID;
-            }
+            
         }
         echo 'Synchronization completed.';
         echo '<br />Number of synchronized services: ' . count($updatedServices);
@@ -60,9 +62,15 @@ class Cron extends main\mgLibs\process\AbstractController
         return array();
     }
     
-    public function notifyCRON($input, $vars = array()) // tutaj
+    public function notifyCRON($input, $vars = array())
     {
-       
+        //get renewal settings
+        $apiConf = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get(); 
+        $auto_renew_invoice_one_time = (bool)$apiConf->auto_renew_invoice_one_time;
+        $auto_renew_invoice_reccuring = (bool)$apiConf->auto_renew_invoice_reccuring;
+        $send_expiration_notification_reccuring = (bool)$apiConf->send_expiration_notification_reccuring;
+        $send_expiration_notification_one_time = (bool)$apiConf->send_expiration_notification_one_time;
+        
         $this->sslRepo = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
         
         //get all completed ssl orders
@@ -70,7 +78,7 @@ class Cron extends main\mgLibs\process\AbstractController
         $synchServicesId = array_map(
                 function($row) 
                 { 
-                    $config = json_decode($row->configdata); 
+                    $config = json_decode($row->configdata);                     
                     if (isset($config->synchronized)) 
                     { 
                         return $row->serviceid;                    
@@ -87,11 +95,10 @@ class Cron extends main\mgLibs\process\AbstractController
         
         $packageLists = [];
         $serviceIDs = [];
-        
+       
         foreach ($services as $srv)
-        {              
-            //get days left to expire from WHMCS
-            
+        {     
+            //get days left to expire from WHMCS              
             $daysLeft = $this->checkOrderExpireDate($srv->nextduedate);
             //if service is One Time and nextduedate is setted as 0000-00-00 get valid_till from GoGet API
             if($srv->billingcycle == 'One Time' && $srv->nextduedate = '0000-00-00')
@@ -100,17 +107,22 @@ class Cron extends main\mgLibs\process\AbstractController
                 $order = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslOrder->remoteid);                 
                 $daysLeft = $this->checkOrderExpireDate($order['valid_till']);                     
             }
-
+            
             //service was synchronized, so we can base on nextduedate, that should be the same as valid_till
             if ( $daysLeft >= 0) {
-                $emailSendsCount += $this->sendExpireNotfiyEmail($srv->id, $daysLeft);
+                if($srv->billingcycle == 'One Time' && $send_expiration_notification_one_time || $srv->billingcycle != 'One Time' && $send_expiration_notification_reccuring)
+                    $emailSendsCount += $this->sendExpireNotfiyEmail($srv->id, $daysLeft);
             }
-            //if it is 90 days, we create invoice, do not create fo One Time services
-            if ($daysLeft == 90 && $srv->billingcycle != 'One Time') {
-                $packageLists[$srv->packageid][] = $srv;
-                $serviceIDs[] = $srv->id;
-            }
-        }
+            //if it is 90 days, we create invoice
+            if ($daysLeft == 90) {
+                if($srv->billingcycle == 'One Time' && $auto_renew_invoice_one_time || $srv->billingcycle != 'One Time' && $auto_renew_invoice_reccuring)
+                { 
+                    $packageLists[$srv->packageid][] = $srv;
+                    $serviceIDs[] = $srv->id;                    
+                }
+               
+            }            
+        }  
         $invoicesCreatedCount = $this->createAutoInvoice($packageLists, $serviceIDs);
         
         echo 'Notifier completed.' . PHP_EOL;
@@ -220,27 +232,29 @@ class Cron extends main\mgLibs\process\AbstractController
     }
 
     
-    public function createAutoInvoice($packages, $serviceIds) {
+    public function createAutoInvoice($packages, $serviceIds, $jsonAction = false) {
         if (empty($packages)) {
             return 0;
-        }
-            
-        $products    = \WHMCS\Product\Product::whereIn('id', array_keys($packages) )->get();
+        }        
         
-        $invoiceGenerator = new main\eHelpers\Invoice();
-        
+        $products    = \WHMCS\Product\Product::whereIn('id', array_keys($packages) )->get();        
+        $invoiceGenerator = new main\eHelpers\Invoice();        
         $servicesAlreadyAdded = $invoiceGenerator->checkInvoiceAlreadyCreated($serviceIds);
-        
+        $getInvoiceID = false;
+        if($jsonAction){
+            $getInvoiceID = true;
+        } 
         $invoiceCounter = 0;
         foreach ($products as $prod) {
             
             foreach ($packages[$prod->id] as $service) {
-                //have product, service
-                
+                //have product, service                
                 if (isset($servicesAlreadyAdded[$service->id])) {
+                    if($jsonAction)                   
+                        return array('invoiceID' => ($invoiceGenerator->getLatestCreatedInvoiceInfo($service->id))['invoice_id']);
                     continue;
                 }
-                $invoiceCounter += $invoiceGenerator->createInvoice($service, $prod);
+                $invoiceCounter += $invoiceGenerator->createInvoice($service, $prod, $getInvoiceID);
             }
         }
         
