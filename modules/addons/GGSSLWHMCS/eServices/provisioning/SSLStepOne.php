@@ -67,7 +67,6 @@ class SSLStepOne {
         if ($apiProduct->isOrganizationRequired()) {
             $fields['additionalfields'][\MGModule\GGSSLWHMCS\eRepository\gogetssl\Organization::getTitle()] = \MGModule\GGSSLWHMCS\eRepository\gogetssl\Organization::getFields();
         }
-        
         $countriesForGenerateCsrForm = \MGModule\GGSSLWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountriesForMgAddonDropdown(); 
         
         $stepOneBaseScript    = \MGModule\GGSSLWHMCS\eServices\ScriptService::getStepOneBaseScript($apiProduct->brand);

@@ -105,7 +105,7 @@
                             {foreach from=$sans item=san} 
                                 <tr>
                                     <td colspan="2" class="text-center">{$MGLANG->T({$san.san_name})}</td>
-                                <tr>
+                                </tr>
                                 {if $san.method == 'http' || $san.method == 'https'}
                                     <tr>
                                         <td style="width: 15%" class="text-left">{$MGLANG->T('hashFile')}</td>
@@ -122,14 +122,16 @@
                                                 <td class="text-left" style="max-width:200px; word-wrap: break-word;">{$san.san_validation}</td>
                                             </tr> 
                                         {else}
+                                            {if $san.san_validation != ''}
                                             <tr>
                                                 <td style="width: 15%" class="text-left">{$MGLANG->T('validationEmail')}</td>
                                                 <td class="text-left" style="word-wrap: break-word;">{$san.san_validation}</td>
                                             </tr> 
+                                            {/if}
                                         {/if} 
                                 {/if}
                             {/foreach}
-                            <tbody>
+                            </tbody>
                         </table>                        
                     </td>
                 </tr>
@@ -205,7 +207,7 @@
                     </button>
                     <h4 class="modal-title">{$MGLANG->T('revalidateModalTitle')}</h4>
                 </div>
-                <div {if $sans}style="overflow-y: auto; height:{if $sans|@count == 1 }200{elseif $sans|@count == 2}275{else}350{/if}px;"{/if} class="modal-body panel-body" id="modalRevalidateBody">
+                <div {if $sans && !$brand|in_array:$brandsWithOnlyEmailValidation}style="overflow-y: auto; height:{if $sans|@count == 1 }200{elseif $sans|@count == 2}275{else}350{/if}px;"{/if} class="modal-body panel-body" id="modalRevalidateBody">
                     
                     <div class="alert alert-success hidden" id="modalRevalidateSuccess">
                         <strong>Success!</strong> <span></span>
@@ -231,9 +233,11 @@
                                                     <select style="width:70%;" type="text" name="newDcvMethod_0" class="form-control modalRevalidateInput" >
                                                         <option value="" selected>{$MGLANG->T('pleaseChooseOne')}</option>
                                                         <option value="email">{$MGLANG->T('revalidateModalMethodEmail')}</option>
+                                                        {if !$brand|in_array:$brandsWithOnlyEmailValidation}                                                            
                                                         <option value="http">{$MGLANG->T('revalidateModalMethodHttp')}</option>
                                                         <option value="https">{$MGLANG->T('revalidateModalMethodHttps')}</option>
-                                                        <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>
+                                                        <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>                                                        
+                                                        {/if}
                                                     </select>
                                                 </div>
                                             </td>
@@ -245,7 +249,7 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                        {if $sans}
+                                        {if $sans && !$brand|in_array:$brandsWithOnlyEmailValidation}
                                             {$i = 1}
                                             {foreach from=$sans item=san}
                                                 <tr>
@@ -255,9 +259,11 @@
                                                             <select style="width:70%;" type="text" name="newDcvMethod_{$i}" class="form-control modalRevalidateInput">
                                                                 <option value="" selected>{$MGLANG->T('pleaseChooseOne')}</option>
                                                                 <option value="email">{$MGLANG->T('revalidateModalMethodEmail')}</option>
+                                                                {if !$brand|in_array:$brandsWithOnlyEmailValidation}                                                            
                                                                 <option value="http">{$MGLANG->T('revalidateModalMethodHttp')}</option>
                                                                 <option value="https">{$MGLANG->T('revalidateModalMethodHttps')}</option>
-                                                                <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>
+                                                                <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>                                                        
+                                                                {/if}
                                                             </select>
                                                         </div>
                                                     <td>

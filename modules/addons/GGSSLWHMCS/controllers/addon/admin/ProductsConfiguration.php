@@ -37,7 +37,7 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
                 $apiProduct                 = main\eRepository\gogetssl\Products::getInstance()->getProduct($product->{C::API_PRODUCT_ID});
                 $apiConfig                  = (object) null;
                 $apiConfig->name            = $apiProduct->product;
-                $apiConfig->peroids         = $apiProduct->getPeriods();
+                $apiConfig->peroids         = max($apiProduct->getPeriods());
                 $apiConfig->isSanEnabled    = $apiProduct->isSanEnabled();
                 $products[$key]->apiConfig  = $apiConfig;
                 $products[$key]->confOption = main\eServices\ConfigurableOptionService::getForProduct($product->id);

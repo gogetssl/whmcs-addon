@@ -71,11 +71,24 @@ class SSLStepThree {
 
     private function orderCertificate() { 
         
+        $billingPeriods = array(
+            'Annually'  =>  12,
+            'Biennially'  =>  24,
+            'Triennially'  =>  36,
+        );
+        
+        $brandsWithOnlyEmailValidation = ['geotrust','thawte','rapidssl','symantec'];        
+        if(!empty($this->p[ConfigOptions::API_PRODUCT_ID])) {
+            $apiRepo       = new \MGModule\GGSSLWHMCS\eRepository\gogetssl\Products();
+            $apiProduct    = $apiRepo->getProduct($this->p[ConfigOptions::API_PRODUCT_ID]);
+            $brand = $apiProduct->brand;
+        }
+                    
         $order               = [];
         $order['dcv_method'] = strtolower($this->p['fields']['dcv_method']);
        
         $order['product_id'] = $this->p[ConfigOptions::API_PRODUCT_ID]; // Required
-        $order['period']     = $this->p[ConfigOptions::API_PRODUCT_MONTHS]; // Required
+        $order['period']     = $billingPeriods[$this->p['model']['attributes']['billingcycle']];//$this->p[ConfigOptions::API_PRODUCT_MONTHS]; // Required
         $order['csr']        = $this->p['csr']; // Required
         $order['server_count']       = -1; // Required . amount of servers, for Unlimited pass “-1”
         $order['approver_email']     = ($order['dcv_method'] == 'email') ? $this->p['approveremail'] : ''; // Required . amount of servers, for Unlimited pass “-1”
@@ -144,7 +157,6 @@ class SSLStepThree {
             }
             $order['dns_names']       = implode(',', $sansDomains);
             $order['approver_emails'] = implode(',', $_POST['approveremails']);
-            
             if(!empty($sanDcvMethods = $this->getSansDomainsValidationMethods())) {
                 $i = 0;
                 foreach($_POST['approveremails'] as $domain => $approveremail) {
@@ -159,7 +171,10 @@ class SSLStepThree {
             $apiRepo       = new \MGModule\GGSSLWHMCS\eRepository\gogetssl\Products();
             $apiProduct    = $apiRepo->getProduct($order['product_id']);
         }
-        
+        //if brand is 'geotrust','thawte','rapidssl','symantec' do not send dcv method for sans
+        if(in_array($brand, $brandsWithOnlyEmailValidation)) {
+            unset($order['approver_emails']);
+        }
         $addedSSLOrder = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLOrder($order);
         
         //update domain column in tblhostings

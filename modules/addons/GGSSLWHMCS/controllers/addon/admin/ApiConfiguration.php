@@ -52,7 +52,8 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         
         $field = new main\mgLibs\forms\TextField();
         $field->readonly = $input['use_admin_contact'] ? true : false;
-        $field->name = 'tech_firstname';
+        $field->name = 'tech_firstname';        
+        $field->required = true;
         $field->options = ['1','2'];
         $field->value = $input['tech_firstname'];
         $field->error = $this->getFieldError('tech_firstname');
@@ -61,6 +62,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field = new main\mgLibs\forms\TextField();
         $field->readonly = $input['use_admin_contact'] ? true : false;
         $field->name = 'tech_lastname';
+        $field->required = true;
         $field->value = $input['tech_lastname'];
         $field->error = $this->getFieldError('tech_lastname');
         $form->addField($field);
@@ -68,6 +70,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field = new main\mgLibs\forms\TextField();
         $field->readonly = $input['use_admin_contact'] ? true : false;
         $field->name = 'tech_organization';
+        $field->required = true;
         $field->value = $input['tech_organization'];
         $field->error = $this->getFieldError('tech_organization');
         $form->addField($field);
@@ -75,6 +78,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field = new main\mgLibs\forms\TextField();
         $field->readonly = $input['use_admin_contact'] ? true : false;
         $field->name = 'tech_addressline1';
+        $field->required = true;
         $field->value = $input['tech_addressline1'];
         $field->error = $this->getFieldError('tech_addressline1');
         $form->addField($field);
@@ -82,6 +86,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field = new main\mgLibs\forms\TextField();
         $field->readonly = $input['use_admin_contact'] ? true : false;
         $field->name = 'tech_phone';
+        $field->required = true;
         $field->value = $input['tech_phone'];
         $field->error = $this->getFieldError('tech_phone');
         $form->addField($field);
@@ -89,6 +94,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field = new main\mgLibs\forms\TextField();
         $field->readonly = $input['use_admin_contact'] ? true : false;
         $field->name = 'tech_title';
+        $field->required = true;
         $field->value = $input['tech_title'];
         $field->error = $this->getFieldError('tech_title');
         $form->addField($field);
@@ -96,6 +102,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field = new main\mgLibs\forms\TextField();
         $field->readonly = $input['use_admin_contact'] ? true : false;
         $field->name = 'tech_email';
+        $field->required = true;
         $field->value = $input['tech_email'];
         $field->error = $this->getFieldError('tech_email');
         $form->addField($field);
@@ -103,6 +110,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field = new main\mgLibs\forms\TextField();
         $field->readonly = $input['use_admin_contact'] ? true : false;
         $field->name = 'tech_city';
+        $field->required = true;
         $field->value = $input['tech_city'];
         $field->error = $this->getFieldError('tech_city');
         $form->addField($field);
@@ -110,16 +118,17 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field = new main\mgLibs\forms\SelectField();
         $field->readonly = $input['use_admin_contact'] ? true : false;
         $field->name = 'tech_country';
+        $field->required = true;
         $field->value = $input['tech_country'];
         $field->translateOptions = false;
-        $field->options = \MGModule\GGSSLWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountriesForMgAddonDropdown(); 
-        
+        $field->options = \MGModule\GGSSLWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountriesForMgAddonDropdown();         
         $field->error = $this->getFieldError('tech_country');
         $form->addField($field);
 
         $field        = new main\mgLibs\forms\TextField();
         $field->readonly = $input['use_admin_contact'] ? true : false;
         $field->name  = 'tech_fax';
+        $field->required = true;
         $field->value = $input['tech_fax'];
         $field->error = $this->getFieldError('tech_fax');
         $form->addField($field);
@@ -127,6 +136,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field        = new main\mgLibs\forms\TextField();
         $field->readonly = $input['use_admin_contact'] ? true : false;
         $field->name  = 'tech_postalcode';
+        $field->required = true;
         $field->value = $input['tech_postalcode'];
         $field->error = $this->getFieldError('tech_postalcode');
         $form->addField($field);
@@ -134,6 +144,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field        = new main\mgLibs\forms\TextField();
         $field->readonly = $input['use_admin_contact'] ? true : false;
         $field->name  = 'tech_region';
+        $field->required = true;
         $field->value = $input['tech_region'];
         $field->error = $this->getFieldError('tech_region');
         $form->addField($field);

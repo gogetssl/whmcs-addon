@@ -91,10 +91,10 @@
                 }                 
             }
         });
+        if(jQuery.inArray(brand, onlyEmailValidationFoBrands) >= 0){
+            $('select[name^="approveremails"]').closest('tr').prop('hidden', true);
+        }
         
-        /*if(jQuery.inArray(brand, onlyEmailValidationFoBrands) > 0){
-            $('select[name^="approveremails"]').closest('tr').remove();
-        }*/
         {literal}//var sanEmails = JSON.parse('{\"friz.pl\":[\"admin@friz.pl\",\"administrator@friz.pl\"],\"kot.pl\":[\"admin@kot.pl\",\"administrator@kot.pl\"]}');{/literal} 
     });
 </script>

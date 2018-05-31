@@ -1370,3 +1370,6 @@ table#product_configuration .product_name{
 table#product_configuration input{
     margin: 0 auto;
 }
+.maxMonths {
+    padding-top: 7px;
+}

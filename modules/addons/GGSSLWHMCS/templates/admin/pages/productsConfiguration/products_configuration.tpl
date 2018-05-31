@@ -52,11 +52,13 @@
                             <div class="form-group">
                                 <label class="control-label col-sm-2">{$MGLANG->T('months')}</label>
                                 <div class="col-sm-10">
-                                    <select name="product[{$product->id}][configoption2]" class="form-control">
+                                    <div class="maxMonths">{$product->apiConfig->peroids}</div>
+                                    <!--<select name="product[{$product->id}][configoption2]" class="form-control">
                                         {foreach from=$product->apiConfig->peroids item=peroid}
                                             <option {if $product->configoption2 == $peroid}selected{/if} value="{$peroid}">{$peroid}</option>
                                         {/foreach}
                                     </select>
+                                    -->
                                 </div>
                             </div>
 

@@ -18,6 +18,8 @@ class home extends main\mgLibs\process\AbstractController {
             $userid = $input['params']['userid'];
             $ssl        = new main\eRepository\whmcs\service\SSL();
             $sslService = $ssl->getByServiceId($serviceId);
+            
+            $vars['brandsWithOnlyEmailValidation'] = ['geotrust','thawte','rapidssl','symantec'];
            
             if(is_null($sslService)) {
                 throw new \Exception('An error occurred please contact support');
@@ -104,7 +106,6 @@ class home extends main\mgLibs\process\AbstractController {
                     $vars['error'] = 'Can not load order details';
                 }
             } 
-            
             $vars['configurationStatus'] = $sslService->status;
             $vars['configurationURL']    = $url;
             $vars['allOk']               = true;
