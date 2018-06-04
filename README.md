@@ -11,7 +11,7 @@ Free of charge SSL Addon for WHMCS to automate SSL certificate sales/distributio
 - Access to WHMCS admin area
 
 ### Releases
-Please check latest [Releases](https://github.com/gogetssl/whmcs-addon/releases) and Download files 
+Please check the latest [Releases](https://github.com/gogetssl/whmcs-addon/releases) and Download files 
 
 ### API Credentials
 - Please generate API password at [Client area](https://my.gogetssl.com) -> Reseller Modules -> API settings
@@ -216,6 +216,29 @@ You will be allowed to resell all of our SSL products:
 <strong>*</strong> <i>Included: 3 Wildcard SAN + 1 Single domain from the CSR</i><br>
 <strong>**</strong> <i>SAN items can be used as sub-domains of base-domain ONLY</i>
 </html>
+
+### Feature to "Buy More SAN items" for Multi-Domain SSL certificates
+Follow the instructions, in order to allow your customers to purchase additional SAN items 
+
+1. Go to Setup -> Products/Services
+2. Edit the appropriate product
+3. Go to the Upgrades tab and check the Configurable Options box (Tick this box to allow Upgrading/Downgrading of configurable options).
+
+![alt text](https://my.gogetssl.com/assets/img/whmcs_buysan_01.png "Buy more SAN")
+
+4. From now the "Upgrade/Downgrade Options" should be available on the product details page in the client area of the side panel.
+<html><br></html>
+
+![alt text](https://my.gogetssl.com/assets/img/whmcs_buysan_02.png "Buy more SAN")
+
+5.An appropriate invoice will be generated once upgrade submitted. After payment, the service will be modified accordingly. In order to add additional SAN domains, you should run the "Reissue" action of the certificate. Please note, it is possible to modify SAN items only when SSL is Issued/Active.<html><br></html>
+![alt text](https://my.gogetssl.com/assets/img/whmcs_buysan_03.png "Buy more SAN")
+
+### Renewal settings
+There are many options for renewal process controlled by the SSL Addon. By default addon starts sending the expiration notifications messages before 90 days, however, you can set manual period.
+
+![alt text](https://my.gogetssl.com/assets/img/whmcs_renewal_01.png "SSL Renewal settings")
+***
 
 ### License
 This project is licensed under the MIT License
