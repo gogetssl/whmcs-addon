@@ -16,9 +16,9 @@ class Cron extends main\mgLibs\process\AbstractController
         $this->sslRepo = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
         
         //get all completed ssl orders
-        $sslOrders = $this->getSSLOrders();           
+        $sslOrders = $this->getSSLOrders();        
         foreach ($sslOrders as $sslService)
-        {  
+            { 
             $serviceID = $sslService->serviceid;            
             
             $order = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid); 
@@ -29,12 +29,12 @@ class Cron extends main\mgLibs\process\AbstractController
                 $updatedServices[] = $serviceID;
             }
             //if service is montlhy, one time, free skip it
-            if($this->checkServiceBillingPeriod($serviceID)) continue;       
+            if($this->checkServiceBillingPeriod($serviceID)) continue; 
             
             //if service is synchronized skip it
             if ($this->checkIfSynchronized($serviceID)) continue;                
             //if certificate is active
-            
+           
             if ($order['status'] == 'active')
             {
                 //update whmcs service next due date
@@ -68,13 +68,17 @@ class Cron extends main\mgLibs\process\AbstractController
         $apiConf = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get(); 
         $auto_renew_invoice_one_time = (bool)$apiConf->auto_renew_invoice_one_time;
         $auto_renew_invoice_reccuring = (bool)$apiConf->auto_renew_invoice_reccuring;
+        //get saved amount days to generate invoice (one time & reccuring)
+        $renew_invoice_days_one_time = $apiConf->renew_invoice_days_one_time;
+        $renew_invoice_days_reccuring = $apiConf->renew_invoice_days_reccuring;
+        
         $send_expiration_notification_reccuring = (bool)$apiConf->send_expiration_notification_reccuring;
         $send_expiration_notification_one_time = (bool)$apiConf->send_expiration_notification_one_time;
         
         $this->sslRepo = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
         
         //get all completed ssl orders
-        $sslOrders = $this->getSSLOrders();        
+        $sslOrders = $this->getSSLOrders(); 
         $synchServicesId = array_map(
                 function($row) 
                 { 
@@ -90,7 +94,7 @@ class Cron extends main\mgLibs\process\AbstractController
                 }, $sslOrders);
                
         $services        = \WHMCS\Service\Service::whereIn('id', $synchServicesId)->get();        
-                
+        
         $emailSendsCount = 0;
         
         $packageLists = [];
@@ -99,7 +103,7 @@ class Cron extends main\mgLibs\process\AbstractController
         foreach ($services as $srv)
         {     
             //get days left to expire from WHMCS              
-            $daysLeft = $this->checkOrderExpireDate($srv->nextduedate);
+            $daysLeft = $this->checkOrderExpireDate($srv->nextduedate);            
             //if service is One Time and nextduedate is setted as 0000-00-00 get valid_till from GoGet API
             if($srv->billingcycle == 'One Time' && $srv->nextduedate = '0000-00-00')
             { 
@@ -113,8 +117,14 @@ class Cron extends main\mgLibs\process\AbstractController
                 if($srv->billingcycle == 'One Time' && $send_expiration_notification_one_time || $srv->billingcycle != 'One Time' && $send_expiration_notification_reccuring)
                     $emailSendsCount += $this->sendExpireNotfiyEmail($srv->id, $daysLeft);
             }
-            //if it is 90 days, we create invoice
-            if ($daysLeft == 90) {
+            
+            $savedRenewDays = $renew_invoice_days_reccuring;
+            if($srv->billingcycle == 'One Time')
+            {
+                $savedRenewDays = $renew_invoice_days_one_time;
+            }                   
+            //if it is proper amount of days before expiry, we create invoice
+            if ($daysLeft == (int)$savedRenewDays) {
                 if($srv->billingcycle == 'One Time' && $auto_renew_invoice_one_time || $srv->billingcycle != 'One Time' && $auto_renew_invoice_reccuring)
                 { 
                     $packageLists[$srv->packageid][] = $srv;

@@ -68,7 +68,9 @@ class home extends main\mgLibs\process\AbstractController {
                     if (!empty($orderStatus['ca_code'])) {
                         $vars['ca'] = ($orderStatus['ca_code']);
                     }
-                    
+                    if (!empty($orderStatus['order_id'])) {
+                        $vars['order_id'] = $orderStatus['order_id'];
+                    }
                     if (!empty($orderStatus['domain'])) {
                         $vars['domain'] = $orderStatus['domain'];
                     }
@@ -101,7 +103,7 @@ class home extends main\mgLibs\process\AbstractController {
                             }
                         }                        
                     }
-                    
+
                     $vars['activationStatus'] = $orderStatus['status'];
                     
                     //valid from

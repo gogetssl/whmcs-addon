@@ -76,6 +76,12 @@
                     <td class="text-left">{$validTill}</td>
                 </tr>
             {/if}
+            {if $order_id}
+                <tr>
+                    <td class="text-left">{$MGLANG->T('Order ID')}</td>
+                    <td class="text-left">{$order_id}</td>
+                </tr>
+            {/if}
             {if $domain}
                 <tr>
                     <td class="text-left">{$MGLANG->T('domain')}</td>
@@ -93,11 +99,11 @@
                 {if $dcv_method == 'http' || $dcv_method == 'https'}                
                     <tr>
                         <td class="text-left">{$MGLANG->T('hashFile')}</td>
-                        <td class="text-left" style="max-width:200px; word-wrap: break-word;">{$approver_method.$dcv_method.link|strtolower}</td>
+                        <td class="text-left" style="max-width:200px; word-wrap: break-word;">{$approver_method.$dcv_method.link}</td>
                     </tr>
                     <tr>
                         <td class="text-left">{$MGLANG->T('content')}</td>
-                        <td class="text-left" style="max-width:200px; word-wrap: break-word;">{foreach from=$approver_method.$dcv_method.content item=$content}{$content|strtolower}<br />{/foreach}</td>
+                        <td class="text-left" style="max-width:200px; word-wrap: break-word;">{foreach from=$approver_method.$dcv_method.content item=$content}{$content}<br />{/foreach}</td>
                     </tr>                    
                 {else}
                     <tr id="validationData" >
@@ -107,7 +113,7 @@
                         {/if}
                         {if $dcv_method == 'dns'}
                             <td class="text-left ">{$MGLANG->T('dnsCnameRecord')}</td>
-                            <td class="text-left" style="max-width:200px; word-wrap: break-word;">{$approver_method.dns.record|strtolower}</td>
+                            <td class="text-left" style="max-width:200px; word-wrap: break-word;">{$approver_method.dns.record|strtolower|replace:'cname':'CNAME'}</td>
                         {/if}
                     </tr>
                 {/if}
@@ -126,17 +132,17 @@
                                 {if $san.method == 'http' || $san.method == 'https'}
                                     <tr>
                                         <td style="width: 15%" class="text-left">{$MGLANG->T('hashFile')}</td>
-                                        <td class="text-left" style="max-width:200px; word-wrap: break-word;">{$san.san_validation.link|strtolower}</td>
+                                        <td class="text-left" style="max-width:200px; word-wrap: break-word;">{$san.san_validation.link}</td>
                                     </tr>
                                     <tr>
                                         <td style="width: 15%" class="text-left">{$MGLANG->T('content')}</td>
-                                        <td class="text-left" style="max-width:200px; word-wrap: break-word;">{foreach from=$san.san_validation.content item=$content}{$content|strtolower}<br />{/foreach}</td>
+                                        <td class="text-left" style="max-width:200px; word-wrap: break-word;">{foreach from=$san.san_validation.content item=$content}{$content}<br />{/foreach}</td>
                                     </tr> 
                                     {else}
                                         {if $san.method == 'dns'}
                                             <tr>
                                                 <td style="width: 15%" class="text-left">{$MGLANG->T('dnsCnameRecord')}</td>
-                                                <td class="text-left" style="max-width:200px; word-wrap: break-word;">{$san.san_validation|strtolower}</td>
+                                                <td class="text-left" style="max-width:200px; word-wrap: break-word;">{$san.san_validation|strtolower|replace:'cname':'CNAME'}</td>
                                             </tr> 
                                         {else}
                                             {if $san.san_validation != ''}

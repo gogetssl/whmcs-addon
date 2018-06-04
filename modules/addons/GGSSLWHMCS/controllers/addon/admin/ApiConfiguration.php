@@ -49,18 +49,32 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field->options = ['auto_renew_invoice_reccuring'];
         $field->value = $input['auto_renew_invoice_reccuring'] ? ['auto_renew_invoice_reccuring'] : [''];
         $field->inline = true;
-        $field->colWidth = 4;
+        $field->colWidth = 3;
         $field->continue = true;
         $field->enableDescription = true;
         $form->addField($field);
         
+        $field = new main\mgLibs\forms\SelectField();
+        $field->disabled = $input['auto_renew_invoice_reccuring'] ? false : true;
+        $field->name = 'renew_invoice_days_reccuring';
+        $field->required = true;
+        $field->value = $input['renew_invoice_days_reccuring'];
+        $field->translateOptions = false;
+        $field->inline = true;
+        $field->colWidth = 2;
+        $field->continue = false;
+        $field->enableDescription = true;
+        $field->options = array('90'=>'90', '60'=>'60', '45'=>'45', '30'=>'30', '15'=>'15');         
+        $field->error = $this->getFieldError('renew_invoice_days_reccuring');
+        $form->addField($field);
         
         $field = new main\mgLibs\forms\CheckboxField();
         $field->name = 'send_expiration_notification_reccuring';
         $field->options = ['send_expiration_notification_reccuring'];
         $field->value = $input['send_expiration_notification_reccuring'] ? ['send_expiration_notification_reccuring'] : [''];
         $field->inline = true;
-        $field->colWidth = 6;
+        $field->enableLabel = true;               
+        $field->colWidth = 5;
         $field->continue = false;
         $field->enableDescription = true;
         $form->addField($field);
@@ -70,18 +84,31 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field->options = ['auto_renew_invoice_one_time'];
         $field->value = $input['auto_renew_invoice_one_time'] ? ['auto_renew_invoice_one_time'] : [''];
         $field->inline = true;
-        $field->colWidth = 4;
+        $field->colWidth = 3;
         $field->continue = true;
         $field->enableDescription = true;
         $form->addField($field);
-        
+                
+        $field = new main\mgLibs\forms\SelectField();
+        $field->disabled = $input['renew_invoice_days_one_time'] ? false : true;
+        $field->name = 'renew_invoice_days_one_time';
+        $field->required = true;
+        $field->value = $input['renew_invoice_days_one_time'];
+        $field->translateOptions = false;
+        $field->inline = true;
+        $field->colWidth = 2;
+        $field->continue = false;        
+        $field->enableDescription = true;
+        $field->options = array('90'=>'90', '60'=>'60', '45'=>'45', '30'=>'30', '15'=>'15');         
+        $field->error = $this->getFieldError('renew_invoice_days_one_time');
+        $form->addField($field);
         
         $field = new main\mgLibs\forms\CheckboxField();
         $field->name = 'send_expiration_notification_one_time';
         $field->options = ['send_expiration_notification_one_time'];
         $field->value = $input['send_expiration_notification_one_time'] ? ['send_expiration_notification_one_time'] : [''];
         $field->inline = true;
-        $field->colWidth = 6;
+        $field->colWidth = 5;
         $field->continue = false;
         $field->enableDescription = true;
         $form->addField($field);
@@ -222,7 +249,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         );
     }
 
-    function saveItemHTML($input, $vars = array()) {
+    function saveItemHTML($input, $vars = array()) {       
         if ($this->checkToken()) {
             try {
                 $checkFieldsArray = array(
@@ -231,7 +258,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
                     'auto_renew_invoice_one_time',
                     'auto_renew_invoice_reccuring',
                     'send_expiration_notification_reccuring',
-                    'send_expiration_notification_one_time'
+                    'send_expiration_notification_one_time',
                     );
                 foreach($checkFieldsArray as $field)
                 {
@@ -241,7 +268,15 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
                         $input[$field] = false;
                     }
                 }
-                
+                if(!$input['auto_renew_invoice_reccuring'])
+                {
+                    $input['renew_invoice_days_reccuring'] = NULL;
+                }
+                if(!$input['auto_renew_invoice_one_time'])
+                {
+                    $input['renew_invoice_days_one_time'] = NULL;
+                }
+
                 $apiConfigRepo = new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository();
                 $apiConfigRepo->setConfiguration($input);
             } catch (\Exception $ex) {

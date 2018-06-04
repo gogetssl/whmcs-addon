@@ -43,7 +43,9 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                         'auto_renew_invoice_one_time'            => $params['auto_renew_invoice_one_time'],
                         'auto_renew_invoice_reccuring'           => $params['auto_renew_invoice_reccuring'],
                         'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
-                        'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
+                        'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],                        
+                        'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
+                        'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
             ]);
         }
         else
@@ -70,6 +72,8 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                         'auto_renew_invoice_reccuring'           => $params['auto_renew_invoice_reccuring'],
                         'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
                         'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
+                        'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
+                        'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
             ]);
         }
     }
@@ -100,6 +104,8 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                 $table->string('tech_fax');
                 $table->string('tech_postalcode');
                 $table->string('tech_region');
+                $table->string('renew_invoice_days_reccuring')->nullable();
+                $table->string('renew_invoice_days_one_time')->nullable();
             });
         }
     }
@@ -136,6 +142,22 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                     $table->boolean('send_expiration_notification_one_time');
                 });
             }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'renew_invoice_days_reccuring'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->string('renew_invoice_days_reccuring')->nullable();
+                });
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'renew_invoice_days_one_time'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->string('renew_invoice_days_one_time')->nullable();
+                });
+            }
+           /* 'renew_invoice_days_reccuring'          
+                        'renew_invoice_days_one_time'*/
         }
     }
 
