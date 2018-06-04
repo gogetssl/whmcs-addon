@@ -1,3 +1,4 @@
+![alt text](https://my.gogetssl.com/assets/img/logo_for_github.png "Logo Title Text 1")
 # GOGETSSL WHMCS SSL Addon
 Free of charge SSL Addon for WHMCS to automate SSL certificate sales/distribution of via GoGetSSL.com platform
 
@@ -6,8 +7,11 @@ Free of charge SSL Addon for WHMCS to automate SSL certificate sales/distributio
 ***
 
 ### Prerequisites
-- Account at GOGETSSL.com
+- Account at [GOGETSSL.com](https://www.gogetssl.com)
 - Access to WHMCS admin area
+
+### Releases
+Please check latest [Releases](https://github.com/gogetssl/whmcs-addon/releases) and Download files 
 
 ### API Credentials
 - Please generate API password at [Client area](https://my.gogetssl.com) -> Reseller Modules -> API settings
