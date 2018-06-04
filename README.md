@@ -1,0 +1,219 @@
+# GOGETSSL WHMCS SSL Addon
+Free of charge SSL Addon for WHMCS to automate SSL certificate sales/distribution of via GoGetSSL.com platform
+
+***
+**Note:** This version is fully compatible with 7.1.x versions of WHMCS.
+***
+
+### Prerequisites
+- Account at GOGETSSL.com
+- Access to WHMCS admin area
+
+### API Credentials
+- Please generate API password at [Client area](https://my.gogetssl.com) -> Reseller Modules -> API settings
+- Login is the same as login for Client area
+
+### List of supported SSL certificates
+
+You will be allowed to resell all of our SSL products:
+### Comodo
+- Comodo Elite SSL
+- Comodo Essential SSL
+- Comodo Essential Wildcard SSL
+- Comodo EV Code Signing SSL
+- Comodo EV SSL
+- Comodo InstantSSL
+- Comodo InstantSSL Premium
+- Comodo InstantSSL Pro
+- Comodo Intel vPro AMT
+- Comodo Multi-Domain EV SSL
+- Comodo Multi-Domain SSL
+- Comodo Multi-Domain Wildcard SSL
+- Comodo Platinum SSL
+- Comodo PositiveSSL
+- Comodo PositiveSSL EV
+- Comodo PositiveSSL EV Multi-Domain
+- Comodo PositiveSSL Multi-Domain
+- Comodo PositiveSSL Multi-Domain Wildcard
+- Comodo Premium Wildcard SSL
+- Comodo SSL Certificate
+- Comodo SSL Certificate Wildcard
+- Comodo SSL UCC DV
+- Comodo SSL UCC OV
+- Comodo SSL UCC OV Wildcard
+- Comodo 90-day Trial SSL
+- Comodo EnterpriseSSL
+- Comodo EnterpriseSSL Pro
+- Comodo EnterpriseSSL Pro EV
+- Comodo EnterpriseSSL Pro EV MDC
+- Comodo EnterpriseSSL Pro Wildcard 
+
+### GeoTrust
+- GeoTrust QuickSSL Premium
+- GeoTrust QuickSSL Premium SAN
+- GeoTrust QuickSSL Premium Wildcard
+- GeoTrust TrueBusinessID
+- GeoTrust TrueBusinessID SAN
+- Geotrust TrueBusinessID Wildcard
+- GeoTrust TrueBusinessID EV
+- GeoTrust TrueBusinessID EV SAN
+
+### Symantec
+- Symantec Secure Site
+- Symantec Secure Site EV
+- Symantec Secure Site Pro
+- Symantec Secure Site Pro EV
+- Symantec Secure Site Pro Wildcard
+- Symantec Secure Site Wildcard
+
+### Thawte
+- Thawte SSL 123
+- Thawte SSL 123 Wildcard
+- Thawte Web Server EV
+- Thawte Web Server SSL
+- Thawte Wildcard SSL
+
+### GGSSL
+- GGSSL Domain SSL
+- GGSSL TrialSSL
+- GGSSL Wildcard SSL
+- GGSSL Multi-Domain SSL
+
+### Multi-Domain/SAN SSL Certificates
+<html>
+<table>
+  <tr>
+    <th>CA</th>
+    <th>Product name</th>
+    <th>Default number of domains&nbsp;<br>(domain from CSR is counted here)</th>
+    <th>Maximum number of domains</th>
+  </tr>
+  <tr>
+    <td>Comodo</td>
+    <td>Multi-Domain EV SSL</td>
+    <td>3</td>
+    <td>250</td>
+  </tr>
+  <tr>
+    <td>Comodo</td>
+    <td>Multi-Domain SSL</td>
+    <td>3</td>
+    <td>250</td>
+  </tr>
+  <tr>
+    <td>Comodo</td>
+    <td>Multi-Domain Wildcard SSL</td>
+    <td>3</td>
+    <td>250</td>
+  </tr>
+  <tr>
+    <td>Comodo</td>
+    <td>PositiveSSL EV Multi-Domain</td>
+    <td>3</td>
+    <td>250</td>
+  </tr>
+  <tr>
+    <td>Comodo</td>
+    <td>PositiveSSL Multi-Domain</td>
+    <td>3</td>
+    <td>250</td>
+  </tr>
+  <tr>
+    <td>Comodo</td>
+    <td>PositiveSSL Multi-Domain Wildcard</td>
+    <td>4*</td>
+    <td>250</td>
+  </tr>
+  <tr>
+    <td>Comodo</td>
+    <td>UCC DV</td>
+    <td>3</td>
+    <td>250</td>
+  </tr>
+  <tr>
+    <td>Comodo</td>
+    <td>UCC OV</td>
+    <td>3</td>
+    <td>250</td>
+  </tr>
+   <tr>
+    <td>Comodo</td>
+    <td>UCC OV Wildcard</td>
+    <td>3</td>
+    <td>250</td>
+  </tr>
+  <tr>
+    <td>Comodo</td>
+    <td>EnterpriseSSL Pro EV MDC</td>
+    <td>3</td>
+    <td>250</td>
+  </tr>
+   <tr>
+    <td>GeoTrust</td>
+    <td>QuickSSL Premium SAN</td>
+    <td>5**</td>
+    <td>5</td>
+  </tr>
+   <tr>
+    <td>GeoTrust</td>
+    <td>GeoTrust TrueBusinessID SAN</td>
+    <td>5</td>
+    <td>99</td>
+  </tr>
+  <tr>
+    <td>GeoTrust</td>
+    <td>GeoTrust TrueBusinessID EV SAN</td>
+    <td>5</td>
+    <td>99</td>
+  </tr>
+  <tr>
+    <td>Symantec</td>
+    <td>Symantec Secure Site</td>
+    <td>1</td>
+    <td>99</td>
+  </tr>
+  <tr>
+    <td>Symantec</td>
+    <td>Symantec Secure Site EV</td>
+    <td>1</td>
+    <td>99</td>
+  </tr>
+  <tr>
+    <td>Symantec</td>
+    <td>Symantec Secure Site Pro</td>
+    <td>1</td>
+    <td>99</td>
+  </tr>
+  <tr>
+    <td>Symantec</td>
+    <td>Symantec Secure Site Pro EV</td>
+    <td>1</td>
+    <td>99</td>
+  </tr>
+   <tr>
+    <td>Thawte</td>
+    <td>Web Server EV</td>
+    <td>1</td>
+    <td>99</td>
+  </tr>
+  <tr>
+    <td>Thawte</td>
+    <td>Web Server SSL</td>
+    <td>1</td>
+    <td>99</td>
+  </tr>
+  <tr>
+    <td>GGSSL</td>
+    <td>GGSSL Multi-Domain SSL</td>
+    <td>3</td>
+    <td>250</td>
+  </tr>
+</table>
+<strong>*</strong> <i>Included: 3 Wildcard SAN + 1 Single domain from the CSR</i><br>
+<strong>**</strong> <i>SAN items can be used as sub-domains of base-domain ONLY</i>
+</html>
+
+### License
+This project is licensed under the MIT License
+
+
