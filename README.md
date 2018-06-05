@@ -10,7 +10,7 @@ Free of charge SSL Addon for WHMCS to automate SSL certificate sales/distributio
 - Account at [GOGETSSL.com](https://www.gogetssl.com)
 - Access to WHMCS admin area
 
-### Releases
+### Releases/Downloads
 Please check the latest [Releases](https://github.com/gogetssl/whmcs-addon/releases) and Download files 
 
 ### API Credentials
