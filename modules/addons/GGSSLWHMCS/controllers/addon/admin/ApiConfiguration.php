@@ -122,6 +122,23 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field->options = ['displayCsrGenerator'];
         $field->value = $input['display_csr_generator'] ? ['displayCsrGenerator'] : [''];
         $form->addField($field);
+        $field->inline = true;
+        $field->colWidth = 2;
+        $field->continue = true;
+        
+        $field = new main\mgLibs\forms\SelectField();
+        $field->disabled = $input['display_csr_generator'] ? false : true;
+        $field->name = 'default_csr_generator_country';
+        $field->required = true;
+        $field->value = $input['default_csr_generator_country'];
+        $field->translateOptions = false;
+        $field->inline = true;
+        $field->colWidth = 3;
+        $field->continue = false;        
+        $field->enableDescription = true;
+        $field->options = \MGModule\GGSSLWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountriesForMgAddonDropdown();         
+        $field->error = $this->getFieldError('default_csr_generator_country');
+        $form->addField($field); 
         
         $field        = new main\mgLibs\forms\LegendField();
         $field->name  = 'tech_legend';
@@ -275,6 +292,10 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
                 if(!$input['auto_renew_invoice_one_time'])
                 {
                     $input['renew_invoice_days_one_time'] = NULL;
+                }                
+                if(!$input['display_csr_generator'])
+                {
+                    $input['default_csr_generator_country'] = NULL;
                 }
 
                 $apiConfigRepo = new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository();

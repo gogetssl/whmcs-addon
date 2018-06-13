@@ -54,7 +54,19 @@ class SSLStepOne {
         if ($apiProduct->isOrganizationRequired()) {
             $fields['additionalfields'][\MGModule\GGSSLWHMCS\eRepository\gogetssl\Organization::getTitle()] = \MGModule\GGSSLWHMCS\eRepository\gogetssl\Organization::getFields();
         }
-        $countriesForGenerateCsrForm = \MGModule\GGSSLWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountriesForMgAddonDropdown(); 
+        $countriesForGenerateCsrForm = \MGModule\GGSSLWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountriesForMgAddonDropdown();
+        
+        //get selected default country for CSR Generator
+        $defaultCsrGeneratorCountry = ($displayCsrGenerator) ? $apiConf->default_csr_generator_country : '';
+        if(key_exists($defaultCsrGeneratorCountry, $countriesForGenerateCsrForm) AND $defaultCsrGeneratorCountry != NULL)
+        {
+            //get country name
+            $elementValue = $countriesForGenerateCsrForm[$defaultCsrGeneratorCountry]/* . ' (default)'*/;            
+            //remove country from list
+            unset($countriesForGenerateCsrForm[$defaultCsrGeneratorCountry]);
+            //insert default country on the begin of countries list
+            $countriesForGenerateCsrForm = array_merge(array($defaultCsrGeneratorCountry => $elementValue), $countriesForGenerateCsrForm);
+        }
         
         $stepOneBaseScript    = \MGModule\GGSSLWHMCS\eServices\ScriptService::getStepOneBaseScript($apiProduct->brand);
         $orderTypeScript    = \MGModule\GGSSLWHMCS\eServices\ScriptService::getOrderTypeScript($orderTypes, $fillVarsJSON);

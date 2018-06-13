@@ -46,6 +46,7 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                         'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],                        
                         'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
                         'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
+                        'default_csr_generator_country'          => $params['default_csr_generator_country']
             ]);
         }
         else
@@ -73,7 +74,8 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                         'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
                         'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
                         'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
-                        'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
+                        'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],                        
+                        'default_csr_generator_country'          => $params['default_csr_generator_country']
             ]);
         }
     }
@@ -106,6 +108,7 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                 $table->string('tech_region');
                 $table->string('renew_invoice_days_reccuring')->nullable();
                 $table->string('renew_invoice_days_one_time')->nullable();
+                $table->string('default_csr_generator_country')->nullable();
             });
         }
     }
@@ -154,6 +157,13 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                 Capsule::schema()->table($this->tableName, function($table)
                 {
                     $table->string('renew_invoice_days_one_time')->nullable();
+                });
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'default_csr_generator_country'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->string('default_csr_generator_country')->nullable();
                 });
             }
            /* 'renew_invoice_days_reccuring'          

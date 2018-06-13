@@ -63,8 +63,8 @@ Proin malesuada eros in risus accumsan euismod. Vivamus lacinia pellentesque nun
                     }
                 }, false);
             });
-            $('input[name^="auto_renew_invoice"]').on('click', function () {
-                //$('input[name="use_admin_contact[]"]').prop('checked', true);
+            $('input[name^="auto_renew_invoice"], input[name^="display_csr_generator[]"]').on('click', function () {
+                //$('input[name="use_admin_contact[]"]').prop('checked', true);                
                 if (!$(this).is(":checked")) {
                     $(this).parent().parent().parent().find('select').prop('disabled', true);
                 } else {
