@@ -17,6 +17,19 @@ Please check the latest [Releases](https://github.com/gogetssl/whmcs-addon/relea
 - Please generate API password at [Client area](https://my.gogetssl.com) -> Reseller Modules -> API settings
 - Login is the same as login for Client area
 
+### List of addon features
+- Full integration, no invite links;
+- Multiple year support, up to 2 years;
+- One-time and Recurring payments
+- SAN/UCC/MDC support;
+- Online CSR Generator
+- Option to set default country for CSR Generator
+- Fully White Labled solution
+- Cron Synchronization for order status updates
+- Multiple renewal settings, including option to set when to send expiration notifications ot customers
+- Option to use fixed (same) technical contacts for all SSL certificates
+- Multiple Product Creator option
+
 ### List of supported SSL certificates
 
 You will be allowed to resell all of our SSL products:
