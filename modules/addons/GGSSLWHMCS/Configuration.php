@@ -53,7 +53,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
      * Module version
      * @var string
      */
-    public $version = '1.0.26'; 
+    public $version = '1.0.27'; 
 
     /**
      * Module author
@@ -99,6 +99,10 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
             'productsConfiguration' => array
                 (
                 'icon' => 'fa fa-edit',
+            ),
+            'importSSLOrder' => array
+                (
+                'icon' => 'fa fa-download',
             ),
         );
     }

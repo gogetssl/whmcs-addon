@@ -103,11 +103,6 @@ class SSL extends \Illuminate\Database\Eloquent\Model {
 
     }
 
-    public function setRemoteId($id) {
-        $this->remoteid = $id;
-
-    }
-
     public function setSansDomains($domains) {
         $fileds                 =  (array)$this->getConfigdataKey('fields');
         $fileds['sans_domains'] = $domains;
@@ -140,5 +135,37 @@ class SSL extends \Illuminate\Database\Eloquent\Model {
         }
                 
         return $query;
+    }    
+
+    public function setRemoteId($id) {
+        $this->remoteid = $id;
+    }
+    
+    public function setUserId($id) {
+        $this->userid = $id;
+    }
+    
+    public function setServiceId($id) {
+        $this->serviceid = $id;
+    }
+    
+    public function setAddonId($id) {
+        $this->addon_id = $id;
+    }
+    
+    public function setModule($name) {
+        $this->module = $name;
+    }
+    
+    public function setCertType($type) {
+        $this->certtype = $type;
+    }
+    
+    public function setCompletionDate($date) {
+        $this->completiondate = $date;
+    }
+    
+    public function setStatus($status) {
+        $this->status = $status;
     }
 }

@@ -274,6 +274,9 @@ class Client extends main\mgLibs\models\Orm{
         return $this->lastname;
     }
 
+    function getCompanyName() {
+        return $this->companyname;
+    }
 
 
 }

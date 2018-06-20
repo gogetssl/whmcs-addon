@@ -22,6 +22,10 @@
     <script type="text/javascript" src="{$assetsURL}/js/bootstrap-hover-dropdown.min.js"></script>
     <script type="text/javascript" src="{$assetsURL}/js/jquery-ui.min.js"></script>
     <script src="{$assetsURL}/js/validator.js" type="text/javascript"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="{$assetsURL}/css/bootstrap-select.min.css">
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="{$assetsURL}/js/bootstrap-select.min.js"></script>
     <script type="text/javascript">
         JSONParser.create('{$JSONCurrentUrl}');
         {literal}

@@ -395,7 +395,7 @@ class Query{
         {
             $sql .= " WHERE ".$conditionParsed;
         }
-        
+
         return self::query($sql,$values);
     }
     

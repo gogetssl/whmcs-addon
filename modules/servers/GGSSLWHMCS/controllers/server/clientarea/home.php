@@ -36,7 +36,7 @@ class home extends main\mgLibs\process\AbstractController {
                 try {
                     
                     $orderStatus = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);  
-                    
+                   
                     if(!empty($orderStatus['partner_order_id'])) {
                         $vars['partner_order_id'] = ($orderStatus['partner_order_id']);
                     }
