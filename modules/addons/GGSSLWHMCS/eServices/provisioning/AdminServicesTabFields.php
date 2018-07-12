@@ -46,10 +46,11 @@ class AdminServicesTabFields {
             
             $return = [];
             $return['GoGetSSL API Order ID'] = $sslService->remoteid;
-            $return['Configuration Status'] = $sslService->status;
-            
+
             $orderStatus = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
-            
+
+            $return['Comodo Order ID'] = $orderStatus['partner_order_id'];
+            $return['Configuration Status'] = $sslService->status;
             $return['Domain'] = $orderStatus['domain'];
             $return['Order Status'] = ucfirst($orderStatus['status']);   
             $return['Order Status Description'] = $orderStatus['status_description'] ? $orderStatus['status_description'] : '-';            

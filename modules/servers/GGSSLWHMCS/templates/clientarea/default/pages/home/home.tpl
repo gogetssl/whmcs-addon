@@ -76,12 +76,13 @@
                     <td class="text-left">{$validTill}</td>
                 </tr>
             {/if}
-            {if $order_id}
+            <!--{if $order_id}
                 <tr>
                     <td class="text-left">{$MGLANG->T('Order ID')}</td>
                     <td class="text-left">{$order_id}</td>
                 </tr>
             {/if}
+            -->
             {if $domain}
                 <tr>
                     <td class="text-left">{$MGLANG->T('domain')}</td>
