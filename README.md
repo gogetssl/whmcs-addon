@@ -20,6 +20,10 @@ Check [WIKI](https://github.com/gogetssl/whmcs-addon/wiki) for manuals and descr
 - Please generate API password at [Client area](https://my.gogetssl.com) -> Reseller Modules -> API settings
 - Login is the same as login for Client area
 
+### Suggestions, Bugs, Issues, New Features
+You are highly welcome to send us requests for new features, suggestions, issues or any possible bugs found
+[Submittion form](https://github.com/gogetssl/whmcs-addon/issues/new/choose)
+
 ### List of addon features
 - Full integration, no invite links;
 - Multiple year support, up to 2 years;
