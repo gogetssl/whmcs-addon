@@ -46,7 +46,8 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                         'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],                        
                         'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
                         'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
-                        'default_csr_generator_country'          => $params['default_csr_generator_country']
+                        'default_csr_generator_country'          => $params['default_csr_generator_country'],
+                        'summary_expires_soon_days'              => $params['summary_expires_soon_days']
             ]);
         }
         else
@@ -75,7 +76,8 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                         'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
                         'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
                         'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],                        
-                        'default_csr_generator_country'          => $params['default_csr_generator_country']
+                        'default_csr_generator_country'          => $params['default_csr_generator_country'],
+                        'summary_expires_soon_days'              => $params['summary_expires_soon_days']
             ]);
         }
     }
@@ -109,6 +111,7 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                 $table->string('renew_invoice_days_reccuring')->nullable();
                 $table->string('renew_invoice_days_one_time')->nullable();
                 $table->string('default_csr_generator_country')->nullable();
+                $table->string('summary_expires_soon_days')->nullable();
             });
         }
     }
@@ -166,7 +169,14 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                     $table->string('default_csr_generator_country')->nullable();
                 });
             }
-           /* 'renew_invoice_days_reccuring'          
+            if (!Capsule::schema()->hasColumn($this->tableName, 'summary_expires_soon_days'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->string('summary_expires_soon_days')->nullable();
+                });
+            }
+           /* 'renew_invoice_days_reccuring'
                         'renew_invoice_days_one_time'*/
         }
     }

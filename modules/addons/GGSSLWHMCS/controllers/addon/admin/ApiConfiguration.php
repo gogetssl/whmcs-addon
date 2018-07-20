@@ -138,8 +138,26 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field->enableDescription = true;
         $field->options = \MGModule\GGSSLWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountriesForMgAddonDropdown();         
         $field->error = $this->getFieldError('default_csr_generator_country');
-        $form->addField($field); 
+        $form->addField($field);
         
+        $field        = new main\mgLibs\forms\LegendField();
+        $field->name  = 'client_area_summary_orders';
+        $form->addField($field);
+
+        $field = new main\mgLibs\forms\SelectField();
+        $field->disabled =  false ;
+        $field->name = 'summary_expires_soon_days';
+        $field->required = true;
+        $field->value = $input['summary_expires_soon_days'];
+        $field->translateOptions = false;
+        $field->inline = true;
+        $field->colWidth = 3;
+        $field->continue = false;
+        $field->enableDescription = true;
+        $field->options = array('30'=>'30', '15'=>'15', '10'=>'10');
+        $field->error = $this->getFieldError('summary_expires_soon_days');
+        $form->addField($field);
+
         $field        = new main\mgLibs\forms\LegendField();
         $field->name  = 'tech_legend';
         $form->addField($field);

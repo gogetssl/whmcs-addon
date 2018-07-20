@@ -152,8 +152,8 @@ class Lang
             include $originalLanguageFile;
             self::getInstance()->langs       = array_merge(self::getInstance()->langs, $_LANG);
             self::getInstance()->currentLang = $lang;
-        } 
-        
+        }
+
         $file = self::getInstance()->dir . DS . 'overrides' . DS . $lang . '.php';
         
         if (file_exists($file))

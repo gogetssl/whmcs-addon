@@ -16,9 +16,12 @@ $_LANG['addonAA']['apiConfiguration']['item']['tech_legend']['label']           
 $_LANG['addonAA']['apiConfiguration']['item']['csr_generator_legend']['label']                         = 'CSR Generator';
 $_LANG['addonAA']['apiConfiguration']['item']['display_csr_generator']['label']                        = 'Allow To Use CSR Generator';
 $_LANG['addonAA']['apiConfiguration']['item']['default_csr_generator_country']['description']          = 'The default selection';
+$_LANG['addonAA']['apiConfiguration']['item']['client_area_summary_orders']['label']                   = 'Client Area Orders Summary';
+$_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['label']                    = 'Expires Soon';
+$_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['description']              = 'Count SSL order for statistics, if there are fewer or equal days to expire than the selected ones.';
 //
 $_LANG['addonAA']['apiConfiguration']['item']['renewal_settings_legend']['label']                      = 'Renewal Settings';
-$_LANG['addonAA']['apiConfiguration']['item']['auto_renew_invoice_reccuring']['label']                 = 'Reccuring Orders';
+$_LANG['addonAA']['apiConfiguration']['item']['auto_renew_invoice_reccuring']['label']                 = 'Recuring Orders';
 $_LANG['addonAA']['apiConfiguration']['item']['auto_renew_invoice_reccuring']['description']           = 'Create automatical renewal invoice';
 $_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_reccuring']['label']       = '';
 $_LANG['addonAA']['apiConfiguration']['item']['renew_invoice_days_reccuring']['description']           = 'Days before expiry';
@@ -150,3 +153,15 @@ $_LANG['addonAA']['importSSLOrder']['messages']['order_cancelled_import_unable']
 
 
 $_LANG['anErrorOccurred'] = 'An error occurred';
+
+$_LANG['addonCA']['sslSummary']['title'] = 'GoGetSSL Orders Summary';
+$_LANG['addonCA']['sslSummary']['total'] = 'Total Orders';
+$_LANG['addonCA']['sslSummary']['unpaid'] = 'Unpaid Orders';
+$_LANG['addonCA']['sslSummary']['processing'] = 'Processing';
+$_LANG['addonCA']['sslSummary']['expiresSoon'] = 'Expires Soon';
+
+$_LANG['sslSummarySidebarTitle'] = 'GoGetSSL Orders Summary';
+$_LANG['sslSummarySidebarTotal'] = 'Total Orders';
+$_LANG['sslSummarySidebarUnpaid'] = 'Unpaid Orders';
+$_LANG['sslSummarySidebarProcessing'] = 'Processing';
+$_LANG['sslSummarySidebarExpiresSoon'] = 'Expires Soon';

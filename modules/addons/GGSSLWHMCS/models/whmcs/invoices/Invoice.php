@@ -66,6 +66,12 @@ class Invoice extends main\mgLibs\models\Orm{
      */
     protected $datepaid;
     
+    /**
+     * @Column(name=status)
+     * @var string
+     */
+    protected $status;
+
      /**
      * @Column(name=subtotal)
      * @var string
@@ -101,6 +107,10 @@ class Invoice extends main\mgLibs\models\Orm{
 
     public function getSubtotal() {
         return $this->subtotal;
+    }
+
+    public function getStatus() {
+        return $this->status;
     }
 
     /**
