@@ -34,7 +34,7 @@ class Cron extends main\mgLibs\process\AbstractController
             //if service is synchronized skip it
             if ($this->checkIfSynchronized($serviceID)) continue;                
             //if certificate is active
-           
+            
             if ($order['status'] == 'active')
             {
                 //update whmcs service next due date
@@ -144,6 +144,109 @@ class Cron extends main\mgLibs\process\AbstractController
         
         return array();
     }
+    
+    public function certificateSendCRON($input, $vars = array())
+    {
+        echo 'Certificate Sender started.' . PHP_EOL;
+        logActivity("GGSSL WHMCS: Certificate Sender started.");
+        
+        $emailSendsCount = 0;
+        $this->sslRepo = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
+        
+        $services = new main\models\whmcs\service\Repository();
+        $services->onlyStatus(['Active']);
+
+        $servicesArray = [];
+        foreach ($services->get() as $service)
+        {
+            $apiOrders = null;
+            $product = $service->product();
+            //check if product is GOGET
+            if ($product->serverType != 'GGSSLWHMCS')
+            {
+                continue;
+            }
+            
+            $SSLOrder = new main\eModels\whmcs\service\SSL();
+            $ssl = $SSLOrder->getWhere(array('serviceid' => $service->id, 'userid' => $service->clientID))->first();
+            
+            if ($ssl == NULL || $ssl->remoteid == '')
+            {
+                continue;
+            }
+            $apiOrder = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($ssl->remoteid);
+            if($apiOrder['status'] !== 'active' || empty($apiOrder['ca_code'])) {
+                continue;
+            }
+            
+            if($this->checkIfCertificateSent($service->id)) continue;
+            
+            $apiConf = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get();        
+            $sendCertyficateTermplate = $apiConf->send_certificate_template;  
+            if($sendCertyficateTermplate == NULL)
+            {            
+                sendMessage(\MGModule\GGSSLWHMCS\eServices\EmailTemplateService::SEND_CERTIFICATE_TEMPLATE_ID, $service->id, [
+                    'ssl_certyficate' => nl2br($apiOrder['ca_code']),
+                ]);
+            } 
+            else
+            {
+                $templateName = \MGModule\GGSSLWHMCS\eServices\EmailTemplateService::getTemplateName($sendCertyficateTermplate);
+                sendMessage($templateName, $service->id, [
+                    'ssl_certyficate' => nl2br($apiOrder['ca_code']),
+                ]);
+            } 
+            $this->setSSLCertificateAsSent($service->id);
+            $emailSendsCount++;
+        }
+
+        echo 'Certificate Sender completed.' . PHP_EOL;
+        echo '<br />The number of messages sent: ' . $emailSendsCount . PHP_EOL;
+        
+        logActivity("GGSSL WHMCS: Certificate Sender completed. The number of messages sent: " . $emailSendsCount);
+        return array();
+    }
+    
+    public function loadCertificateStatsCRON($input, $vars = array())
+    {
+        echo 'Certificate Stats Loader started.' . PHP_EOL;
+        logActivity("GGSSL WHMCS: Certificate Stats Loader started.");
+        
+        $emailSendsCount = 0;
+        $this->sslRepo = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
+        
+        $services = new main\models\whmcs\service\Repository();
+        $services->onlyStatus(['Active', 'Suspended']);
+
+        $servicesArray = [];
+        foreach ($services->get() as $service)
+        {
+            $apiOrders = null;
+            $product = $service->product();
+            //check if product is GOGET
+            if ($product->serverType != 'GGSSLWHMCS')
+            {
+                continue;
+            }
+            
+            $SSLOrder = new main\eModels\whmcs\service\SSL();
+            $ssl = $SSLOrder->getWhere(array('serviceid' => $service->id, 'userid' => $service->clientID))->first();
+            
+            if ($ssl == NULL || $ssl->remoteid == '')
+            {
+                continue;
+            }
+            $apiOrder = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($ssl->remoteid);
+                        
+            $this->setSSLCertificateValidTillDate($service->id, $apiOrder['valid_till']);
+            $this->setSSLCertificateStatus($service->id, $apiOrder['status']);        
+            
+        }
+        echo '<br/ >'; 
+        echo 'Certificate Stats Loader completed.' . PHP_EOL; 
+        logActivity("GGSSL WHMCS: Certificate Stats Loader completed.");
+        return array();
+    }
 
     private function getSSLOrders($serviceID = null)
     {
@@ -196,6 +299,40 @@ class Cron extends main\mgLibs\process\AbstractController
 
         return $result;
     }
+    
+    private function checkIfCertificateSent($serviceID)
+    {
+        $result     = false;
+        $sslService = $this->sslRepo->getByServiceId((int) $serviceID);
+        if ($sslService->getConfigdataKey('certificateSent'))
+        {
+            $result = true;
+        }
+
+        return $result;
+    }
+    
+    private function setSSLCertificateAsSent($serviceID)
+    {
+        $sslService = $this->sslRepo->getByServiceId((int) $serviceID);
+        $sslService->setConfigdataKey('certificateSent', true);
+        $sslService->save();
+    }
+    
+    private function setSSLCertificateValidTillDate($serviceID, $date)
+    {
+        $sslService = $this->sslRepo->getByServiceId((int) $serviceID);
+        $sslService->setConfigdataKey('valid_till', $date);
+        $sslService->save();
+    }
+         
+    private function setSSLCertificateStatus($serviceID, $status)
+    {
+        $sslService = $this->sslRepo->getByServiceId((int) $serviceID);
+        $sslService->setConfigdataKey('ssl_status', $status);
+        $sslService->save();
+    }
+    
     private function checkServiceBillingPeriod($serviceID)
     {
         $skipPeriods = ['Monthly', 'One Time', 'Free Account'];

@@ -42,9 +42,20 @@ class AdminResendCertificate {
         if(empty($orderStatus['ca_code'])) {
             throw new Exception('An error occurred. Certificate body is empty.');
         }
-        
-        sendMessage(\MGModule\GGSSLWHMCS\eServices\EmailTemplateService::SEND_CERTIFICATE_TEMPLATE_ID, $this->p['serviceid'], [
-            'ssl_certyficate' => nl2br($orderStatus['ca_code']),
-        ]);
+        $apiConf = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get();        
+        $sendCertyficateTermplate = $apiConf->send_certificate_template;  
+        if($sendCertyficateTermplate == NULL)
+        {            
+            sendMessage(\MGModule\GGSSLWHMCS\eServices\EmailTemplateService::SEND_CERTIFICATE_TEMPLATE_ID, $this->p['serviceid'], [
+                'ssl_certyficate' => nl2br($orderStatus['ca_code']),
+            ]);
+        } 
+        else
+        {
+            $templateName = \MGModule\GGSSLWHMCS\eServices\EmailTemplateService::getTemplateName($sendCertyficateTermplate);
+            sendMessage($templateName, $this->p['serviceid'], [
+                'ssl_certyficate' => nl2br($orderStatus['ca_code']),
+            ]);
+        }       
     }
 }

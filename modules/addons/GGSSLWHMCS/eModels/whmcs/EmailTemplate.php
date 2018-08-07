@@ -10,4 +10,12 @@ class EmailTemplate extends \Illuminate\Database\Eloquent\Model {
     public function scopeWhereName($query, $name) {
         $query->where('name', '=', $name);
     }
+    
+    public function scopeWhereType($query, $type) {
+        $query->where('type', '=', $type);
+    }
+    
+    public function scopeWhereId($query, $id) {
+        $query->where('id', '=', $id);
+    }
 }

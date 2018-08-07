@@ -5,10 +5,24 @@ $_LANG['generalError'] = 'Something has gone wrong. Check logs and contact admin
 
 //ggssl configuration
 $_LANG['addonAA']['pagesLabels']['label']['apiConfiguration']                                          = 'Configuration';
-$_LANG['addonAA']['apiConfiguration']['cronSynchronization']['header']                                 = 'Cron Synchronization';
+$_LANG['addonAA']['apiConfiguration']['crons']['header']                                 = 'Crons';
+//synchronization cron
 $_LANG['addonAA']['apiConfiguration']['cronSynchronization']['pleaseNote']                             = 'Please Note:';
 $_LANG['addonAA']['apiConfiguration']['cronSynchronization']['info']                                   = 'In order to enable automatic synchronization, please set up a following cron command line (every hour suggested):';
 $_LANG['addonAA']['apiConfiguration']['cronSynchronization']['commandLine']['cronFrequency']           = '0 */1 * * *';
+//summary order cron
+$_LANG['addonAA']['apiConfiguration']['cronSSLSummaryStats']['pleaseNote']                             = 'Please Note:';
+$_LANG['addonAA']['apiConfiguration']['cronSSLSummaryStats']['info']                                   = 'In order to enable load current SSL orders status, please set up a following cron command line (every 4 hours suggested):';
+$_LANG['addonAA']['apiConfiguration']['cronSSLSummaryStats']['commandLine']['cronFrequency']           = '1 */4 * * *';
+//customers notification and creating renewals
+$_LANG['addonAA']['apiConfiguration']['cronRenewal']['pleaseNote']                             = 'Please Note:';
+$_LANG['addonAA']['apiConfiguration']['cronRenewal']['info']                                   = 'In order to send customers notifications of expiring services and create renewal invoices for services that expire within the selected number of days, set the following command line cron (once a day suggested):';
+$_LANG['addonAA']['apiConfiguration']['cronRenewal']['commandLine']['cronFrequency']           = '0 0 * * *';
+//customers send certificate
+$_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['pleaseNote']                             = 'Please Note:';
+$_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['info']                                   = 'In order to send a certificate to the client when the SSL order changes to active status, set the following command line cron (every 3 hours suggested):';
+$_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['commandLine']['cronFrequency']           = '0 3 * * *';
+//
 $_LANG['addonAA']['apiConfiguration']['item']['header']                                                = 'API Configuration';
 $_LANG['addonAA']['apiConfiguration']['item']['api_login']['label']                                    = 'Login';
 $_LANG['addonAA']['apiConfiguration']['item']['api_password']['label']                                 = 'Password';
@@ -19,6 +33,8 @@ $_LANG['addonAA']['apiConfiguration']['item']['default_csr_generator_country']['
 $_LANG['addonAA']['apiConfiguration']['item']['client_area_summary_orders']['label']                   = 'Client Area Orders Summary';
 $_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['label']                    = 'Expires Soon';
 $_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['description']              = 'Count SSL order for statistics, if there are fewer or equal days to expire than the selected ones.';
+$_LANG['addonAA']['apiConfiguration']['item']['send_certificate_template']['label']                    = 'Send Certificate Email Template';
+
 //
 $_LANG['addonAA']['apiConfiguration']['item']['renewal_settings_legend']['label']                      = 'Renewal Settings';
 $_LANG['addonAA']['apiConfiguration']['item']['auto_renew_invoice_reccuring']['label']                 = 'Recuring Orders';
@@ -154,13 +170,13 @@ $_LANG['addonAA']['importSSLOrder']['messages']['order_cancelled_import_unable']
 
 $_LANG['anErrorOccurred'] = 'An error occurred';
 
-$_LANG['addonCA']['sslSummary']['title'] = 'GoGetSSL Orders Summary';
+$_LANG['addonCA']['sslSummary']['title'] = 'SSL Orders Summary';
 $_LANG['addonCA']['sslSummary']['total'] = 'Total Orders';
 $_LANG['addonCA']['sslSummary']['unpaid'] = 'Unpaid Orders';
 $_LANG['addonCA']['sslSummary']['processing'] = 'Processing';
 $_LANG['addonCA']['sslSummary']['expiresSoon'] = 'Expires Soon';
 
-$_LANG['sslSummarySidebarTitle'] = 'GoGetSSL Orders Summary';
+$_LANG['sslSummarySidebarTitle'] = 'SSL Orders Summary';
 $_LANG['sslSummarySidebarTotal'] = 'Total Orders';
 $_LANG['sslSummarySidebarUnpaid'] = 'Unpaid Orders';
 $_LANG['sslSummarySidebarProcessing'] = 'Processing';

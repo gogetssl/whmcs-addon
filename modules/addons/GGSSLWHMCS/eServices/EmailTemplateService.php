@@ -59,6 +59,16 @@ class EmailTemplateService {
         return \MGModule\GGSSLWHMCS\eModels\whmcs\EmailTemplate::whereName($name)->first();
     }
     
+    public static function getTemplateName($id) {
+        $template  = \MGModule\GGSSLWHMCS\eModels\whmcs\EmailTemplate::whereId($id)->first();
+        
+        return $template->name;
+    }
+    
+    public static function getGeneralTemplates()
+    {
+        return \MGModule\GGSSLWHMCS\eModels\whmcs\EmailTemplate::whereType('product')->get();
+    }    
      
     public static function createExpireNotificationTemplate() {
         if(!is_null(self::getTemplate(self::EXPIRATION_TEMPLATE_ID))) {

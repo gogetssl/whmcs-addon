@@ -9,10 +9,12 @@ class SSLSummary
     private $clientID  = null;
     private $services  = [];
     private $apiOrders = null;
+    private $sslRepo = null;
 
     function __construct($clientID)
     {
         $this->clientID = $clientID;
+        $this->sslRepo = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
         $this->loadClientsSSLServices();
     }
 
@@ -46,12 +48,13 @@ class SSLSummary
     public function getProcessingSSLOrders()
     {
         $processing = 0;
-        if ($this->apiOrders == NULL)
-            $this->loadSSLOrdersFromAPI();
-        foreach ($this->apiOrders as $order)
+        foreach ($this->services as $service)
         {
-            if ($order['status'] == 'processing')
+            
+            if($this->getSSLCertificateStatus($service->id) == 'processing')
+            {
                 $processing++;
+            }
         }
 
         return $processing;
@@ -64,18 +67,27 @@ class SSLSummary
         $expiresSoonSelectedDays = $apiConf->summary_expires_soon_days;         
         if($expiresSoonSelectedDays != NULL && trim($expiresSoonSelectedDays) != '')
             $daysBefore = $expiresSoonSelectedDays;
-        //$daysBefore = 1000; to test
+        //$daysBefore = 1000; //to test
         $expiresSoon = 0;
-        if ($this->apiOrders == NULL)
-            $this->loadSSLOrdersFromAPI();
-        foreach ($this->apiOrders as $order)
+        foreach ($this->services as $service)
         {
-            if ($order['status'] == 'active')
+            $SSLOrder = new main\eModels\whmcs\service\SSL();
+
+            $ssl = $SSLOrder->getWhere(array('serviceid' => $service->id, 'userid' => $service->clientID))->first();
+
+            if ($ssl == NULL || $ssl->remoteid == '')
             {
-                if($this->checkOrderExpireDate($order['valid_till'], $daysBefore))
+                continue;
+            }
+            $expiry_date = $this->getSSLCertificateValidTillDate($service->id);
+            
+            if ($expiry_date != '0000-00-00' && $this->getSSLCertificateStatus($service->id) == 'active')
+            {                
+                if($this->checkOrderExpireDate($expiry_date, $daysBefore))
                     $expiresSoon++;
              } 
         }
+        
         return $expiresSoon;
     }
 
@@ -96,6 +108,22 @@ class SSLSummary
         }
         
         return ($diff <= $days) ? true : false;
+    }
+    
+    
+    private function getSSLCertificateValidTillDate($serviceID)
+    {
+        $sslService = $this->sslRepo->getByServiceId((int) $serviceID);
+        return $sslService->getConfigdataKey('valid_till');
+    }
+    
+    private function getSSLCertificateStatus($serviceID)
+    {
+        $sslService = $this->sslRepo->getByServiceId((int) $serviceID);
+        if($sslService == null)
+            return ;
+
+        return $sslService->getConfigdataKey('ssl_status');
     }
     
     private function loadClientsSSLServices()

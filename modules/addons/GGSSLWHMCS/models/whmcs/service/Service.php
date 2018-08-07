@@ -72,7 +72,7 @@ class service extends main\mgLibs\models\Orm{
      * @var main\models\whmcs\orders\order
      */
     private $_order;
-
+    
     /**
      * 
      * @Column()
@@ -171,11 +171,11 @@ class service extends main\mgLibs\models\Orm{
     protected function loadProduct($data = array()){
         return new main\models\whmcs\product\Product($this->productID,$data);
     }
-
+        
     /**
      * Load Order
      * Function allows to easy overwrite order object
-     *
+     * 
      * @author Michal Czech <michael@modulesgarden.com>
      * @param array $data
      * @return main\models\whmcs\orders\order
@@ -183,7 +183,7 @@ class service extends main\mgLibs\models\Orm{
     protected function loadOrder($data = array()){
         return new main\models\whmcs\orders\Order($this->orderId(),$data);
     }
-
+    
     /**
      * Load Client
      * Function allows to easy overwrite product object
@@ -241,18 +241,18 @@ class service extends main\mgLibs\models\Orm{
     
     /**
      * Get Order Service
-     *
+     * 
      * @author Michal Czech <michael@modulesgarden.com>
      * @return main\models\whmcs\orders\order
      */
-    public function order(){
+    public function order(){        
        if(empty($this->_order))
        {
            $this->_order = $this->loadOrder();
        }
        return $this->_order;
     }
-
+    
     /**
      * Get Custom Fields
      * 

@@ -47,7 +47,8 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                         'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
                         'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
                         'default_csr_generator_country'          => $params['default_csr_generator_country'],
-                        'summary_expires_soon_days'              => $params['summary_expires_soon_days']
+                        'summary_expires_soon_days'              => $params['summary_expires_soon_days'],
+                        'send_certificate_template'              => $params['send_certificate_template']
             ]);
         }
         else
@@ -77,7 +78,8 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                         'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
                         'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],                        
                         'default_csr_generator_country'          => $params['default_csr_generator_country'],
-                        'summary_expires_soon_days'              => $params['summary_expires_soon_days']
+                        'summary_expires_soon_days'              => $params['summary_expires_soon_days'],
+                        'send_certificate_template'              => $params['send_certificate_template']
             ]);
         }
     }
@@ -110,8 +112,9 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                 $table->string('tech_region');
                 $table->string('renew_invoice_days_reccuring')->nullable();
                 $table->string('renew_invoice_days_one_time')->nullable();
-                $table->string('default_csr_generator_country')->nullable();
+                $table->string('default_csr_generator_country')->nullable();                
                 $table->string('summary_expires_soon_days')->nullable();
+                $table->integer('send_certificate_template')->nullable();
             });
         }
     }
@@ -176,7 +179,14 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                     $table->string('summary_expires_soon_days')->nullable();
                 });
             }
-           /* 'renew_invoice_days_reccuring'
+            if (!Capsule::schema()->hasColumn($this->tableName, 'send_certificate_template'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->integer('send_certificate_template')->nullable();
+                });
+            }
+           /* 'renew_invoice_days_reccuring'          
                         'renew_invoice_days_one_time'*/
         }
     }

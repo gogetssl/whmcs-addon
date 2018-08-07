@@ -141,9 +141,27 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $form->addField($field);
         
         $field        = new main\mgLibs\forms\LegendField();
-        $field->name  = 'client_area_summary_orders';
+        $field->name  = 'send_certificate_template';
         $form->addField($field);
-
+                
+        $field = new main\mgLibs\forms\SelectField();
+        $field->disabled =  false ;
+        $field->name = 'send_certificate_template';
+        $field->required = true;
+        $field->value = ($input['send_certificate_template'] == NULL) ? \MGModule\GGSSLWHMCS\eServices\EmailTemplateService::getTemplate('GoGetSSL - Send Certificate')->id : $input['send_certyficate_template'] ;
+        $field->translateOptions = false;
+        $field->inline = true;
+        $field->colWidth = 4;
+        $field->continue = false;        
+        $field->enableDescription = false;
+        $field->options = $this->prepareGeneralEmailTemplatedArray(\MGModule\GGSSLWHMCS\eServices\EmailTemplateService::getGeneralTemplates());         
+        $field->error = $this->getFieldError('send_certificate_template');
+        $form->addField($field); 
+        
+        $field        = new main\mgLibs\forms\LegendField();
+        $field->name  = 'client_area_summary_orders';
+        $form->addField($field);        
+               
         $field = new main\mgLibs\forms\SelectField();
         $field->disabled =  false ;
         $field->name = 'summary_expires_soon_days';
@@ -152,12 +170,12 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field->translateOptions = false;
         $field->inline = true;
         $field->colWidth = 3;
-        $field->continue = false;
+        $field->continue = false;        
         $field->enableDescription = true;
-        $field->options = array('30'=>'30', '15'=>'15', '10'=>'10');
+        $field->options = array('30'=>'30', '15'=>'15', '10'=>'10');         
         $field->error = $this->getFieldError('summary_expires_soon_days');
-        $form->addField($field);
-
+        $form->addField($field); 
+        
         $field        = new main\mgLibs\forms\LegendField();
         $field->name  = 'tech_legend';
         $form->addField($field);
@@ -275,7 +293,9 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         
         //get cron command line
         $vars['cronCommandLine'] = 'php -q '.ROOTDIR.DS.'modules'.DS.'addons'.DS.'GGSSLWHMCS'.DS.'cron'.DS.'cron.php';
-
+        $vars['cronCommandLine2'] = 'php -q '.ROOTDIR.DS.'modules'.DS.'addons'.DS.'GGSSLWHMCS'.DS.'cron'.DS.'certificateStatsLoader.php';
+        $vars['cronCommandLine3'] = 'php -q '.ROOTDIR.DS.'modules'.DS.'addons'.DS.'GGSSLWHMCS'.DS.'cron'.DS.'notifier.php';
+        $vars['cronCommandLine4'] = 'php -q '.ROOTDIR.DS.'modules'.DS.'addons'.DS.'GGSSLWHMCS'.DS.'cron'.DS.'certificateSender.php';
         return array
             (
             //You have to create tpl file  /modules/addons/GGSSLWHMCS/templates/admin/pages/example1/example.1tpl
@@ -335,6 +355,18 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         return [
             'success' => main\mgLibs\Lang::T('messages', 'api_connection_success')
         ];
+    }
+    
+    private function prepareGeneralEmailTemplatedArray($templates)
+    {
+        $templatesArray = array();
+        
+        foreach ($templates as  $template)
+        {
+            $templatesArray[$template->id] = $template->name;           
+        }
+        
+        return $templatesArray;
     }
 
     /**

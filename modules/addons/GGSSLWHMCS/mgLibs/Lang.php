@@ -151,8 +151,8 @@ class Lang
         {
             include $originalLanguageFile;
             self::getInstance()->langs       = array_merge(self::getInstance()->langs, $_LANG);
-            self::getInstance()->currentLang = $lang;
-        }
+            self::getInstance()->currentLang = $lang;           
+        }         
 
         $file = self::getInstance()->dir . DS . 'overrides' . DS . $lang . '.php';
         
@@ -230,7 +230,7 @@ class Lang
     public static function T()
     {
         $lang = self::getInstance()->langs;
-
+        
         $history = array();
 
         foreach (self::getInstance()->context as $name)

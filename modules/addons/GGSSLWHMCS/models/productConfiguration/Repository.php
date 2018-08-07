@@ -5,6 +5,7 @@ namespace MGModule\GGSSLWHMCS\models\productConfiguration;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 use MGModule\GGSSLWHMCS\eServices\provisioning\ConfigOptions as C;
+use MGModule\GGSSLWHMCS as main;
 
 class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository {
 
@@ -87,6 +88,16 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository {
         $update[C::PRODUCT_INCLUDED_SANS] = $params[C::PRODUCT_INCLUDED_SANS] ? $params[C::PRODUCT_INCLUDED_SANS] : '0';
         $update['paytype']                = $params['paytype'];
         $update['autosetup']              = $params['autosetup'];
+        
+        //if san disabled unassign sans config options
+        if($update[C::PRODUCT_ENABLE_SAN] !== 'on') {
+            main\eServices\ConfigurableOptionService::unassignFromProduct($productId, $update['name']);
+        }
+        else
+        {
+            main\eServices\ConfigurableOptionService::assignToProduct($productId, $update['name']);
+        }
+        
         return Capsule::table('tblproducts')->where('id', $productId)->update($update);
     }
 

@@ -78,8 +78,8 @@ add_hook('InvoicePaid', 1, function($vars)
 
 /*
  *
- * assign ssl summary stats to clieat area page
- *
+ * assign ssl summary stats to clieat area page 
+ * 
  */
 
 function displaySSLSummaryStats($vars)
@@ -107,11 +107,11 @@ function displaySSLSummaryStats($vars)
             //get ssl statistics
             $sslSummaryStats = new MGModule\GGSSLWHMCS\eHelpers\SSLSummary($_SESSION['uid']);
 
-            $totalOrders       = $sslSummaryStats->getTotalSSLOrders();
-            $unpaidOrders      = $sslSummaryStats->getUnpaidSSLOrders();
+            $totalOrders       = $sslSummaryStats->getTotalSSLOrders(); 
+            $unpaidOrders      = $sslSummaryStats->getUnpaidSSLOrders(); 
             $processingOrders  = $sslSummaryStats->getProcessingSSLOrders();
             $expiresSoonOrders = $sslSummaryStats->getExpiresSoonSSLOrders();
-
+            
             $sslSummaryIntegrationCode .= "            
         <h3 class=\"dsb-title\" align=\"center\">$titleLang</h3>
         <div class=\"dash-stat-box dlb-border clerarfix\">            
@@ -141,7 +141,7 @@ function displaySSLSummaryStats($vars)
         }
         catch (\Exception $e)
         {
-
+            
         }
     }
 }
@@ -229,7 +229,7 @@ function displaySSLSummaryInSidebar($secondarySidebar)
     }
     catch (\Exception $e)
     {
-
+        
     }
 }
 add_hook('ClientAreaSecondarySidebar', 1, 'displaySSLSummaryInSidebar');

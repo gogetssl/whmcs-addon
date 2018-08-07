@@ -57,6 +57,10 @@ $_LANG['serverCA']['home']['reissueCertificate']                 = 'Reissue Cert
 $_LANG['serverCA']['home']['Actions']                            = 'Actions';
 $_LANG['serverCA']['home']['Submit']                             = 'Submit';
 $_LANG['serverCA']['home']['Close']                              = 'Close';
+$_LANG['serverCA']['home']['sendCertificate']                    = 'Send Certificate';
+$_LANG['serverCA']['home']['orderNotActiveError']                = 'Can not send certificate. Order status is different than active.';
+$_LANG['serverCA']['home']['CACodeEmptyError']                   = 'An error occurred. Certificate body is empty.';
+$_LANG['serverCA']['home']['sendCertificateSuccess']             = 'The certificate has been sent successfully.';
 
 $_LANG['serverCA']['reissueCertificate'] = 'Reissue Certificate';
 $_LANG['serverCA']['contactDetails']     = 'Contact Details';
@@ -175,8 +179,8 @@ $_LANG['incorrectCSR']            = 'Incorrect CSR';
 $_LANG['sanLimitExceeded']        = 'Exceeded limit of SAN domains';
 $_LANG['incorrectSans']           = 'Folowed SAN domains are incorrect: ';
 
-$_LANG['serverCA']['sslSummarySidebarTitle'] = 'GoGetSSL Orders Summary';
-$_LANG['serverCA']['sslSummarySidebarTotal'] = 'Total Orders';
-$_LANG['serverCA']['sslSummarySidebarUnpaid'] = 'Unpaid Orders';
-$_LANG['serverCA']['sslSummarySidebarProcessing'] = 'Processing';
+$_LANG['serverCA']['sslSummarySidebarTitle']       = 'SSL Orders Summary';
+$_LANG['serverCA']['sslSummarySidebarTotal']       = 'Total Orders';
+$_LANG['serverCA']['sslSummarySidebarUnpaid']      = 'Unpaid Orders';
+$_LANG['serverCA']['sslSummarySidebarProcessing']  = 'Processing';
 $_LANG['serverCA']['sslSummarySidebarExpiresSoon'] = 'Expires Soon';

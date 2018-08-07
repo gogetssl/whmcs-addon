@@ -190,6 +190,46 @@ class home extends main\mgLibs\process\AbstractController {
             'success' => $response['message']
         );        
     }
+    
+    public function sendCertificateEmailJSON($input, $vars = array()) {
+        $ssl = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
+        $serviceSSL = $ssl->getByServiceId($input['id']);
+        $orderStatus = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($serviceSSL->remoteid);
+        
+        if($orderStatus['status'] !== 'active') {
+            throw new \Exception( \MGModule\GGSSLWHMCS\mgLibs\Lang::getInstance()->T('orderNotActiveError')); //Can not send certificate. Order status is different than active.
+        }
+        
+        if(empty($orderStatus['ca_code'])) {
+            throw new \Exception(\MGModule\GGSSLWHMCS\mgLibs\Lang::getInstance()->T('CACodeEmptyError')); //An error occurred. Certificate body is empty.
+        }
+        $apiConf = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get();        
+        $sendCertyficateTermplate = $apiConf->send_certificate_template;  
+       
+
+        if($sendCertyficateTermplate == NULL)
+        {            
+            $result = sendMessage(\MGModule\GGSSLWHMCS\eServices\EmailTemplateService::SEND_CERTIFICATE_TEMPLATE_ID, $input['id'], [
+                'ssl_certyficate' => nl2br($orderStatus['ca_code']),
+            ]);
+        } 
+        else
+        {
+            $templateName = \MGModule\GGSSLWHMCS\eServices\EmailTemplateService::getTemplateName($sendCertyficateTermplate);
+            $result = sendMessage($templateName, $input['id'], [
+                'ssl_certyficate' => nl2br($orderStatus['ca_code']),
+            ]);
+        }  
+        if($result === true)
+        {
+             return array(
+                'success' => \MGModule\GGSSLWHMCS\mgLibs\Lang::getInstance()->T('sendCertificateSuccess')
+            ); 
+        }  
+        
+        throw new \Exception(\MGModule\GGSSLWHMCS\mgLibs\Lang::getInstance()->T($result));
+    }
+    
     function revalidateJSON($input, $vars = array()) {
         $serviceId  = $input['params']['serviceid'];
         $ssl        = new main\eRepository\whmcs\service\SSL();

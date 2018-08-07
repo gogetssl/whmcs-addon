@@ -199,6 +199,7 @@
                             <button type="button" id="btnRevalidate" class="btn btn-default" style="margin:2px">{$MGLANG->T('revalidate')}</button>
                         {else}
                             <a class="btn btn-default" role="button" href="" id="Action_Custom_Module_Button_Reissue_Certificate">{$MGLANG->T('reissueCertificate')}</a>
+                            <button type="button" id="send-certificate-email" class="btn btn-default" style="margin:2px">{$MGLANG->T('sendCertificate')}</button>
                         {/if}                        
                         <!--<button type="button" id="{if $dcv_method == 'email'}btnChange_Approver_Email{else}btnRevalidate{/if}" class="btn btn-default" style="margin:2px">{if $dcv_method == 'email'}{$MGLANG->T('changeValidationEmail')}{else}{$MGLANG->T('revalidate')}{/if}</button>-->
                         {if $privateKey}
@@ -219,7 +220,7 @@
             {/if}
             var reissueUrl= $('#Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Reissue_Certificate').attr('href');
             $('#Action_Custom_Module_Button_Reissue_Certificate').prop('href', reissueUrl);
-            $('#Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Reissue_Certificate').remove();
+            $('#Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Reissue_Certificate').remove();            
         });
     </script>
     
@@ -1057,6 +1058,20 @@
                             $('#MGAlerts>div[data-prototype="error"] strong').html(data.message);
                         }
                         $('#resend-validation-email').find('.fa-spinner').remove();
+                    }, false);
+                });
+                jQuery('#send-certificate-email').on("click",function(){
+                    $('#send-certificate-email').find('.fa-spinner').remove();
+                    $('#send-certificate-email').append(' <i id="resendSpinner" class="fa fa-spinner fa-spin"></i>');
+                    JSONParser.request('sendCertificateEmail',{json: 1, id: serviceid}, function (data) {
+                        if (data.success == true) {                            
+                            $('#MGAlerts>div[data-prototype="success"]').show();
+                            $('#MGAlerts>div[data-prototype="success"] strong').html(data.message);
+                        } else if (data.success == false) {
+                            $('#MGAlerts>div[data-prototype="error"]').show();
+                            $('#MGAlerts>div[data-prototype="error"] strong').html(data.message);
+                        }
+                        $('#send-certificate-email').find('.fa-spinner').remove();
                     }, false);
                 });
                 jQuery('#getPrivateKey').on("click",function(){
