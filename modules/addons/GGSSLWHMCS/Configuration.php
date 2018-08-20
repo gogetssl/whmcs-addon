@@ -11,8 +11,8 @@ use Illuminate\Database\Capsule\Manager as Capsule;
  * @author Michal Czech <michael@modulesgarden.com>
  * @SuppressWarnings("unused")
  */
-class Configuration extends main\mgLibs\process\AbstractConfiguration {
-
+class Configuration extends main\mgLibs\process\AbstractConfiguration
+{
     /**
      * Enable or disable debug mode in your module.
      * @var bool
@@ -53,7 +53,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
      * Module version
      * @var string
      */
-    public $version = '1.0.31'; 
+    public $version = '1.0.32'; 
 
     /**
      * Module author
@@ -65,7 +65,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
      * Table prefix. This prefix is used in database models. You have to change it! 
      * @var type 
      */
-    public $tablePrefix = 'mgfw_';
+    public $tablePrefix   = 'mgfw_';
     public $modelRegister = array(
         'models\testGroup\testItem\TestItem'
         , 'models\testGroup\simpleItem\SimpleItem'
@@ -73,7 +73,8 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
         , 'models\accessDetails\AccessDetail'
     );
 
-    function __construct() {
+    function __construct()
+    {
         /*
           models\whmcs\product\configOptions\Repository::setConfiguration(array(
 
@@ -86,13 +87,14 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
      * Addon module visible in module
      * @return array
      */
-    function getAddonMenu() {
+    function getAddonMenu()
+    {
         return array(
-            'apiConfiguration' => array
+            'apiConfiguration'      => array
                 (
                 'icon' => 'fa fa-key',
             ),
-            'productsCreator' => array
+            'productsCreator'       => array
                 (
                 'icon' => 'fa fa-magic',
             ),
@@ -100,7 +102,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
                 (
                 'icon' => 'fa fa-edit',
             ),
-            'importSSLOrder' => array
+            'importSSLOrder'        => array
                 (
                 'icon' => 'fa fa-download',
             ),
@@ -111,16 +113,17 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
      * Addon module visible in client area
      * @return array
      */
-    function getClienMenu() {
+    function getClienMenu()
+    {
         return array(
-            'home' => array(
+            'home'       => array(
                 'icon' => 'glyphicon glyphicon-home'
             ),
-            'shared' => array
+            'shared'     => array
                 (
                 'icon' => 'fa fa-key'
             ),
-            'product' => array
+            'product'    => array
                 (
                 'icon' => 'fa fa-key'
             ),
@@ -135,7 +138,8 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
      * Provisioning menu visible in admin area
      * @return array
      */
-    function getServerMenu() {
+    function getServerMenu()
+    {
         return array(
             'configuration' => array(
                 'icon' => 'glyphicon glyphicon-cog'
@@ -153,7 +157,8 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
      * 
      * @return array
      */
-    public function getServerWHMCSConfig() {
+    public function getServerWHMCSConfig()
+    {
         return array(
             'text_name'
             , 'text_name2'
@@ -170,7 +175,8 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
      * Addon module configuration visible in admin area. This is standard WHMCS configuration
      * @return array
      */
-    public function getAddonWHMCSConfig() {
+    public function getAddonWHMCSConfig()
+    {
         return [];
     }
 
@@ -180,7 +186,8 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
      * @author Michal Czech <michael@modulesgarden.com>
      * @return array
      */
-    function activate() {
+    function activate()
+    {
         $apiConfigRepo = new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository();
         $apiConfigRepo->createApiConfigurationTable();
         eServices\EmailTemplateService::createConfigurationTemplate();
@@ -193,7 +200,8 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
      * Do something after module deactivate. You can status and description
      * @return array
      */
-    function deactivate() {
+    function deactivate()
+    {
         $apiConfigRepo = new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository();
         $apiConfigRepo->dropApiConfigurationTable();
         eServices\EmailTemplateService::deleteConfigurationTemplate();
@@ -205,14 +213,56 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration {
      * Do something after module upgrade
      * @param type $vars
      */
-    function upgrade($vars) {
+    function upgrade($vars)
+    {
         $version = $vars['version'];
-        
+
         eServices\EmailTemplateService::createExpireNotificationTemplate();
         eServices\EmailTemplateService::updateConfigurationTemplate();
         eHelpers\Invoice::createInfosTable();
         $apiConfigRepo = new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository();
-        $apiConfigRepo->updateApiConfigurationTable();        
-    }
+        $apiConfigRepo->updateApiConfigurationTable();
+        
+        //set serrtificates as sent for old ssl orders
+        if (version_compare($version, '1.0.32', '<='))
+        {
+            $services = new main\models\whmcs\service\Repository();
+            $services->onlyStatus(['Active']);
+            logActivity('GGSSL WHMCS Upgrade Start.');
+            $serviceIDs = array();
+            foreach ($services->get() as $service)
+            {
+                $product   = $service->product();
+                //check if product is GOGET
+                if ($product->serverType != 'GGSSLWHMCS')
+                {
+                    continue;
+                }
 
+                $SSLOrder = new main\eModels\whmcs\service\SSL();
+                $ssl      = $SSLOrder->getWhere(array('serviceid' => $service->id, 'userid' => $service->clientID))->first();
+
+                if ($ssl == NULL || $ssl->remoteid == '')
+                {
+                    continue;
+                }
+                $apiOrder = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($ssl->remoteid);
+                if ($apiOrder['status'] !== 'active' || empty($apiOrder['ca_code']))
+                {
+                    continue;
+                }
+                if((new main\controllers\addon\admin\Cron())->checkIfCertificateSent($service->id)) continue;
+                               
+                (new main\controllers\addon\admin\Cron())->setSSLCertificateAsSent($service->id);
+                
+                array_push($serviceIDs, $service->id);
+            } 
+            if(!empty($serviceIDs))
+            {
+                logActivity('SSL certificates associated with services with identifiers: '.implode(', ', $serviceIDs).' have been marked as sent.');                
+            }
+            
+            logActivity('GGSSL WHMCS Upgrade Completed.');
+        }
+    }
 }

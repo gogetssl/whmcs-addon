@@ -38,15 +38,13 @@ Proin malesuada eros in risus accumsan euismod. Vivamus lacinia pellentesque nun
                     </div>                   
                     <br />
                     <input type="text" class="form-control" value="{$MGLANG->T('cronRenewal', 'commandLine', 'cronFrequency')} {$cronCommandLine3}" readonly=""> 
-                    <br />
-                    <!--
+                    <br />                    
                     <div class="col-lg-11 marginated">
                         <span class="text-danger bold">{$MGLANG->T('cronSendCertificate','pleaseNote')}</span>
                         <span>{$MGLANG->T('cronSendCertificate', 'info')}</span>
                     </div> 
                     <br />
                     <input type="text" class="form-control" value="{$MGLANG->T('cronSendCertificate', 'commandLine', 'cronFrequency')} {$cronCommandLine4}" readonly=""> 
-                    -->
                 </div>
             </div>
         </form>

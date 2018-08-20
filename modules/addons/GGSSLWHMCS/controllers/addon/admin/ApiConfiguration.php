@@ -143,17 +143,17 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field        = new main\mgLibs\forms\LegendField();
         $field->name  = 'send_certificate_template';
         $form->addField($field);
-                
+        
         $field = new main\mgLibs\forms\SelectField();
         $field->disabled =  false ;
         $field->name = 'send_certificate_template';
         $field->required = true;
-        $field->value = ($input['send_certificate_template'] == NULL) ? \MGModule\GGSSLWHMCS\eServices\EmailTemplateService::getTemplate('GoGetSSL - Send Certificate')->id : $input['send_certyficate_template'] ;
+        $field->value = ($input['send_certificate_template'] == NULL) ? \MGModule\GGSSLWHMCS\eServices\EmailTemplateService::getTemplate('GoGetSSL - Send Certificate')->id : $input['send_certificate_template'] ;
         $field->translateOptions = false;
         $field->inline = true;
         $field->colWidth = 4;
         $field->continue = false;        
-        $field->enableDescription = false;
+        $field->enableDescription = true;
         $field->options = $this->prepareGeneralEmailTemplatedArray(\MGModule\GGSSLWHMCS\eServices\EmailTemplateService::getGeneralTemplates());         
         $field->error = $this->getFieldError('send_certificate_template');
         $form->addField($field); 

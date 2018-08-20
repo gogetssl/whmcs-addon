@@ -1,10 +1,10 @@
 <script type="text/javascript">
     if($('#inputServerType').length > 0) {
-           $('#inputServerType').parent().before('<div class="form-group"><label for="inputOrderType">' + '{$MGLANG->T('orderTypeTitle')}' + '</label><select name="fields[order_type]" id="inputOrderType" class="form-control"></select><br>' + '{$MGLANG->T('selectOrderTypeDescritpion')}' + '</div>');
+           $('#inputServerType').parent().before('<div class="form-group"><label for="inputOrderType">' + '{$MGLANG->T('orderTypeTitle')}' + '</label><br>' + '{$MGLANG->T('selectOrderTypeDescritpion')}' + '<select name="fields[order_type]" id="inputOrderType" class="form-control"></select></div>');
         }
         //for control theme
         if($('#servertype').length > 0) {            
-           $('#servertype').parent().parent().before('<div class="form-group"><label class="col-sm-3 control-label" for="inputOrderType">' + '{$MGLANG->T('orderTypeTitle')}' + '</label><div class="col-sm-6"><select name="fields[order_type]" id="inputOrderType" class="form-control"></select><br>' + '{$MGLANG->T('selectOrderTypeDescritpion')}' + '</div></div>');
+           $('#servertype').parent().parent().before('<div class="form-group"><label class="col-sm-3 control-label" for="inputOrderType">' + '{$MGLANG->T('orderTypeTitle')}' + '</label>' + '{$MGLANG->T('selectOrderTypeDescritpion')}' + '<div class="col-sm-6"><select name="fields[order_type]" id="inputOrderType" class="form-control"></select><br></div></div>');
         
         }
     $(document).ready(function () {

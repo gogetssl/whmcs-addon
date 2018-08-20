@@ -300,9 +300,12 @@ class Cron extends main\mgLibs\process\AbstractController
         return $result;
     }
     
-    private function checkIfCertificateSent($serviceID)
+    public function checkIfCertificateSent($serviceID)
     {
         $result     = false;
+        if($this->sslRepo == NULL)
+            $this->sslRepo = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
+        
         $sslService = $this->sslRepo->getByServiceId((int) $serviceID);
         if ($sslService->getConfigdataKey('certificateSent'))
         {
@@ -312,8 +315,10 @@ class Cron extends main\mgLibs\process\AbstractController
         return $result;
     }
     
-    private function setSSLCertificateAsSent($serviceID)
+    public function setSSLCertificateAsSent($serviceID)
     {
+        if($this->sslRepo == NULL)
+            $this->sslRepo = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
         $sslService = $this->sslRepo->getByServiceId((int) $serviceID);
         $sslService->setConfigdataKey('certificateSent', true);
         $sslService->save();
