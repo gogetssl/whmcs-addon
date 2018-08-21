@@ -88,10 +88,10 @@ class Item extends main\mgLibs\models\Orm{
      	
     
      /**
-     * @Column(name=paymentmethod )
+     * @Column(name=paymentmethod)
      * @var int
      */
-    protected $paymentmethod ;
+    protected $paymentmethod;
     
     	
     public function getId() {
@@ -151,5 +151,13 @@ class Item extends main\mgLibs\models\Orm{
         return $this->type ='Hosting';
     }
     
+    public function getDescription()
+    {
+        return $this->description;        
+    }
     
+    public function setDescription($desc)
+    {
+        $this->description = $desc;        
+    }
 }

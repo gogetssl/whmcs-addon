@@ -43,12 +43,13 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                         'auto_renew_invoice_one_time'            => $params['auto_renew_invoice_one_time'],
                         'auto_renew_invoice_reccuring'           => $params['auto_renew_invoice_reccuring'],
                         'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
-                        'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],                        
+                        'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
                         'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
                         'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
                         'default_csr_generator_country'          => $params['default_csr_generator_country'],
                         'summary_expires_soon_days'              => $params['summary_expires_soon_days'],
-                        'send_certificate_template'              => $params['send_certificate_template']
+                        'send_certificate_template'              => $params['send_certificate_template'],
+                        'display_ca_summary'                     => $params['display_ca_summary']
             ]);
         }
         else
@@ -76,10 +77,11 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                         'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
                         'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
                         'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
-                        'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],                        
+                        'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
                         'default_csr_generator_country'          => $params['default_csr_generator_country'],
                         'summary_expires_soon_days'              => $params['summary_expires_soon_days'],
-                        'send_certificate_template'              => $params['send_certificate_template']
+                        'send_certificate_template'              => $params['send_certificate_template'],
+                        'display_ca_summary'                     => $params['display_ca_summary']
             ]);
         }
     }
@@ -112,9 +114,10 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                 $table->string('tech_region');
                 $table->string('renew_invoice_days_reccuring')->nullable();
                 $table->string('renew_invoice_days_one_time')->nullable();
-                $table->string('default_csr_generator_country')->nullable();                
+                $table->string('default_csr_generator_country')->nullable();
                 $table->string('summary_expires_soon_days')->nullable();
                 $table->integer('send_certificate_template')->nullable();
+                $table->boolean('display_ca_summary');
             });
         }
     }
@@ -186,8 +189,15 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                     $table->integer('send_certificate_template')->nullable();
                 });
             }
-           /* 'renew_invoice_days_reccuring'          
-                        'renew_invoice_days_one_time'*/
+            if (!Capsule::schema()->hasColumn($this->tableName, 'display_ca_summary'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->boolean('display_ca_summary');
+                });
+            }
+            /* 'renew_invoice_days_reccuring'          
+              'renew_invoice_days_one_time' */
         }
     }
 

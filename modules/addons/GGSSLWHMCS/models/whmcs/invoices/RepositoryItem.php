@@ -50,6 +50,17 @@ class RepositoryItem extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository {
         return $this;
         
     }
+    /**
+     * 
+     * @param int $id
+     * @return \MGModule\GGSSLWHMCS\models\whmcs\pricing\RepositoryItem
+     */
+    public function onlyServiceId($id){
+        
+        $this->_filters['relid'] = (int)$id;
+        return $this;
+        
+    }
     
     /**
      * 

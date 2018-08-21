@@ -86,6 +86,19 @@ class AdminReissueCertificate extends Ajax {
         $sslService->setSansDomains($data['dns_names']);
         $sslService->save();
         
+        try
+        {
+            $decodedCSR   = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->p['csr']);
+            \MGModule\GGSSLWHMCS\eHelpers\Invoice::insertDomainInfoIntoInvoiceItemDescription($this->p['serviceId'], $decodedCSR['csrResult']['CN'], true);
+            
+            $service = new \MGModule\GGSSLWHMCS\models\whmcs\service\Service($this->p['serviceId']);
+            $service->save(array('domain' => $decodedCSR['csrResult']['CN']));
+        }
+        catch(Exception $e)
+        {
+            
+        } 
+        
         $this->response(true, 'Certificate was successfully reissued.');
 
     }

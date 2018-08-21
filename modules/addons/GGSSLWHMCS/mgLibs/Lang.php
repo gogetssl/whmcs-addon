@@ -232,6 +232,7 @@ class Lang
         $lang = self::getInstance()->langs;
         
         $history = array();
+        
 
         foreach (self::getInstance()->context as $name)
         {
@@ -239,14 +240,16 @@ class Lang
             {
                 $lang = $lang[$name];
             }
+
             $history[] = $name;
         }
-
         $returnLangArray = false;
 
         foreach (func_get_args() as $find)
         {
+            
             $history[] = $find;
+
             if (isset($lang[$find]))
             {
                 if (is_array($lang[$find]))
@@ -260,7 +263,6 @@ class Lang
             }
             else
             {
-
                 if (self::getInstance()->fillLangFile)
                 {
                     $returnLangArray = true;
@@ -278,7 +280,6 @@ class Lang
             self::getInstance()->missingLangs['$' . "_LANG['" . implode("']['", $history) . "']"] = ucfirst(end($history));
             return '$' . "_LANG['" . implode("']['", $history) . "']";
         }
-
         if (is_array($lang) && self::getInstance()->fillLangFile)
         {
             self::getInstance()->missingLangs['$' . "_LANG['" . implode("']['", $history) . "']"] = implode(" ",
@@ -288,7 +289,7 @@ class Lang
                                                                                                                         true));
             return '$' . "_LANG['" . implode("']['", $history) . "']";
         }
-
+        
         return htmlentities($find);
     }
 

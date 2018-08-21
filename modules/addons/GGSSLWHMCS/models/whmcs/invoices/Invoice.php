@@ -80,6 +80,7 @@ class Invoice extends main\mgLibs\models\Orm{
     
     private $_client;
     
+    protected $_items;
     
     public function getId() {
         return $this->id;
@@ -121,6 +122,21 @@ class Invoice extends main\mgLibs\models\Orm{
         if(!empty($this->_client))
             return $this->_client;
         return $this->_client = new main\models\whmcs\clients\Client($this->getUserId());
+    }
+    
+    /**
+     * 
+     * @return main\models\whmcs\invoices\item
+     */
+    public function items() {
+        if(!empty($this->_items))
+            return $this->_items;
+        
+        $itemsRepository = new main\models\whmcs\invoices\RepositoryItem();
+        $itemsRepository->onlyInvoiceId($this->id);
+        $this->_items = $itemsRepository->get();
+        
+        return $this->_items;
     }
 
     /**

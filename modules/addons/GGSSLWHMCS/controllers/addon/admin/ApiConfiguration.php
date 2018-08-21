@@ -160,15 +160,25 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         
         $field        = new main\mgLibs\forms\LegendField();
         $field->name  = 'client_area_summary_orders';
-        $form->addField($field);        
-               
+        $form->addField($field);   
+        
+        $field = new main\mgLibs\forms\CheckboxField();                     
+        $field->name = 'display_ca_summary';
+        $field->options = ['displayCASummary'];
+        $field->value = $input['display_ca_summary'] ? ['displayCASummary'] : [''];        
+        $field->inline = false;
+        $field->colWidth = 2;
+        $field->continue = false;        
+        $field->enableDescription = false;
+        $form->addField($field);
+        
         $field = new main\mgLibs\forms\SelectField();
         $field->disabled =  false ;
         $field->name = 'summary_expires_soon_days';
         $field->required = true;
         $field->value = $input['summary_expires_soon_days'];
         $field->translateOptions = false;
-        $field->inline = true;
+        $field->inline = false;
         $field->colWidth = 3;
         $field->continue = false;        
         $field->enableDescription = true;
@@ -314,6 +324,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
                     'auto_renew_invoice_reccuring',
                     'send_expiration_notification_reccuring',
                     'send_expiration_notification_one_time',
+                    'display_ca_summary'
                     );
                 foreach($checkFieldsArray as $field)
                 {

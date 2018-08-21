@@ -68,7 +68,6 @@ add_hook('InvoicePaid', 1, function($vars)
     require_once dirname(dirname(dirname(__DIR__))) . DIRECTORY_SEPARATOR . 'init.php';
     require_once 'Loader.php';
 
-
     $loader           = new \MGModule\GGSSLWHMCS\Loader();
     $invoiceGenerator = new \MGModule\GGSSLWHMCS\eHelpers\Invoice();
 
@@ -96,6 +95,11 @@ function displaySSLSummaryStats($vars)
 
             \MGModule\GGSSLWHMCS\Addon::I(true);
 
+            $apiConf = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get();        
+            $displaySSLSummary = $apiConf->display_ca_summary; 
+            if(!(bool) $displaySSLSummary)
+                return;
+            
             $sslSummaryIntegrationCode = '';
 
             $titleLang       = \MGModule\GGSSLWHMCS\mgLibs\Lang::T('addonCA', 'sslSummary', 'title');
@@ -160,18 +164,25 @@ add_hook('ClientAreaHeadOutput', 1, 'loadSSLSummaryCSSStyle');
 
 function displaySSLSummaryInSidebar($secondarySidebar)
 {
+    
+    
     GLOBAL $smarty;
-
-    if (in_array($smarty->tpl_vars['templatefile']->value, array('clientareahome','clientareacancelrequest')))
+    
+    if (in_array($smarty->tpl_vars['templatefile']->value, array('clientareahome','clientareacancelrequest', '/modules/servers/GGSSLWHMCS/main.tpl')) || !isset($_SESSION['uid']))
         return;
-
+    
     try
     {
         require_once 'Loader.php';
         new \MGModule\GGSSLWHMCS\Loader();
 
         \MGModule\GGSSLWHMCS\Addon::I(true);
-
+        
+        $apiConf = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get();        
+        $displaySSLSummary = $apiConf->display_ca_summary; 
+        if(!(bool) $displaySSLSummary)
+            return;
+   
         //get ssl statistics
         $sslSummaryStats = new MGModule\GGSSLWHMCS\eHelpers\SSLSummary($_SESSION['uid']);
 
@@ -229,7 +240,6 @@ function displaySSLSummaryInSidebar($secondarySidebar)
     }
     catch (\Exception $e)
     {
-        
     }
 }
 add_hook('ClientAreaSecondarySidebar', 1, 'displaySSLSummaryInSidebar');

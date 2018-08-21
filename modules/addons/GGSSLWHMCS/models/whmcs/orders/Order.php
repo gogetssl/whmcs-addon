@@ -64,6 +64,12 @@ class Order extends main\mgLibs\models\Orm{
      * @var main\models\whmcs\clients\client
      */
     private $_client;
+    
+    /**
+     *
+     * @var main\models\whmcs\invoices\invoice
+     */
+    private $_invoice;
 
     /**
      * 
@@ -78,7 +84,21 @@ class Order extends main\mgLibs\models\Orm{
         return $this->_client;
     }
     
+    /**
+     * 
+     * @return main\models\whmcs\invoices\invoice
+     */
+    public function invoice(){
+        if(empty($this->_invoice))
+        {
+            $this->_invoice = new main\models\whmcs\invoices\Invoice($this->invoiceid);
+        }
+        
+        return $this->_invoice;
+    }
+    
     function getOrderUrl(){
         return 'orders.php?action=view&id='.$this->id;
     }
+    
 }

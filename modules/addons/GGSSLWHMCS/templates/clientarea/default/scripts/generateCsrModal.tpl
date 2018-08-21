@@ -245,7 +245,7 @@
             }    
         function submitgenerateCsrModal() {
             $('#generateCsrSuccess').remove(); 
-                
+            
             addSpiner(generateCsrSubmitBtn);
             disable(generateCsrSubmitBtn);
             var data = {                
@@ -258,6 +258,17 @@
                 commonName: generateCsrCommonName.val(),
                 emailAddress: generateCsrEmailAddress.val()
             };
+            
+                
+            //if is reissue add additional serviceid field
+            
+            if($('input[name="reissueServiceID"]').length > 0)
+            {
+                var serviceID = $('input[name="reissueServiceID"]').val();
+                data['doNotSaveToDatabase'] = true;
+                data['serviceID'] = serviceID;                
+            }
+                
             $.ajax({
                 url: serviceUrl,
                 type: "POST",

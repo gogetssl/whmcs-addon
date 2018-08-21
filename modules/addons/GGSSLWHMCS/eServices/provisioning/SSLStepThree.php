@@ -4,6 +4,7 @@ namespace MGModule\GGSSLWHMCS\eServices\provisioning;
 
 use Exception;
 use \MGModule\GGSSLWHMCS\models\whmcs\service\Service as Service;
+use \MGModule\GGSSLWHMCS\models\whmcs\product\Product as Product;
 class SSLStepThree {
 
     /**
@@ -249,12 +250,11 @@ class SSLStepThree {
                 $addedSSLOrder = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLOrder($order);
                 break;
         }
-        
         //update domain column in tblhostings
         $service = new Service($this->p['serviceid']);
         $service->save(array('domain' => $decodedCSR['csrResult']['CN']));
         
-        $this->sslConfig->setRemoteId($addedSSLOrder['order_id']);        
+        $this->sslConfig->setRemoteId($addedSSLOrder['order_id']); 
         $this->sslConfig->setApproverEmails($order['approver_emails']); 
         //$this->sslConfig->setApproverEmails($order['approver_emails']); 
         $this->sslConfig->save();
@@ -263,7 +263,10 @@ class SSLStepThree {
         $this->invoiceGenerator->markPreviousOrderAsCompleted($this->p['serviceid']);
         
         \MGModule\GGSSLWHMCS\eServices\FlashService::set('GGSSL_WHMCS_SERVICE_TO_ACTIVE', $this->p['serviceid']);
-    }
+        
+        \MGModule\GGSSLWHMCS\eHelpers\Invoice::insertDomainInfoIntoInvoiceItemDescription($this->p['serviceid'], $decodedCSR['csrResult']['CN']);
+    }   
+        
     private function getSansDomainsValidationMethods() {  
         $data = [];
         foreach ($this->p['sansDomansDcvMethod'] as  $newMethod) { 

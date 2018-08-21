@@ -53,8 +53,7 @@ class ClientReissueCertificate {
         $this->get            = &$get;
         $this->post           = &$post;
         $this->vars           = [];
-        $this->vars['errors'] = []; 
-
+        $this->vars['errors'] = [];
     }
     public function run() {
         
@@ -89,13 +88,36 @@ class ClientReissueCertificate {
                 $this->vars['errors'][] = \MGModule\GGSSLWHMCS\eHelpers\Exception::e($ex);
             }
         }
-    
+     
+        
+        //dsiplay csr generator
+        $apiConf = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get();      
+        $displayCsrGenerator = $apiConf->display_csr_generator;    
+        $countriesForGenerateCsrForm = \MGModule\GGSSLWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountriesForMgAddonDropdown();
+        
+        //get selected default country for CSR Generator
+        $defaultCsrGeneratorCountry = ($displayCsrGenerator) ? $apiConf->default_csr_generator_country : '';
+        if(key_exists($defaultCsrGeneratorCountry, $countriesForGenerateCsrForm) AND $defaultCsrGeneratorCountry != NULL)
+        {
+            //get country name
+            $elementValue = $countriesForGenerateCsrForm[$defaultCsrGeneratorCountry]/* . ' (default)'*/;            
+            //remove country from list
+            unset($countriesForGenerateCsrForm[$defaultCsrGeneratorCountry]);
+            //insert default country on the begin of countries list
+            $countriesForGenerateCsrForm = array_merge(array($defaultCsrGeneratorCountry => $elementValue), $countriesForGenerateCsrForm);
+        }
+        
+        $this->vars['generateCsrIntegrationCode'] =   ($displayCsrGenerator) ? \MGModule\GGSSLWHMCS\eServices\ScriptService::getGenerateCsrModalScript(json_encode(array()), $countriesForGenerateCsrForm) : '';       
+        $this->vars['serviceID'] = $this->p['serviceid'];
+       
         $this->loadServerList(); 
         $this->vars['sansLimit'] = $this->getSansLimit();       
         
         return $this->build(self::STEP_ONE);
 
     }
+    
+    
 
     private function setMainDomainDcvMethod($post) {
         $this->post['dcv_method']  = $post['dcvmethodMainDomain']; 
@@ -118,15 +140,21 @@ class ClientReissueCertificate {
             
             throw new Exception(\MGModule\GGSSLWHMCS\mgLibs\Lang::getInstance()->T('incorrectCSR'));
         }
+        
         $mainDomain                   = $decodeCSR['csrResult']['CN'];
         $domains                      = $mainDomain . PHP_EOL . $this->post['sans_domains'];
         $parseDomains                 = \MGModule\GGSSLWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));
         $SSLStepTwoJS                 = new SSLStepTwoJS($this->p);
         $this->vars['approvalEmails'] = json_encode($SSLStepTwoJS->fetchApprovalEmailsForSansDomains($parseDomains));
         $this->vars['brand'] = json_encode($this->getCertificateBrand());
+        if(isset($this->post['privateKey']))
+        {
+            $this->vars['privateKey'] = $this->post['privateKey'];
+        }    
     }
     
     private function stepTwoForm() {
+
         $data['dcv_method'] = strtolower($this->post['dcv_method']);
         $data['webserver_type'] = $this->post['webservertype'];
         $data['approver_email'] = ($data['dcv_method'] == 'email') ? $this->post['approveremail'] : '';
@@ -169,7 +197,7 @@ class ClientReissueCertificate {
         if(in_array($brand, $brandsWithOnlyEmailValidation)) {
             unset($data['approver_emails']);
         }
-
+        
         $orderStatus = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($this->sslService->remoteid);        
         
         if (count($sansDomains) > $orderStatus['total_domains'] AND $orderStatus['total_domains'] >= 0) {
@@ -178,7 +206,18 @@ class ClientReissueCertificate {
         }
         
         \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->reIssueOrder($this->sslService->remoteid, $data);
-
+        
+        //save private key
+        if(isset($_POST['privateKey']) && $_POST['privateKey'] != null) {            
+                $privKey = decrypt($_POST['privateKey']);
+                $GenerateSCR = new \MGModule\GGSSLWHMCS\eServices\provisioning\GenerateCSR($this->p, $_POST);
+                $GenerateSCR->savePrivateKeyToDatabase($this->p['serviceid'], $privKey);  
+        }
+        
+        //update domain column in tblhostings
+        $service = new \MGModule\GGSSLWHMCS\models\whmcs\service\Service($this->p['serviceid']);
+        $service->save(array('domain' => $decodedCSR['csrResult']['CN']));
+        
         $this->sslService->setConfigdataKey('servertype', $data['webserver_type']);
         $this->sslService->setConfigdataKey('csr', $data['csr']);
         $this->sslService->setConfigdataKey('approveremail', $data['approver_email']);
@@ -186,7 +225,14 @@ class ClientReissueCertificate {
         $this->sslService->setApproverEmails($data['approver_emails']);
         $this->sslService->setSansDomains($data['dns_names']);
         $this->sslService->save();
-
+        try
+        {
+            \MGModule\GGSSLWHMCS\eHelpers\Invoice::insertDomainInfoIntoInvoiceItemDescription($this->p['serviceid'], $decodedCSR['csrResult']['CN'], true);
+        }
+        catch(Exception $e)
+        {
+            
+        }      
     }
     
     private function getSansDomainsValidationMethods() {  

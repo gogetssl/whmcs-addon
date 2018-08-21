@@ -36,7 +36,12 @@ class Product extends main\mgLibs\models\Orm{
      * @var string 
      */
     public $name;
-    
+    /**
+     *
+     * @Column(int) 
+     * @var int
+     */
+    public $showdomainoptions;
     /**
      * @Column(name=servertype) 
      * @var string 
@@ -220,6 +225,10 @@ class Product extends main\mgLibs\models\Orm{
 
     function getName() {
         return $this->name;
+    }
+    
+    function getShowDomainOptions() {
+        return $this->showdomainoptions;
     }
 
     function getServerType() {

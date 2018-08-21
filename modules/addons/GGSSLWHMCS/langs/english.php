@@ -30,6 +30,7 @@ $_LANG['addonAA']['apiConfiguration']['item']['tech_legend']['label']           
 $_LANG['addonAA']['apiConfiguration']['item']['csr_generator_legend']['label']                         = 'CSR Generator';
 $_LANG['addonAA']['apiConfiguration']['item']['display_csr_generator']['label']                        = 'Allow To Use CSR Generator';
 $_LANG['addonAA']['apiConfiguration']['item']['default_csr_generator_country']['description']          = 'The default selection';
+$_LANG['addonAA']['apiConfiguration']['item']['display_ca_summary']['label']                           = 'Display Orders Summary';
 $_LANG['addonAA']['apiConfiguration']['item']['client_area_summary_orders']['label']                   = 'Client Area Orders Summary';
 $_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['label']                    = 'Expires Soon';
 $_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['description']              = 'Count SSL order for statistics, if there are fewer or equal days to expire than the selected ones.';
@@ -181,3 +182,8 @@ $_LANG['sslSummarySidebarTotal'] = 'Total Orders';
 $_LANG['sslSummarySidebarUnpaid'] = 'Unpaid Orders';
 $_LANG['sslSummarySidebarProcessing'] = 'Processing';
 $_LANG['sslSummarySidebarExpiresSoon'] = 'Expires Soon';
+
+$_LANG['invalidEmailAddress']           = 'Email Address is incorrect';
+$_LANG['csrCodeGeneraterdSuccessfully'] = 'CSR code has been generated successfully';
+$_LANG['invalidCountryCode']            = 'Country code is incorrect';
+$_LANG['csrCodeGeneraterFailed']        = 'Generate CSR code has been failed';

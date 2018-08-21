@@ -10,6 +10,7 @@
             <input type="hidden" name="webservertype" value="{$smarty.post.webservertype}">
             <input type="hidden" name="csr" value="{$smarty.post.csr}">
             <input type="hidden" name="sans_domains" value="{$smarty.post.sans_domains}">
+            <input type="hidden" name="privateKey" value="{$privateKey}">
             <div class="loading">
                 Loading...
             </div>

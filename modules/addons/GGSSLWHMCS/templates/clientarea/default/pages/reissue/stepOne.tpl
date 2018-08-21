@@ -10,7 +10,8 @@
     <div class="col-sm-12">
         <form method="POST" action="{$smarty.server.REQUEST_URI}" class="form-horizontal">
             <input type="hidden" name="stepOneForm" value="tak">
-
+            <input type="hidden" name="reissueServiceID" value="{$serviceID}" />
+            <input class="form-control" name="privateKey" value="{$smarty.post.privateKey}" type="hidden">
             <div class="form-group">
                 <label class="col-sm-2 control-label">{$MGLANG->T('reissueOneWebServer')}</label>
                 <div class="col-sm-10">
@@ -46,7 +47,8 @@
                     </div>
                 </div>
             {/if}
-
+            {$generateCsrIntegrationCode}
+            <br />
             <p class="text-center">
                 <input type="submit" value="Click to Continue" class="btn btn-primary">
             </p>

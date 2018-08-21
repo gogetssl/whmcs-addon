@@ -244,4 +244,69 @@ class Invoice
         ]);
         
     }
+    
+    public static function insertDomainInfoIntoInvoiceItemDescription($serviceID, $domain, $checkIfAlreadyIncluded = false)
+    {
+        $service = new \MGModule\GGSSLWHMCS\models\whmcs\service\Service($serviceID);
+        
+        $whmcsProduct = $service->product();
+        if($whmcsProduct->getShowDomainOptions())
+            return;
+        //get invoice related with order
+        $whmcsOrder = $service->order();
+        
+        $invoice = $whmcsOrder->invoice();
+        $invoiceItemsRepo = new \MGModule\GGSSLWHMCS\models\whmcs\invoices\RepositoryItem();
+        $invoiceItemsRepo->onlyInvoiceId($invoice->getId())->onlyServiceId($serviceID);
+        $serviceInvoiceItems = $invoiceItemsRepo->get();
+      
+        foreach ($serviceInvoiceItems as  $item)
+        {     
+            $newDescription = '';    
+            $domainInfo = $whmcsProduct->getName() . ' - ' . $domain;
+            if($checkIfAlreadyIncluded && $domainIncluded = self::checkIfAddedDomainInfoInInvoiceItemDescription($item->getDescription(), $whmcsProduct->getName()))
+            {    
+
+                $newDescription = str_replace($whmcsProduct->getName() . ' ' . $domainIncluded, $domainInfo, $item->getDescription());
+            }
+            else
+                $newDescription = str_replace($whmcsProduct->getName(), $domainInfo, $item->getDescription());
+            
+            if($newDescription)
+            {
+                $oldDescription = $item->getDescription();
+                $item->setDescription($newDescription);
+                $item->save();
+                
+                logActivity("GGSSL WHMCS: Description of the invoice item for Invoice ID: " . $invoice->getId() . ' has been changed from "' . $oldDescription . '" to "' . $newDescription . '"');
+            }
+        }  
+    }
+    private static function checkIfAddedDomainInfoInInvoiceItemDescription($itemDescription, $productName)
+    {
+        $itemDescription - str_replace($productName, '', $itemDescription);
+
+        $start  = strpos($itemDescription, ' - ');    
+        if($start === false)
+            return false;
+       
+        
+        $end    = strpos($itemDescription, '(', $start + 1);
+        if($end === false)
+            $end = strpos($itemDescription, ' Setup Fee', $start + 1);
+                if($end === false)
+                    $end = strpos($itemDescription, PHP_EOL, $start + 1);
+                        if($end === false)
+                            return ltrim($itemDescription, ' - ');
+        
+        $length = $end - $start;
+        if($length == NULL)
+            return false;
+        
+        $domain = substr($itemDescription, $start + 1, $length - 1);
+        if(trim($domain) == '')
+            return false;
+        
+        return $domain;
+    }
 }
