@@ -114,8 +114,9 @@ class home extends main\mgLibs\process\AbstractController {
                     $vars['serviceBillingCycle'] = $serviceBillingCycle;                    
                     $vars['displayRenewButton'] = false;
                     $today = date('Y-m-d');
-                    $diffDays =  abs(strtotime($orderStatus['valid_till']) - strtotime($today))/86400;      
-                    if($diffDays > 90)
+                    $diffDays =  abs(strtotime($orderStatus['valid_till']) - strtotime($today))/86400; 
+
+                    if($diffDays < 90)
                         $vars['displayRenewButton'] = true;
                     
                 } catch (\Exception $ex) {

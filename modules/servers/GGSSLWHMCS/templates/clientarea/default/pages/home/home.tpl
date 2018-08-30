@@ -185,7 +185,7 @@
             <tr id="additionalActionsTr">
                 <td class="text-left">{$MGLANG->T('Actions')}</td>
                 <td id="additionalActionsTd" class="text-left">
-                    {if $serviceBillingCycle == 'One Time' && $displayRenewButton}
+                    {if $displayRenewButton}
                         <button type="button" id="btnRenew" class="btn btn-default" style="margin:2px">{$MGLANG->T('renew')}</button>
                     {/if}
                     {if $dcv_method == 'email'}
