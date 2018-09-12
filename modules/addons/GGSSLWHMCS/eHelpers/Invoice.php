@@ -246,41 +246,44 @@ class Invoice
     }
     
     public static function insertDomainInfoIntoInvoiceItemDescription($serviceID, $domain, $checkIfAlreadyIncluded = false)
-    {
-        $service = new \MGModule\GGSSLWHMCS\models\whmcs\service\Service($serviceID);
-        
-        $whmcsProduct = $service->product();
-        if($whmcsProduct->getShowDomainOptions())
-            return;
-        //get invoice related with order
-        $whmcsOrder = $service->order();
-        
-        $invoice = $whmcsOrder->invoice();
-        $invoiceItemsRepo = new \MGModule\GGSSLWHMCS\models\whmcs\invoices\RepositoryItem();
-        $invoiceItemsRepo->onlyInvoiceId($invoice->getId())->onlyServiceId($serviceID);
-        $serviceInvoiceItems = $invoiceItemsRepo->get();
-      
-        foreach ($serviceInvoiceItems as  $item)
-        {     
-            $newDescription = '';    
-            $domainInfo = $whmcsProduct->getName() . ' - ' . $domain;
-            if($checkIfAlreadyIncluded && $domainIncluded = self::checkIfAddedDomainInfoInInvoiceItemDescription($item->getDescription(), $whmcsProduct->getName()))
-            {    
+    {        
+        try
+            {$service = new \MGModule\GGSSLWHMCS\models\whmcs\service\Service($serviceID);       
+            $whmcsProduct = $service->product();
 
-                $newDescription = str_replace($whmcsProduct->getName() . ' ' . $domainIncluded, $domainInfo, $item->getDescription());
-            }
-            else
-                $newDescription = str_replace($whmcsProduct->getName(), $domainInfo, $item->getDescription());
-            
-            if($newDescription)
-            {
-                $oldDescription = $item->getDescription();
-                $item->setDescription($newDescription);
-                $item->save();
-                
-                logActivity("GGSSL WHMCS: Description of the invoice item for Invoice ID: " . $invoice->getId() . ' has been changed from "' . $oldDescription . '" to "' . $newDescription . '"');
-            }
-        }  
+            if($whmcsProduct->getShowDomainOptions() || $whmcsProduct->getPayType() == 'free')
+                return;
+            //get invoice related with order
+            $whmcsOrder = $service->order();
+            $invoice = $whmcsOrder->invoice();
+            $invoiceItemsRepo = new \MGModule\GGSSLWHMCS\models\whmcs\invoices\RepositoryItem();        
+            $invoiceItemsRepo->onlyInvoiceId($invoice->getId())->onlyServiceId($serviceID);
+            $serviceInvoiceItems = $invoiceItemsRepo->get();
+            foreach ($serviceInvoiceItems as  $item)
+            {     
+                $newDescription = '';    
+                $domainInfo = $whmcsProduct->getName() . ' - ' . $domain;
+                if($checkIfAlreadyIncluded && $domainIncluded = self::checkIfAddedDomainInfoInInvoiceItemDescription($item->getDescription(), $whmcsProduct->getName()))
+                {    
+
+                    $newDescription = str_replace($whmcsProduct->getName() . ' ' . $domainIncluded, $domainInfo, $item->getDescription());
+                }
+                else
+                    $newDescription = str_replace($whmcsProduct->getName(), $domainInfo, $item->getDescription());
+                if($newDescription)
+                {
+                    $oldDescription = $item->getDescription();
+                    $item->setDescription($newDescription);
+                    $item->save();
+
+                    logActivity("GGSSL WHMCS: Description of the invoice item for Invoice ID: " . $invoice->getId() . ' has been changed from "' . $oldDescription . '" to "' . $newDescription . '"');
+                }
+            } 
+        }
+        catch(\Exception $e)
+        {            
+            return;
+        }        
     }
     private static function checkIfAddedDomainInfoInInvoiceItemDescription($itemDescription, $productName)
     {

@@ -21,7 +21,7 @@ class SSLStepTwo {
             $this->SSLStepTwo();
             
         } catch (Exception $ex) {
-            return ['error' => $ex->getMessage()];
+            return ['error' => $ex->getMessage()]; 
         }
         
         if (!empty($this->errors)) { 

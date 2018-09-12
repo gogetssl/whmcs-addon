@@ -34,7 +34,16 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
             $products = $productModel->getModuleProducts();
             
             foreach ($products as $key => $product) {
-                $apiProduct                 = main\eRepository\gogetssl\Products::getInstance()->getProduct($product->{C::API_PRODUCT_ID});
+                try
+                {				
+                    $apiProduct = main\eRepository\gogetssl\Products::getInstance()->getProduct($product->{C::API_PRODUCT_ID});
+                }
+                catch(\Exception $e)
+                {
+                    unset($products[$key]);
+                    continue;
+                }
+                
                 $apiConfig                  = (object) null;
                 $apiConfig->name            = $apiProduct->product;
                 $apiConfig->peroids         = max($apiProduct->getPeriods());

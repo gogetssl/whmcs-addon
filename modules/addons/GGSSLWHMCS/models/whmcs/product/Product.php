@@ -47,6 +47,12 @@ class Product extends main\mgLibs\models\Orm{
      * @var string 
      */
     public $serverType;
+    
+    /**
+     * @Column(name=paytype) 
+     * @var string 
+     */
+    public $paytype;
 
     /**
      * @Column(name=servergroup) 
@@ -71,6 +77,7 @@ class Product extends main\mgLibs\models\Orm{
      * @var main\models\whmcs\customFields\Repository 
      */
     private $_customFields;
+    
             
     /**
      * Create Product 
@@ -239,5 +246,7 @@ class Product extends main\mgLibs\models\Orm{
         return $this->serverGroupID;
     }
 
-
+    function getPayType() {
+        return $this->paytype;
+    }
 }
