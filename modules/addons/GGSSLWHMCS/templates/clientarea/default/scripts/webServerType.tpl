@@ -17,7 +17,11 @@
             }
             optionsHtml = optionsHtml + '<option value="' + serverTypes[i].id + '" ' + optionAttributes + '>' + serverTypes[i].software + '</option>';
         }
-
-        $('#inputServerType').html(optionsHtml);
+        if($('#inputServerType').length > 0)
+            $('#inputServerType').html(optionsHtml);
+        
+        //for control template
+        if($('#servertype').length > 0)
+            $('#servertype').html(optionsHtml);
     });
 </script>

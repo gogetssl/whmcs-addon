@@ -85,7 +85,7 @@ class SSLStepOne {
         $fields['additionalfields']['<br />']['<br />'] = [
             'Description' => $stepOneBaseScript . $webServerTypeSctipt . $orderTypeScript . $autoFillFieldsScript . $generateCsrModalScript .$autoFillPrivateKeyField . $autoFillOrderTypeField,
         ];
-
+        
         return $fields;
 
     }
