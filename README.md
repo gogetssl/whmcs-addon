@@ -3,7 +3,7 @@
 Free of charge SSL Addon for WHMCS to automate SSL certificate sales/distribution of via GoGetSSL.com platform
 
 ***
-**Note:** This version is fully compatible with 7.1.x versions of WHMCS.
+**Note:** This version is fully compatible with 7.2.x versions of WHMCS.
 ***
 
 ### Prerequisites
