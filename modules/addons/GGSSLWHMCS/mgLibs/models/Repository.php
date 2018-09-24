@@ -2,6 +2,7 @@
 
 namespace MGModule\GGSSLWHMCS\mgLibs\models;
 use MGModule\GGSSLWHMCS as main;
+use \MGModule\GGSSLWHMCS\mgLibs\MySQL\PdoWrapper;
 
 /**
  * Description of abstractModel
@@ -163,7 +164,7 @@ abstract class Repository {
     public function setSearch($search) {
         if (!$search)
             return;
-        $search = mysql_real_escape_string($search);
+        $search = PdoWrapper::realEscapeString($search);
         $filter = array();
         foreach ($this->search as $value) {
             $value = str_replace('?', $search, $value);

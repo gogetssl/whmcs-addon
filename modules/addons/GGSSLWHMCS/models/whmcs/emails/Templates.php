@@ -21,6 +21,7 @@
 namespace MGModule\GGSSLWHMCS\models\whmcs\emails;
 
 use MGModule\GGSSLWHMCS as main;
+use \MGModule\GGSSLWHMCS\mgLibs\MySQL\PdoWrapper;
 
 /**
  * Description of Repository
@@ -71,7 +72,7 @@ class Templates extends main\mgLibs\models\Repository {
      * @return \MGModule\GGSSLWHMCS\models\whmcs\emails\Templates
      */
     public function onlyName($name){
-        $this->_filters['name'] = mysql_real_escape_string($name);
+        $this->_filters['name'] = PdoWrapper::realEscapeString($name);
         return $this;
     }
 

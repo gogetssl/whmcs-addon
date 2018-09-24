@@ -99,37 +99,18 @@ class Query{
         {
             if ($config['host']) 
             {
-                if(self::$usePDO)
+                if(!extension_loaded('PDO'))
                 {
-                    if(!extension_loaded('PDO'))
-                    {
-                        throw new main\mgLibs\exceptions\System('Missing PDO Extension',  main\mgLibs\exceptions\Codes::MYSQL_MISING_PDO_EXTENSION);
-                    }
-
-                    try{                                       
-                        self::$_instance->connection[$connectionName] = new \PDO("mysql:host=".$config['host'].";dbname=".$config['name'], $config['user'], $config['pass']); 
-
-                        self::$_instance->connection[$connectionName]->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-                    } catch (\Exception $ex) {
-                        throw new main\mgLibs\exceptions\System('SQL Connection Error',exceptions\Codes::MYSQL_CONNECTION_FAILED);
-                    }
+                    throw new main\mgLibs\exceptions\System('Missing PDO Extension',  main\mgLibs\exceptions\Codes::MYSQL_MISING_PDO_EXTENSION);
                 }
-                else
-                { 
-                    if(self::$_instance->connection[$connectionName] = mysql_connect($config['host'], $config['user'], $config['pass'], true))
-                    {
-                        mysql_select_db($config['name'], self::$_instance->connection[$connectionName]);
 
-                        if($error = mysql_error())
-                        {
-                            throw new main\mgLibs\exceptions\System($error,main\mgLibs\exceptions\Codes::MYSQL_CONNECTION_FAILED);
-                        }
-                    }
-                    else
-                    {
-                        throw new main\mgLibs\exceptions\System('SQL Connection Error',main\mgLibs\exceptions\Codes::MYSQL_CONNECTION_FAILED);
-                    }
-                }
+                try{                                       
+                    self::$_instance->connection[$connectionName] = new \PDO("mysql:host=".$config['host'].";dbname=".$config['name'], $config['user'], $config['pass']); 
+
+                    self::$_instance->connection[$connectionName]->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+                 } catch (\Exception $ex) {
+                    throw new main\mgLibs\exceptions\System('SQL Connection Error',exceptions\Codes::MYSQL_CONNECTION_FAILED);
+                }               
             }
         }
         
@@ -172,86 +153,30 @@ class Query{
         }
         
         $params = $newParams;
-        
-        if(self::$usePDO)
-        {
-            try{
-                $sth = self::$_instance->connection[$connectionName]->prepare($query);
-                $a = $sth->execute($params);              
-            } catch (\Exception $ex) {
-                $dQuery = $query;
-                foreach($params as $n => $v)
-                {
-                    $dQuery = str_replace($n, "'".$v."'", $dQuery);
-                }
+        try{
+            $sth = self::$_instance->connection[$connectionName]->prepare($query);
+            $a = $sth->execute($params);              
+        } catch (\Exception $ex) {
+            $dQuery = $query;
+            foreach($params as $n => $v)
+            {
+                $dQuery = str_replace($n, "'".$v."'", $dQuery);
+            }
                 
-                throw new Exception('Error in SQL Query:'.$ex->getMessage(),$dQuery,$ex);
-            }
+            throw new Exception('Error in SQL Query:'.$ex->getMessage(),$dQuery,$ex);
+        }
             
-            if(strpos($query, 'insert') !== false || strpos($query, 'INSERT')!== false )
-            {
-                $id = self::$_instance->connection[$connectionName]->lastInsertId(); 
-            }
-            else
-            {
-                $id = null;
-            }
-            
-            return new Result($sth,$id);
+        if(strpos($query, 'insert') !== false || strpos($query, 'INSERT')!== false )
+        {
+            $id = self::$_instance->connection[$connectionName]->lastInsertId(); 
         }
         else
         {
-            foreach ($params as $key => $value) 
-            {
-                if(is_array($value))
-                {
-                    throw new main\mgLibs\exceptions\System("Cant use array as MySQL Value");
-                }
-                if($value === null)
-                {
-                    $query = str_replace("$key", "null", $query);
-                }
-                elseif($value === false)
-                {
-                    $query = str_replace("$key", "0", $query);
-                }
-                elseif(is_string($value))
-                {
-                $query = str_replace("$key", "'".mysql_real_escape_string($value)."'", $query);
-            }
-                else
-                {
-                    $query = str_replace("$key", mysql_real_escape_string($value), $query);
-                }
-            }
-            
-            self::$lastQuery = $query;
-            
-            if(!empty(self::$_instance->connection[$connectionName]))
-            {
-                $result = mysql_query($query,self::$_instance->connection[$connectionName]);
-            }
-            else
-            {
-                $result = mysql_query($query);
-            }
-
-            if($error = mysql_error())
-            {
-                throw new Exception('Error in SQL Query:'.$error,$query);
-            }
-
-            if(strpos($query, 'insert') !== false || strpos($query, 'INSERT')!== false )
-            {
-                $id = mysql_insert_id();
-            }
-            else
-            {
-                $id = null;
-            }
-
-            return new Result($result,$id);
+            $id = null;
         }
+            
+        return new Result($sth,$id);
+        
     }
     
     /**
@@ -260,15 +185,8 @@ class Query{
      * @param string $connectionName
      */
     static function dropInstance($connectionName = 'default')
-    {
-        if(self::$usePDO)
-        {
-            unset(self::$_instance->connection[$connectionName]);
-        }
-        else
-        {
-            mysql_close(self::$_instance->connection[$connectionName]);
-        }
+    {        
+        unset(self::$_instance->connection[$connectionName]);        
     }
     
     /**
