@@ -6,7 +6,6 @@ add_hook('ClientAreaHeadOutput', 1, function($params)
 
     if ($params['filename'] === 'configuressl' && $params['loggedin'] == '1' && isset($_REQUEST['action']) && $_REQUEST['action'] === 'generateCsr')
     {
-        ob_clean();
         $GenerateCsr = new MGModule\GGSSLWHMCS\eServices\provisioning\GenerateCSR($params, $_POST);
         echo $GenerateCsr->run();
         die();
