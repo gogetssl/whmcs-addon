@@ -109,6 +109,12 @@ class Client extends main\mgLibs\models\Orm{
      */
     protected $phonenumber;
     
+    /**
+     *
+     * @Column(name=defaultgateway)
+     * @var string 
+     */
+    protected $defaultgateway;
   
     private $_customFields;
     
@@ -277,6 +283,9 @@ class Client extends main\mgLibs\models\Orm{
     function getCompanyName() {
         return $this->companyname;
     }
-
-
+    
+    function getDefaultGateway()
+    {
+        return $this->defaultgateway;
+    }
 }

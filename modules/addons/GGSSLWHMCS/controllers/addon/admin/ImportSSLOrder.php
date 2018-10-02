@@ -122,21 +122,38 @@ class ImportSSLOrder extends main\mgLibs\process\AbstractController
             if (!$whmcsProductID)
                 throw new \Exception(main\mgLibs\Lang::T('messages', 'ssl_order_product_not_exist'));
 
+            //get client default payment method
+            $clientDetails = (new main\models\whmcs\clients\Client($clientID));
+            $paymentMethod = $clientDetails->getDefaultGateway();
+            //inf not set get whmcs payment method with the highest order
+            if($paymentMethod == '' || $paymentMethod == NULL)
+            {
+                $result = Capsule::table('tblpaymentgateways')
+                        ->select('gateway')
+                        ->where('setting', '=', 'name')
+                        ->where('order', '=', 1)
+                        ->first();
+                
+                if($result == NULL)
+                    throw new \Exception(main\mgLibs\Lang::T('messages', 'no_payment_gateway_error'));                    
+
+                $paymentMethod = $result->gateway;
+            }
             //prepare data for create order
             $data        = array(
                 'userID'        => $clientID,
-                'paymentMethod' => 'banktransfer',
+                'paymentMethod' => $paymentMethod,
                 'productID'     => $whmcsProductID,
                 'billingcycle'  => self::PERIODS[$orderStatus['validity_period']],
                 'domain'        => $orderStatus['domain'],
                 'nextdueDate'   => $orderStatus['valid_till'],
-            );
+            );            
             $invoiceRepo = new main\eHelpers\Invoice();
             $orderInfo   = $invoiceRepo->createOrder($data['userID'], $data['paymentMethod'], $data['productID'], $data['domain'], $data['nextdueDate'], $data['billingcycle']);
-
+           
             if ($orderInfo['result'] != 'success')
             {
-                throw new \Exception(main\mgLibs\Lang::T('messages', 'order_create_error'));
+                throw new \Exception($orderInfo['message']);
             }
 
 

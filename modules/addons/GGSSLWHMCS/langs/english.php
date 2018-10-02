@@ -5,7 +5,7 @@ $_LANG['generalError'] = 'Something has gone wrong. Check logs and contact admin
 
 //ggssl configuration
 $_LANG['addonAA']['pagesLabels']['label']['apiConfiguration']                                          = 'Configuration';
-$_LANG['addonAA']['apiConfiguration']['crons']['header']                                 = 'Crons';
+$_LANG['addonAA']['apiConfiguration']['crons']['header']                                               = 'Crons';
 //synchronization cron
 $_LANG['addonAA']['apiConfiguration']['cronSynchronization']['pleaseNote']                             = 'Please Note:';
 $_LANG['addonAA']['apiConfiguration']['cronSynchronization']['info']                                   = 'In order to enable automatic synchronization, please set up a following cron command line (every hour suggested):';
@@ -15,9 +15,9 @@ $_LANG['addonAA']['apiConfiguration']['cronSSLSummaryStats']['pleaseNote']      
 $_LANG['addonAA']['apiConfiguration']['cronSSLSummaryStats']['info']                                   = 'In order to enable load current SSL orders status, please set up a following cron command line (every 4 hours suggested):';
 $_LANG['addonAA']['apiConfiguration']['cronSSLSummaryStats']['commandLine']['cronFrequency']           = '1 */4 * * *';
 //customers notification and creating renewals
-$_LANG['addonAA']['apiConfiguration']['cronRenewal']['pleaseNote']                             = 'Please Note:';
-$_LANG['addonAA']['apiConfiguration']['cronRenewal']['info']                                   = 'In order to send customers notifications of expiring services and create renewal invoices for services that expire within the selected number of days, set the following command line cron (once a day suggested):';
-$_LANG['addonAA']['apiConfiguration']['cronRenewal']['commandLine']['cronFrequency']           = '0 0 * * *';
+$_LANG['addonAA']['apiConfiguration']['cronRenewal']['pleaseNote']                                     = 'Please Note:';
+$_LANG['addonAA']['apiConfiguration']['cronRenewal']['info']                                           = 'In order to send customers notifications of expiring services and create renewal invoices for services that expire within the selected number of days, set the following command line cron (once a day suggested):';
+$_LANG['addonAA']['apiConfiguration']['cronRenewal']['commandLine']['cronFrequency']                   = '0 0 * * *';
 //customers send certificate
 $_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['pleaseNote']                             = 'Please Note:';
 $_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['info']                                   = 'In order to send a certificate to the client when the SSL order changes to active status, set the following command line cron (every 3 hours suggested):';
@@ -160,27 +160,28 @@ $_LANG['addonAA']['importSSLOrder']['header']                                   
 $_LANG['addonAA']['importSSLOrder']['order_id']['label']                         = 'API Order ID';
 $_LANG['addonAA']['importSSLOrder']['client_id']['label']                        = 'Client';
 $_LANG['addonAA']['importSSLOrder']['importSSL']['content']                      = 'Import';
-$_LANG['addonAA']['importSSLOrder']['messages']['import_success']                = 'SSL order has been imported succesfully.';
+$_LANG['addonAA']['importSSLOrder']['messages']['import_success']                = 'SSL order has been imported successfully.';
 $_LANG['addonAA']['importSSLOrder']['messages']['order_id_not_provided']         = 'API order ID has been not provided.';
 $_LANG['addonAA']['importSSLOrder']['messages']['client_id_not_provided']        = 'Client ID has been not provided.';
 $_LANG['addonAA']['importSSLOrder']['messages']['ssl_order_already_exist']       = 'SLL order with provided ID already exist in system.';
 $_LANG['addonAA']['importSSLOrder']['messages']['ssl_order_product_not_exist']   = 'Product for provided SSL order ID not exist in system.';
 $_LANG['addonAA']['importSSLOrder']['messages']['order_create_error']            = 'Unable to create order';
+$_LANG['addonAA']['importSSLOrder']['messages']['no_payment_gateway_error']      = 'No payment gateway has been configured.';
 $_LANG['addonAA']['importSSLOrder']['messages']['order_cancelled_import_unable'] = 'Unable to import cancelled SSL order.';
 
 
 $_LANG['anErrorOccurred'] = 'An error occurred';
 
-$_LANG['addonCA']['sslSummary']['title'] = 'SSL Orders Summary';
-$_LANG['addonCA']['sslSummary']['total'] = 'Total Orders';
-$_LANG['addonCA']['sslSummary']['unpaid'] = 'Unpaid Orders';
-$_LANG['addonCA']['sslSummary']['processing'] = 'Processing';
+$_LANG['addonCA']['sslSummary']['title']       = 'SSL Orders Summary';
+$_LANG['addonCA']['sslSummary']['total']       = 'Total Orders';
+$_LANG['addonCA']['sslSummary']['unpaid']      = 'Unpaid Orders';
+$_LANG['addonCA']['sslSummary']['processing']  = 'Processing';
 $_LANG['addonCA']['sslSummary']['expiresSoon'] = 'Expires Soon';
 
-$_LANG['sslSummarySidebarTitle'] = 'SSL Orders Summary';
-$_LANG['sslSummarySidebarTotal'] = 'Total Orders';
-$_LANG['sslSummarySidebarUnpaid'] = 'Unpaid Orders';
-$_LANG['sslSummarySidebarProcessing'] = 'Processing';
+$_LANG['sslSummarySidebarTitle']       = 'SSL Orders Summary';
+$_LANG['sslSummarySidebarTotal']       = 'Total Orders';
+$_LANG['sslSummarySidebarUnpaid']      = 'Unpaid Orders';
+$_LANG['sslSummarySidebarProcessing']  = 'Processing';
 $_LANG['sslSummarySidebarExpiresSoon'] = 'Expires Soon';
 
 $_LANG['invalidEmailAddress']           = 'Email Address is incorrect';
