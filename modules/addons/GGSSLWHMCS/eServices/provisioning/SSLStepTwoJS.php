@@ -9,6 +9,7 @@ class SSLStepTwoJS {
     private $p;
     private $domainsEmailApprovals = [];
     private $brand = '';
+    private $disabledValidationMethods = array();
 
     function __construct(&$params) {
         $this->p = &$params;
@@ -25,9 +26,10 @@ class SSLStepTwoJS {
         }
         try {
             $this->setBrand($_POST);
+            $this->setDisabledValidationMethods($_POST);
             $this->SSLStepTwoJS($this->p);
             
-            return \MGModule\GGSSLWHMCS\eServices\ScriptService::getSanEmailsScript(json_encode($this->domainsEmailApprovals), json_encode(\MGModule\GGSSLWHMCS\eServices\FlashService::getFieldsMemory($_GET['cert'])), json_encode($this->brand));
+            return \MGModule\GGSSLWHMCS\eServices\ScriptService::getSanEmailsScript(json_encode($this->domainsEmailApprovals), json_encode(\MGModule\GGSSLWHMCS\eServices\FlashService::getFieldsMemory($_GET['cert'])), json_encode($this->brand), json_encode($this->disabledValidationMethods));
         } catch (Exception $ex) {
             return '';
         }
@@ -47,6 +49,14 @@ class SSLStepTwoJS {
     private function setBrand($params) {
         if(isset($params['sslbrand']) &&  $params['sslbrand'] != null){
             $this->brand = $params['sslbrand'];
+        }
+    }
+    
+    private function setDisabledValidationMethods($params) {
+        $apiConf = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get();        
+        if($apiConf->disable_email_validation)
+        {
+            array_push($this->disabledValidationMethods, 'email');
         }
     }
     

@@ -479,7 +479,9 @@
                                                 <div class="form-group">  
                                                     <select style="width:70%;" type="text" name="newDcvMethod_0" class="form-control modalRevalidateInput" >
                                                         <option value="" selected>{$MGLANG->T('pleaseChooseOne')}</option>
-                                                        <option value="email">{$MGLANG->T('revalidateModalMethodEmail')}</option>
+                                                        {if !'email'|in_array:$disabledValidationMethods}
+                                                            <option value="email">{$MGLANG->T('revalidateModalMethodEmail')}</option>
+                                                        {/if}                                                        
                                                         {if !$brand|in_array:$brandsWithOnlyEmailValidation}                                                            
                                                         <option value="http">{$MGLANG->T('revalidateModalMethodHttp')}</option>
                                                         <option value="https">{$MGLANG->T('revalidateModalMethodHttps')}</option>

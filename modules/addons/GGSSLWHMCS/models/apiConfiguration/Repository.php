@@ -49,7 +49,8 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                         'default_csr_generator_country'          => $params['default_csr_generator_country'],
                         'summary_expires_soon_days'              => $params['summary_expires_soon_days'],
                         'send_certificate_template'              => $params['send_certificate_template'],
-                        'display_ca_summary'                     => $params['display_ca_summary']
+                        'display_ca_summary'                     => $params['display_ca_summary'],
+                        'disable_email_validation'                => $params['disable_email_validation']
             ]);
         }
         else
@@ -81,7 +82,8 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                         'default_csr_generator_country'          => $params['default_csr_generator_country'],
                         'summary_expires_soon_days'              => $params['summary_expires_soon_days'],
                         'send_certificate_template'              => $params['send_certificate_template'],
-                        'display_ca_summary'                     => $params['display_ca_summary']
+                        'display_ca_summary'                     => $params['display_ca_summary'],
+                        'disable_email_validation'                => $params['disable_email_validation']
             ]);
         }
     }
@@ -118,6 +120,7 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                 $table->string('summary_expires_soon_days')->nullable();
                 $table->integer('send_certificate_template')->nullable();
                 $table->boolean('display_ca_summary');
+                $table->boolean('disable_email_validation');
             });
         }
     }
@@ -194,6 +197,13 @@ class Repository extends \MGModule\GGSSLWHMCS\mgLibs\models\Repository
                 Capsule::schema()->table($this->tableName, function($table)
                 {
                     $table->boolean('display_ca_summary');
+                });
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'disable_email_validation'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->boolean('disable_email_validation');
                 });
             }
             /* 'renew_invoice_days_reccuring'          

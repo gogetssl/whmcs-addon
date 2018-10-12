@@ -179,8 +179,8 @@ $_LANG['incorrectCSR']            = 'Incorrect CSR';
 $_LANG['sanLimitExceeded']        = 'Exceeded limit of SAN domains';
 $_LANG['incorrectSans']           = 'Folowed SAN domains are incorrect: ';
 
-$_LANG['serverCA']['sslSummarySidebarTitle']       = 'SSL Orders Summary';
-$_LANG['serverCA']['sslSummarySidebarTotal']       = 'Total Orders';
-$_LANG['serverCA']['sslSummarySidebarUnpaid']      = 'Unpaid Orders';
-$_LANG['serverCA']['sslSummarySidebarProcessing']  = 'Processing';
-$_LANG['serverCA']['sslSummarySidebarExpiresSoon'] = 'Expires Soon';
+$_LANG['addonCA']['sslSummary']['title']       = 'SSL Orders Summary';
+$_LANG['addonCA']['sslSummary']['total']       = 'Total Orders';
+$_LANG['addonCA']['sslSummary']['unpaid']      = 'Unpaid Orders';
+$_LANG['addonCA']['sslSummary']['processing']  = 'Processing';
+$_LANG['addonCA']['sslSummary']['expiresSoon'] = 'Expires Soon';

@@ -171,7 +171,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field->continue = false;        
         $field->enableDescription = false;
         $form->addField($field);
-        
+                
         $field = new main\mgLibs\forms\SelectField();
         $field->disabled =  false ;
         $field->name = 'summary_expires_soon_days';
@@ -185,6 +185,20 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
         $field->options = array('30'=>'30', '15'=>'15', '10'=>'10');         
         $field->error = $this->getFieldError('summary_expires_soon_days');
         $form->addField($field); 
+                
+        $field        = new main\mgLibs\forms\LegendField();
+        $field->name  = 'validation_settings';
+        $form->addField($field);  
+        
+        $field = new main\mgLibs\forms\CheckboxField();                     
+        $field->name = 'disable_email_validation';
+        $field->options = ['disableEmailValidation'];
+        $field->value = $input['disable_email_validation'] ? ['disableEmailValidation'] : [''];        
+        $field->inline = false;
+        $field->colWidth = 2;
+        $field->continue = false;        
+        $field->enableDescription = false;
+        $form->addField($field);
         
         $field        = new main\mgLibs\forms\LegendField();
         $field->name  = 'tech_legend';
@@ -324,7 +338,8 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController {
                     'auto_renew_invoice_reccuring',
                     'send_expiration_notification_reccuring',
                     'send_expiration_notification_one_time',
-                    'display_ca_summary'
+                    'display_ca_summary',
+                    'disable_email_validation'
                     );
                 foreach($checkFieldsArray as $field)
                 {

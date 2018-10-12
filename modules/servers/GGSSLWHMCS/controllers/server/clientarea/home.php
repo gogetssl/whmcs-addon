@@ -20,7 +20,7 @@ class home extends main\mgLibs\process\AbstractController {
             $ssl        = new main\eRepository\whmcs\service\SSL();
             $sslService = $ssl->getByServiceId($serviceId);
             
-            $vars['brandsWithOnlyEmailValidation'] = ['geotrust','thawte','rapidssl','symantec'];
+            $vars['brandsWithOnlyEmailValidation'] = ['geotrust','thawte','rapidssl','symantec',];
            
             if(is_null($sslService)) {
                 throw new \Exception('An error occurred please contact support');
@@ -119,10 +119,20 @@ class home extends main\mgLibs\process\AbstractController {
                     if($diffDays < 90)
                         $vars['displayRenewButton'] = true;
                     
+                    
+                    //get dsiabled validation methods
+                    $disabledValidationMethods = array();
+                    $apiConf = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get();        
+                    if($apiConf->disable_email_validation && !in_array($vars['brand'], $vars['brandsWithOnlyEmailValidation']))
+                    {
+                        array_push($disabledValidationMethods, 'email');
+                    }
+                    
                 } catch (\Exception $ex) {
                     $vars['error'] = 'Can not load order details';
                 }
             } 
+            $vars['disabledValidationMethods'] = $disabledValidationMethods;
             $vars['configurationStatus'] = $sslService->status;
             $vars['configurationURL']    = $url;
             $vars['allOk']               = true;

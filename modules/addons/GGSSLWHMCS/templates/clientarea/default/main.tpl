@@ -26,7 +26,7 @@
     </script>
 
     <div class="full-screen-module-container">
-        <div class="">  
+        <div style="display: none;">  
             <div class="top-menu">
                 <div class="page-container" >
                     <div class="nav-menu">

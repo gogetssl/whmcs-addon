@@ -56,7 +56,6 @@ class ClientReissueCertificate {
         $this->vars['errors'] = [];
     }
     public function run() {
-        
         $this->setMainDomainDcvMethod($_POST); 
         $this->setSansDomainsDcvMethod($_POST); 
         return $this->miniControler();
@@ -146,11 +145,20 @@ class ClientReissueCertificate {
         $parseDomains                 = \MGModule\GGSSLWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));
         $SSLStepTwoJS                 = new SSLStepTwoJS($this->p);
         $this->vars['approvalEmails'] = json_encode($SSLStepTwoJS->fetchApprovalEmailsForSansDomains($parseDomains));
-        $this->vars['brand'] = json_encode($this->getCertificateBrand());
+        $this->vars['brand'] = json_encode($this->getCertificateBrand());        
         if(isset($this->post['privateKey']))
         {
             $this->vars['privateKey'] = $this->post['privateKey'];
         }    
+        
+        $disabledValidationMethods = array();
+        $apiConf = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get();    
+       
+        if($apiConf->disable_email_validation && !in_array($this->getCertificateBrand(), ['geotrust','thawte','rapidssl','symantec']))
+        {
+            array_push($disabledValidationMethods, 'email');
+        }  
+        $this->vars['disabledValidationMethods'] = json_encode($disabledValidationMethods);
     }
     
     private function stepTwoForm() {

@@ -17,15 +17,26 @@ class SSLSummary
         $this->sslRepo = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
         $this->loadClientsSSLServices();
     }
+    
 
-    public function getTotalSSLOrders()
+    public function getTotalSSLOrdersCount()
     {
         return count($this->services);
     }
+    
+    public function getTotalSSLOrders()
+    {
+        return $this->services;
+    }
 
+    public function getUnpaidSSLOrdersCount()
+    {
+        return count($this->getUnpaidSSLOrders());
+    }
+    
     public function getUnpaidSSLOrders()
     {
-        $unpaid = 0;
+        $services = array();
         foreach ($this->services as $service)
         {
             $invoiceID = $service->order()->invoiceid;
@@ -39,36 +50,47 @@ class SSLSummary
             }
 
             if ($invoice->getStatus() == 'Unpaid')
-                $unpaid++;
+                $services[] = $service;
         }
-
-        return $unpaid;
+        
+        return $services;
     }
-
+    
+    public function getProcessingSSLOrdersCount()
+    {       
+        return count($this->getProcessingSSLOrders());
+    }
+    
     public function getProcessingSSLOrders()
     {
-        $processing = 0;
+        $services = array();
+        
         foreach ($this->services as $service)
         {
-            
             if($this->getSSLCertificateStatus($service->id) == 'processing')
             {
-                $processing++;
+                $services[] = $service;
             }
         }
-
-        return $processing;
+        
+        return $services;
     }
 
+    public function getExpiresSoonSSLOrdersCount()
+    {
+        return count($this->getExpiresSoonSSLOrders());
+    }
+    
     public function getExpiresSoonSSLOrders()
     {
-        $daysBefore = 30;
+        $services = array();
+        
+         $daysBefore = 30;
         $apiConf = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get();        
         $expiresSoonSelectedDays = $apiConf->summary_expires_soon_days;         
         if($expiresSoonSelectedDays != NULL && trim($expiresSoonSelectedDays) != '')
             $daysBefore = $expiresSoonSelectedDays;
         //$daysBefore = 1000; //to test
-        $expiresSoon = 0;
         foreach ($this->services as $service)
         {
             $SSLOrder = new main\eModels\whmcs\service\SSL();
@@ -84,11 +106,11 @@ class SSLSummary
             if ($expiry_date != '0000-00-00' && $this->getSSLCertificateStatus($service->id) == 'active')
             {                
                 if($this->checkOrderExpireDate($expiry_date, $daysBefore))
-                    $expiresSoon++;
+                    $services[] = $service;
              } 
         }
         
-        return $expiresSoon;
+        return $services;
     }
 
     private function checkOrderExpireDate($expireDate, $days = 30) {
@@ -135,6 +157,7 @@ class SSLSummary
         foreach ($services->get() as $service)
         {
             $product = $service->product();
+            
             //check if product is GOGET
             if ($product->serverType == 'GGSSLWHMCS')
             {

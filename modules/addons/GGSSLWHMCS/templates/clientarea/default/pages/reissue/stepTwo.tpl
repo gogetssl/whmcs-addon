@@ -43,6 +43,7 @@
         //var fillVars = JSON.parse('{$fillVars}');
         var brand = JSON.parse('{$brand}');        
         var onlyEmailValidationFoBrands = ['geotrust','thawte','rapidssl','symantec'];
+        var disabledValidationMethods = JSON.parse('{$disabledValidationMethods}'); 
         
         /*var mainDomainDcvMethod = '';
         for (var i = 0; i < fillVars.length; i++) {
@@ -94,8 +95,14 @@
             }
             
             if(jQuery.inArray(brand, onlyEmailValidationFoBrands) < 0){
-                selectDcvMethod = '<div class="form-group"><select style="width:65%;" type="text" name="selectName" class="form-control"><option value="EMAIL">'+'{$MGLANG->T('dropdownDcvMethodEmail')}'+'</option><option value="HTTP">'+'{$MGLANG->T('dropdownDcvMethodHttp')}'+'</option><option value="HTTPS">'+'{$MGLANG->T('dropdownDcvMethodHttps')}'+'</option><option value="DNS">'+'{$MGLANG->T('dropdownDcvMethodDns')}'+'</option></select>' ;
-            } else { 
+ selectDcvMethod = '<div class="form-group"><select style="width:65%;" type="text" name="selectName" class="form-control">';
+                
+                //if not disabled display
+                if(jQuery.inArray('email', disabledValidationMethods) < 0)  
+                    selectDcvMethod +='<option value="EMAIL">'+'{$MGLANG->T('dropdownDcvMethodEmail')}'+'</option>';
+                
+                selectDcvMethod += '<option value="HTTP">'+'{$MGLANG->T('dropdownDcvMethodHttp')}'+'</option><option value="HTTPS">'+'{$MGLANG->T('dropdownDcvMethodHttps')}'+'</option><option value="DNS">'+'{$MGLANG->T('dropdownDcvMethodDns')}'+'</option>' ;
+                selectDcvMethod += '</select>';             } else { 
                 selectDcvMethod = '<div class="form-group"><select style="width:65%;" type="text" name="selectName" class="form-control"><option value="EMAIL">'+'{$MGLANG->T('dropdownDcvMethodEmail')}'+'</option></select>';
             }
                    
@@ -106,6 +113,11 @@
                 
                 partHtml = partHtml + selectDcvMethod.replace('name="selectName"', getNameForSelectMethod(x, domain));
                 selectEmailHtml = selectBegin.replace('name="selectName"', getNameForSelectEmail(x, domain));
+                
+                if(jQuery.inArray('email', disabledValidationMethods) >= 0 && jQuery.inArray(brand, onlyEmailValidationFoBrands) < 0)
+                    selectEmailHtml = selectEmailHtml.replace(getNameForSelectEmail(x, domain) + ' class="form-control"', getNameForSelectEmail(x, domain) + ' class="form-control hidden"');
+                
+                
                 for (var i = 0; i < emails.length; i++) {
                     selectEmailHtml = selectEmailHtml +  getSelectHtml(emails[i], i === 0);
                 }

@@ -100,6 +100,20 @@ class service extends main\mgLibs\models\Orm{
      * @var string
      */
     public $nextDueDate;
+    
+    /**
+     * 
+     * @Column(name=firstpaymentamount)
+     * @var decimal
+     */
+    public $firstpaymentamount;
+    
+    /**
+     * 
+     * @Column(name=amount)
+     * @var float
+     */
+    public $amount;
     	
     /**
      *
@@ -275,7 +289,7 @@ class service extends main\mgLibs\models\Orm{
      * @return configOptions
      */
     function configOptions(){
-       if(empty($this->_configOptions))
+    if(empty($this->_configOptions))
        {
            $this->_configOptions = new main\models\whmcs\service\configOptions\Repository($this->id);
        }
@@ -400,6 +414,8 @@ class service extends main\mgLibs\models\Orm{
             $this->productID        = $data['pid'];
             $this->username         = $data['username'];
             $this->password         = $data['password'];
+            $this->amount           = $data['amount'];
+            $this->firstpaymentamount           = $data['firstpaymentamount'];
         }
         
 
@@ -503,4 +519,33 @@ class service extends main\mgLibs\models\Orm{
         return $obj;
         
     }
+    
+    function getDomain(){
+        if(empty($this->domain)){
+            return null;
+        }
+        
+        return $this->domain;
+    }
+    
+    function getNextDueDate(){
+        if(empty($this->nextDueDate) || $this->nextDueDate == '0000-00-00'){
+            return NULL;
+        }
+        
+        return $this->nextDueDate;
+    }
+    
+    function getFirstPaymentAmount(){ 
+        return $this->firstpaymentamount;
+    }
+    
+    function getAmount(){
+        return $this->amount;
+    }
+    
+    function getID(){
+        return $this->id;
+    }
+    
 }

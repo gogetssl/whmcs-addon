@@ -208,6 +208,7 @@
                                 <li><a href="{$breadcrumbs[0].url}">{$MGLANG->T('pagesLabels','label', $breadcrumbs[0].name)}</a></li>
                             {/if}
                             {if $breadcrumbs[1]}
+                            
                                 <li><a href="{$breadcrumbs[1].url}">{$MGLANG->T('pagesLabels',$breadcrumbs[0].name,$breadcrumbs[1].name)}</a></li> 
                             {/if}
                     </ul>

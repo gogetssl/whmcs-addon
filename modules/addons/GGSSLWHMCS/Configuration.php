@@ -53,7 +53,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
      * Module version
      * @var string
      */
-    public $version = '1.0.39'; 
+    public $version = '1.0.40'; 
 
     /**
      * Module author
@@ -116,10 +116,10 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
     function getClienMenu()
     {
         return array(
-            'home'       => array(
-                'icon' => 'glyphicon glyphicon-home'
+            'Orders'       => array(
+                'icon' => 'glyphicon glyphicon-home' 
             ),
-            'shared'     => array
+            /*'shared'     => array
                 (
                 'icon' => 'fa fa-key'
             ),
@@ -130,7 +130,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
             'categories' => array
                 (
                 'icon' => 'glyphicon glyphicon-th-list'
-            )
+            )*/
         );
     }
 

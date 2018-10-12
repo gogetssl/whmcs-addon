@@ -1,0 +1,55 @@
+#mg-data-list  th{
+    text-align: center;
+}
+#mg-data-list  td:not(:first-child){
+    text-align: center;
+}
+#mg-data-list  tr{
+    cursor: pointer;
+}
+.status {
+    display: block !important;
+    font-size: .9em !important;
+    line-height: 22px !important;
+    border: 2px solid #ccc !important;
+    border-radius: 3px !important;
+    background-color: #fff !important;
+    color: #333 !important;
+}
+.status-active, .status-open, .status.completed {
+    color: #3fad46  !important;
+}
+.status-suspended {
+    color: #f0ad4e !important;
+}
+.status-pending {
+    color: #d9534f !important;
+}
+.dataTables_wrapper .dataTables_length {
+    color: unset;
+    background-color: unset;
+}
+table.dataTable thead .sorting::after, table.dataTable thead .sorting_asc::after, table.dataTable thead .sorting_desc::after {
+    content: unset;
+}
+.dataTables_wrapper .dataTables_length label .form-control {
+    border: 1px solid #ccc;
+    border-top-color: rgb(204, 204, 204);
+    border-right-color: rgb(204, 204, 204);
+    border-bottom-color: rgb(204, 204, 204);
+    border-left-color: rgb(204, 204, 204);
+    border-radius: 4px;
+}
+#MGLoader {
+    position:fixed;
+    padding:0;
+    margin:0;
+    top:0;
+    left:0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+.dataTables_wrapper .dataTables_filter label .form-control {
+    padding: 7px 10px 7px 7px !important
+}

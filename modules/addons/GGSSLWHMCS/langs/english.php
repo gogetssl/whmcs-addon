@@ -32,6 +32,8 @@ $_LANG['addonAA']['apiConfiguration']['item']['display_csr_generator']['label'] 
 $_LANG['addonAA']['apiConfiguration']['item']['default_csr_generator_country']['description']          = 'The default selection';
 $_LANG['addonAA']['apiConfiguration']['item']['display_ca_summary']['label']                           = 'Display Orders Summary';
 $_LANG['addonAA']['apiConfiguration']['item']['client_area_summary_orders']['label']                   = 'Client Area Orders Summary';
+$_LANG['addonAA']['apiConfiguration']['item']['validation_settings']['label']                          = 'Validation Settings';
+$_LANG['addonAA']['apiConfiguration']['item']['disable_email_validation']['label']                     = 'Disable Email Validation';
 $_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['label']                    = 'Expires Soon';
 $_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['description']              = 'Count SSL order for statistics, if there are fewer or equal days to expire than the selected ones.';
 $_LANG['addonAA']['apiConfiguration']['item']['send_certificate_template']['label']                    = 'Send Certificate Email Template';
@@ -172,17 +174,21 @@ $_LANG['addonAA']['importSSLOrder']['messages']['order_cancelled_import_unable']
 
 $_LANG['anErrorOccurred'] = 'An error occurred';
 
+$_LANG['pagesLabels']['label']['orders']                      = 'Import SSL Order';
 $_LANG['addonCA']['sslSummary']['title']       = 'SSL Orders Summary';
 $_LANG['addonCA']['sslSummary']['total']       = 'Total Orders';
 $_LANG['addonCA']['sslSummary']['unpaid']      = 'Unpaid Orders';
 $_LANG['addonCA']['sslSummary']['processing']  = 'Processing';
 $_LANG['addonCA']['sslSummary']['expiresSoon'] = 'Expires Soon';
 
-$_LANG['sslSummarySidebarTitle']       = 'SSL Orders Summary';
-$_LANG['sslSummarySidebarTotal']       = 'Total Orders';
-$_LANG['sslSummarySidebarUnpaid']      = 'Unpaid Orders';
-$_LANG['sslSummarySidebarProcessing']  = 'Processing';
-$_LANG['sslSummarySidebarExpiresSoon'] = 'Expires Soon';
+$_LANG['addonCA']['sslSummaryOrdersPage']['pageTitle']['total']       = 'Total Orders';
+$_LANG['addonCA']['sslSummaryOrdersPage']['pageTitle']['unpaid']      = 'Unpaid Orders';
+$_LANG['addonCA']['sslSummaryOrdersPage']['pageTitle']['processing']  = 'Processing Orders';
+$_LANG['addonCA']['sslSummaryOrdersPage']['pageTitle']['expires_soon'] = 'Expires Soon Orders';
+$_LANG['addonCA']['sslSummaryOrdersPage']['Product/Service'] = 'Product/Service';
+$_LANG['addonCA']['sslSummaryOrdersPage']['Pricing'] = 'Pricing';
+$_LANG['addonCA']['sslSummaryOrdersPage']['Next Due Date'] = 'Next Due Date';
+$_LANG['addonCA']['sslSummaryOrdersPage']['Status'] = 'Status';
 
 $_LANG['invalidEmailAddress']           = 'Email Address is incorrect';
 $_LANG['csrCodeGeneraterdSuccessfully'] = 'CSR code has been generated successfully';

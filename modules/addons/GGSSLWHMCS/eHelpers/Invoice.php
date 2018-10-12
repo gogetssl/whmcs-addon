@@ -1,5 +1,4 @@
 <?php
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -11,6 +10,8 @@ namespace MGModule\GGSSLWHMCS\eHelpers;
 use \DateInterval;
 use \DateTime;
 use \MGModule\GGSSLWHMCS\mgLibs\MySQL\Query;
+use \MGModule\GGSSLWHMCS\eServices\provisioning\ConfigOptions;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 /**
  * Description of Invoice
@@ -77,13 +78,68 @@ class Invoice
         
         return Query::query('SELECT invoice_id FROM ' . self::INVOICE_INFOS_TABLE_NAME . $wherePart . ' ORDER BY id DESC LIMIT 1')->fetch();
     }
-    protected function getNextDueDate($currentDueDate, $dateFormat = 'Y-m-d') {
+    protected function getNextDueDate($nextduedate, $dateFormat = 'Y-m-d', $timeShift = 'P12M') {
+        $datetime = new DateTime($nextduedate);
         
-        $datetime = new DateTime($currentDueDate);
-        
-        $datetime->add(new DateInterval('P1Y')) ; //plus 1 year;
+        $datetime->add(new DateInterval($timeShift)) ; //plus 1 year by default;
         $datetime->sub(new DateInterval('P1D')) ; //plus 1 year;
+        
         return $datetime->format($dateFormat);
+    }
+    
+    protected function getClientCurrencyID($id)
+    {
+        $clientRepo = new \MGModule\GGSSLWHMCS\models\whmcs\clients\Client($id);
+        return $clientRepo->getCurrencyId();
+    }
+    
+    protected function getProductPricing($id)
+    {
+        $productRepo = new \MGModule\GGSSLWHMCS\models\productConfiguration\Repository();     
+        return $productRepo->getProductPricing($id);
+    }
+    
+    protected function getProperServiceBillingCycleBasedOnProductPricing($service)
+    {
+        //get client currency
+        $clientCurrencyID = $this->getClientCurrencyID($service->userid);
+        //get product pricing
+        $productPricing = $this->getProductPricing($service->packageid);   
+        foreach($productPricing as $pricing)
+        {            
+            //check if pricing currency is clients currency and if service pricing period is setted
+            if($pricing->currency == $clientCurrencyID && $pricing->{strtolower($service->billingcycle)} != '-1.00')
+                return [
+                    'key' => $service->billingcycle, 
+                    'price' => $pricing->{strtolower($service->billingcycle)}
+                ];
+        }
+        $highestAvaialblePeriod = $highestAvaialblePeriodPrice = 0;
+        foreach($productPricing as $pricing)
+        { 
+            if($pricing->currency == $clientCurrencyID)
+            {
+                foreach($pricing as $key => $priceFieldValue)
+                { 
+                    if(key_exists($key, \MGModule\GGSSLWHMCS\models\whmcs\pricing\BillingCycle::PERIODS) && $priceFieldValue != '-1.00')
+                    {                        
+                        $period = \MGModule\GGSSLWHMCS\models\whmcs\pricing\BillingCycle::convertStringToPeriod($key);
+                        
+                        if($highestAvaialblePeriod < $period)
+                        {
+                            $highestAvaialblePeriod = $period;  
+                            $highestAvaialblePeriodPrice = $priceFieldValue;
+                        }
+                    }                    
+                }
+            }            
+        }
+                
+        // return highest available        
+        return [
+            'key' => \MGModule\GGSSLWHMCS\models\whmcs\pricing\BillingCycle::convertPeriodToName($highestAvaialblePeriod) ,
+            'price' => $highestAvaialblePeriodPrice
+        ];
     }
     
     public function createInvoice($service, $product, $returnInvoiceID = false) {
@@ -93,22 +149,32 @@ class Invoice
         $dateInvoice = date($dateFormat);
         
         if($service->billingcycle != 'One Time'){
-            $itemamount = $service->amount;
+            
+            /*
+             * check if product support it(if is setted related pricing period) 
+             * if not select the highest available            
+             */        
+            $availableBillingCycle = $this->getProperServiceBillingCycleBasedOnProductPricing($service);
+            if(in_array($availableBillingCycle['key'], array('free', 'Free Account')))
+            {
+                $productConfiguration = Capsule::table("tblproducts")->where("tblproducts.servertype", "=", "GGSSLWHMCS")->where("id", "=", $service->packageid)->first();
+                $timeShift = 'P' . $productConfiguration->{ConfigOptions::API_PRODUCT_MONTHS} . 'M';            
+            }
+            else
+                $timeShift = 'P' . \MGModule\GGSSLWHMCS\models\whmcs\pricing\BillingCycle::convertStringToPeriod($availableBillingCycle['key']) . 'M';
+            
+            //get current product amount
+            $itemamount = $availableBillingCycle['price'];
             $startDate = $service->nextduedate;
-            $endDate = $this->getNextDueDate($service->nextduedate, $dateFormat);
-
+            $endDate = $this->getNextDueDate($service->nextduedate, $dateFormat, $timeShift);            
             $invoiceItemDescription = $product->name . ($service->domain ? ' - ' . $service->domain : '' ) . ' (' . $startDate . ' - ' . $endDate . ') - Renewal';
         } 
         else
         {      
             //get client currency id
-            $clientRepo = new \MGModule\GGSSLWHMCS\models\whmcs\clients\Client($service->userid);
-            $clientCurrencyID = $clientRepo->getCurrencyId();
-            
-            //get product pricing
-            $productID = $service->packageid;           
-            $productRepo = new \MGModule\GGSSLWHMCS\models\productConfiguration\Repository();     
-            $productPricing = $productRepo->getProductPricing($productID);
+            $clientCurrencyID = $this->getClientCurrencyID($service->userid);            
+            //get product pricing         
+            $productPricing = $this->getProductPricing($service->packageid);   
             //get proper pricing related to client pricing
             foreach($productPricing as $pricing)
             {
