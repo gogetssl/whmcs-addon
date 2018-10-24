@@ -94,11 +94,11 @@ function displaySSLSummaryStats($vars)
 
             \MGModule\GGSSLWHMCS\Addon::I(true);
 
-            $apiConf = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get();        
-            $displaySSLSummary = $apiConf->display_ca_summary; 
-            if(!(bool) $displaySSLSummary)
+            $apiConf           = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get();
+            $displaySSLSummary = $apiConf->display_ca_summary;
+            if (!(bool) $displaySSLSummary)
                 return;
-            
+
             $sslSummaryIntegrationCode = '';
 
             $titleLang       = \MGModule\GGSSLWHMCS\mgLibs\Lang::T('addonCA', 'sslSummary', 'title');
@@ -110,15 +110,15 @@ function displaySSLSummaryStats($vars)
             //get ssl statistics
             $sslSummaryStats = new MGModule\GGSSLWHMCS\eHelpers\SSLSummary($_SESSION['uid']);
 
-            $totalOrders       = $sslSummaryStats->getTotalSSLOrdersCount(); 
-            
-            if((int)$totalOrders  == 0)
+            $totalOrders = $sslSummaryStats->getTotalSSLOrdersCount();
+
+            if ((int) $totalOrders == 0)
                 return '';
-            
-            $unpaidOrders      = $sslSummaryStats->getUnpaidSSLOrdersCount(); 
+
+            $unpaidOrders      = $sslSummaryStats->getUnpaidSSLOrdersCount();
             $processingOrders  = $sslSummaryStats->getProcessingSSLOrdersCount();
             $expiresSoonOrders = $sslSummaryStats->getExpiresSoonSSLOrdersCount();
-            
+
             $sslSummaryIntegrationCode .= "            
         <h3 class=\"dsb-title\" align=\"center\">$titleLang</h3>
         <div class=\"dash-stat-box dlb-border clerarfix\">            
@@ -167,31 +167,29 @@ add_hook('ClientAreaHeadOutput', 1, 'loadSSLSummaryCSSStyle');
 
 function displaySSLSummaryInSidebar($secondarySidebar)
 {
-    
-    
     GLOBAL $smarty;
-    
+
     if (in_array($smarty->tpl_vars['templatefile']->value, array('clientareahome')) || !isset($_SESSION['uid']))
         return;
-    
+
     try
     {
         require_once 'Loader.php';
         new \MGModule\GGSSLWHMCS\Loader();
 
         \MGModule\GGSSLWHMCS\Addon::I(true);
-        
-        $apiConf = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get();        
-        $displaySSLSummary = $apiConf->display_ca_summary; 
-        if(!(bool) $displaySSLSummary)
+
+        $apiConf           = (new \MGModule\GGSSLWHMCS\models\apiConfiguration\Repository())->get();
+        $displaySSLSummary = $apiConf->display_ca_summary;
+        if (!(bool) $displaySSLSummary)
             return;
-   
+
         //get ssl statistics
         $sslSummaryStats = new MGModule\GGSSLWHMCS\eHelpers\SSLSummary($_SESSION['uid']);
 
         $totalOrders       = $sslSummaryStats->getTotalSSLOrdersCount();
-        if((int)$totalOrders  == 0)
-                return '';
+        if ((int) $totalOrders == 0)
+            return '';
         $unpaidOrders      = $sslSummaryStats->getUnpaidSSLOrdersCount();
         $processingOrders  = $sslSummaryStats->getProcessingSSLOrdersCount();
         $expiresSoonOrders = $sslSummaryStats->getExpiresSoonSSLOrdersCount();
@@ -245,6 +243,77 @@ function displaySSLSummaryInSidebar($secondarySidebar)
     }
     catch (\Exception $e)
     {
+        
     }
 }
 add_hook('ClientAreaSecondarySidebar', 1, 'displaySSLSummaryInSidebar');
+
+//unable downgrade certificate sans if active
+function unableDowngradeConfigOption($vars)
+{
+    if (isset($vars['filename'], $vars['templatefile'], $_REQUEST['type']) && $vars['filename'] == 'upgrade' && $_REQUEST['type'] == 'configoptions')
+    {        
+        if(isset($_SESSION['GGSSL_configOpsCustomValidateError']) && $_SESSION['GGSSL_configOpsCustomValidateError'] != '')
+        {
+            //diplay downgrade error message
+            global $smarty;
+            $error = $_SESSION['GGSSL_configOpsCustomValidateError'];
+            $_SESSION['GGSSL_configOpsCustomValidateError'] = '';
+            unset($_SESSION['GGSSL_configOpsCustomValidateError']); 
+            
+            $smarty->assign("errormessage", $error);
+        }
+        
+        if(!isset($_REQUEST['step']) ||  $_REQUEST['step'] != '2')
+            return;
+        
+        $serviceID = NULL;
+        if (isset($_REQUEST['id']) && is_numeric($_REQUEST['id']))
+            $serviceID = $_REQUEST['id'];
+
+        if ($serviceID === NULL)
+            return; 
+        
+        $ssl        = new \MGModule\GGSSLWHMCS\eRepository\whmcs\service\SSL();
+        $sslService = $ssl->getByServiceId($serviceID);
+        //check if service id goget product
+        if (is_null($sslService) && $sslService->module != 'GGSSLWHMCS')
+            return;
+        
+        try
+        {
+            $orderStatus = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
+        }
+        catch (MGModule\GGSSLWHMCS\mgLibs\GoGetSSLApiException $e)
+        {
+            return;
+        }
+        //get config option id related to sans_count and current value
+        $CORepo = new \MGModule\GGSSLWHMCS\models\whmcs\service\configOptions\Repository($serviceID);
+        if(isset($CORepo->{MGModule\GGSSLWHMCS\eServices\provisioning\ConfigOptions::OPTION_SANS_COUNT}))
+        {
+            $sanCountConfigOptionValue = $CORepo->{MGModule\GGSSLWHMCS\eServices\provisioning\ConfigOptions::OPTION_SANS_COUNT};
+            $sanCountConfigOptionID = $CORepo->getID(MGModule\GGSSLWHMCS\eServices\provisioning\ConfigOptions::OPTION_SANS_COUNT);
+        }
+        //array(COID => array('minQuantity' => int, 'maxQuantity' => int))
+        $configOptionscustomMinMaxQuantities = array(
+            $sanCountConfigOptionID => array(
+                'min' => $sanCountConfigOptionValue,
+                'max' => null
+            )
+        );        
+        $whmcs = WHMCS\Application::getInstance();
+        $configoption = $whmcs->get_req_var("configoption");
+        $configOptionsService = new MGModule\GGSSLWHMCS\eServices\provisioning\ConfigOptions();
+        $configOpsReturn = $configOptionsService->validateAndSanitizeQuantityConfigOptions($configoption, $configOptionscustomMinMaxQuantities);
+                
+        if ($orderStatus['status'] == 'active' AND $configOpsReturn)
+        {     
+            $_SESSION['GGSSL_configOpsCustomValidateError'] = $configOpsReturn;
+            redir('type=configoptions&id=' . $serviceID);
+        }
+    }
+}
+
+add_hook('ClientAreaPageUpgrade', 1, 'unableDowngradeConfigOption');
+

@@ -64,6 +64,14 @@ class Repository
             $this->_configOptions[$name]->value = $value;
         }
     }
+    
+    function getID($name)
+    {
+        if (isset($this->_configOptions[$name]))
+        {
+            return $this->_configOptions[$name]->id;
+        }
+    }
 
     function load()
     {

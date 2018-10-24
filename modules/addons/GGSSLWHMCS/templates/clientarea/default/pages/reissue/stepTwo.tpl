@@ -1,5 +1,5 @@
 <h3>{$MGLANG->T('reissueTwoTitle')}</h3>
-{$MGLANG->T('reissueTwoSubTitle')}
+<p>{$MGLANG->T('reissueTwoSubTitle')}</p>
 
 {assign var=val value=0}
 
@@ -152,6 +152,13 @@
         });
         if(jQuery.inArray(brand, onlyEmailValidationFoBrands) >= 0){
             $('select[name^="approveremails"]').closest('tr').prop('hidden', true);
+        }
+        
+        if(jQuery.inArray('email', disabledValidationMethods) >= 0 && jQuery.inArray(brand, onlyEmailValidationFoBrands) < 0)
+        {
+            $('#selectDcvMethodsTable').find('th:eq(2)').text('');
+            $('#selectDcvMethodsTable').closest('.row').parent().find('h3:first').text('{$MGLANG->T('reissueSelectVerificationMethodTitle')}');  
+            $('#selectDcvMethodsTable').closest('.row').parent().find('p:first').text('{$MGLANG->T('reissueSelectVerificationMethodDescription')}'); 
         }
         
         {literal}//var sanEmails = JSON.parse('{\"friz.pl\":[\"admin@friz.pl\",\"administrator@friz.pl\"],\"kot.pl\":[\"admin@kot.pl\",\"administrator@kot.pl\"]}');{/literal} 

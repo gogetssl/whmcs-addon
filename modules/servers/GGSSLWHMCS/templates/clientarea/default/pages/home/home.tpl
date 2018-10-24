@@ -469,7 +469,7 @@
                                         <tr>
                                             <th>{$MGLANG->T('revalidateModalDomainLabel')}</th>
                                             <th style="width:35%;">{$MGLANG->T('revalidateModalMethodLabel')}</th>
-                                            <th>{$MGLANG->T('revalidateModalEmailLabel')}</th>
+                                            <th> {if 'email'|in_array:$disabledValidationMethods} {else}{$MGLANG->T('revalidateModalEmailLabel')}{/if}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -507,7 +507,9 @@
                                                         <div class="form-group">  
                                                             <select style="width:70%;" type="text" name="newDcvMethod_{$i}" class="form-control modalRevalidateInput">
                                                                 <option value="" selected>{$MGLANG->T('pleaseChooseOne')}</option>
-                                                                <option value="email">{$MGLANG->T('revalidateModalMethodEmail')}</option>
+                                                                {if !'email'|in_array:$disabledValidationMethods}
+                                                                    <option value="email">{$MGLANG->T('revalidateModalMethodEmail')}</option>
+                                                                {/if} 
                                                                 {if !$brand|in_array:$brandsWithOnlyEmailValidation}                                                            
                                                                 <option value="http">{$MGLANG->T('revalidateModalMethodHttp')}</option>
                                                                 <option value="https">{$MGLANG->T('revalidateModalMethodHttps')}</option>

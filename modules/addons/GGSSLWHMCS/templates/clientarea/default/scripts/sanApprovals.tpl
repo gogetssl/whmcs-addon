@@ -119,7 +119,15 @@
         if(jQuery.inArray(brand, onlyEmailValidationFoBrands) >= 0){
             $('select[name^="approveremails"]').closest('tr').prop('hidden', true);
         }
+        if(jQuery.inArray('email', disabledValidationMethods) >= 0 && jQuery.inArray(brand, onlyEmailValidationFoBrands) < 0)
+        {
+            $('#selectDcvMethodsTable').find('th:eq(2)').text('');
+            //replace page langs if email method disabled
+            $('#selectDcvMethodsTable').closest('form').find('h2:first').text('{$MGLANG->T('sslcertSelectVerificationMethodTitle')}');  
+            $('#selectDcvMethodsTable').closest('form').find('p:first').text('{$MGLANG->T('sslcertSelectVerificationMethodDescription')}'); 
+        }  
         
+            
         {literal}//var sanEmails = JSON.parse('{\"friz.pl\":[\"admin@friz.pl\",\"administrator@friz.pl\"],\"kot.pl\":[\"admin@kot.pl\",\"administrator@kot.pl\"]}');{/literal} 
     });
 </script>
