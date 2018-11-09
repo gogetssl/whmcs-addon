@@ -31,12 +31,12 @@ class home extends main\mgLibs\process\AbstractController {
             $privateKey = $sslService->getPrivateKey();            
             if($privateKey) {
                 $vars['privateKey'] = $privateKey;
-            } 
+            }             
             if ($sslService->status !== 'Awaiting Configuration') {
                 try {
                     
                     $orderStatus = \MGModule\GGSSLWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);  
-                   
+                    
                     if(!empty($orderStatus['partner_order_id'])) {
                         $vars['partner_order_id'] = ($orderStatus['partner_order_id']);
                     }
@@ -58,9 +58,9 @@ class home extends main\mgLibs\process\AbstractController {
                     } else {
                         $vars['dcv_method'] = 'email';
                     }
-                    //if (!empty($orderStatus['csr_code'])) {
-                    //    $vars['csr'] = ($orderStatus['csr_code']);
-                    //}
+                    if (!empty($orderStatus['csr_code'])) {
+                        $vars['csr'] = ($orderStatus['csr_code']);
+                    }
 
                     if (!empty($orderStatus['crt_code'])) {
                         $vars['crt'] = ($orderStatus['crt_code']);
@@ -162,7 +162,9 @@ class home extends main\mgLibs\process\AbstractController {
     public function renewJSON($input, $vars = array()) {
         
         try
-        {      
+        {     
+            logActivity("GGSSL WHMCS: The renewal action was initiated for the Service ID: " . $input['id']);
+
             $errorInvoiceExist = false;
             $cron = new \MGModule\GGSSLWHMCS\controllers\addon\admin\Cron();            
             $service = \WHMCS\Service\Service::where('id', $input['id'])->get();            
@@ -175,16 +177,22 @@ class home extends main\mgLibs\process\AbstractController {
         }
         catch(Exception $e)
         {
+            logActivity("GGSSL WHMC Renew Action Error: " . $e->getMessage());
             return array(
                 'error' => $e->getMessage(),
             );   
         }
         if($errorInvoiceExist)
+        {
+            logActivity("GGSSL WHMC Renew Action Error: " . $errorInvoiceExist);
+        
             return array(
                 'error' => $errorInvoiceExist,                
                 'invoiceID' => $existInvoiceID
             );
-            
+        }
+        
+        logActivity("GGSSL WHMC Renew Action: A new invoice has been successfully created for the Service ID: " . $input['id']);
         return array(
             'success' => true,
             'msg' =>  main\mgLibs\Lang::getInstance()->T('A new invoice has been successfully created. '),

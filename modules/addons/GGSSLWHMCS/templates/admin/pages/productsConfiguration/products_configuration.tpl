@@ -62,14 +62,13 @@
                             <div class="form-group">
                                 <label class="control-label col-sm-2">{$MGLANG->T('months')}</label>
                                 <div class="col-sm-10">
-                                    <div class="maxMonths">{$product->apiConfig->peroids}</div>
-                                    <input type="hidden" name="product[{$product->id}][configoption2]" value="{$product->apiConfig->peroids}"></input>
-                                    <!--<select name="product[{$product->id}][configoption2]" class="form-control">
-                                        {foreach from=$product->apiConfig->peroids item=peroid}
+                                    <div  class="maxMonths {if $product->paytype == 'onetime'}hidden{/if}">{$product->apiConfig->peroids}</div>
+                                    <input {if $product->paytype == 'onetime'}class="hidden" disabled=""{/if} type="hidden" name="product[{$product->id}][configoption2]" value="{$product->apiConfig->peroids}"></input>
+                                    <select name="product[{$product->id}][configoption2]" class="form-control {if $product->paytype != 'onetime'}hidden{/if}" {if $product->paytype != 'onetime'}disabled=""{/if}>
+                                        {foreach from=$product->apiConfig->availablePeriods item=peroid}
                                             <option {if $product->configoption2 == $peroid}selected{/if} value="{$peroid}">{$peroid}</option>
                                         {/foreach}
-                                    </select>
-                                    -->
+                                    </select>                                    
                                 </div>
                             </div>
 
@@ -278,7 +277,6 @@
 
 
                 function switchButtons(type, container, productId) {
-                    console.log(container);
                     if (type == 'enToDis') {
                         container.parent().html('<button type="button" data-product-id="' + productId + '" class="btn btn-danger disable-product">{/literal}{$MGLANG->T('statusDisable')}{literal}</button>');
                     } else {
@@ -399,6 +397,20 @@
                         $('#mg-js-pricing-group-' + productId).show();
                     }
                 }
+                
+                function showHidePeriodSelection(select) {
+                    var productId = select.data('id');                    
+                    var type = select.val();
+                    if (type === 'onetime') {  
+                       $(select).parents('td').find('.maxMonths').addClass('hidden');
+                        $('input[name="product[' + productId + '][configoption2]"]').addClass('hidden').prop('disabled', true);
+                        $('select[name="product[' + productId + '][configoption2]"]').removeClass('hidden').prop('disabled', false);
+                    } else {
+                        $(select).parents('td').find('.maxMonths').removeClass('hidden');
+                        $('input[name="product[' + productId + '][configoption2]"]').removeClass('hidden').prop('disabled', false);
+                        $('select[name="product[' + productId + '][configoption2]"]').addClass('hidden').prop('disabled', true);
+                    }
+                }
 
                 $('.mg-js-pricing-select').each(function () {
                     showHidePricing($(this));
@@ -406,6 +418,7 @@
 
                 $('.mg-js-pricing-select').on('change', function () {                    
                     showHidePricing($(this), true);
+                    showHidePeriodSelection($(this));
                 });
             });
         {/literal}

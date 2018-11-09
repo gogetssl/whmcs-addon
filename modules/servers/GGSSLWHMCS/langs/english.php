@@ -93,11 +93,11 @@ $_LANG['reissueOneCsr']          = 'CSR';
 $_LANG['reissueOneCsr']          = 'CSR';
 $_LANG['reissueOneSanDomains']   = 'SAN Domains';
 
-$_LANG['reissueTwoTitle']     = 'Reissue - Certificate Approver Email';
-$_LANG['reissueSelectVerificationMethodTitle']    = 'Reissue - Certificate Validation';
-$_LANG['reissueTwoSubTitle']  = 'You must now choose from the options below where you would like the approval email request for this certificate to be sent.';
+$_LANG['reissueTwoTitle']                            = 'Reissue - Certificate Approver Email';
+$_LANG['reissueSelectVerificationMethodTitle']       = 'Reissue - Certificate Validation';
+$_LANG['reissueTwoSubTitle']                         = 'You must now choose from the options below where you would like the approval email request for this certificate to be sent.';
 $_LANG['reissueSelectVerificationMethodDescription'] = 'You must now choose from the options below in order to pass Domain Control Validation (DCV) process.';
-$_LANG['reissueTwoContinue']  = 'Continue';
+$_LANG['reissueTwoContinue']                         = 'Continue';
 
 $_LANG['reissueThreeSuccess'] = 'Certificate successfully reissued';
 $_LANG['mustSelectServer']    = 'You must select your server type';

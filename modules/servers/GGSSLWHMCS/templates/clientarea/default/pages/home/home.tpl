@@ -204,7 +204,7 @@
                         <!--<button type="button" id="{if $dcv_method == 'email'}btnChange_Approver_Email{else}btnRevalidate{/if}" class="btn btn-default" style="margin:2px">{if $dcv_method == 'email'}{$MGLANG->T('changeValidationEmail')}{else}{$MGLANG->T('revalidate')}{/if}</button>-->
                         {if $privateKey}
                         <button type="button" id="getPrivateKey" class="btn btn-default" style="margin:2px">{$MGLANG->T('getPrivateKeyBtn')}</button>
-                        {/if}
+                        {/if}                        
                     {/if}  
                 </td>
             </tr>

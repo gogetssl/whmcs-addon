@@ -152,7 +152,7 @@ class SSLStepThree {
         $order['dcv_method'] = strtolower($this->p['fields']['dcv_method']);
        
         $order['product_id'] = $this->p[ConfigOptions::API_PRODUCT_ID]; // Required
-        $order['period']     = $billingPeriods[$this->p['model']['attributes']['billingcycle']];//$this->p[ConfigOptions::API_PRODUCT_MONTHS]; // Required        
+        $order['period']     = $billingPeriods[$this->p['model']['attributes']['billingcycle']];//$this->p[ConfigOptions::API_PRODUCT_MONTHS]; // Required  
         $order['csr']        = $this->p['csr']; // Required
         $order['server_count']       = -1; // Required . amount of servers, for Unlimited pass “-1”
         $order['approver_email']     = ($order['dcv_method'] == 'email') ? $this->p['approveremail'] : ''; // Required . amount of servers, for Unlimited pass “-1”

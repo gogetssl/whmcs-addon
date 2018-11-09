@@ -204,6 +204,14 @@ class Invoice
         
         $this->saveInvoiceInfo($service->userid, $invoiceId, $service->id, $product->id);
        
+        //add relid to invoiceitem entry in the tblinvoiceitems table -> WHMCS do not fill this column via local API CreateInvoice command
+        Capsule::table('tblinvoiceitems')
+                ->where('invoiceid', '=', $invoiceId)
+                ->where('relid', '=', '0')
+                ->where('userid', '=', $service->userid)
+                ->where('amount', '=', $itemamount)
+                ->update(array('relid' => $service->id));
+        
         if($returnInvoiceID)
             return $invoiceId;
             
