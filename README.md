@@ -1,5 +1,5 @@
 ![alt text](https://my.gogetssl.com/assets/img/logo_for_github.png "Logo Title Text 1")
-# GOGETSSL WHMCS SSL Addon
+# SSLCENTER WHMCS SSL Addon
 Free of charge SSL Addon for WHMCS to automate SSL certificate sales/distribution of via GoGetSSL.com platform
 
 ***
@@ -12,6 +12,8 @@ Free of charge SSL Addon for WHMCS to automate SSL certificate sales/distributio
 
 ### Releases/Downloads
 Please check the latest [Releases](https://github.com/gogetssl/whmcs-addon/releases) and Download files 
+
+Version 2.0.0 released on 05.12.2018, please use [migration manual](https://github.com/gogetssl/whmcs-addon/releases/tag/v2.0.0) to switch from latest 1.0.42 version
 
 ### WIKI
 Check [WIKI](https://github.com/gogetssl/whmcs-addon/wiki) for manuals and description of all features
@@ -36,6 +38,7 @@ You are highly welcome to send us requests for new features, suggestions, issues
 - Multiple renewal settings, including option to set when to send expiration notifications ot customers
 - Option to use fixed (same) technical contacts for all SSL certificates
 - Multiple Product Creator option
+- Automated Price import and comission setup
 
 ***
 
