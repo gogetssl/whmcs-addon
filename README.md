@@ -39,6 +39,7 @@ You are highly welcome to send us requests for new features, suggestions, issues
 - Option to use fixed (same) technical contacts for all SSL certificates
 - Multiple Product Creator option
 - Automated Price import and comission setup
+- Multibrand For WHMCS support
 
 ***
 
