@@ -183,8 +183,10 @@ $_LANG['incorrectCSR']            = 'Incorrect CSR';
 $_LANG['sanLimitExceeded']        = 'Exceeded limit of SAN domains';
 $_LANG['incorrectSans']           = 'Folowed SAN domains are incorrect: ';
 
-$_LANG['addonCA']['sslSummary']['title']       = 'SSL Orders Summary';
-$_LANG['addonCA']['sslSummary']['total']       = 'Total Orders';
-$_LANG['addonCA']['sslSummary']['unpaid']      = 'Unpaid Orders';
-$_LANG['addonCA']['sslSummary']['processing']  = 'Processing';
-$_LANG['addonCA']['sslSummary']['expiresSoon'] = 'Expires Soon';
+$_LANG['addonCA']['sslSummary']['title']           = 'SSL Orders Summary';
+$_LANG['addonCA']['sslSummary']['total']           = 'Total Orders';
+$_LANG['addonCA']['sslSummary']['unpaid']          = 'Unpaid Orders';
+$_LANG['addonCA']['sslSummary']['processing']      = 'Processing';
+$_LANG['addonCA']['sslSummary']['expiresSoon']     = 'Expires Soon';
+$_LANG['addonCA']['customBackToServiceButtonLang'] = '« Back to Service Details';
+

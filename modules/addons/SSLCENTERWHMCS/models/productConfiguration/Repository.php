@@ -102,7 +102,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository {
         $update['autosetup']              = $params['autosetup'];
         $update[C::PRICE_AUTO_DOWNLOAD]   = $params[C::PRICE_AUTO_DOWNLOAD] ? $params[C::PRICE_AUTO_DOWNLOAD] : '0';
         $update[C::COMMISSION]            = $params[C::COMMISSION] ? $params[C::COMMISSION] / 100 : '0';
-                
+        
         //if san disabled unassign sans config options
         if($update[C::PRODUCT_ENABLE_SAN] !== 'on') {
             main\eServices\ConfigurableOptionService::unassignFromProduct($productId, $update['name']);

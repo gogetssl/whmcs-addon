@@ -105,17 +105,20 @@ class Cron extends main\mgLibs\process\AbstractController
 
         foreach ($services as $srv)
         {
+            if($srv->status == 'Completed')
+                continue;
             //get days left to expire from WHMCS              
             $daysLeft         = $this->checkOrderExpireDate($srv->nextduedate);
             //if service is One Time and nextduedate is setted as 0000-00-00 get valid_till from SSLCenter API
-            if ($srv->billingcycle == 'One Time' && $srv->nextduedate = '0000-00-00')
+            if ($srv->billingcycle == 'One Time' && $srv->nextduedate == '0000-00-00')
             {
                 $sslOrder = $this->getSSLOrders($srv->id)[0];
                 $order    = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslOrder->remoteid);
                 $daysLeft = $this->checkOrderExpireDate($order['valid_till']);
             }
-
+            
             //service was synchronized, so we can base on nextduedate, that should be the same as valid_till
+            //$daysLeft = 90;
             if ($daysLeft >= 0)
             {
                 if ($srv->billingcycle == 'One Time' && $send_expiration_notification_one_time || $srv->billingcycle != 'One Time' && $send_expiration_notification_reccuring)
@@ -490,13 +493,13 @@ class Cron extends main\mgLibs\process\AbstractController
     public function sendExpireNotfiyEmail($serviceId, $daysLeft)
     {
         $command = 'SendEmail';
-
+        
         $postData = array(
             'id'          => $serviceId,
             'messagename' => main\eServices\EmailTemplateService::EXPIRATION_TEMPLATE_ID,
             'customvars'  => base64_encode(serialize(array("expireDaysLeft" => $daysLeft))),
         );
-
+        
         $adminUserName = main\eHelpers\Admin::getAdminUserName();
 
         $results = localAPI($command, $postData, $adminUserName);

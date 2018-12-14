@@ -25,7 +25,7 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
                 $vars['success'] = main\mgLibs\Lang::T('messages', 'configurable_generated');
             }
 
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' AND isset($input['saveProduct'])) {
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' AND isset($input['saveProduct'])) {                
                 $this->saveProducts($input, $vars);
                 $vars['success'] = main\mgLibs\Lang::T('messages', 'product_saved');
             }

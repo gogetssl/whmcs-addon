@@ -139,7 +139,7 @@ class home extends main\mgLibs\process\AbstractController {
             $vars['assetsURL'] = main\Server::I()->getAssetsURL();
             $vars['serviceid'] = $serviceId;
             $vars['userid'] = $userid;
-            
+                        
         } catch (\Exception $ex) {
             $vars['error'] = $ex->getMessage();
         }

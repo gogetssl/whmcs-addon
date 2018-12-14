@@ -69,7 +69,7 @@ class Orders extends main\mgLibs\process\AbstractController
     private function prepareRow($order)
     {
         // Product/Service column
-        $row[0] = '<form class="hidden" name="redirectToService" action="clientarea.php?action=productdetails&id=' . $order->getID() . '" target="_blank"  method="POST"></form><strong>' . $order->product()->getName() . '</strong>';
+        $row[0] = '<form class="hidden" name="redirectToService" action="clientarea.php?action=productdetails&id=' . $order->getID() . '"  method="POST"></form><strong>' . $order->product()->getName() . '</strong>';
         if ($order->getDomain() != NULL)
             $row[0] .= '<br /><a href="' . $order->getDomain() . ' target="_blank">' . $order->getDomain() . '</a>';
         // Pricing column
