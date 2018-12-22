@@ -261,14 +261,11 @@ class Cron extends main\mgLibs\process\AbstractController
         echo 'Products Price Updater started.' . PHP_EOL;
         logActivity("SSLCENTER WHMCS: Products Price Updater started.");
 
-
-
-
         try
         {
             //get all products prices
             $apiProductsPrices = \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\ProductsPrices::getInstance();
-
+            
             foreach ($apiProductsPrices->getAllProductsPrices() as $productPrice)
             {
                 $productPrice->saveToDatabase();
@@ -278,7 +275,6 @@ class Cron extends main\mgLibs\process\AbstractController
             //get sslcenter all products
             $products     = $productModel->getModuleProducts();
 
-
             foreach ($products as $product)
             {
                 //if auto price not enabled skip product            
@@ -286,7 +282,7 @@ class Cron extends main\mgLibs\process\AbstractController
                     continue;
 
                 //load saved api price
-                $apiPrice = $productPrice->loadSavedPriceData();
+                $apiPrice = $productPrice->loadSavedPriceData($product->{C::API_PRODUCT_ID});               
                 //generate new price
                 $this->generateNewPricesBasedOnAPI($product->pricing, $apiPrice);
             }
