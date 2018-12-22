@@ -31,10 +31,15 @@ class ProductPrice
         $productPrice->save();
     }
     
-    public function loadSavedPriceData()
+    public function loadSavedPriceData($productID = NULL)
     {
         $productPriceRepo = new \MGModule\SSLCENTERWHMCS\models\productPrice\Repository();
-        $productPriceRepo->onlyApiProductID($this->id);
+       
+        if($productID !== NULL)           
+            $productPriceRepo->onlyApiProductID($productID);
+        else
+            $productPriceRepo->onlyApiProductID($this->id);
+
         
         return $productPriceRepo->get();
     }

@@ -109,7 +109,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
     {
         if (Capsule::schema()->hasTable($this->tableName))
         {
-            Capsule::schema()->table($this->tableName, function(Blueprint $table)
+            Capsule::schema()->table($this->tableName, function($table)
             {
                 $table->dropForeign('mgfw_SSLCENTER_user_commission_client_id_foreign');
                 $table->dropForeign('mgfw_SSLCENTER_user_commission_product_id_foreign');
