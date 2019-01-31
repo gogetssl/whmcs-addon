@@ -140,7 +140,31 @@ class Cron extends main\mgLibs\process\AbstractController
                 }
             }
         }
+        
         $invoicesCreatedCount = $this->createAutoInvoice($packageLists, $serviceIDs);
+        
+        $invoices = Capsule::table('tblinvoices')->where('status', 'Payment Pending')->get();
+        foreach($invoices as $invoice)
+        {
+            $itemsInvoice = Capsule::table('tblinvoiceitems')->where('invoiceid', $invoice->id)->where('description', 'LIKE', '%- Renewal')->get();
+            
+            if(!empty($itemsInvoice))
+            {
+                $sslInvoice = Capsule::table('mgfw_SSLCENTER_invoices_info')->where('invoice_id', $invoice->id)->first();
+
+                $serviceid = $sslInvoice->service_id;
+                
+                $sslInfo = $this->getSSLOrders($serviceid)[0];
+                $sslOrder    = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslInfo->remoteid);
+
+                $today = (string)date('Y-m-d');
+                
+                if($sslOrder['valid_till'] == $today)
+                {
+                    Capsule::table('tblinvoices')->where('id', $invoice->id)->update(array('status' => 'Cancelled'));
+                }
+            }
+        }
 
         echo 'Notifier completed.' . PHP_EOL;
         echo '<br />Number of emails send: ' . $emailSendsCount . PHP_EOL;
