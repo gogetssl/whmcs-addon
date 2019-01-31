@@ -236,6 +236,8 @@ class Invoice
                 ->where('amount', '=', $itemamount)
                 ->update(array('relid' => $service->id));
         
+        Capsule::table('tblinvoices')->where('id', '=', $invoiceId)->update(array('status' => 'Payment Pending'));
+        
         if($returnInvoiceID)
             return $invoiceId;
             
