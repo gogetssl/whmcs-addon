@@ -208,6 +208,7 @@ class Invoice
             'duedate' => $dateInvoice,
             'itemdescription1' => $invoiceItemDescription,
             'itemamount1' => (float)$itemamount + (float)$itemamount * (float)$commission,
+            'itemtaxed1' => $product->tax
         );
         
         if($boughtSans > 0)
@@ -217,6 +218,7 @@ class Invoice
 
             $postData['itemdescription2'] = $sanCountFrendlyName . ': ' .  $boughtSans . ' x ' . $optionname;
             $postData['itemamount2'] = $qtyprice;
+            $postData['itemtaxed2'] = $product->tax;
             
         }
         

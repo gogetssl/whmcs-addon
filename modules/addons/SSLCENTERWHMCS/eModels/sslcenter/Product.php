@@ -13,6 +13,7 @@ class Product {
         'comodo_dondca'   => 1,
         'comodo_shino'    => 1,
         'comodo_comssl'   => 1,
+        'comodo_ggssl'    => 1,
         'rapidssl'        => 2,
         'thawte'          => 2,
         'symantec'        => 2,

@@ -1,4 +1,5 @@
 <?php
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 add_hook('ClientAreaHeadOutput', 1, function($params)
 {
@@ -328,7 +329,15 @@ function SSLCENTER_overideProductPricingBasedOnCommission($vars)
     $products     = array();
     $productModel = new \MGModule\SSLCENTERWHMCS\models\productConfiguration\Repository();
 
-    $clientCurrency = getCurrency($_SESSION['uid']);
+    if(isset($_SESSION['uid']) && !empty($_SESSION['uid']))
+    {
+        $clientCurrency = getCurrency($_SESSION['uid']);
+    }
+    else
+    {
+        $currency = Capsule::table('tblcurrencies')->where('default', '1')->first();
+        $clientCurrency['id'] = isset($_SESSION['currency']) && !empty($_SESSION['currency']) ? $_SESSION['currency'] : $currency->id; 
+    }
     //get sslcenter all products
     foreach ($productModel->getModuleProducts() as $product)
     {
