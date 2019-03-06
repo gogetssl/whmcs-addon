@@ -1,6 +1,20 @@
 <?php
 use Illuminate\Database\Capsule\Manager as Capsule;
 
+add_hook('ClientAreaPage', 1, function($params) { 
+    if($params['filename'] == 'viewinvoice' && $params['status'] == 'Payment Pending')
+    {
+        $invoice = new WHMCS\Invoice($params['invoiceid']);
+        $paymentbutton = $invoice->getPaymentLink();
+
+        return [
+            'paymentbutton' => $paymentbutton,
+            'statuslocale' => 'Unpaid',
+            'status' => 'Unpaid'
+        ];
+    }
+});
+
 add_hook('ClientAreaHeadOutput', 1, function($params)
 {
     $show = false;
