@@ -88,6 +88,9 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
 
     public function dropApiProductsPricesTable()
     {
-        Capsule::schema()->dropIfExists($this->tableName);
+        if (Capsule::schema()->hasTable($this->tableName))
+        {
+            Capsule::schema()->dropIfExists($this->tableName);
+        }
     }
 }

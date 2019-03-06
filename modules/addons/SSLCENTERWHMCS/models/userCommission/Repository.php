@@ -61,6 +61,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
         {
             Capsule::schema()->create($this->tableName, function($table)
             {
+                $table->engine = 'InnoDB';
                 $table->increments('id');
                 $table->integer('client_id');
                 $table->integer('product_id');
@@ -91,6 +92,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
         {
             Capsule::schema()->create($this->tableName, function($table)
             {
+                $table->engine = 'InnoDB';
                 $table->increments('id');
                 $table->integer('client_id');
                 $table->integer('product_id');
@@ -109,12 +111,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
     {
         if (Capsule::schema()->hasTable($this->tableName))
         {
-            Capsule::schema()->table($this->tableName, function($table)
-            {
-                $table->dropForeign('mgfw_SSLCENTER_user_commission_client_id_foreign');
-                $table->dropForeign('mgfw_SSLCENTER_user_commission_product_id_foreign');
-            });
+            Capsule::schema()->dropIfExists($this->tableName);
         }
-        Capsule::schema()->dropIfExists($this->tableName);
     }
 }

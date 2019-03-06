@@ -113,7 +113,11 @@
                             <div class="form-group">
                                 <label class="control-label col-sm-2">{$MGLANG->T('commission')}</label>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control mg-product-commission" name="product[{$product->id}][configoption6]" value="{math equation="x * y" x=$product->configoption6 y=100}" data-id="{$product->id}" {if $product->paytype == 'free'}readonly=""{/if} pattern="\d*"/>
+                                    {if $product->configoption6}
+                                        <input type="text" class="form-control mg-product-commission" name="product[{$product->id}][configoption6]" value="{math equation="x * y" x=$product->configoption6 y=100}" data-id="{$product->id}" {if $product->paytype == 'free'}readonly=""{/if} pattern="\d*"/>
+                                    {else}
+                                        <input type="text" class="form-control mg-product-commission" name="product[{$product->id}][configoption6]" value="" data-id="{$product->id}" {if $product->paytype == 'free'}readonly=""{/if} pattern="\d*"/>
+                                    {/if}
                                 </div>
                             </div>
                             <div class="form-group">
