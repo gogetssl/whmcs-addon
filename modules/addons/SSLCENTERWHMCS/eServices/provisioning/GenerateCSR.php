@@ -62,7 +62,12 @@ class GenerateCSR
             'commonName'             => $this->post['commonName'],
             'emailAddress'           => $this->post['emailAddress'],
         );
-        $privKey = openssl_pkey_new();
+        
+        $privKey = openssl_pkey_new(array(
+            "private_key_bits" => 2048,
+            "private_key_type" => OPENSSL_KEYTYPE_RSA,
+        ));
+        
         if ($privKey)
         {
             $serviceid = $this->params['serviceid'];
