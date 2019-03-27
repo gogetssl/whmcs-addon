@@ -230,12 +230,12 @@ class Invoice
         
         $this->saveInvoiceInfo($service->userid, $invoiceId, $service->id, $product->id);
        
+        Capsule::table('tblinvoiceitems')
+                ->where('invoiceid', '=', $invoiceId)
+                ->update(array('type' => 'Hosting'));
         //add relid to invoiceitem entry in the tblinvoiceitems table -> WHMCS do not fill this column via local API CreateInvoice command
         Capsule::table('tblinvoiceitems')
                 ->where('invoiceid', '=', $invoiceId)
-                ->where('relid', '=', '0')
-                ->where('userid', '=', $service->userid)
-                ->where('amount', '=', $itemamount)
                 ->update(array('relid' => $service->id));
         
         Capsule::table('tblinvoices')->where('id', '=', $invoiceId)->update(array('status' => 'Payment Pending'));
@@ -289,10 +289,149 @@ class Invoice
         //link invoice id with newly created order
         Query::update('tblorders', ['invoiceid' => $invoicId], ['id' => $newOrderId]);
         
+        
         $moduleCreated = $this->moduleCreate($productId);
         if ($moduleCreated) {
             Query::update(self::INVOICE_INFOS_TABLE_NAME, ['status' => 'crated'], ['id' => $invoiceInfo['id']]);
+            $this->CopyConfigurationAndSendRenewToGGSSL($newOrderId);
+
         }
+    }
+    
+    
+    public function CopyConfigurationAndSendRenewToGGSSL($newOrderId)
+    {
+        $apiConfigRepo = new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository();
+        $input         = (array) $apiConfigRepo->get();
+        if(!$input['automatic_processing_of_renewal_orders'])
+        {
+            return false;
+        }
+        
+        $invoiceInfo = Capsule::table(self::INVOICE_INFOS_TABLE_NAME)->where('order_id', $newOrderId)->first();
+        if(!isset($invoiceInfo->service_id) || empty($invoiceInfo->service_id))
+        {
+            return false;
+        }
+        
+        $serviceId = $invoiceInfo->service_id;
+        
+        $sslOrderInfo = Capsule::table('tblsslorders')->where('serviceid', $serviceId)->first();
+        if(!isset($sslOrderInfo->remoteid) || empty($sslOrderInfo->remoteid))
+        {
+            return false;
+        }
+        
+        $sslOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslOrderInfo->remoteid);
+
+        $order               = [];
+        $order['dcv_method'] = $sslOrder['dcv_method'];
+        $order['product_id'] = $sslOrder['product_id'];
+        $order['period']     = $sslOrder['validity_period'];
+        $order['csr']        = $sslOrder['csr_code'];
+        $order['server_count']       = $sslOrder['server_count'];
+        $order['approver_email']     = $sslOrder['approver_method'];
+        $order['webserver_type']     = $sslOrder['webserver_type'];
+        $order['admin_firstname']    = $sslOrder['admin_firstname'];
+        $order['admin_lastname']     = $sslOrder['admin_lastname'];
+        $order['admin_organization'] = $sslOrder['admin_organization'];
+        $order['admin_title']        = $sslOrder['admin_title'];
+        $order['admin_addressline1'] = $sslOrder['admin_addressline1'];
+        $order['admin_phone']        = $sslOrder['admin_phone'];
+        $order['admin_email']        = $sslOrder['admin_email'];
+        $order['admin_city']         = $sslOrder['admin_city'];
+        $order['admin_country']      = $sslOrder['admin_country'];
+        $order['admin_postalcode']   = $sslOrder['admin_postalcode'];
+        $order['admin_region']       = $sslOrder['admin_region'];
+
+     
+        $order['tech_firstname']    = $sslOrder['tech_firstname'];
+        $order['tech_lastname']     = $sslOrder['tech_lastname'];
+        $order['tech_organization'] = $sslOrder['tech_organization'];
+        $order['tech_addressline1'] = $sslOrder['tech_addressline1'];
+        $order['tech_phone']        = $sslOrder['tech_phone'];
+        $order['tech_title']        = $sslOrder['tech_title'];
+        $order['tech_email']        = $sslOrder['tech_email'];
+        $order['tech_city']         = $sslOrder['tech_city'];
+        $order['tech_country']      = $sslOrder['tech_country'];
+        $order['tech_fax']          = $sslOrder['tech_fax'];
+        $order['tech_postalcode']   = $sslOrder['tech_postalcode'];
+        $order['tech_region']       = $sslOrder['tech_region'];
+        
+        if(isset($sslOrder['org_name']) && !empty($sslOrder['org_name']))
+        {
+            $order['org_name'] = $sslOrder['org_name'];
+        }
+        if(isset($sslOrder['org_division']) && !empty($sslOrder['org_division']))
+        {
+            $order['org_division'] = $sslOrder['org_division'];
+        }
+        if(isset($sslOrder['org_duns']) && !empty($sslOrder['org_duns']))
+        {
+            $order['org_duns'] = $sslOrder['org_duns'];
+        }
+        if(isset($sslOrder['org_addressline1']) && !empty($sslOrder['org_addressline1']))
+        {
+            $order['org_addressline1'] = $sslOrder['org_addressline1'];
+        }
+        
+        $order['org_city']         = $sslOrder['org_city'];
+        $order['org_country']      = $sslOrder['org_country'];
+        $order['org_fax']          = $sslOrder['org_fax'];
+        $order['org_phone']        = $sslOrder['org_phone'];
+        $order['org_postalcode']   = $sslOrder['org_postalcode'];
+        $order['org_region']       = $sslOrder['org_region'];
+        
+        if(isset($sslOrder['domains']) && !empty($sslOrder['domains']))
+        {
+            $order['dns_names']       = $sslOrder['domains'];
+        }
+        $order['approver_emails'] = $sslOrder['approver_emails'];
+        
+        $configdata = json_encode(array(
+            'servertype' => $sslOrder['webserver_type'],
+            'csr' => $sslOrder['csr_code'],
+            'firstname' => $sslOrder['tech_firstname'],
+            'lastname' => $sslOrder['tech_lastname'],
+            'orgname' => $sslOrder['tech_organization'],
+            'jobtitle' => $sslOrder['tech_title'],
+            'email' => $sslOrder['tech_email'],
+            'address1' => $sslOrder['tech_addressline1'],
+            'address2' => $sslOrder['tech_addressline2'],
+            'city' => $sslOrder['tech_city'],
+            'state' => $sslOrder['tech_region'],
+            'postcode' => $sslOrder['tech_postalcode'],
+            'country' => $sslOrder['tech_country'],
+            'phonenumber' => $sslOrder['tech_phone'],
+            'fields' => array(
+                'order_type' => 'renew',
+                'org_name' => isset($sslOrder['org_name']) && !empty($sslOrder['org_name']) ? $sslOrder['org_name'] : '',
+                'org_division' => isset($sslOrder['org_division']) && !empty($sslOrder['org_division']) ? $sslOrder['org_division'] : '',
+                'org_duns' => isset($sslOrder['org_duns']) && !empty($sslOrder['org_duns']) ? $sslOrder['org_duns'] : '',
+                'org_addressline1' => isset($sslOrder['org_addressline1']) && !empty($sslOrder['org_addressline1']) ? $sslOrder['org_addressline1'] : '',
+                'org_city' => $sslOrder['org_city'],
+                'org_country' => $sslOrder['org_country'],
+                'org_fax' => $sslOrder['org_fax'],
+                'org_phone' => $sslOrder['org_phone'],
+                'org_postalcode' => $sslOrder['org_postalcode'],
+                'org_regions' => $sslOrder['org_region']
+            )
+        ));
+        
+        $addedSSLOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLRenewOrder($order);
+        
+        Capsule::table('tblsslorders')->where('serviceid', $invoiceInfo->new_service_id)->delete();
+        Capsule::table('tblsslorders')->insert(array(
+            'userid' => $invoiceInfo->user_id,
+            'serviceid' => $invoiceInfo->new_service_id,
+            'addon_id' => '0',
+            'remoteid' => $addedSSLOrder['order_id'],
+            'module' => 'SSLCENTERWHMCS',
+            'certtype' => '',
+            'configdata' => $configdata,
+            'completiondate' => date('Y-m-d H:i:s'),
+            'status' => 'Completed'
+        ));
     }
     
     private function getSanCountConfigOptionServiceDetails($service)

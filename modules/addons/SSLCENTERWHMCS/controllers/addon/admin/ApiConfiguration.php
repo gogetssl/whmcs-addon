@@ -105,7 +105,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->options           = array('90' => '90', '60' => '60', '45' => '45', '30' => '30', '15' => '15');
         $field->error             = $this->getFieldError('renew_invoice_days_reccuring');
         $form->addField($field);
-
+        
         $field                    = new main\mgLibs\forms\CheckboxField();
         $field->name              = 'send_expiration_notification_reccuring';
         $field->options           = ['send_expiration_notification_reccuring'];
@@ -148,6 +148,16 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->inline            = true;
         $field->colWidth          = 5;
         $field->continue          = false;
+        $field->enableDescription = true;
+        $form->addField($field);
+        
+        $field                    = new main\mgLibs\forms\CheckboxField();
+        $field->name              = 'automatic_processing_of_renewal_orders';
+        $field->options           = ['automatic_processing_of_renewal_orders'];
+        $field->value             = $input['automatic_processing_of_renewal_orders'] ? ['automatic_processing_of_renewal_orders'] : [''];
+        $field->inline            = true;
+        $field->colWidth          = 3;
+        $field->continue          = true;
         $field->enableDescription = true;
         $form->addField($field);
 
@@ -380,6 +390,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
                     'auto_renew_invoice_reccuring',
                     'send_expiration_notification_reccuring',
                     'send_expiration_notification_one_time',
+                    'automatic_processing_of_renewal_orders',
                     'display_ca_summary',
                     'disable_email_validation'
                 );
