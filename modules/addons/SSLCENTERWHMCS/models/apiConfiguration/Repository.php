@@ -44,6 +44,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'auto_renew_invoice_reccuring'           => $params['auto_renew_invoice_reccuring'],
                         'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
                         'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
+                        'automatic_processing_of_renewal_orders' => $params['automatic_processing_of_renewal_orders'],
                         'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
                         'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
                         'default_csr_generator_country'          => $params['default_csr_generator_country'],
@@ -77,6 +78,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'auto_renew_invoice_reccuring'           => $params['auto_renew_invoice_reccuring'],
                         'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
                         'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
+                        'automatic_processing_of_renewal_orders' => $params['automatic_processing_of_renewal_orders'],
                         'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
                         'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
                         'default_csr_generator_country'          => $params['default_csr_generator_country'],
@@ -102,6 +104,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 $table->boolean('auto_renew_invoice_reccuring');
                 $table->boolean('send_expiration_notification_reccuring');
                 $table->boolean('send_expiration_notification_one_time');
+                $table->boolean('automatic_processing_of_renewal_orders');
                 $table->string('tech_firstname');
                 $table->string('tech_lastname');
                 $table->string('tech_organization');
@@ -157,6 +160,13 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                     $table->boolean('send_expiration_notification_one_time');
                 });
             }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'automatic_processing_of_renewal_orders'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->boolean('automatic_processing_of_renewal_orders');
+                });
+            }            
             if (!Capsule::schema()->hasColumn($this->tableName, 'renew_invoice_days_reccuring'))
             {
                 Capsule::schema()->table($this->tableName, function($table)
