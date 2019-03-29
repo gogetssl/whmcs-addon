@@ -68,11 +68,18 @@ class SSLStepOne {
             $countriesForGenerateCsrForm = array_merge(array($defaultCsrGeneratorCountry => $elementValue), $countriesForGenerateCsrForm);
         }
         
+        $wildCard = false;
+        $apiProducts = \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products::getInstance()->getAllProducts();
+        if(isset($apiProducts[$this->p['configoption1']]->wildcard_enabled) && $apiProducts[$this->p['configoption1']]->wildcard_enabled == '1')
+        {
+            $wildCard = true;
+        }
+        
         $stepOneBaseScript    = \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getStepOneBaseScript($apiProduct->brand);
         $orderTypeScript    = \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getOrderTypeScript($orderTypes, $fillVarsJSON);
         $webServerTypeSctipt  = \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getWebServerTypeSctipt($apiWebServersJSON);
         $autoFillFieldsScript = \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getAutoFillFieldsScript($fillVarsJSON);        
-        $generateCsrModalScript = ($displayCsrGenerator) ? \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getGenerateCsrModalScript($fillVarsJSON, $countriesForGenerateCsrForm) : '';
+        $generateCsrModalScript = ($displayCsrGenerator) ? \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getGenerateCsrModalScript($fillVarsJSON, $countriesForGenerateCsrForm, array('wildcard' => $wildCard)) : '';
         //when server type is not selected exception
         if(isset($_POST['privateKey']) && $_POST['privateKey'] != null && empty(json_decode($fillVarsJSON))) {
             $autoFillPrivateKeyField = \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getAutoFillPrivateKeyField($_POST['privateKey']);

@@ -170,6 +170,7 @@ $_LANG['localityPlaceholder']                        = 'San Antonio';
 $_LANG['organizationPlaceholder']                    = 'Big Bobs Beepers';
 $_LANG['organizationanUnitPlaceholder']              = 'Marketing';
 $_LANG['commonNamePlaceholder']                      = 'example.com';
+$_LANG['commonNamePlaceholderWildCard']              = '*.domain.tld (requires)';
 $_LANG['emailAddressPlaceholder']                    = 'example@example.com';
 $_LANG['Generate CSR']                               = 'Generate CSR';
 $_LANG['Submit']                                     = 'Submit';

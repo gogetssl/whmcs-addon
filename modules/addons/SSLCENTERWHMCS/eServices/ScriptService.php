@@ -39,10 +39,11 @@ class ScriptService {
                     'orderTypes'        => json_encode($orderTypes)
         ]);
     }
-    public static function getGenerateCsrModalScript($fillVarsJSON, $countriesForGenerateCsrForm) {
+    public static function getGenerateCsrModalScript($fillVarsJSON, $countriesForGenerateCsrForm, $vars = array()) {
         return TemplateService::buildTemplate(self::GENERATE_CSR_MODAL, [
                     'fillVars' => addslashes($fillVarsJSON),
-                    'countries'=> json_encode($countriesForGenerateCsrForm)
+                    'countries'=> json_encode($countriesForGenerateCsrForm),
+                    'vars' => $vars
         ]);
     }    
     public static function getAutoFillPrivateKeyField($privateKey) {
