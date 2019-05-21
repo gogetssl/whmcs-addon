@@ -39,6 +39,14 @@
         function getTable(tableBegin, tableEnd, body) {
             return tableBegin + body + tableEnd;
         }
+        
+        function ValidateIPaddress(ipaddress) {  
+        if (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ipaddress)) {  
+                return true;
+            }  
+            return false;
+        }  
+        
         function replaceRadioInputs(sanEmails) {
             var template = $('input[value="loading..."]').closest('.row'),
                     selectEmailHtml = '',
@@ -56,25 +64,36 @@
                 template = $('input[value="loading..."]').closest('.panel-body').find('div');
             }
             
-            if(jQuery.inArray(brand, onlyEmailValidationFoBrands) < 0){
-                selectDcvMethod = '<div class="form-group"><select style="width:65%;" type="text" name="selectName" class="form-control">';
-                
-                //if not disabled display
-                if(jQuery.inArray('email', disabledValidationMethods) < 0)  
-                    selectDcvMethod +='<option value="EMAIL">'+'{$MGLANG->T('dropdownDcvMethodEmail')}'+'</option>';
-                
-                selectDcvMethod += '<option value="HTTP">'+'{$MGLANG->T('dropdownDcvMethodHttp')}'+'</option><option value="HTTPS">'+'{$MGLANG->T('dropdownDcvMethodHttps')}'+'</option><option value="DNS">'+'{$MGLANG->T('dropdownDcvMethodDns')}'+'</option>' ;
-                selectDcvMethod += '</select>'; 
-                //
-            } else {
-                //do not diable for certs with only email validation
-                selectDcvMethod = '<div class="form-group"><select style="width:65%;" type="text" name="selectName" class="form-control"><option value="EMAIL">'+'{$MGLANG->T('dropdownDcvMethodEmail')}'+'</option></select>';
-            }
-                   
+           
             template.hide();
             $('input[value="loading..."]').remove();
             
             $.each(sanEmails, function (domain, emails) {
+                
+                    if(jQuery.inArray(brand, onlyEmailValidationFoBrands) < 0){
+                        selectDcvMethod = '<div class="form-group"><select style="width:65%;" type="text" name="selectName" class="form-control">';
+                            
+                            
+                        if(ValidateIPaddress(domain) === false)    {
+                        //if not disabled display
+                        if(jQuery.inArray('email', disabledValidationMethods) < 0)  
+                            selectDcvMethod +='<option value="EMAIL">'+'{$MGLANG->T('dropdownDcvMethodEmail')}'+'</option>';
+                        }
+                         
+                        selectDcvMethod += '<option value="HTTP">'+'{$MGLANG->T('dropdownDcvMethodHttp')}'+'</option><option value="HTTPS">'+'{$MGLANG->T('dropdownDcvMethodHttps')}'+'</option>';
+                        
+                        if(ValidateIPaddress(domain) === false)    {
+                            selectDcvMethod += '<option value="DNS">'+'{$MGLANG->T('dropdownDcvMethodDns')}'+'</option>';
+                        }
+                        
+                        selectDcvMethod += '</select>'; 
+                        //
+                    } else {
+                        //do not diable for certs with only email validation
+                        selectDcvMethod = '<div class="form-group"><select style="width:65%;" type="text" name="selectName" class="form-control"><option value="EMAIL">'+'{$MGLANG->T('dropdownDcvMethodEmail')}'+'</option></select>';
+                    }
+                  
+                
                 //if(jQuery.inArray('email', disabledValidationMethods) < 0)
                 partHtml = partHtml + selectDcvMethod.replace('name="selectName"', getNameForSelectMethod(x, domain));                                
                 selectEmailHtml = selectBegin.replace('name="selectName"', getNameForSelectEmail(x, domain));
@@ -116,6 +135,9 @@
                 }                 
             }
         });
+        
+        $('select[name^="dcvmethod"]').change();
+        
         if(jQuery.inArray(brand, onlyEmailValidationFoBrands) >= 0){
             $('select[name^="approveremails"]').closest('tr').prop('hidden', true);
         }
