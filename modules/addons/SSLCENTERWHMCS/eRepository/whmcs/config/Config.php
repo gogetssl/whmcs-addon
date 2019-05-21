@@ -24,7 +24,7 @@ class Config {
     }
 
     public function getConfigureSSLUrl($id, $serviceID = null) {
-        $WHMCSUrl = (function_exists('MultibrandFunctionalityAutoLoader') ? \MGModule\SSLCENTERWHMCS\eHelpers\Multibrand::getBrandData($serviceID)['systemURL'] : $this->config["SystemURL"]);
+        $WHMCSUrl = \MGModule\SSLCENTERWHMCS\eHelpers\Multibrand::getBrandData($serviceID)['systemURL'];
        
         return $WHMCSUrl . '/configuressl.php?cert=' . md5($id);
     }
