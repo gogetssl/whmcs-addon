@@ -80,6 +80,11 @@ class SSLStepThree {
 
     private function orderCertificate() { 
         
+        if(isset($_POST['approveremail']) && $_POST['approveremail'] == 'defaultemail@defaultemail.com')
+        {
+            unset($_POST['approveremail']);
+        }
+        
         $billingPeriods = array(
             'Free Account'  =>  $this->p[ConfigOptions::API_PRODUCT_MONTHS],
             'One Time'      =>  $this->p[ConfigOptions::API_PRODUCT_MONTHS],
