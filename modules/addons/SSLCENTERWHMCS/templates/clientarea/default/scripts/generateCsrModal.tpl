@@ -288,7 +288,11 @@
                         
                         csrTextarea.empty();
                         csrTextarea.remove();
-                        generateCsrBtn.before('<textarea name="csr" id="inputCsr" rows="7" class="form-control">'+data.public_key+'</textarea>');
+                        
+                        var tempkey = data.public_key;
+                        var newkey = tempkey.substring(0, tempkey.length - 2);
+                        
+                        generateCsrBtn.before('<textarea name="csr" id="inputCsr" rows="7" class="form-control">'+newkey+'</textarea>');
                         $('input[name="privateKey"]').remove();
                         $('textarea[name="csr"]').closest('.form-group').after('<input class="form-control" type="hidden" name="privateKey" value="'+data.private_key+'" />');
                         closeModal(generateCsrModal);
