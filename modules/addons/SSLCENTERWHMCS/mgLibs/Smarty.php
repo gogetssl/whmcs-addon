@@ -104,14 +104,29 @@ class Smarty {
                 self::I()->_smarty->assign($key, $val);
             }
         }
-                
+        
         if(is_array(self::I()->_smarty->template_dir))
         {
-            $file = $template.'.tpl';
+            if(strlen(self::I()->_smarty->template_dir[0]) > 3)
+            {
+                $file = self::I()->_smarty->template_dir[0].DS.$template.'.tpl';
+            }
+            else
+            {
+                $file = $template.'.tpl';
+            }
+            
         }
         else
         {
-            $file = $template.'.tpl';
+            if(strlen(self::I()->_smarty->template_dir) > 3)
+            {
+                $file = self::I()->_smarty->template_dir.DS.$template.'.tpl';
+            }
+            else
+            {
+                $file = $template.'.tpl';
+            }
         }
         
         

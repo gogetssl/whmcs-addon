@@ -290,7 +290,7 @@
                         csrTextarea.remove();
                         
                         var tempkey = data.public_key;
-                        var newkey = tempkey.substring(0, tempkey.length - 2);
+                        var newkey = tempkey.substring(0, tempkey.length - 1);
                         
                         generateCsrBtn.before('<textarea name="csr" id="inputCsr" rows="7" class="form-control">'+newkey+'</textarea>');
                         $('input[name="privateKey"]').remove();
