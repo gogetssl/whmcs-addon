@@ -107,11 +107,11 @@ class Smarty {
                 
         if(is_array(self::I()->_smarty->template_dir))
         {
-            $file = self::I()->_smarty->template_dir[0].DS.$template.'.tpl';
+            $file = $template.'.tpl';
         }
         else
         {
-            $file = self::I()->_smarty->template_dir.DS.$template.'.tpl';
+            $file = $template.'.tpl';
         }
         
         
