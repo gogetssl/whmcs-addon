@@ -66,12 +66,6 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 $table->integer('client_id');
                 $table->integer('product_id');
                 $table->string('commission');
-                $table->foreign('client_id')
-                  ->references('id')->on('tblclients')
-                  ->onDelete('cascade');
-                $table->foreign('product_id')
-                        ->references('id')->on('tblproducts')
-                        ->onDelete('cascade');
             });
         }
     }
@@ -97,12 +91,6 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 $table->integer('client_id');
                 $table->integer('product_id');
                 $table->string('commission');
-                $table->foreign('client_id')
-                  ->references('id')->on('tblclients')
-                  ->onDelete('cascade');
-                $table->foreign('product_id')
-                        ->references('id')->on('tblproducts')
-                        ->onDelete('cascade');
             });
         }
     }
