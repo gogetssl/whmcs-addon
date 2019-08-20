@@ -80,7 +80,7 @@ class SSLStepTwo {
     }
 
     private function validateCSR() {
-        $csr = $this->p['csr'];
+        $csr = trim(rtrim($this->p['csr']));
         $decodeCSR = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($csr);
        
         if($decodeCSR['error']) {

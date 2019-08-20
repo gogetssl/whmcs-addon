@@ -67,7 +67,7 @@ class SSLStepTwoJS {
 
     private function SSLStepTwoJS() {
     
-        $decodedCSR   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($_POST['csr']);
+        $decodedCSR   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR(trim(rtrim($_POST['csr'])));
         if($decodedCSR['error']) {
             if(isset($decodedCSR['description']))
                 throw new Exception($decodedCSR['description']);
