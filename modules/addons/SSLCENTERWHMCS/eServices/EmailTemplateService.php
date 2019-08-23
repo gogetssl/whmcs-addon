@@ -18,7 +18,17 @@ class EmailTemplateService {
         $newTemplate->name    = self::CONFIGURATION_TEMPLATE_ID;
         $newTemplate->subject = 'SSL Certificate - configuration required';
         $newTemplate->message = '<p>Dear {$client_name},</p><p>Thank you for your order for an SSL Certificate. Before you can use your certificate, it requires configuration which can be done at the URL below.</p><p>{$ssl_configuration_link}</p><p>Instructions are provided throughout the process but if you experience any problems or have any questions, please open a ticket for assistance.</p><p>{$signature}</p>';
+        $newTemplate->attachments  = '';
+        $newTemplate->fromname  = '';
+        $newTemplate->fromemail  = '';
+        $newTemplate->disabled  = '0';
         $newTemplate->custom  = 1;
+        $newTemplate->language = '';
+        $newTemplate->copyto = '';
+        $newTemplate->blind_copy_to = '';
+        $newTemplate->plaintext = '0';
+        $newTemplate->created_at = date('Y-m-d H:i:s');
+        $newTemplate->updated_at = date('Y-m-d H:i:s');
         $newTemplate->save();
     }
     public static function updateConfigurationTemplate() {        
@@ -43,7 +53,17 @@ class EmailTemplateService {
         $newTemplate->name    = self::SEND_CERTIFICATE_TEMPLATE_ID;
         $newTemplate->subject = 'SSL Certificate';
         $newTemplate->message = '<p>Dear {$client_name},</p><p>{$ssl_certyficate}</p><p>{$signature}</p>';
+        $newTemplate->attachments  = '';
+        $newTemplate->fromname  = '';
+        $newTemplate->fromemail  = '';
+        $newTemplate->disabled  = '0';
         $newTemplate->custom  = 1;
+        $newTemplate->language = '';
+        $newTemplate->copyto = '';
+        $newTemplate->blind_copy_to = '';
+        $newTemplate->plaintext = '0';
+        $newTemplate->created_at = date('Y-m-d H:i:s');
+        $newTemplate->updated_at = date('Y-m-d H:i:s');
         $newTemplate->save();
     }
     
@@ -79,7 +99,17 @@ class EmailTemplateService {
         $newTemplate->name    = self::EXPIRATION_TEMPLATE_ID;
         $newTemplate->subject = 'Service Expiration Notification - {$service_domain}';
         $newTemplate->message = '<p>Dear {$client_name},</p><p>We would like to inform You about your service <strong>#{$service_id}</strong>  is going to expire in {$expireDaysLeft} days.</p><p>{$signature}</p>';
+        $newTemplate->attachments  = '';
+        $newTemplate->fromname  = '';
+        $newTemplate->fromemail  = '';
+        $newTemplate->disabled  = '0';
         $newTemplate->custom  = 1;
+        $newTemplate->language = '';
+        $newTemplate->copyto = '';
+        $newTemplate->blind_copy_to = '';
+        $newTemplate->plaintext = '0';
+        $newTemplate->created_at = date('Y-m-d H:i:s');
+        $newTemplate->updated_at = date('Y-m-d H:i:s');
         $newTemplate->save();
     }
     

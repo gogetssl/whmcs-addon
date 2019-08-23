@@ -53,7 +53,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
      * Module version
      * @var string
      */
-    public $version = '2.1.5';
+    public $version = '2.1.6';
 
     /**
      * Module author
