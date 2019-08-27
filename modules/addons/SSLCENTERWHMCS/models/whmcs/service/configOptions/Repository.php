@@ -196,6 +196,10 @@ class Repository
      */
     function update()
     {
+        $pid = main\mgLibs\MySQL\Query::select(array('packageid'), 'tblhosting', array('id'=>$this->serviceID))->fetchColumn('packageid');
+        $pname = main\mgLibs\MySQL\Query::select(array('name'), 'tblproducts', array('id'=>$pid))->fetchColumn('name');
+        main\eServices\ConfigurableOptionService::createForProduct($pid, $pname);
+        
         foreach ($this->_configOptions as $field)
         {
             $cols = array();

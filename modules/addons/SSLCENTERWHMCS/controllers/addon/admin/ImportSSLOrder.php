@@ -158,7 +158,16 @@ class ImportSSLOrder extends main\mgLibs\process\AbstractController
 
 
             $newOrderID         = $orderInfo['orderid'];
-            $newServiceID       = $orderInfo['productids'];
+            $newServiceID       = $orderInfo['productids'];  
+            
+            if(empty($newServiceID))
+            {
+                return[
+                    'success' => false,
+                    'message' => 'Please configure pricing of product <a href="configproducts.php?action=edit&id='.$data['productID'].'#tab=2">#'.$data['productID'].'</a>'
+                ];
+            }
+            
             //prepare data for ssl order
             $sslOrderConfigData = array(
                 //config data column
