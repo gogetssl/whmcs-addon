@@ -61,7 +61,7 @@
                                                   </div>\n\
                                                   <div class="form-group">\n\
                                                     <label class="control-label" for="CN">'+'{$MGLANG->T('commonNameLabel')}'+'</label>\n\
-                                                    <input class="form-control generateCsrInput" id="commonName" placeholder="'+'{if $vars.wildcard}{$MGLANG->T('commonNamePlaceholderWildCard')}{else}{$MGLANG->T('commonNamePlaceholder')}{/if}'+'" name="CN" required="" type="text">\n\
+                                                    <input class="form-control generateCsrInput" autocomplete="off" id="commonName" placeholder="'+'{if $vars.wildcard}{$MGLANG->T('commonNamePlaceholderWildCard')}{else}{$MGLANG->T('commonNamePlaceholder')}{/if}'+'" name="CN" required="" type="text">\n\
                                                   </div>\n\
                                                   <div class="form-group">\n\
                                                     <label class="control-label" for="EA">'+'{$MGLANG->T('emailAddressLabel')}'+'</label>\n\
