@@ -25,7 +25,7 @@ class Cron extends main\mgLibs\process\AbstractController
 
             $order = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
 
-            if ($order['status'] == 'expired')
+            if ($order['status'] == 'expired' || $order['status'] == 'cancelled')
             {
                 $this->setSSLServiceAsTerminated($serviceID);
                 $updatedServices[] = $serviceID;
