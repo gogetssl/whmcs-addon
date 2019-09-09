@@ -27,10 +27,20 @@ class SSLStepOne {
         $apiRepo       = new \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products();
         $apiProduct    = $apiRepo->getProduct($apiProductId);
         //$apiWebServers = \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\WebServers::getAll($apiProduct->getWebServerTypeId());
-        $apiWebServers = array(
-            array('id' => '36', 'software' => 'Nginx'),
-            array('id' => '-1', 'software' => 'Other')
-        );
+        if($apiProduct->brand == 'comodo')
+        {
+            $apiWebServers = array(
+                array('id' => '35', 'software' => 'IIS'),
+                array('id' => '-1', 'software' => 'Any Other')
+            );
+        }
+        else 
+        {
+            $apiWebServers = array(
+                array('id' => '18', 'software' => 'IIS'),
+                array('id' => '18', 'software' => 'Any Other')
+            );
+        }
 
         $apiWebServersJSON         = json_encode($apiWebServers);
         $fillVarsJSON              = json_encode(\MGModule\SSLCENTERWHMCS\eServices\FlashService::getFieldsMemory($_GET['cert']));
