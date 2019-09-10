@@ -303,17 +303,26 @@ class ClientReissueCertificate {
     }
 
     private function loadServerList() {
-        $apiWebServers = \MGModule\SSLCENTERWHMCS\eServices\FlashService::get('SSLCENTERWHMCS_SERVER_LIST_' . \MGModule\SSLCENTERWHMCS\eServices\provisioning\ConfigOptions::API_PRODUCT_ID);
-
-        if (!is_null($apiWebServers)) {
-            $this->vars['webServers'] = $apiWebServers;
-            return;
-        }
 
         try {
             $apiRepo                  = new \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products();
             $apiProduct               = $apiRepo->getProduct($this->p[\MGModule\SSLCENTERWHMCS\eServices\provisioning\ConfigOptions::API_PRODUCT_ID]);
-            $apiWebServers            = \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\WebServers::getAll($apiProduct->getWebServerTypeId());
+            
+             if($apiProduct->brand == 'comodo')
+            {
+                $apiWebServers = array(
+                    array('id' => '35', 'software' => 'IIS'),
+                    array('id' => '-1', 'software' => 'Any Other')
+                );
+            }
+            else 
+            {
+                $apiWebServers = array(
+                    array('id' => '18', 'software' => 'IIS'),
+                    array('id' => '18', 'software' => 'Any Other')
+                );
+            }
+            
             $this->vars['webServers'] = $apiWebServers;
             \MGModule\SSLCENTERWHMCS\eServices\FlashService::set('SSLCENTERWHMCS_SERVER_LIST_' . \MGModule\SSLCENTERWHMCS\eServices\provisioning\ConfigOptions::API_PRODUCT_ID, $apiWebServers);
         } catch (Exception $ex) {
