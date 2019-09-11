@@ -22,6 +22,11 @@ class Cron extends main\mgLibs\process\AbstractController
         foreach ($sslOrders as $sslService)
         {
             $serviceID = $sslService->serviceid;
+            
+            if(!isset($sslService->remoteid) || empty($sslService->remoteid))
+            {
+                continue;
+            }
 
             $order = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
 
@@ -395,7 +400,7 @@ class Cron extends main\mgLibs\process\AbstractController
         if ($serviceID != NULL)
             $where['serviceid'] = $serviceID;
 
-        return $this->sslRepo->getBy($where);
+        return $this->sslRepo->getBy($where, true);
     }
 
     private function updateServiceNextDueDate($serviceID, $date)
