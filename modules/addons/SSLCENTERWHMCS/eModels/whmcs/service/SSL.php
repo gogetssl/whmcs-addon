@@ -134,7 +134,7 @@ class SSL extends \Illuminate\Database\Eloquent\Model
         $this->setConfigdataKey('fields', $fileds);
     }
 
-    public function getWhere($where)
+    public function getWhere($where, $gogetssl = false)
     {
         $query = Capsule::table('tblsslorders');
 
@@ -144,6 +144,18 @@ class SSL extends \Illuminate\Database\Eloquent\Model
             {
                 $query = $query->where("$column", '=', "$value");
             }
+        }
+        
+        if($gogetssl === true)
+        {
+            $query = Capsule::table('tblsslorders');
+            
+            if(isset($where['serviceid']) && !empty($where['serviceid']))
+            {
+                $query = $query->where('serviceid', $where['serviceid']);
+            }
+            
+            $query = $query->where('status', 'Completed')->where('module', 'SSLCENTERWHMCS')->orWhere('module', 'gogetssl');
         }
         
         return $query;

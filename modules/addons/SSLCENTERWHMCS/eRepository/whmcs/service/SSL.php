@@ -31,7 +31,7 @@ class SSL {
      * @param string $status
      * @return \MGModule\SSLCENTERWHMCS\eModels\whmcs\service\SSL
      */
-    public function getBy($where) {      
-        return Model::getWhere($where)->get();
+    public function getBy($where, $gogetssl = false) {      
+        return Model::getWhere($where, $gogetssl)->get();
     }
 }
