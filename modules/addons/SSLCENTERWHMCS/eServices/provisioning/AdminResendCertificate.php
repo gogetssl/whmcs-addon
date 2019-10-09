@@ -48,6 +48,7 @@ class AdminResendCertificate {
         {            
             sendMessage(\MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::SEND_CERTIFICATE_TEMPLATE_ID, $this->p['serviceid'], [
                 'ssl_certyficate' => nl2br($orderStatus['ca_code']),
+                'crt_code' => nl2br($orderStatus['crt_code']),
             ]);
         } 
         else
@@ -55,6 +56,7 @@ class AdminResendCertificate {
             $templateName = \MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::getTemplateName($sendCertyficateTermplate);
             sendMessage($templateName, $this->p['serviceid'], [
                 'ssl_certyficate' => nl2br($orderStatus['ca_code']),
+                'crt_code' => nl2br($orderStatus['crt_code']),
             ]);
         }       
     }
