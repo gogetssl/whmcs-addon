@@ -225,6 +225,7 @@ class Cron extends main\mgLibs\process\AbstractController
             {
                 sendMessage(\MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::SEND_CERTIFICATE_TEMPLATE_ID, $service->id, [
                     'ssl_certyficate' => nl2br($apiOrder['ca_code']),
+                    'crt_code' => nl2br($apiOrder['crt_code']),
                 ]);
             }
             else
@@ -232,6 +233,7 @@ class Cron extends main\mgLibs\process\AbstractController
                 $templateName = \MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::getTemplateName($sendCertyficateTermplate);
                 sendMessage($templateName, $service->id, [
                     'ssl_certyficate' => nl2br($apiOrder['ca_code']),
+                    'crt_code' => nl2br($apiOrder['crt_code']),
                 ]);
             }
             $this->setSSLCertificateAsSent($service->id);

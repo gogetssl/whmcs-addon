@@ -230,6 +230,7 @@ class home extends main\mgLibs\process\AbstractController {
         {            
             $result = sendMessage(\MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::SEND_CERTIFICATE_TEMPLATE_ID, $input['id'], [
                 'ssl_certyficate' => nl2br($orderStatus['ca_code']),
+                'crt_code' => nl2br($orderStatus['crt_code']),
             ]);
         } 
         else
@@ -237,6 +238,7 @@ class home extends main\mgLibs\process\AbstractController {
             $templateName = \MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::getTemplateName($sendCertyficateTermplate);
             $result = sendMessage($templateName, $input['id'], [
                 'ssl_certyficate' => nl2br($orderStatus['ca_code']),
+                'crt_code' => nl2br($orderStatus['crt_code']),
             ]);
         }  
         if($result === true)
