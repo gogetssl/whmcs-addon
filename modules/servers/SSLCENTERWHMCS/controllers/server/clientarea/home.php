@@ -132,6 +132,9 @@ class home extends main\mgLibs\process\AbstractController {
                     $vars['error'] = 'Can not load order details';
                 }
             } 
+            
+            $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();        
+            $vars['visible_renew_button'] = $apiConf->visible_renew_button;
             $vars['disabledValidationMethods'] = $disabledValidationMethods;
             $vars['configurationStatus'] = $sslService->status;
             $vars['configurationURL']    = $url;

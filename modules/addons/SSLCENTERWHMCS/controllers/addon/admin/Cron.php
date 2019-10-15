@@ -76,6 +76,7 @@ class Cron extends main\mgLibs\process\AbstractController
         $apiConf                      = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
         $auto_renew_invoice_one_time  = (bool) $apiConf->auto_renew_invoice_one_time;
         $auto_renew_invoice_reccuring = (bool) $apiConf->auto_renew_invoice_reccuring;
+        $renew_new_order              = (bool) $apiConf->renew_new_order;
         //get saved amount days to generate invoice (one time & reccuring)
         $renew_invoice_days_one_time  = $apiConf->renew_invoice_days_one_time;
         $renew_invoice_days_reccuring = $apiConf->renew_invoice_days_reccuring;
@@ -146,37 +147,48 @@ class Cron extends main\mgLibs\process\AbstractController
             }
         }
         
-        $invoicesCreatedCount = $this->createAutoInvoice($packageLists, $serviceIDs);
-        
-        $invoices = Capsule::table('tblinvoices')->where('status', 'Payment Pending')->get();
-        foreach($invoices as $invoice)
+        if($renew_new_order)
         {
-            $itemsInvoice = Capsule::table('tblinvoiceitems')->where('invoiceid', $invoice->id)->where('description', 'LIKE', '%- Renewal')->get();
-            
-            if(!empty($itemsInvoice))
+            $invoicesCreatedCount = $this->createAutoInvoice($packageLists, $serviceIDs);
+
+            $invoices = Capsule::table('tblinvoices')->where('status', 'Payment Pending')->get();
+            foreach($invoices as $invoice)
             {
-                $sslInvoice = Capsule::table('mgfw_SSLCENTER_invoices_info')->where('invoice_id', $invoice->id)->first();
+                $itemsInvoice = Capsule::table('tblinvoiceitems')->where('invoiceid', $invoice->id)->where('description', 'LIKE', '%- Renewal')->get();
 
-                $serviceid = $sslInvoice->service_id;
-                
-                $sslInfo = $this->getSSLOrders($serviceid)[0];
-                $sslOrder    = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslInfo->remoteid);
-
-                $today = (string)date('Y-m-d');
-                
-                if($sslOrder['valid_till'] == $today)
+                if(!empty($itemsInvoice))
                 {
-                    Capsule::table('tblinvoices')->where('id', $invoice->id)->update(array('status' => 'Cancelled'));
+                    $sslInvoice = Capsule::table('mgfw_SSLCENTER_invoices_info')->where('invoice_id', $invoice->id)->first();
+
+                    $serviceid = $sslInvoice->service_id;
+
+                    $sslInfo = $this->getSSLOrders($serviceid)[0];
+                    $sslOrder    = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslInfo->remoteid);
+
+                    $today = (string)date('Y-m-d');
+
+                    if($sslOrder['valid_till'] == $today)
+                    {
+                        Capsule::table('tblinvoices')->where('id', $invoice->id)->update(array('status' => 'Cancelled'));
+                    }
                 }
             }
         }
-
+        
         echo 'Notifier completed.' . PHP_EOL;
         echo '<br />Number of emails send: ' . $emailSendsCount . PHP_EOL;
-        echo '<br />Number of invoiced created: ' . $invoicesCreatedCount . PHP_EOL;
-
+        
+        if($renew_new_order)
+        {
+            echo '<br />Number of invoiced created: ' . $invoicesCreatedCount . PHP_EOL;
+        }
+        
         logActivity("SSLCENTER WHMCS: Notifier completed. Number of emails send: " . $emailSendsCount);
-        logActivity("SSLCENTER WHMCS: Notifier completed. Number of invoiced created: " . $invoicesCreatedCount);
+        
+        if($renew_new_order)
+        {
+            logActivity("SSLCENTER WHMCS: Notifier completed. Number of invoiced created: " . $invoicesCreatedCount);
+        }
 
         return array();
     }

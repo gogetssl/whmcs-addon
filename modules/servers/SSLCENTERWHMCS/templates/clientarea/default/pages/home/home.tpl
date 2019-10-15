@@ -186,8 +186,10 @@
             <tr id="additionalActionsTr">
                 <td class="text-left">{$MGLANG->T('Actions')}</td>
                 <td id="additionalActionsTd" class="text-left">
+                    {if $visible_renew_button}
                     {if $displayRenewButton}
                         <button type="button" id="btnRenew" class="btn btn-default" style="margin:2px">{$MGLANG->T('renew')}</button>
+                    {/if}
                     {/if}
                     {if $dcv_method == 'email'}
                         <button type="button" id="resend-validation-email" class="btn btn-default" style="margin:2px">{$MGLANG->T('resendValidationEmail')}</button>
