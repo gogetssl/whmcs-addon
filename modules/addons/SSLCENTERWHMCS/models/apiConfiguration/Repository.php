@@ -45,6 +45,8 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
                         'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
                         'automatic_processing_of_renewal_orders' => $params['automatic_processing_of_renewal_orders'],
+                        'renew_new_order'                        => $params['renew_new_order'],
+                        'visible_renew_button'                   => $params['visible_renew_button'],
                         'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
                         'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
                         'default_csr_generator_country'          => $params['default_csr_generator_country'],
@@ -79,6 +81,8 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
                         'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
                         'automatic_processing_of_renewal_orders' => $params['automatic_processing_of_renewal_orders'],
+                        'renew_new_order'                        => $params['renew_new_order'],
+                        'visible_renew_button'                   => $params['visible_renew_button'],
                         'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
                         'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
                         'default_csr_generator_country'          => $params['default_csr_generator_country'],
@@ -105,6 +109,8 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 $table->boolean('send_expiration_notification_reccuring');
                 $table->boolean('send_expiration_notification_one_time');
                 $table->boolean('automatic_processing_of_renewal_orders');
+                $table->boolean('renew_new_order');
+                $table->boolean('visible_renew_button');
                 $table->string('tech_firstname');
                 $table->string('tech_lastname');
                 $table->string('tech_organization');
@@ -166,7 +172,21 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 {
                     $table->boolean('automatic_processing_of_renewal_orders');
                 });
-            }            
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'renew_new_order'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->boolean('renew_new_order');
+                });
+            } 
+            if (!Capsule::schema()->hasColumn($this->tableName, 'visible_renew_button'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->boolean('visible_renew_button');
+                });
+            }              
             if (!Capsule::schema()->hasColumn($this->tableName, 'renew_invoice_days_reccuring'))
             {
                 Capsule::schema()->table($this->tableName, function($table)

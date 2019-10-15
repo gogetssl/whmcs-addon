@@ -73,6 +73,10 @@ $_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_one_
 
 $_LANG['addonAA']['apiConfiguration']['item']['automatic_processing_of_renewal_orders']['label']                  = '';
 $_LANG['addonAA']['apiConfiguration']['item']['automatic_processing_of_renewal_orders']['description']            = 'Automatic processing of renewal orders';
+$_LANG['addonAA']['apiConfiguration']['item']['renew_new_order']['label']                  = '';
+$_LANG['addonAA']['apiConfiguration']['item']['renew_new_order']['description']            = 'Renew - New Order';
+$_LANG['addonAA']['apiConfiguration']['item']['visible_renew_button']['label']                  = '';
+$_LANG['addonAA']['apiConfiguration']['item']['visible_renew_button']['description']            = 'Visible "Renew" button in ClientArea';
 //
 $_LANG['addonAA']['apiConfiguration']['item']['tech_firstname']['label']                               = 'Firstname';
 $_LANG['addonAA']['apiConfiguration']['item']['use_admin_contact']['label']                            = 'Use Administrative Contact Details';

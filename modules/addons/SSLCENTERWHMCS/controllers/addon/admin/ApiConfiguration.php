@@ -81,6 +81,26 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field       = new main\mgLibs\forms\LegendField();
         $field->name = 'renewal_settings_legend';
         $form->addField($field);
+        
+        $field                    = new main\mgLibs\forms\CheckboxField();
+        $field->name              = 'visible_renew_button';
+        $field->options           = ['visible_renew_button'];
+        $field->value             = $input['visible_renew_button'] ? ['visible_renew_button'] : [''];
+        $field->inline            = true;
+        $field->colWidth          = 3;
+        $field->continue          = false;
+        $field->enableDescription = true;
+        $form->addField($field);
+        
+        $field                    = new main\mgLibs\forms\CheckboxField();
+        $field->name              = 'renew_new_order';
+        $field->options           = ['renew_new_order'];
+        $field->value             = $input['renew_new_order'] ? ['renew_new_order'] : [''];
+        $field->inline            = true;
+        $field->colWidth          = 3;
+        $field->continue          = false;
+        $field->enableDescription = true;
+        $form->addField($field);
 
         $field                    = new main\mgLibs\forms\CheckboxField();
         $field->name              = 'auto_renew_invoice_reccuring';
@@ -392,7 +412,9 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
                     'send_expiration_notification_one_time',
                     'automatic_processing_of_renewal_orders',
                     'display_ca_summary',
-                    'disable_email_validation'
+                    'disable_email_validation',
+                    'renew_new_order',
+                    'visible_renew_button'
                 );
                 foreach ($checkFieldsArray as $field)
                 {
