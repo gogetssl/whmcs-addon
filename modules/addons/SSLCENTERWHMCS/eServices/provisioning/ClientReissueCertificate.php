@@ -229,7 +229,7 @@ class ClientReissueCertificate {
         $this->sslService->setConfigdataKey('servertype', $data['webserver_type']);
         $this->sslService->setConfigdataKey('csr', $data['csr']);
         $this->sslService->setConfigdataKey('approveremail', $data['approver_email']);
-        $this->sslService->setConfigdataKey('private_key', '');
+        $this->sslService->setConfigdataKey('private_key', $_POST['privateKey']);
         $this->sslService->setApproverEmails($data['approver_emails']);
         $this->sslService->setSansDomains($data['dns_names']);
         $this->sslService->save();
