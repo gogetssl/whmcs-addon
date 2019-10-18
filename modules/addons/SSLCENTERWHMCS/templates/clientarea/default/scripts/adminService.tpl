@@ -657,7 +657,7 @@
                 <div class="text-center hidden" id="modalViewLoading">
                     Loading...
                 </div>
-                <!--<form class="form" role="form" id="modalViewForm">
+                <form class="form" role="form" id="modalViewForm">
                     <div class="form-group hidden">
                         <label class="col-sm-3 control-label">Certificate</label>
                         <textarea class="form-control" onfocus="this.select();" rows="10" id="viewCertificateInput"></textarea>
@@ -675,7 +675,7 @@
                         <textarea class="form-control" onfocus="this.select();" rows="5" id="viewCSRInput"></textarea>
                     </div>
                     <div class="clearfix"></div>
-                </form>-->
+                </form>
 
             </div>
             <div class="modal-footer panel-footer">
