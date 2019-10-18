@@ -37,13 +37,14 @@ class AdminViewCertyfifcate extends Ajax {
         
         $return = [];
        
-        //if (!empty($orderStatus['csr_code'])) {
-        //    $return['csr'] = $orderStatus['csr_code'];
-        //}
+        if (!empty($orderStatus['csr_code'])) {
+            $return['csr'] = $orderStatus['csr_code'];
+        }
 
-        //if (!empty($orderStatus['crt_code'])) {
-        //    $return['crt'] = $orderStatus['crt_code'];
-        //
+        if (!empty($orderStatus['crt_code'])) {
+            $return['crt'] = $orderStatus['crt_code'];
+        }
+        
 
         if (!empty($orderStatus['ca_code'])) {
             $return['ca'] = $orderStatus['ca_code'];
