@@ -24,7 +24,7 @@ Check [WIKI](https://github.com/gogetssl/whmcs-addon/wiki) for manuals and descr
 
 ### Suggestions, Bugs, Issues, New Features
 You are highly welcome to send us requests for new features, suggestions, issues or any possible bugs found
-[Submittion form](https://github.com/gogetssl/whmcs-addon/issues/new/choose)
+[Submission form](https://github.com/gogetssl/whmcs-addon/issues/new/choose)
 
 ### List of addon features
 - Full integration, no invite links;
@@ -33,12 +33,12 @@ You are highly welcome to send us requests for new features, suggestions, issues
 - SAN/UCC/MDC support;
 - Online CSR Generator
 - Option to set default country for CSR Generator
-- Fully White Labled solution
+- Fully White Labeled solution
 - Cron Synchronization for order status updates
-- Multiple renewal settings, including option to set when to send expiration notifications ot customers
+- Multiple renewal settings, including option to set when to send expiration notifications to customers
 - Option to use fixed (same) technical contacts for all SSL certificates
 - Multiple Product Creator option
-- Automated Price import and comission setup
+- Automated Price import and commission setup
 - Multibrand For WHMCS support
 
 ***
