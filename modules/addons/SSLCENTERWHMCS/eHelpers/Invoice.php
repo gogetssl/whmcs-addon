@@ -445,7 +445,7 @@ class Invoice
             $server = new \WHMCS\Module\Server();
             if( !$server->loadByServiceID($service->id) ) 
             {
-                logActivity("SSLCENTER WHMCS: Required Product Module '" . $server->getServiceModule() . "' Missing"); 
+                \MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Required Product Module '" . $server->getServiceModule() . "' Missing"); 
             }
             else
             {
@@ -498,8 +498,8 @@ class Invoice
             }
             $result = localAPI('UpdateClientProduct', $postData, $adminUsername);
         }
-        logActivity(print_r($postData, true)); 
-        logActivity(print_r($result, true)); 
+        \MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::savelogActivitySSLCenter(print_r($postData, true)); 
+        \MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::savelogActivitySSLCenter(print_r($result, true)); 
         return $results;
     }
     
@@ -571,7 +571,7 @@ class Invoice
                     $item->setDescription($newDescription);
                     $item->save();
 
-                    logActivity("SSLCENTER WHMCS: Description of the invoice item for Invoice ID: " . $invoice->getId() . ' has been changed from "' . $oldDescription . '" to "' . $newDescription . '"');
+                    \MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Description of the invoice item for Invoice ID: " . $invoice->getId() . ' has been changed from "' . $oldDescription . '" to "' . $newDescription . '"');
                 }
             } 
         }

@@ -166,7 +166,7 @@ class home extends main\mgLibs\process\AbstractController {
         
         try
         {     
-            logActivity("SSLCENTER WHMCS: The renewal action was initiated for the Service ID: " . $input['id']);
+            main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: The renewal action was initiated for the Service ID: " . $input['id']);
 
             $errorInvoiceExist = false;
             $cron = new \MGModule\SSLCENTERWHMCS\controllers\addon\admin\Cron();            
@@ -180,14 +180,14 @@ class home extends main\mgLibs\process\AbstractController {
         }
         catch(Exception $e)
         {
-            logActivity("SSLCENTER WHMC Renew Action Error: " . $e->getMessage());
+            main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMC Renew Action Error: " . $e->getMessage());
             return array(
                 'error' => $e->getMessage(),
             );   
         }
         if($errorInvoiceExist)
         {
-            logActivity("SSLCENTER WHMC Renew Action Error: " . $errorInvoiceExist);
+            main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMC Renew Action Error: " . $errorInvoiceExist);
         
             return array(
                 'error' => $errorInvoiceExist,                
@@ -195,7 +195,7 @@ class home extends main\mgLibs\process\AbstractController {
             );
         }
         
-        logActivity("SSLCENTER WHMC Renew Action: A new invoice has been successfully created for the Service ID: " . $input['id']);
+        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMC Renew Action: A new invoice has been successfully created for the Service ID: " . $input['id']);
         return array(
             'success' => true,
             'msg' =>  main\mgLibs\Lang::getInstance()->T('A new invoice has been successfully created. '),

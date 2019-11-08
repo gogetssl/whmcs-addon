@@ -11,6 +11,15 @@ class Whmcs
 
         return version_compare($version, '7.3.0', '>=');
     }
+    
+    public static function savelogActivitySSLCenter($msg)
+    {
+        $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();        
+        if(isset($apiConf->save_activity_logs) && !empty($apiConf->save_activity_logs))
+        {
+            logActivity($msg);
+        }
+    }
 
     public static function getPricingInfo($pid, $commission = 0, $inclconfigops = false, $upgrade = false )
     {

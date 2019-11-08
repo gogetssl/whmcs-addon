@@ -47,6 +47,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'automatic_processing_of_renewal_orders' => $params['automatic_processing_of_renewal_orders'],
                         'renew_new_order'                        => $params['renew_new_order'],
                         'visible_renew_button'                   => $params['visible_renew_button'],
+                        'save_activity_logs'                     => $params['save_activity_logs'],
                         'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
                         'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
                         'default_csr_generator_country'          => $params['default_csr_generator_country'],
@@ -83,6 +84,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'automatic_processing_of_renewal_orders' => $params['automatic_processing_of_renewal_orders'],
                         'renew_new_order'                        => $params['renew_new_order'],
                         'visible_renew_button'                   => $params['visible_renew_button'],
+                        'save_activity_logs'                     => $params['save_activity_logs'],
                         'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
                         'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
                         'default_csr_generator_country'          => $params['default_csr_generator_country'],
@@ -111,6 +113,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 $table->boolean('automatic_processing_of_renewal_orders');
                 $table->boolean('renew_new_order');
                 $table->boolean('visible_renew_button');
+                $table->boolean('save_activity_logs');
                 $table->string('tech_firstname');
                 $table->string('tech_lastname');
                 $table->string('tech_organization');
@@ -186,7 +189,14 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 {
                     $table->boolean('visible_renew_button');
                 });
-            }              
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'save_activity_logs'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->boolean('save_activity_logs');
+                });
+            }  
             if (!Capsule::schema()->hasColumn($this->tableName, 'renew_invoice_days_reccuring'))
             {
                 Capsule::schema()->table($this->tableName, function($table)
