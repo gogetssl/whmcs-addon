@@ -77,7 +77,21 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->name = 'data_migration';
 
         $form->addField($field);
-
+        
+        $field       = new main\mgLibs\forms\LegendField();
+        $field->name = 'logs_settings_legend';
+        $form->addField($field);
+        
+        $field                    = new main\mgLibs\forms\CheckboxField();
+        $field->name              = 'save_activity_logs';
+        $field->options           = ['save_activity_logs'];
+        $field->value             = $input['save_activity_logs'] ? ['save_activity_logs'] : [''];
+        $field->inline            = true;
+        $field->colWidth          = 3;
+        $field->continue          = false;
+        $field->enableDescription = true;
+        $form->addField($field);
+        
         $field       = new main\mgLibs\forms\LegendField();
         $field->name = 'renewal_settings_legend';
         $form->addField($field);
@@ -414,7 +428,8 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
                     'display_ca_summary',
                     'disable_email_validation',
                     'renew_new_order',
-                    'visible_renew_button'
+                    'visible_renew_button',
+                    'save_activity_logs'
                 );
                 foreach ($checkFieldsArray as $field)
                 {

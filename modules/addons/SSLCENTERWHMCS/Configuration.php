@@ -53,7 +53,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
      * Module version
      * @var string
      */
-    public $version = '2.2.5';
+    public $version = '2.2.7';
 
     /**
      * Module author
@@ -238,7 +238,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
         {
             $services   = new main\models\whmcs\service\Repository();
             $services->onlyStatus(['Active']);
-            logActivity('SSLCENTER WHMCS Upgrade Start.');
+            eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS Upgrade Start.');
             $serviceIDs = array();
             foreach ($services->get() as $service)
             {
@@ -270,10 +270,10 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
             }
             if (!empty($serviceIDs))
             {
-                logActivity('SSL certificates associated with services with identifiers: ' . implode(', ', $serviceIDs) . ' have been marked as sent.');
+                eHelpers\Whmcs::savelogActivitySSLCenter('SSL certificates associated with services with identifiers: ' . implode(', ', $serviceIDs) . ' have been marked as sent.');
             }
 
-            logActivity('SSLCENTER WHMCS Upgrade Completed.');
+            eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS Upgrade Completed.');
         }
     }
 }
