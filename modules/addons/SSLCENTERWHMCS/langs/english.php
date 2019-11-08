@@ -60,6 +60,7 @@ $_LANG['addonAA']['apiConfiguration']['modal']['dataMigrationInfoAction'][2]    
 $_LANG['addonAA']['apiConfiguration']['messages']['data_migration_success']                            = 'Data and configuration have been imported successfully. The page will automatically reloaded after 5 seconds.';
 //
 $_LANG['addonAA']['apiConfiguration']['item']['renewal_settings_legend']['label']                      = 'Renewal Settings';
+$_LANG['addonAA']['apiConfiguration']['item']['logs_settings_legend']['label']                      = 'Logs Settings';
 $_LANG['addonAA']['apiConfiguration']['item']['auto_renew_invoice_reccuring']['label']                 = 'Recuring Orders';
 $_LANG['addonAA']['apiConfiguration']['item']['auto_renew_invoice_reccuring']['description']           = 'Create automatical renewal invoice';
 $_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_reccuring']['label']       = '';
@@ -77,6 +78,8 @@ $_LANG['addonAA']['apiConfiguration']['item']['renew_new_order']['label']       
 $_LANG['addonAA']['apiConfiguration']['item']['renew_new_order']['description']            = 'Renew - New Order';
 $_LANG['addonAA']['apiConfiguration']['item']['visible_renew_button']['label']                  = '';
 $_LANG['addonAA']['apiConfiguration']['item']['visible_renew_button']['description']            = 'Visible "Renew" button in ClientArea';
+$_LANG['addonAA']['apiConfiguration']['item']['save_activity_logs']['label']                  = 'Activity log';
+$_LANG['addonAA']['apiConfiguration']['item']['save_activity_logs']['description']            = 'Tick this field to save logs';
 //
 $_LANG['addonAA']['apiConfiguration']['item']['tech_firstname']['label']                               = 'Firstname';
 $_LANG['addonAA']['apiConfiguration']['item']['use_admin_contact']['label']                            = 'Use Administrative Contact Details';

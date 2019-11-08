@@ -83,7 +83,8 @@ class SSLStepTwo {
         $csr = trim(rtrim($this->p['csr']));
         $decodeCSR = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($csr);
        
-        if($decodeCSR['error']) {
+        if($decodeCSR['csrResult']['errorMessage']) {
+            
             if(isset($decodeCSR['description']))
                 throw new Exception($decodeCSR['description']);
                 

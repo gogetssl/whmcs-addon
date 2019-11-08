@@ -133,7 +133,7 @@ class ClientReissueCertificate {
         $this->validateWebServer();
         $this->validateSanDomains();
         $decodeCSR = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->post['csr']);
-        if ($decodeCSR['error']) {
+        if($decodeCSR['csrResult']['errorMessage']) {
             if(isset($decodeCSR['description']))
                 throw new Exception($decodeCSR['description']);
             

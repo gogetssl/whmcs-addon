@@ -43,7 +43,7 @@ class Migration
     {
         try
         {
-            logActivity('SSLCENTER WHMCS: Data & Configuration Migration Started');
+            main\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS: Data & Configuration Migration Started');
             
             #import:
             #configuration
@@ -55,7 +55,7 @@ class Migration
             #update SSL orders
             $this->updateSSLOrders();
             
-            logActivity('SSLCENTER WHMCS: Data & Configuration Migration Completed');
+            main\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS: Data & Configuration Migration Completed');
         }
         catch (Exception $ex)
         {
@@ -74,11 +74,11 @@ class Migration
             $apiConfigRepo = new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository();
             $apiConfigRepo->setConfiguration($input);
             
-            logActivity('SSLCENTER WHMCS: Module '.self::MODULE_NAME.' configuration imported successfully.');
+            main\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS: Module '.self::MODULE_NAME.' configuration imported successfully.');
         }
         else
         {
-            logActivity('SSLCENTER WHMCS: Module '.self::MODULE_NAME.' installation not detected.');
+            main\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS: Module '.self::MODULE_NAME.' installation not detected.');
         }
     }
 
@@ -121,7 +121,7 @@ class Migration
             $product->setServerType(main\Addon::I()->configuration()->systemName);
             $product->save();
             
-            logActivity('SSLCENTER WHMCS: Product ID: ' . $product->id . ' has been modified. Module changed from ' . self::MODULE_NAME . ' to ' . main\Addon::I()->configuration()->systemName);
+            main\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS: Product ID: ' . $product->id . ' has been modified. Module changed from ' . self::MODULE_NAME . ' to ' . main\Addon::I()->configuration()->systemName);
         }
     }
 
@@ -139,7 +139,7 @@ class Migration
                         'module' => main\Addon::I()->configuration()->systemName
                     ]);
             
-            logActivity('SSLCENTER WHMCS: SSL Service ID: ' . $ssl->serviceid . ' has been modified. Module changed from ' . self::MODULE_NAME . ' to ' . main\Addon::I()->configuration()->systemName);
+            main\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS: SSL Service ID: ' . $ssl->serviceid . ' has been modified. Module changed from ' . self::MODULE_NAME . ' to ' . main\Addon::I()->configuration()->systemName);
 
         }
     }

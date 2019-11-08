@@ -125,7 +125,7 @@ class AdminReissueCertificate extends Ajax {
         $this->validateSanDomains();
         $this->validateServerType();
         $decodeCSR    = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->p['csr']);
-        if($decodeCSR['error']) {
+        if($decodeCSR['csrResult']['errorMessage']) {
             if(isset($decodeCSR['description']))
                 throw new Exception($decodeCSR['description']);
             
