@@ -634,9 +634,7 @@
 
         });
 </script>
-
-
-
+ 
 <div class="modal fade" id="modalView" role="dialog" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content panel panel-primary">
@@ -836,6 +834,207 @@
                         renderCertificates(data.data);
                     } else {
                         renderCertificates(data.data);
+                        showDangerAlert(data.msg);
+                    }
+                },
+                error: function (jqXHR, errorText, errorThrown) {
+                    anErrorOccurred();
+                }
+            });
+        }
+
+        assignModalElements(true);
+        moveModalToBody();
+        unbindOnClickForViewCertificateBtn();
+        bindModalToViewCertificateBtn();
+    });
+</script>
+
+
+<div class="modal fade" id="modalRecheck" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content panel panel-primary">
+            <div class="modal-header panel-heading">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title" id="ModuleSuspendLabel">Check Certificate Details</h4>
+            </div>
+            <div class="modal-body panel-body" id="modalRecheckBody">
+                <div class="alert alert-success hidden" id="modalRecheckSuccessAlert">
+                    <strong>Success!</strong> <span></span>
+                </div>
+                <div class="alert alert-danger hidden" id="modalRecheckDangerAlert">
+                    <strong>Error!</strong> <span></span>
+                </div>
+                <div class="text-center hidden" id="modalRecheckLoading">
+                    Loading...
+                </div>
+                <div id="modalRecheckDetails">
+                    <table id="details" class="table" style="width:100%;">
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer panel-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        var serviceUrl = 'clientsservices.php?userid={$userid}&id={$serviceid}',
+                recheckBtn = $('#btnRecheck_Certificate_Details'),
+                recheckModal,
+                recheckBody,
+                recheckLoading,
+                recheckDangerAlert,
+                recheckSuccessAlert,
+                recheckDetails,
+                body = $('body');
+
+        function assignModalElements(init) {
+            recheckModal = $('#modalRecheck');
+            recheckBody = $('#modalRecheckBody');
+            
+            if (init) {
+                recheckBody.contents()
+                .filter(function(){
+                    return this.nodeType === 8;
+                })
+                .replaceWith(function(){
+                    return this.data;
+                });
+            }
+
+            if (!init) {
+                recheckDangerAlert = $('#modalRecheckDangerAlert');
+                recheckSuccessAlert = $('#modalRecheckSuccessAlert');
+                recheckLoading = $('#modalRecheckLoading');
+                recheckDetails = $('#modalRecheckDetails');
+            }
+        }
+        
+        function showLoader()
+        {
+            show(recheckLoading);
+        }
+
+        function moveModalToBody() {
+            body.append(recheckModal.clone());
+            recheckModal.remove();
+            assignModalElements(false);
+        }
+
+        function unbindOnClickForViewCertificateBtn() {
+            recheckBtn.attr('onclick', '');
+        }
+
+        function bindModalToViewCertificateBtn() {
+            recheckBtn.off().on('click', function () {
+                recheckModal.modal('show');
+                fetchCertificateDetails();
+            });
+        }
+
+        function showSuccessAlert(msg) {
+            show(recheckSuccessAlert);
+            hide(recheckDangerAlert);
+            recheckSuccessAlert.children('span').html(msg);
+        }
+
+        function showDangerAlert(msg) {
+            hide(recheckSuccessAlert);
+            show(recheckDangerAlert);
+            recheckDangerAlert.children('span').html(msg);
+        }
+
+        function show(element) {
+            element.removeClass('hidden');
+        }
+
+        function hide(element) {
+            element.addClass('hidden');
+        }
+
+        function enable(element) {
+            element.removeClass('disabled');
+        }
+
+        function anErrorOccurred() {
+            showDangerAlert('An error occurred');
+        }
+
+        function isJsonString(str) {
+            try {
+                JSON.parse(str);
+            } catch (e) {
+                return false;
+            }
+            return true;
+        }
+
+        function hideAll() {
+            hide(recheckDangerAlert);
+            hide(recheckSuccessAlert);
+            hide(recheckDetails);
+        }
+
+        function renderCertificates(data) {
+            
+            $("table#details").empty();
+
+            if (typeof data === 'undefined') {
+                return;
+            }
+     
+            for(var key in data)
+            {
+                var tr = $("<tr />");
+                var td = $("<td />").text(key);
+                tr.append(td);
+                var td = $("<td />").text(data[key]);
+                tr.append(td);
+                $("table#details").append(tr);
+            }
+            
+            show(recheckDetails);
+        }
+
+        function fetchCertificateDetails() {
+
+            hideAll();
+            showLoader();
+
+            var data = {
+                recheckModal: 'yes',
+                serviceId: {$serviceid},
+                userID: {$userid},
+            };
+            $.ajax({
+                type: "POST",
+                url: serviceUrl,
+                data: data,
+                success: function (ret) {
+                    var data;
+                    if (!isJsonString(ret)) {
+                        anErrorOccurred();
+                        return;
+                    }
+                    data = JSON.parse(ret);
+                    
+                    hide(recheckLoading);
+                    
+                    if (data.success === 1) 
+                    {
+                       renderCertificates(data.data);
+                    } 
+                    else 
+                    {
                         showDangerAlert(data.msg);
                     }
                 },

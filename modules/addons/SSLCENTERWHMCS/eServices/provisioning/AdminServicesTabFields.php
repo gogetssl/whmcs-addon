@@ -29,6 +29,7 @@ class AdminServicesTabFields {
     }
     
     private function getCertificateDetails() {
+        
         try {
             $ssl        = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
             $sslService = $ssl->getByServiceId($this->p['serviceid']);
@@ -46,21 +47,22 @@ class AdminServicesTabFields {
             
             $return = [];
             $return['SSLCenter API Order ID'] = $sslService->remoteid;
-                        
-            $orderStatus = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
-           
-            $return['Comodo Order ID'] = $orderStatus['partner_order_id']; 
+
+            $orderDetails = (array)$sslService->configdata;
+ 
+            $return['Comodo Order ID'] = $orderDetails['partner_order_id']?:"-"; 
             $return['Configuration Status'] = $sslService->status;  
-            $return['Domain'] = $orderStatus['domain'];
-            $return['Order Status'] = ucfirst($orderStatus['status']);   
-            $return['Order Status Description'] = $orderStatus['status_description'] ? $orderStatus['status_description'] : '-';            
-            if($orderStatus['status'] == 'active') {                
-                $return['Valid From'] = $orderStatus['valid_from'];
-                $return['Expires'] = $orderStatus['valid_till'];
-            }
+            $return['Domain'] = $orderDetails['domain'];
+            $return['Order Status'] = ucfirst($orderDetails['ssl_status']);   
+            $return['Order Status Description'] = $orderDetails['order_status_description'] ? : '-';  
             
-            foreach ($orderStatus['san'] as $key => $san) {
-                $return['SAN ' . ($key + 1)] = sprintf('%s / %s', $san['san_name'], $san['status_description']);
+            if($orderDetails['ssl_status'] == 'active') {                
+                $return['Valid From'] = $orderDetails['valid_from'];
+                $return['Expires'] = $orderDetails['valid_till'];
+            }
+       
+            foreach ($orderDetails['san_details'] as $key => $san) {
+                $return['SAN ' . ($key + 1)] = sprintf('%s / %s', $san->san_name, $san->status_description);
             }
             
             return $return;

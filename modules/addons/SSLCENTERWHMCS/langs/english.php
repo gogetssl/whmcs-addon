@@ -26,6 +26,10 @@ $_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['commandLine']['cro
 $_LANG['addonAA']['apiConfiguration']['cronPriceUpdater']['pleaseNote']                             = 'Please Note:';
 $_LANG['addonAA']['apiConfiguration']['cronPriceUpdater']['info']                                   = 'In order to synchronize the WHMCS product prices with the API product prices, set the following command line cron (every 3rd day suggested):';
 $_LANG['addonAA']['apiConfiguration']['cronPriceUpdater']['commandLine']['cronFrequency']           = '0 0 */3 * *';
+//customers send certificate
+$_LANG['addonAA']['apiConfiguration']['cronCertificateDetailsUpdater']['pleaseNote']                             = 'Please Note:';
+$_LANG['addonAA']['apiConfiguration']['cronCertificateDetailsUpdater']['info']                                   = 'In order to synchronize certificate details in WHMCS with the certificate details in API, set the following command line cron (once a day suggested):';
+$_LANG['addonAA']['apiConfiguration']['cronCertificateDetailsUpdater']['commandLine']['cronFrequency']           = '0 0 * * *';
 //
 $_LANG['addonAA']['apiConfiguration']['item']['header']                                                = 'API Configuration';
 $_LANG['addonAA']['apiConfiguration']['item']['api_login']['label']                                    = 'Login';

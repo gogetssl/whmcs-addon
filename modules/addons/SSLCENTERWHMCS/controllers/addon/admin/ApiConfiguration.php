@@ -91,7 +91,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->continue          = false;
         $field->enableDescription = true;
         $form->addField($field);
-        
+
         $field       = new main\mgLibs\forms\LegendField();
         $field->name = 'renewal_settings_legend';
         $form->addField($field);
@@ -403,6 +403,8 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $vars['cronCommandLine3'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'notifier.php';
         $vars['cronCommandLine4'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'certificateSender.php';
         $vars['cronCommandLine5'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'APIPriceUpdater.php';
+        $vars['cronCommandLine6'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'certificateDetailsUpdater.php';
+        
         return array
             (
             //You have to create tpl file  /modules/addons/SSLCENTERWHMCS/templates/admin/pages/example1/example.1tpl

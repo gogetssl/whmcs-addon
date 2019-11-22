@@ -39,6 +39,9 @@ class Renew {
         $this->loadSslService();
         $this->loadApiProduct();
         $addSSLRenewOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLRenewOrder($this->getOrderParams());        
+    
+        $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($this->sslService);
+        $configDataUpdate->run();
     }
 
     private function loadSslService() {
@@ -70,6 +73,56 @@ class Renew {
         
         $p = &$this->sslService->configdata;
         $f = &$p->fields;
+
+        if(!isset($p->firstname) || empty($p->firstname))
+        {
+            $p->firstname = $this->p['model']->client->firstname;
+        }
+        
+        if(!isset($p->lastname) || empty($p->lastname))
+        {
+            $p->lastname = $this->p['model']->client->lastname;
+        }
+        
+        if(!isset($p->orgname) || empty($p->orgname))
+        {
+            $p->orgname = $this->p['model']->client->companyname;
+        }
+        
+        if(!isset($p->address1) || empty($p->address1))
+        {
+            $p->address1 = $this->p['model']->client->address1;
+        }
+        
+        if(!isset($p->phonenumber) || empty($p->phonenumber))
+        {
+            $p->phonenumber = $this->p['model']->client->phonenumber;
+        }
+        
+        if(!isset($p->email) || empty($p->email))
+        {
+            $p->email = $this->p['model']->client->email;
+        }
+        
+        if(!isset($p->city) || empty($p->city))
+        {
+            $p->city = $this->p['model']->client->city;
+        }
+        
+        if(!isset($p->country) || empty($p->country))
+        {
+            $p->country = $this->p['model']->client->country;
+        }
+        
+        if(!isset($p->postcode) || empty($p->postcode))
+        {
+            $p->postcode = $this->p['model']->client->postcode;
+        }
+        
+        if(!isset($p->state) || empty($p->state))
+        {
+            $p->state = $this->p['model']->client->state;
+        }
 
         $order                   = [];
         $order['dcv_method']     = 'email';        

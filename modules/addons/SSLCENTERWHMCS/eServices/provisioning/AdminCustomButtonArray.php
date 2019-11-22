@@ -12,6 +12,7 @@ class AdminCustomButtonArray {
             'Change Approver Email' => 'SSLAdminChangeApproverEmail',
             'Reissue Certificate'   => 'SSLAdminReissueCertificate',
             'View Certificate'      => 'SSLAdminViewCertificate',
+            'Recheck Certificate Details' => 'SSLAdminRecheckCertificateDetails' 
         ];
     }
 }

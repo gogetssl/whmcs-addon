@@ -233,6 +233,10 @@ class ClientReissueCertificate {
         $this->sslService->setApproverEmails($data['approver_emails']);
         $this->sslService->setSansDomains($data['dns_names']);
         $this->sslService->save();
+        
+        $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($this->sslService);
+        $configDataUpdate->run();
+        
         try
         {
             \MGModule\SSLCENTERWHMCS\eHelpers\Invoice::insertDomainInfoIntoInvoiceItemDescription($this->p['serviceid'], $decodedCSR['csrResult']['CN'], true);

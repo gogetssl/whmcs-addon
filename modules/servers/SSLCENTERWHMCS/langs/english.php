@@ -53,6 +53,7 @@ $_LANG['serverCA']['home']['changeApproverEmailModalModalTitle'] = 'Change Appro
 $_LANG['serverCA']['home']['newApproverEmailModalModalLabel']    = 'New Approver Email';
 $_LANG['serverCA']['home']['viewPrivateKeyModalTitle']           = 'View Private Key';
 $_LANG['serverCA']['home']['getPrivateKeyBtn']                   = 'Get Private Key';
+$_LANG['serverCA']['home']['recheckCertificateDetails']          = 'Check Certificate Details'; 
 $_LANG['serverCA']['home']['reissueCertificate']                 = 'Reissue Certificate';
 $_LANG['serverCA']['home']['Actions']                            = 'Actions';
 $_LANG['serverCA']['home']['Submit']                             = 'Submit';

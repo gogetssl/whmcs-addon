@@ -99,7 +99,7 @@ if (isset($_POST['changeEmailModal'], $_SESSION['adminid']) AND $_POST['changeEm
     $adminChangeApproverEmail = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\AdminChangeApproverEmail($_POST);
     $adminChangeApproverEmail->run();
 }
-//tu
+
 if (isset($_POST['action'], $_SESSION['adminid']) AND $_POST['action'] === 'getApprovalEmailsForDomain' AND $_SESSION['adminid']) {
     
     try{
@@ -149,6 +149,11 @@ if (isset($_POST['reissueModal'], $_SESSION['adminid']) AND $_POST['reissueModal
        
     $adminReissueCertificate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\AdminReissueCertificate($_POST);
     $adminReissueCertificate->run();   
+}
+
+if (isset($_POST['recheckModal'], $_SESSION['adminid']) AND $_POST['recheckModal'] === 'yes' AND $_SESSION['adminid']) {
+    $adminCheckCertificateDetails = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\AdminRecheckCertificateDetails($_POST);
+    $adminCheckCertificateDetails->run();
 }
 
 if (isset($_POST['viewModal'], $_SESSION['adminid']) AND $_POST['viewModal'] === 'yes' AND $_SESSION['adminid']) {
