@@ -46,6 +46,7 @@ class SSLStepThree {
             $this->redirectToStepOne($ex->getMessage());
         }
     }
+    
     private function setMainDomainDcvMethod($post) {
         $this->p['fields']['dcv_method']  = $post['dcvmethodMainDomain']; 
     }
@@ -225,9 +226,23 @@ class SSLStepThree {
         $service = new Service($this->p['serviceid']);
         $service->save(array('domain' => $decodedCSR['csrResult']['CN']));
         
+        $orderDetails = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($addedSSLOrder['order_id']);
+  
         $this->sslConfig->setRemoteId($addedSSLOrder['order_id']); 
-        $this->sslConfig->setApproverEmails($order['approver_emails']); 
-        //$this->sslConfig->setApproverEmails($order['approver_emails']); 
+        $this->sslConfig->setApproverEmails($order['approver_emails']);
+       
+        $this->sslConfig->setCa($orderDetails['ca_code']);
+        $this->sslConfig->setCrt($orderDetails['crt_code']);
+        $this->sslConfig->setPartnerOrderId($orderDetails['partner_order_id']);
+        $this->sslConfig->setValidFrom($orderDetails['valid_from']);
+        $this->sslConfig->setValidTill($orderDetails['valid_till']);
+        $this->sslConfig->setDomain($orderDetails['domain']);
+        $this->sslConfig->setOrderStatusDescription($orderDetails['status_description']);
+        $this->sslConfig->setApproverMethod($orderDetails['approver_method']);
+        $this->sslConfig->setDcvMethod($orderDetails['dcv_method']);
+        $this->sslConfig->setProductId($orderDetails['product_id']);
+        $this->sslConfig->setSanDetails($orderDetails['san']);
+
         $this->sslConfig->save();
         
         //try to mark previous order as completed if it is autoinvoiced and autocreated product

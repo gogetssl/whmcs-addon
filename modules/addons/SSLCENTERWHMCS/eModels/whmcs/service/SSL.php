@@ -8,7 +8,7 @@ class SSL extends \Illuminate\Database\Eloquent\Model
 {
     public $timestamps = false;
     protected $table   = 'tblsslorders';
-
+    
     public function scopeWhereServiceId($query, $id)
     {
         $query->where('serviceid', '=', $id);
@@ -98,6 +98,56 @@ class SSL extends \Illuminate\Database\Eloquent\Model
     {
         $this->setConfigdataKey('orderStatus', $value);
     }
+    
+    public function getOrderStatusDescription()
+    {
+        return $this->getConfigdataKey('order_status_description');
+    }
+
+    public function setOrderStatusDescription($value)
+    {
+        $this->setConfigdataKey('order_status_description', $value);
+    }
+    
+    public function getApproverMethod()
+    {
+        return $this->getConfigdataKey('approver_method');
+    }
+
+    public function setApproverMethod($value)
+    {
+        $this->setConfigdataKey('approver_method', $value);
+    }
+    
+    public function getDcvMethod()
+    {
+        return $this->getConfigdataKey('dcv_method');
+    }
+
+    public function setDcvMethod($value)
+    {
+        $this->setConfigdataKey('dcv_method', $value);
+    }
+    
+    public function getProductId()
+    {
+        return $this->getConfigdataKey('product_id');
+    }
+
+    public function setProductId($id)
+    {
+        $this->setConfigdataKey('product_id', $id);
+    }
+    
+    public function getProductBrand()
+    {
+        return $this->getConfigdataKey('product_brand');
+    }
+
+    public function setProductBrand($brand)
+    {
+        $this->setConfigdataKey('product_brand', $brand);
+    }
 
     public function setAsFetched()
     {
@@ -132,6 +182,56 @@ class SSL extends \Illuminate\Database\Eloquent\Model
         $fileds                  = (array) $this->getConfigdataKey('fields');
         $fileds['approveremail'] = $email;
         $this->setConfigdataKey('fields', $fileds);
+    }
+    
+    public function setValidFrom($date)
+    {
+        $this->setConfigdataKey('valid_from', $date);
+    }
+    
+    public function getValidFrom()
+    {
+        return $this->getConfigdataKey('valid_from');
+    }
+    
+    public function setValidTill($date)
+    {
+        $this->setConfigdataKey('valid_till', $date);
+    }
+    
+    public function getDomain()
+    {
+        return $this->getConfigdataKey('domain');
+    }
+    
+    public function setDomain($domain)
+    {
+        $this->setConfigdataKey('domain', $domain);
+    }
+    
+    public function getValidTill()
+    {
+        return $this->getConfigdataKey('valid_till');
+    }
+    
+    public function setPartnerOrderId($id)
+    {
+        $this->setConfigdataKey('partner_order_id', $id);
+    }
+    
+    public function getPartnerOrderId()
+    {
+        return $this->getConfigdataKey('partner_order_id');
+    }
+    
+    public function getSanDetails()
+    {
+        return $this->getConfigdataKey('san_details');
+    }
+    
+    public function setSanDetails($details)
+    {
+        $this->setConfigdataKey('san_details', $details);
     }
 
     public function getWhere($where, $gogetssl = false)

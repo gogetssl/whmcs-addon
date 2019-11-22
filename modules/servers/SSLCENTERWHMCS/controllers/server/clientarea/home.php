@@ -13,7 +13,6 @@ class home extends main\mgLibs\process\AbstractController {
 
     function indexHTML($input, $vars = array()) {
         try {
-            
             $serviceId  = $input['params']['serviceid'];            
             $serviceBillingCycle = $input['params']['templatevars']['billingcycle'];            
             $userid = $input['params']['userid'];
@@ -34,87 +33,81 @@ class home extends main\mgLibs\process\AbstractController {
             }             
             if ($sslService->status !== 'Awaiting Configuration') {
                 try {
-                    
-                    $orderStatus = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);  
-                    
-                    if(!empty($orderStatus['partner_order_id'])) {
-                        $vars['partner_order_id'] = ($orderStatus['partner_order_id']);
+                    $certificateDetails = (array)$sslService->configdata;
+   
+                    if(!empty($certificateDetails['partner_order_id'])) {
+                        $vars['partner_order_id'] = $certificateDetails['partner_order_id'];
                     }
-                    if(!empty($orderStatus['product_id'])) {
-                        $apiRepo       = new \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products();
-                        $apiProduct    = $apiRepo->getProduct($orderStatus['product_id']);
-                        $vars['brand'] = $apiProduct->brand;
+                    if(!empty($certificateDetails['product_brand'])) {
+                        $vars['brand'] = $certificateDetails['product_brand'];
                     }
-                    if(!empty($orderStatus['approver_method'])) {                        
-                        $vars['approver_method'] = ($orderStatus['approver_method']);
+       
+                    if(!empty($certificateDetails['dcv_method']))
+                    {
+                        $vars['dcv_method'] = $certificateDetails['dcv_method'];
+                        
+                        if(in_array($vars['dcv_method'], ["http", "https", "dns"]))
+                        {
+                            $vars['approver_method'][$vars['dcv_method']] = (array) $certificateDetails['approver_method']->{$vars['dcv_method']};
+
+                            if($vars['dcv_method'] == 'http' || $vars['dcv_method'] == 'https'){  
+                               $vars['approver_method'][$vars['dcv_method']]['content'] = explode(PHP_EOL, $vars['approver_method'][$vars['dcv_method']]['content']);
+                            }
+                        } else {
+                            $vars['dcv_method'] = 'email';
+                            $vars['approver_method'] = $certificateDetails['approveremail'];
+                        }
                     }
-                    
-                    $dcv_method = array_keys($vars['approver_method']);
-                    if($dcv_method[0] != null) {
-                        $vars['dcv_method'] = $dcv_method[0];
-                    if($dcv_method[0] == 'http' || $dcv_method[0] == 'https'){
-                       $vars['approver_method'][$dcv_method[0]]['content'] = explode(PHP_EOL, $vars['approver_method'][$dcv_method[0]]['content']);
-                    }
-                    } else {
-                        $vars['dcv_method'] = 'email';
-                    }
-                    if (!empty($orderStatus['csr_code'])) {
-                        $vars['csr'] = ($orderStatus['csr_code']);
+             
+                    if (!empty($certificateDetails['csr'])) {
+                        $vars['csr'] = ($certificateDetails['csr']);
                     }
 
-                    if (!empty($orderStatus['crt_code'])) {
-                        $vars['crt'] = ($orderStatus['crt_code']);
+                    if (!empty($certificateDetails['crt'])) {
+                        $vars['crt'] = ($certificateDetails['crt']);
                     }
-                    if (!empty($orderStatus['ca_code'])) {
-                        $vars['ca'] = ($orderStatus['ca_code']);
+                    if (!empty($certificateDetails['ca'])) {
+                        $vars['ca'] = ($certificateDetails['ca']);
                     }
-                    /*if (!empty($orderStatus['order_id'])) {
-                        $vars['order_id'] = $orderStatus['order_id'];
-                    }*/
-                    if (!empty($orderStatus['domain'])) {
-                        $vars['domain'] = $orderStatus['domain'];
+
+                    if (!empty($certificateDetails['domain'])) {
+                        $vars['domain'] = $certificateDetails['domain'];
                     }
-                    
-                    /*if (!empty($orderStatus['san'])) {
-                        foreach ($orderStatus['san'] as $san) {
-                            $vars['sans'][] = $san['san_name'];
-                        }
-                        $vars['sans'] = implode('<br>', $vars['sans']);
-                    }*/
-                    if (!empty($orderStatus['san'])) {
-                        foreach ($orderStatus['san'] as $san) {
-                            $vars['sans'][$san['san_name']]['san_name'] = $san['san_name'];
-                            $vars['sans'][$san['san_name']]['method'] = $san['validation_method'];
-                            switch ($san['validation_method']) {
+
+                    if (!empty($certificateDetails['san_details'])) {
+                        foreach ($certificateDetails['san_details'] as $san) {
+                            $vars['sans'][$san->san_name]['san_name'] = $san->san_name;
+                            $vars['sans'][$san->san_name]['method'] = $san->validation_method;
+                            switch ($san->validation_method) {
                                 case 'dns':
-                                    $vars['sans'][$san['san_name']]['san_validation'] = $san['validation']['dns']['record'];
+                                    $vars['sans'][$san->san_name]['san_validation'] = $san->validation->dns->record;
                                     break;
                                 case 'http':
-                                    $vars['sans'][$san['san_name']]['san_validation'] = $san['validation']['http'];
-                                    $vars['sans'][$san['san_name']]['san_validation']['content'] = explode(PHP_EOL, $san['validation']['http']['content']);
+                                    $vars['sans'][$san->san_name]['san_validation'] = (array)$san->validation->http;
+                                    $vars['sans'][$san->san_name]['san_validation']['content'] = explode(PHP_EOL, $san->validation->http->content);
                                     break;
                                 case 'https':
-                                    $vars['sans'][$san['san_name']]['san_validation'] = $san['validation']['https'];                                    
-                                    $vars['sans'][$san['san_name']]['san_validation']['content'] = explode(PHP_EOL, $san['validation']['https']['content']);
+                                    $vars['sans'][$san->san_name]['san_validation'] = (array)$san->validation->https;        
+                                    $vars['sans'][$san->san_name]['san_validation']['content'] = explode(PHP_EOL, $san->validation->https->content);
                                     break;
                                 default:
-                                    $vars['sans'][$san['san_name']]['san_validation'] = $san['validation']['email'];
+                                    $vars['sans'][$san->san_name]['san_validation'] = $san->validation->email;
                                     break;
                             }
                         }                        
                     }
 
-                    $vars['activationStatus'] = $orderStatus['status'];
+                    $vars['activationStatus'] = $certificateDetails['ssl_status'];
                     
                     //valid from
-                    $vars['validFrom'] = $orderStatus['valid_from'];
+                    $vars['validFrom'] = $certificateDetails['valid_from'];
                     //expires
-                    $vars['validTill'] = $orderStatus['valid_till'];                    
+                    $vars['validTill'] = $certificateDetails['valid_till'];                    
                     //service billing cycle                   
                     $vars['serviceBillingCycle'] = $serviceBillingCycle;                    
                     $vars['displayRenewButton'] = false;
                     $today = date('Y-m-d');
-                    $diffDays =  abs(strtotime($orderStatus['valid_till']) - strtotime($today))/86400; 
+                    $diffDays =  abs(strtotime($certificateDetails['valid_till']) - strtotime($today))/86400; 
                     
                     if($diffDays < 90)
                         $vars['displayRenewButton'] = true;
@@ -304,6 +297,7 @@ class home extends main\mgLibs\process\AbstractController {
             'msg'     => $response['message']
         );
     }
+    
     public function getApprovalEmailsForDomainJSON($input, $vars = array()) {
                 
         $domainEmails = [];
@@ -322,6 +316,7 @@ class home extends main\mgLibs\process\AbstractController {
         
         return $result;
     }
+    
     function changeApproverEmailJSON($input, $vars = array()) {
         
         $sslRepo   = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
@@ -330,15 +325,18 @@ class home extends main\mgLibs\process\AbstractController {
         $data = [
             'approver_email' => $input['newEmail']
         ]; 
-        
+
         $response = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->changeValidationEmail($ssService->remoteid, $data);          
+        
+        $ssService->setConfigdataKey("approveremail", $data['approver_email']);
+        $ssService->save();
         
         return array(
             'success' => $response['success'],
             'msg'     => $response['success_message']
         ); 
-        
     }
+    
     function getPrivateKeyJSON($input, $vars = array()) {
         $sslRepo   = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
         $sslService = $sslRepo->getByServiceId($input['params']['serviceid']);
@@ -358,6 +356,13 @@ class home extends main\mgLibs\process\AbstractController {
         
         return $result;        
     }
+    
+    function getCertificateDetailsJSON($input, $vars = array()) {
+       
+        $clientCheckCertificateDetails = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\ClientRecheckCertificateDetails($input);
+        $details = $clientCheckCertificateDetails->run(); 
+    }
+    
     function getPasswordJSON($input, $vars = array()) {
         //do something with input
         unset($input);

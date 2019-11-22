@@ -258,6 +258,28 @@ class Cron extends main\mgLibs\process\AbstractController
         main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Certificate Sender completed. The number of messages sent: " . $emailSendsCount);
         return array();
     }
+    
+    public function certificateDetailsUpdateCRON($input, $vars = array())
+    {
+        echo 'Certificate Details Updating.' . PHP_EOL;
+        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Certificate Details Updating started.");
+        
+        $this->sslRepo = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+
+        $sslOrders = $this->getSSLOrders();
+        
+        foreach ($sslOrders as $sslService)
+        {  
+            $sslService = \MGModule\SSLCENTERWHMCS\eModels\whmcs\service\SSL::hydrate(array($sslService))[0];
+            $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($sslService);
+            $configDataUpdate->run();
+        }
+        
+        echo '<br/ >';
+        echo 'Certificate Details Updating completed.' . PHP_EOL;
+        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Certificate Details Updating completed.");
+        return array();
+    }
 
     public function loadCertificateStatsCRON($input, $vars = array())
     {
@@ -546,7 +568,7 @@ class Cron extends main\mgLibs\process\AbstractController
         $resultSuccess = $results['result'] == 'success';
         if (!$resultSuccess)
         {
-            main\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS Notifier: Error while sending customer notifications (service ' . $serviceId . '): ' . $results['message']);
+            main\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS Notifier: Error while sending customer notifications (service ' . $serviceId . '): ' . $results['message'], 0);
         }
         return $resultSuccess;
     }

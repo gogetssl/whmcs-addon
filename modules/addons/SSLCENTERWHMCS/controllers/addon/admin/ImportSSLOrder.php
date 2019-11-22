@@ -188,8 +188,20 @@ class ImportSSLOrder extends main\mgLibs\process\AbstractController
                 'fields'        => array(
                     'order_type' => (!$orderStatus['renew']) ? 'new' : 'renew'
                 ),
-                'approveremail' => $orderStatus['approver_method']
+                'approveremail' => $orderStatus['approver_method'],
+                'ca' => $orderStatus['ca_code'],
+                'crt' => $orderStatus['crt_code'],
+                'partner_order_id' => $orderStatus['partner_order_id'], 
+                'valid_from' => $orderStatus['valid_from'], 
+                'valid_till' => $orderStatus['valid_till'], 
+                'domain' => $orderStatus['domain'], 
+                'status_description' => $orderStatus['status_description'], 
+                'approver_method' => $orderStatus['approver_method'], 
+                'dcv_method' => $orderStatus['dcv_method'], 
+                'product_id' => $orderStatus['product_id'], 
+                'san_details' => $orderStatus['san']
             );
+
             
             $newSSLOrder = new main\eModels\whmcs\service\SSL();
             $newSSLOrder->setUserId($clientID);

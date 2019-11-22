@@ -13,13 +13,11 @@ class Orders extends main\mgLibs\process\AbstractController
 {
     private $type= 'total';
     private $permittedTypes = array('total', 'unpaid', 'processing', 'expires_soon');
-    
 
     public function indexHTML($input = array())
     {
         if (isset($_REQUEST['type']) && in_array($_REQUEST['type'], $this->permittedTypes))
             $this->type = $_REQUEST['type'];
-
 
         $vars['orderType'] = $this->type;
         $vars['assetsURL'] = main\Server::I()->getAssetsURL();
@@ -56,6 +54,7 @@ class Orders extends main\mgLibs\process\AbstractController
         }
 
         $preparedRows = array();
+        
         foreach ($orders as $order)
         {
             $preparedRows[] = $this->prepareRow($order);

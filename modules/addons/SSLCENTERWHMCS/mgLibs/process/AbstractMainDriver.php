@@ -174,11 +174,11 @@ abstract class AbstractMainDriver{
             }
 
             $controllerOBJ = new $className($input);
+
             // display the page or not
             if(method_exists($controllerOBJ, "isActive") && !$controllerOBJ->{"isActive"}())
                 throw new mgLibs\exceptions\System("No access to this page");
-                
-            
+
             if(!method_exists($controllerOBJ, $action.$type))
             {
                 throw new main\mgLibs\exceptions\System("Unable to find Action: ".$action.$type);

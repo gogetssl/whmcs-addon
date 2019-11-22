@@ -20,7 +20,6 @@ class AdminReissueCertificate extends Ajax {
         } catch (Exception $ex) {
             $this->response(false, $ex->getMessage());
         }
-
     }
 
     private function miniControler() {
@@ -93,6 +92,9 @@ class AdminReissueCertificate extends Ajax {
             
             $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceId']);
             $service->save(array('domain' => $decodedCSR['csrResult']['CN']));
+            
+            $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($sslService);
+            $configDataUpdate->run();
         }
         catch(Exception $e)
         {
@@ -118,7 +120,6 @@ class AdminReissueCertificate extends Ajax {
         if (empty($this->serviceParams)) {
             throw new Exception('Can not build module params.');
         }
-
     }
 
     private function getApprovals() {

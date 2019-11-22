@@ -207,7 +207,8 @@
                         <!--<button type="button" id="{if $dcv_method == 'email'}btnChange_Approver_Email{else}btnRevalidate{/if}" class="btn btn-default" style="margin:2px">{if $dcv_method == 'email'}{$MGLANG->T('changeValidationEmail')}{else}{$MGLANG->T('revalidate')}{/if}</button>-->
                         {if $privateKey}
                         <button type="button" id="getPrivateKey" class="btn btn-default" style="margin:2px">{$MGLANG->T('getPrivateKeyBtn')}</button>
-                        {/if}                        
+                        {/if}    
+                        <button type="button" id="recheckDetails" class="btn btn-default" style="margin:2px">{$MGLANG->T('recheckCertificateDetails')}</button>
                     {/if}  
                 </td>
             </tr>
@@ -1116,3 +1117,345 @@
             });
         {/literal}
     </script>
+
+<div class="modal fade" id="modalRecheck" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content panel panel-primary" style="width:900px;left:-25%;">
+            <div class="modal-header panel-heading">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title" id="ModuleSuspendLabel">Check Certificate Details</h4>
+            </div>
+            <div class="modal-body panel-body" id="modalRecheckBody">
+                <div class="alert alert-success hidden" id="modalRecheckSuccessAlert">
+                    <strong>Success!</strong> <span></span>
+                </div>
+                <div class="alert alert-danger hidden" id="modalRecheckDangerAlert">
+                    <strong>Error!</strong> <span></span>
+                </div>
+                <div class="text-center hidden" id="modalRecheckLoading">
+                    Loading...
+                </div>
+                <div id="modalRecheckDetails">
+                    <table id="certificate_details" class="table" style="width:100%;text-align:center;">
+                        <colgroup>
+                            <col width="40%"/>
+                            <col width="60%"/>
+                        </colgroup>
+                        <tr id="configuration_status">
+                            <td class="text-left" >{$MGLANG->T('configurationStatus')}</td>
+                            <td class="text-left"></td>
+                        </tr>    
+                        <tr id="order_status">
+                            <td class="text-left">{$MGLANG->T('activationStatus')}</td>
+                            <td class="text-left"></td>
+                        </tr>
+                        <tr id="valid_from">
+                            <td class="text-left">{$MGLANG->T('validFrom')}</td>
+                            <td class="text-left"></td>
+                        </tr>
+                        <tr id="valid_till">
+                            <td class="text-left">{$MGLANG->T('validTill')}</td>
+                            <td class="text-left"></td>
+                        </tr>
+                        <tr id="domain">
+                            <td class="text-left">{$MGLANG->T('domain')}</td>
+                            <td class="text-left"></td>
+                        </tr>
+                        <tr id="partner_order_id">
+                            <td class="text-left">{$MGLANG->T('Partner Order ID')}</td>
+                            <td class="text-left"></td>
+                        </tr>
+                        <tr id="sans">
+                            <td class="text-left">{$MGLANG->T('sans')}</td>
+                            <td id="sansTd" colspan="2" class="text-left">
+                                <table class="sansTable table table-bordered" >
+
+                                </table>                        
+                            </td>
+                        </tr>
+                        <tr id="crt">
+                            <td class="text-left">{$MGLANG->T('crt')}</td>
+                            <td class="text-left"><textarea onfocus="this.select()" rows="5" class="form-control"></textarea></td>
+                        </tr>
+                        <tr id="ca">
+                            <td class="text-left">{$MGLANG->T('ca_chain')}</td>
+                            <td class="text-left"><textarea onfocus="this.select()" rows="5" class="form-control"></textarea></td>
+                        </tr>
+                        <tr id="csr">
+                            <td class="text-left">{$MGLANG->T('csr')}</td>
+                            <td class="text-left"><textarea onfocus="this.select()" rows="5" class="form-control"></textarea></td>
+                        </tr>                     
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer panel-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    {literal}
+    $(document).ready(function () {
+
+        var serviceUrl = 'clientarea.php?action=productdetails&id='+ {/literal}'{$serviceid}'{literal} + '&mg-action=getCertificateDetails&json=1',
+                recheckBtn = $('#recheckDetails');
+        
+        function showLoader()
+        {
+            show($('#modalRecheckLoading'));
+        }
+
+        function bindModalToRecheckCertificateBtn() {
+            $('#recheckDetails').off().on('click', function () {
+                $('#modalRecheck').modal('show');
+                fetchCertificateDetails();
+            });
+        }
+
+        function showSuccessAlert(msg) {
+            show($('#modalRecheckSuccessAlert'));
+            hide($('#modalRecheckDangerAlert'));
+            $('#modalRecheckSuccessAlert').children('span').html(msg);
+        }
+
+        function showDangerAlert(msg) {
+            hide($('#modalRecheckSuccessAlert'));
+            show($('#modalRecheckDangerAlert'));
+            $('#modalRecheckDangerAlert').children('span').html(msg);
+        }
+
+        function show(element) {
+            element.removeClass('hidden');
+        }
+
+        function hide(element) {
+            element.addClass('hidden');
+        }
+
+        function enable(element) {
+            element.removeClass('disabled');
+        }
+
+        function anErrorOccurred() {
+            showDangerAlert('An error occurred');
+        }
+
+        function isJsonString(str) {
+            try {
+                JSON.parse(str);
+            } catch (e) {
+                return false;
+            }
+            return true;
+        }
+
+        function hideAll() {
+            hide($('#modalRecheckDangerAlert'));
+            hide($('#modalRecheckSuccessAlert'));
+            hide($('#modalRecheckDetails'));
+        }
+        
+        function removeData()
+        {
+            
+            var keys = ["configuration_status", "ca", "crt", "csr", "order_status", "sans", "valid_from", "valid_till", 
+                "partner_order_id", "domain", "approver_method"];
+            
+            for(var i = 0; i < keys.length; i++)
+            {
+                if(["crt", "ca", "csr"].indexOf(keys[i]) !== -1)
+                {
+                    $("table#certificate_details tr#" + keys[i] + " td:nth-child(2) textarea").empty();
+                }
+                else if(keys[i] == "sans")
+                {
+                    $("table#certificate_details #sans #sansTd table").empty();
+                }
+                else if(keys[i] == "approver_method")
+                {
+                    $("table#certificate_details tr[id*='" + keys[i] + "']").remove();
+                }
+                else
+                {
+                    $("table#certificate_details tr #" + keys[i] + " td:nth-child(2)").empty();
+                }
+            }
+        }
+
+        function renderCertificates(data) {
+
+            removeData();
+
+            if (typeof data === 'undefined') {
+                return;
+            }
+            
+            var keys = ["configuration_status", "ca", "crt", "csr", "order_status", "sans", "valid_from", "valid_till", 
+                "partner_order_id", "domain", "approver_method"];
+    
+            for(var i = 0; i < keys.length; i++)
+            {
+                if(!data.hasOwnProperty(keys[i]) || !data[keys[i]])
+                {
+                    $("table#certificate_details tr#" + keys[i]).hide();
+                    continue;
+                }
+                
+                if(["crt", "ca", "csr"].indexOf(keys[i]) !== -1)
+                {
+                    $("table#certificate_details tr#" + keys[i] + " td:nth-child(2) textarea").text(data[keys[i]]);
+                }
+                else if(keys[i] == "sans")
+                {
+                    for(var sanname in data.sans)
+                    {
+                        var tr = $("<tr />");
+                        tr.append($("<td />", {colspan: "2", class: "text-center", text: sanname}));
+                        
+                        $('#sans #sansTd table').append(tr);
+                        
+                        
+                        if((data.sans[sanname].method == "http") || (data.sans[sanname].method == "https"))
+                        {
+                            var tr = $("<tr />");
+                            tr.append($("<td />", {width: "15%", class: "text-left", text: "Hash File"}));
+                            tr.append($("<td />", {style: "max-width:200px;word-wrap: break-word;", class: "text-left", text: data.sans[sanname].san_validation.link}));
+                        
+                            $('#sans #sansTd table').append(tr);
+                            
+                            var tr = $("<tr />");
+                            tr.append($("<td />", {width: "15%", class: "text-left", text: "Content"}));
+                            
+                            var content = "";
+                            
+                            for(var j = 0; j < (data.sans[sanname].san_validation.content).length; j++)
+                            {
+                                content += data.sans[sanname].san_validation.content[j] + "<br />";
+                            }
+                            
+                            tr.append($("<td />", {style: "max-width:200px;word-wrap: break-word;", class: "text-left", html: content}));
+                        
+                            $('#sans #sansTd table').append(tr);
+                        }
+                        else if(data.sans[sanname].method == "dns")
+                        {
+                            var tr = $("<tr />");
+                            tr.append($("<td />", {width: "15%", class: "text-left", text: "DNS CNAME Record"}));
+                            
+                            var content = (data.sans[sanname].san_validation).toLowerCase();
+                            content = content.replace("cname", "CNAME");
+                            
+                            tr.append($("<td />", {style: "max-width:200px;word-wrap: break-word;", class: "text-left", text: content}));
+                            $('#sans #sansTd table').append(tr);
+                        }  
+                        else
+                        {
+                            if(data.sans[sanname].san_validation != "")
+                            {
+                                var tr = $("<tr />");
+                                tr.append($("<td />", {width: "15%", class: "text-left", text: "Validation Email"}));
+                                tr.append($("<td />", {style: "word-wrap: break-word;", class: "text-left", text: data.sans[sanname].san_validation}));
+                                $('#sans #sansTd table').append(tr);
+                            }
+                        }
+                    }
+                }
+                else if(keys[i] == "approver_method")
+                {
+                    var dcv_method = Object.keys(data.approver_method)[0];
+
+                    if((dcv_method == "http") || (dcv_method == "https"))
+                    {
+                        var tr = $("<tr />", {id: "approver_method_link"});
+                        tr.append($("<td />", {width: "15%", class: "text-left", text: "Hash File"}));
+                        tr.append($("<td />", {style: "max-width:200px;word-wrap: break-word;", class: "text-left", text: data.approver_method[dcv_method].link}));
+                        $('table#certificate_details tr#partner_order_id').after(tr);
+                        
+                        var tr = $("<tr />", {id: "approver_method_content"});
+                        tr.append($("<td />", {width: "15%", class: "text-left", text: "Content"}));
+                        
+                        var content = "";
+                            
+                        for(var j = 0; j < (data.approver_method[dcv_method].content).length; j++)
+                        {
+                            content += data.approver_method[dcv_method].content[j] + "<br />";
+                        }
+                        
+                        tr.append($("<td />", {style: "max-width:200px;word-wrap: break-word;", class: "text-left", html: content}));
+                        $('table#certificate_details tr#partner_order_id').next().after(tr);
+                    }  
+                    else if(dcv_method == "dns")
+                    {
+                        var tr = $("<tr />", {id: "approver_method_record"});
+                        tr.append($("<td />", {width: "15%", class: "text-left", text: "DNS CNAME Record"}));
+
+                        var content = (data.approver_method[dcv_method].record).toLowerCase();
+                        content = content.replace("cname", "CNAME");
+
+                        tr.append($("<td />", {style: "max-width:200px;word-wrap: break-word;", class: "text-left", text: content}));
+                        $('table#certificate_details tr#partner_order_id').after(tr);
+                    }
+                    else
+                    {
+                        var tr = $("<tr />", {id: "approver_method_email"});
+                        tr.append($("<td />", {width: "15%", class: "text-left", text: "Validation Email"}));
+                        tr.append($("<td />", {style: "max-width:200px;word-wrap: break-word;", class: "text-left", text: data.approver_method}));
+                        $('table#certificate_details tr#partner_order_id').after(tr);
+                    }
+                }
+                else
+                {
+                    $("table#certificate_details tr#" + keys[i] + " td:nth-child(2)").text(data[keys[i]]);
+                }      
+            }
+            
+            show($('#modalRecheckDetails'));
+        }
+
+        function fetchCertificateDetails() {
+
+            hideAll();
+            showLoader();
+
+            var params = {
+                serviceId: {/literal}'{$serviceid}'{literal},
+                userID: {/literal}'{$userid}'{literal},
+                json: 1
+            };
+             $.ajax({
+                
+                url: serviceUrl,
+                data: params,
+                success: function (ret) {
+                    var data;
+                    ret = ret.replace("<JSONRESPONSE#", "");
+                    ret = ret.replace("#ENDJSONRESPONSE>", "");
+                    if (!isJsonString(ret)) {
+                        anErrorOccurred();
+                        return;
+                    }
+                    data = JSON.parse(ret);
+                    hide($('#modalRecheckLoading')); 
+                    if (data.success === 1) {
+                        renderCertificates(data.data);
+                    } 
+                    else {    
+                        showDangerAlert(data.msg);
+                    }
+                },
+                error: function (jqXHR, errorText, errorThrown) {
+                    anErrorOccurred();
+                }
+            }); 
+        }
+
+        bindModalToRecheckCertificateBtn();
+    });
+    {/literal}
+</script>

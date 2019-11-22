@@ -38,5 +38,8 @@ class AdminChangeApproverEmail extends Ajax {
         ];
 
         \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->changeValidationEmail($ssService->remoteid, $data);
+        
+        $ssService->setConfigdataKey("approveremail", $data['approver_email']);
+        $ssService->save();
     }
 }
