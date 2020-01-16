@@ -227,7 +227,18 @@ class SSLStepThree {
         $service->save(array('domain' => $decodedCSR['csrResult']['CN']));
         
         $orderDetails = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($addedSSLOrder['order_id']);
-  
+        // logModuleCall(
+        //     'SSLCENTERWHMCS',
+        //     'CREATE',
+        //     $order,
+        //     $addedSSLOrder
+        // );
+        // logModuleCall(
+        //     'SSLCENTERWHMCS',
+        //     'CREATE',
+        //     $order,
+        //     $orderDetails
+        // );
         $this->sslConfig->setRemoteId($addedSSLOrder['order_id']); 
         $this->sslConfig->setApproverEmails($order['approver_emails']);
        
@@ -242,9 +253,9 @@ class SSLStepThree {
         $this->sslConfig->setDcvMethod($orderDetails['dcv_method']);
         $this->sslConfig->setProductId($orderDetails['product_id']);
         $this->sslConfig->setSanDetails($orderDetails['san']);
-
-        $this->sslConfig->save();
-        
+        //$this->sslConfig->setSanDetails($orderDetails['san']);
+        $this->sslConfig->setSSLStatus($orderDetails['status']);
+        $this->sslConfig->save();   
         //try to mark previous order as completed if it is autoinvoiced and autocreated product
         $this->invoiceGenerator->markPreviousOrderAsCompleted($this->p['serviceid']);
         

@@ -292,3 +292,31 @@ add_hook('InvoiceCreationPreEmail', 1, function($vars)
         );
     }
 });
+
+add_hook('AdminAreaFooterOutput', 1, function($vars)
+{
+if ($vars['filename'] == 'clientsservices' && $_GET['userid'] && $_GET['id']) {
+    $hosting = DB::table('tblhosting')
+    ->join('tblproducts', 'tblproducts.id', '=', 'tblhosting.packageid')
+    ->where('tblhosting.id', $_GET['id'])
+    ->first();
+    if($hosting->servertype != 'SSLCENTERWHMCS') return;
+    return <<<JS
+
+<script>
+$(function(){
+    $('#btnCreate').hide();
+    //$('table.form tr:nth(2)').find('td:nth(0), td:nth(1)').hide();
+    $('table.form tr:nth(7) > td:nth(0), table.form tr:nth(7) > td:nth(1)').detach().prependTo('table.form tr:nth(2)')
+    $('table.form tr:nth(2) > td:nth(2),table.form tr:nth(2) > td:nth(3)').hide();
+
+    $('table.form tr:nth(4) > td:nth(0),table.form tr:nth(4) > td:nth(1)').hide();
+    $('table.form tr:nth(5) > td:nth(0),table.form tr:nth(5) > td:nth(1)').hide();
+    $('table.form tr:nth(6) > td:nth(0),table.form tr:nth(6) > td:nth(1)').hide();
+    //$('table.form tr:nth(6)').find('td:nth(2), td:nth(3)').detach().append('table.form tr:nth(2)')
+});
+</script>
+
+JS;
+}
+});

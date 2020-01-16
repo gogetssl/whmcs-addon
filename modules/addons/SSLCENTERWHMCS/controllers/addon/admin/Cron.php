@@ -116,11 +116,16 @@ class Cron extends main\mgLibs\process\AbstractController
             //get days left to expire from WHMCS              
             $daysLeft         = $this->checkOrderExpireDate($srv->nextduedate);
             //if service is One Time and nextduedate is setted as 0000-00-00 get valid_till from SSLCenter API
-            if ($srv->billingcycle == 'One Time' && $srv->nextduedate == '0000-00-00')
+            if ($srv->billingcycle == 'One Time')
             {
                 $sslOrder = $this->getSSLOrders($srv->id)[0];
-                $order    = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslOrder->remoteid);
-                $daysLeft = $this->checkOrderExpireDate($order['valid_till']);
+                
+                if(isset($sslOrder->remoteid) && !empty($sslOrder->remoteid)) {
+                
+                    $order    = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslOrder->remoteid);
+                    $daysLeft = $this->checkOrderExpireDate($order['valid_till']);
+                
+                }
             }
             
             //service was synchronized, so we can base on nextduedate, that should be the same as valid_till
@@ -177,6 +182,8 @@ class Cron extends main\mgLibs\process\AbstractController
         
         echo 'Notifier completed.' . PHP_EOL;
         echo '<br />Number of emails send: ' . $emailSendsCount . PHP_EOL;
+        
+        logActivity('Notifier completed. Number of emails send: '.$emailSendsCount, 0);
         
         if($renew_new_order)
         {
@@ -270,7 +277,9 @@ class Cron extends main\mgLibs\process\AbstractController
         
         foreach ($sslOrders as $sslService)
         {  
+            
             $sslService = \MGModule\SSLCENTERWHMCS\eModels\whmcs\service\SSL::hydrate(array($sslService))[0];
+            
             $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($sslService);
             $configDataUpdate->run();
         }
@@ -362,7 +371,66 @@ class Cron extends main\mgLibs\process\AbstractController
         main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Products Price Updater completed.");
         return array();
     }
+    private function checkOrdersStatus($sslorders, $processingOnly = false)
+    {
+        $cids = [];
+        foreach ($sslorders as $sslService) {
+            $cids[] = $sslService->remoteid;
+        }
+        try
+        {
 
+            $cids = implode(',', $cids);
+                
+            $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigs($cids, $processingOnly);
+            $configDataUpdate->run();
+
+        }
+        catch (\Exception $e)
+        {
+            main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS Products Price Updater Error: " . $e->getMessage());
+        }
+    }
+    public function dailyStatusCheckCRON($input, $vars = array())
+    {
+        echo 'Products Price Updater started.' . PHP_EOL;
+        $this->sslRepo = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+        $sslorders = Capsule::table('tblhosting')
+        ->join('tblproducts', 'tblhosting.packageid', '=', 'tblproducts.id')
+        ->join('tblsslorders', 'tblsslorders.serviceid', '=', 'tblhosting.id')
+        ->where('tblhosting.domainstatus', 'Active')
+        ->where('tblsslorders.status', 'Completed')
+        ->get(['tblsslorders.*']);
+
+        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Products Price Updater started.");
+       
+        $this->checkOrdersStatus($sslorders);
+        
+        echo '<br/ >';
+        echo 'Products Price Updater completed.' . PHP_EOL;
+        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Products Price Updater completed.");
+        return array();
+    }
+    public function processingOrdersCheckCRON($input, $vars = array())
+    {
+        echo 'Products Price Updater started.' . PHP_EOL;
+        $this->sslRepo = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+        $sslorders = Capsule::table('tblhosting')
+        ->join('tblproducts', 'tblhosting.packageid', '=', 'tblproducts.id')
+        ->join('tblsslorders', 'tblsslorders.serviceid', '=', 'tblhosting.id')
+        ->where('tblhosting.domainstatus', 'Active')
+        ->where('tblsslorders.configdata', 'like', '%"ssl_status":"processing"%')
+        ->get(['tblsslorders.*']);
+
+        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Products Price Updater started.");
+       
+        $this->checkOrdersStatus($sslorders, true);
+        
+        echo '<br/ >';
+        echo 'Products Price Updater completed.' . PHP_EOL;
+        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Products Price Updater completed.");
+        return array();
+    }
     private function generateNewPricesBasedOnAPI($currentPrices, $apiPrices)
     {
         foreach ($currentPrices as $price)

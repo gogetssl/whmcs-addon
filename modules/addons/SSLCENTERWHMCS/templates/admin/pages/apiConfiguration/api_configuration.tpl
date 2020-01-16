@@ -20,6 +20,20 @@ Proin malesuada eros in risus accumsan euismod. Vivamus lacinia pellentesque nun
             <div class="form-group">
                 <div class="col-lg-12 cronSynchronizationInfo">
                     <legend>{$MGLANG->T('crons','header')}</legend>
+
+                    <div class="col-lg-11 marginated">
+                        <span class="text-danger bold">{$MGLANG->T('DailyCron','pleaseNote')}</span>
+                        <span>{$MGLANG->T('DailyCron', 'info')}</span>                        
+                    </div>
+                    <input type="text" class="form-control" value="{$MGLANG->T('DailyCron', 'commandLine', 'cronFrequency')} {$cronCommandLine8}" readonly=""> 
+                    <br />
+                    <div class="col-lg-11 marginated">
+                        <span class="text-danger bold">{$MGLANG->T('cronProcessing','pleaseNote')}</span>
+                        <span>{$MGLANG->T('cronProcessing', 'info')}</span>                        
+                    </div>
+                    <input type="text" class="form-control" value="{$MGLANG->T('cronProcessing', 'commandLine', 'cronFrequency')} {$cronCommandLine7}" readonly=""> 
+                    <br />
+
                     <div class="col-lg-11 marginated">
                         <span class="text-danger bold">{$MGLANG->T('cronSynchronization','pleaseNote')}</span>
                         <span>{$MGLANG->T('cronSynchronization', 'info')}</span>                        

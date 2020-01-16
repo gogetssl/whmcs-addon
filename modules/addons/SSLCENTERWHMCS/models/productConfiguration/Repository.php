@@ -31,9 +31,15 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository {
         
         $products = $products->get();
 
-        
+        $allPricingArray = array();
+        $allPricingDB = $this->getAllProductPricing();
+        foreach($allPricingDB as $sp)
+        {
+            $allPricingArray[$sp->relid] = $sp;
+        }
+
         foreach ($products as $key => $value) {
-            $products[$key]->pricing = $this->getProductPricing($value->id);
+            $products[$key]->pricing = $allPricingArray[$value->id];
             //get price with commission
             $commissonValue = $value->{C::COMMISSION};
             foreach($products[$key]->pricing as &$price)
@@ -59,6 +65,15 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository {
                 ->select('*', 'tblpricing.id as pricing_id')
                 ->join('tblcurrencies', 'tblcurrencies.id', '=', 'tblpricing.currency')
                 ->where("tblpricing.relid", "=", $productId)
+                ->where("tblpricing.type", "=", 'product')  
+                ->orderBy('tblcurrencies.code', 'ASC')
+                ->get();
+    }
+    
+    public function getAllProductPricing() {
+        return Capsule::table("tblpricing")
+                ->select('*', 'tblpricing.id as pricing_id')
+                ->join('tblcurrencies', 'tblcurrencies.id', '=', 'tblpricing.currency')
                 ->where("tblpricing.type", "=", 'product')  
                 ->orderBy('tblcurrencies.code', 'ASC')
                 ->get();

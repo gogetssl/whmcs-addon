@@ -26,7 +26,13 @@ class SSL {
     public function getByServiceId($id) {
         return Model::whereServiceId($id)->first();
     }
-    
+    /**
+     * @param int $id
+     * @return \MGModule\SSLCENTERWHMCS\eModels\whmcs\service\SSL
+     */
+    public function getByRemoteId($id) {
+        return Model::whereRemoteId($id)->first();
+    } 
     /**
      * @param string $status
      * @return \MGModule\SSLCENTERWHMCS\eModels\whmcs\service\SSL

@@ -58,6 +58,7 @@ class Products {
             \MGModule\SSLCENTERWHMCS\eHelpers\Fill::fill($p, $apiProduct);
             $this->products[$p->id] = $p;
         }
+        
         return $this->products;
     }
 }

@@ -194,13 +194,19 @@
                     {if $dcv_method == 'email'}
                         <button type="button" id="resend-validation-email" class="btn btn-default" style="margin:2px">{$MGLANG->T('resendValidationEmail')}</button>
                     {/if}
+                    {if isset($approver_method.https) || isset($approver_method.http)}
+                        <a href="{$actual_link}&download=1"><button type="button" class="btn btn-default" style="margin:2px">{$MGLANG->T('download')}</button></a>
+                    {/if}
+                    {if isset($approver_method.https) || isset($approver_method.http) || isset($approver_method.dns)}
+                        <button type="button" id="btnRevalidateNew" class="btn btn-default" style="margin:2px">{$MGLANG->T('revalidate')}</button>
+                    {/if}  
                     {if $configurationStatus != 'Awaiting Configuration'}
                         {if $dcv_method == 'email' && !$sans}
                             <button type="button" id="btnChange_Approver_Email" class="btn btn-default" style="margin:2px">{$MGLANG->T('changeValidationEmail')}</button>
                         {/if}
-                        {if $activationStatus !== 'active'}
-                            <button type="button" id="btnRevalidate" class="btn btn-default" style="margin:2px">{$MGLANG->T('revalidate')}</button>
-                        {else}
+                        {if $activationStatus == 'processing'}
+                            <button type="button" id="btnRevalidate" class="btn btn-default" style="margin:2px">{$MGLANG->T('domainvalidationmethod')}</button>
+                        {elseif $activationStatus == 'active'}
                             <a class="btn btn-default" role="button" href="" id="Action_Custom_Module_Button_Reissue_Certificate">{$MGLANG->T('reissueCertificate')}</a>
                             <button type="button" id="send-certificate-email" class="btn btn-default" style="margin:2px">{$MGLANG->T('sendCertificate')}</button>
                         {/if}                        
@@ -208,7 +214,7 @@
                         {if $privateKey}
                         <button type="button" id="getPrivateKey" class="btn btn-default" style="margin:2px">{$MGLANG->T('getPrivateKeyBtn')}</button>
                         {/if}    
-                        <button type="button" id="recheckDetails" class="btn btn-default" style="margin:2px">{$MGLANG->T('recheckCertificateDetails')}</button>
+                        {* <button type="button" id="recheckDetails" class="btn btn-default" style="margin:2px">{$MGLANG->T('recheckCertificateDetails')}</button> *}
                     {/if}  
                 </td>
             </tr>
@@ -1093,6 +1099,23 @@
                             $('#privateKey').text(data.privateKey);
                         } else if (data.success == false) {
                             $('#getPrivateKey').find('.fa-spinner').remove();
+                            $('#MGAlerts>div[data-prototype="error"]').show();
+                            $('#MGAlerts>div[data-prototype="error"] strong').html(data.message);
+                        }
+                    }, false);
+                });
+                
+                jQuery('#btnRevalidateNew').on("click",function(){
+                    
+                    $('#btnRevalidateNew').append(' <i class="fa fa-spinner fa-spin"></i>');
+                    JSONParser.request('revalidateNew',{json: 1,id: serviceid}, function (data) {
+                        if (data.success == true) {
+                            $('#MGAlerts>div').css('display', 'none');
+                            $('#btnRevalidateNew').find('.fa-spinner').remove();
+                            $('#MGAlerts>div[data-prototype="success"]').show();
+                            $('#MGAlerts>div[data-prototype="success"] strong').html(data.message);
+                        } else if (data.success == false) {
+                            $('#btnRevalidateNew').find('.fa-spinner').remove();
                             $('#MGAlerts>div[data-prototype="error"]').show();
                             $('#MGAlerts>div[data-prototype="error"] strong').html(data.message);
                         }

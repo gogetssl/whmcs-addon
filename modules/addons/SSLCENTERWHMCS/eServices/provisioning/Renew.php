@@ -26,6 +26,13 @@ class Renew {
     }
 
     public function run() {
+
+        $apiConf           = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+        if(isset($apiConf->renew_new_order) && $apiConf->renew_new_order == '1')
+        {
+            return 'This action cannot be called, it will only be called when paying for a renew invoice. If you want to run this action manually please uncheck the "Renew - New Order" option in the SSLCENTER module settings.';
+        }
+        
         try {
             $this->renewCertificate();
         } catch (Exception $ex) {
@@ -38,6 +45,7 @@ class Renew {
     private function renewCertificate() {
         $this->loadSslService();
         $this->loadApiProduct();
+     
         $addSSLRenewOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLRenewOrder($this->getOrderParams());        
     
         $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($this->sslService);
@@ -125,12 +133,21 @@ class Renew {
         }
 
         $order                   = [];
-        $order['dcv_method']     = 'email';        
+        $order['dcv_method']     = $p->dcv_method;        
         $order['product_id']     = $this->p[ConfigOptions::API_PRODUCT_ID]; // Required
         $order['period']         = $billingPeriods[$this->p['model']['attributes']['billingcycle']];//$this->p[ConfigOptions::API_PRODUCT_MONTHS]; // Required
         $order['csr']            = $p->csr; // Required
         $order['server_count']   = -1; // Required . amount of servers, for Unlimited pass “-1”
-        $order['approver_email'] = $p->approveremail; // Required . amount of servers, for Unlimited pass “-1”
+        
+        if($p->dcv_method == 'email')
+        {
+            $order['approver_email'] = $p->approveremail; // Required . amount of servers, for Unlimited pass “-1”
+        }
+        else 
+        {
+            $order['approver_method'] = $p->approver_method;
+        }
+        
         $order['webserver_type'] = $p->servertype; // Required . webserver type, can be taken from getWebservers method
 
         $order['admin_firstname']    = $p->firstname; // Required

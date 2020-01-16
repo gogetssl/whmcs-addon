@@ -82,6 +82,19 @@ class SSLStepTwo {
     private function validateCSR() {
         $csr = trim(rtrim($this->p['csr']));
         $decodeCSR = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($csr);
+        $productssl = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->getProduct($this->p['configoption1']);
+        
+        if($productssl['product']['wildcard_enabled'])
+        {
+            if(strpos($decodeCSR['csrResult']['CN'], '*.') !== false)
+            {
+                return true;
+            }
+            else
+            {
+                throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('incorrectCSR'));
+            }
+        }
         
         if($decodeCSR['csrResult']['errorMessage']) {
             

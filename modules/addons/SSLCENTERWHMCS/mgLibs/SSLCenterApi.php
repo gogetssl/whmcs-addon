@@ -220,7 +220,9 @@ class SSLCenterApi {
     public function getOrderStatus($orderId) {
         return $this->call('/orders/status/' . (int) $orderId, $getData);
     }
-
+    public function getOrderStatuses($ordersId) {
+        return $this->call('/orders/statuses/', $getData, $ordersId);
+    }
     public function comodoClaimFreeEV($orderId, $data) {
         return $this->call('/orders/ssl/comodo_claim_free_ev/' . (int) $orderId, $getData, $data);
     }

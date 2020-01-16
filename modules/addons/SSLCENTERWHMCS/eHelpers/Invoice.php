@@ -251,7 +251,7 @@ class Invoice
         Query::useCurrentConnection();
         
         $invoiceInfo = $this->getInvoiceCreatedInfo($invoicId);
-        
+      
         if (empty($invoiceInfo)) {
             return false;
         }
@@ -324,13 +324,43 @@ class Invoice
         
         $sslOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslOrderInfo->remoteid);
 
+        $sslOrderResults = json_decode($sslOrderInfo->configdata, true);
+        
+        $post_temp = array();
+        $params_temp = array(
+            'serviceID' => $serviceId,
+            'doNotSaveToDatabase' => true,
+            'countryName' => isset($sslOrderResults['country']) && !empty($sslOrderResults['country']) ? $sslOrderResults['country'] : 'US',
+            'stateOrProvinceName' => isset($sslOrderResults['state']) && !empty($sslOrderResults['state']) ? $sslOrderResults['state'] : 'state',
+            'localityName' => isset($sslOrderResults['city']) && !empty($sslOrderResults['city']) ? $sslOrderResults['city'] : 'city',
+            'organizationName' => isset($sslOrderResults['orgname']) && !empty($sslOrderResults['orgname']) ? $sslOrderResults['orgname'] : 'orgname',
+            'organizationalUnitName' => isset($sslOrderResults['jobtitle']) && !empty($sslOrderResults['jobtitle']) ? $sslOrderResults['jobtitle'] : 'jobtitle',
+            'commonName' => $sslOrderResults['domain'],
+            'emailAddress' => isset($sslOrderResults['email']) && !empty($sslOrderResults['email']) ? $sslOrderResults['email'] : 'test@'.$sslOrderResults['domain']
+        );
+        
+        $GenerateSCR = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\GenerateCSR($post_temp, $params_temp);
+        $csrgen = $GenerateSCR->run();  
+        $csrgenres = json_decode($csrgen, true);
+        
+        
+        
         $order               = [];
         $order['dcv_method'] = $sslOrder['dcv_method'];
         $order['product_id'] = $sslOrder['product_id'];
         $order['period']     = $sslOrder['validity_period'];
-        $order['csr']        = $sslOrder['csr_code'];
+        $order['csr']        = $csrgenres['public_key'];
         $order['server_count']       = $sslOrder['server_count'];
-        $order['approver_email']     = $sslOrder['approver_method'];
+        
+        if($sslOrder['dcv_method'] == 'email')
+        {
+            $order['approver_email'] = $sslOrder['approver_email'];
+        }
+        else
+        {
+            $order['approver_method'] = $sslOrder['approver_method'];
+        }
+        
         $order['webserver_type']     = $sslOrder['webserver_type'];
         $order['admin_firstname']    = $sslOrder['admin_firstname'];
         $order['admin_lastname']     = $sslOrder['admin_lastname'];
