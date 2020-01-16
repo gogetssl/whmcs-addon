@@ -3,6 +3,7 @@
 namespace MGModule\SSLCENTERWHMCS\controllers\server\clientarea;
 
 use MGModule\SSLCENTERWHMCS as main;
+use WHMCS\Database\Capsule;
 
 /**
  * Description of home
@@ -13,12 +14,48 @@ class home extends main\mgLibs\process\AbstractController {
 
     function indexHTML($input, $vars = array()) {
         try {
+
+            if($input['params']['status'] != 'Active')
+            {
+                return true;
+            }
+            
             $serviceId  = $input['params']['serviceid'];            
             $serviceBillingCycle = $input['params']['templatevars']['billingcycle'];            
             $userid = $input['params']['userid'];
             $ssl        = new main\eRepository\whmcs\service\SSL();
             $sslService = $ssl->getByServiceId($serviceId);
             
+            if(($sslService->configdata->ssl_status == 'new_order' || $sslService->configdata->ssl_status == 'processing' || $sslService->getPartnerOrderId() == '' || $sslService->configdata->ssl_status == '') && $sslService->remoteid != '')
+            {
+                $sslRepo    = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+                $sslService = $sslRepo->getByServiceId($serviceId);
+        
+                if (is_null($sslService)) {
+                    throw new \Exception('Create has not been initialized');
+                }
+        
+                if ($input['params']['userid'] != $sslService->userid) {
+                    throw new \Exception('An error occurred');
+                }
+           
+                $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($sslService);
+                $orderStatus = $configDataUpdate->run();
+
+                $apicertdata = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
+               // if($apicertdata['status'] != 'new_order')
+                //{
+                //    $sslService->setSSLStatus($apicertdata['status']);
+                //    $sslService->setPartnerOrderId($apicertdata['partner_order_id']);
+                //    $sslService->setApproverEmails($apicertdata['approver_email']);
+                //    $sslService->setDomain($apicertdata['domain']);
+                //    $sslService->save();
+                //}
+                $vars['activationStatus'] = $apicertdata['status'];
+                //var_dump($apicertdata);
+            }
+            //var_dump(\MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid)); die;
+
             $vars['brandsWithOnlyEmailValidation'] = ['geotrust','thawte','rapidssl','symantec',];
            
             if(is_null($sslService)) {
@@ -31,10 +68,11 @@ class home extends main\mgLibs\process\AbstractController {
             if($privateKey) {
                 $vars['privateKey'] = $privateKey;
             }             
+            
             if ($sslService->status !== 'Awaiting Configuration') {
                 try {
                     $certificateDetails = (array)$sslService->configdata;
-   
+                   
                     if(!empty($certificateDetails['partner_order_id'])) {
                         $vars['partner_order_id'] = $certificateDetails['partner_order_id'];
                     }
@@ -96,9 +134,9 @@ class home extends main\mgLibs\process\AbstractController {
                             }
                         }                        
                     }
-
-                    $vars['activationStatus'] = $certificateDetails['ssl_status'];
-                    
+                    if (!$vars['activationStatus']) {
+                        $vars['activationStatus'] = $certificateDetails['ssl_status'];
+                    }   
                     //valid from
                     $vars['validFrom'] = $certificateDetails['valid_from'];
                     //expires
@@ -135,6 +173,44 @@ class home extends main\mgLibs\process\AbstractController {
             $vars['assetsURL'] = main\Server::I()->getAssetsURL();
             $vars['serviceid'] = $serviceId;
             $vars['userid'] = $userid;
+            
+            
+            if($_GET['download'] == '1')
+            {
+                if(isset($vars['approver_method']['https']) && !empty($vars['approver_method']['https']))
+                {
+                    $handle = fopen($vars['approver_method']['https']['filename'], "w");
+                    fwrite($handle, implode(PHP_EOL, $vars['approver_method']['https']['content']));
+                    fclose($handle);
+
+                    header('Content-Type: application/octet-stream');
+                    header('Content-Disposition: attachment; filename='.basename($vars['approver_method']['https']['filename']));
+                    header('Expires: 0');
+                    header('Cache-Control: must-revalidate');
+                    header('Pragma: public');
+                    header('Content-Length: ' . filesize($vars['approver_method']['https']['filename']));
+                    readfile($vars['approver_method']['https']['filename']);
+                    exit;
+                }
+                
+                if(isset($vars['approver_method']['http']) && !empty($vars['approver_method']['http']))
+                {
+                    $handle = fopen($vars['approver_method']['http']['filename'], "w");
+                    fwrite($handle, implode(PHP_EOL, $vars['approver_method']['http']['content']));
+                    fclose($handle);
+
+                    header('Content-Type: application/octet-stream');
+                    header('Content-Disposition: attachment; filename='.basename($vars['approver_method']['http']['filename']));
+                    header('Expires: 0');
+                    header('Cache-Control: must-revalidate');
+                    header('Pragma: public');
+                    header('Content-Length: ' . filesize($vars['approver_method']['http']['filename']));
+                    readfile($vars['approver_method']['http']['filename']);
+                    exit;
+                }
+            }
+            
+            $vars['actual_link'] = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
                         
         } catch (\Exception $ex) {
             $vars['error'] = $ex->getMessage();
@@ -292,6 +368,21 @@ class home extends main\mgLibs\process\AbstractController {
             }                      
         } 
         
+        $sslorder = (array)Capsule::table('tblsslorders')->where('serviceid', $serviceId)->first();
+        
+        $sslorderconfigdata = json_decode($sslorder['configdata'], true);
+        
+        $sslorderconfigdata['dcv_method'] = $data['new_method'];
+        
+        if($data['new_method'] != 'email')
+        {
+            $sslorderconfigdata['approveremail'] = '';
+        }
+        
+        Capsule::table('tblsslorders')->where('serviceid', $serviceId)->update(array(
+            'configdata' => json_encode($sslorderconfigdata)
+        ));
+        
         return array(
             'success' => $response['success'],
             'msg'     => $response['message']
@@ -355,6 +446,20 @@ class home extends main\mgLibs\process\AbstractController {
         }
         
         return $result;        
+    }
+    
+    function revalidateNewJSON($input, $vars = array()) {
+
+        $sslRepo   = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+        $sslService = $sslRepo->getByServiceId($input['id']);
+        
+        $data = [
+            'domain' => $input['params']['domain']
+        ]; 
+        
+        $response = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->revalidate($sslService->remoteid, $data);      
+        
+        return $response; 
     }
     
     function getCertificateDetailsJSON($input, $vars = array()) {

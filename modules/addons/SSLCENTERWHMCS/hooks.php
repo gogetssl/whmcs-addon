@@ -134,7 +134,11 @@ add_hook('InvoicePaid', 1, function($vars)
     $loader           = new \MGModule\SSLCENTERWHMCS\Loader();
     $invoiceGenerator = new \MGModule\SSLCENTERWHMCS\eHelpers\Invoice();
     
-    $invoiceGenerator->invoicePaid($vars['invoiceid']);
+    $apiConf           = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+    if(isset($apiConf->renew_new_order) && $apiConf->renew_new_order == '1')
+    {
+        $invoiceGenerator->invoicePaid($vars['invoiceid']);
+    }
 });
 
 

@@ -28,7 +28,7 @@ class UpdateConfigData
         }
 
         $order = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($this->sslService->remoteid);
-
+      
         $apiRepo = new \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products();
         $apiProduct = $apiRepo->getProduct($order['product_id']);
 

@@ -13,7 +13,10 @@ class SSL extends \Illuminate\Database\Eloquent\Model
     {
         $query->where('serviceid', '=', $id);
     }
-
+    public function scopeWhereRemoteId($query, $id)
+    {
+        $query->where('remoteid', '=', $id);
+    }
     public function getConfigdataAttribute($value)
     {
         if (\MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::isWHMCS73())
@@ -233,7 +236,14 @@ class SSL extends \Illuminate\Database\Eloquent\Model
     {
         $this->setConfigdataKey('san_details', $details);
     }
-
+    public function setSSLStatus($status)
+    {
+        $this->setConfigdataKey('ssl_status', $status);
+    }
+    public function getSSLStatus()
+    {
+        return $this->getConfigdataKey('ssl_status');
+    }
     public function getWhere($where, $gogetssl = false)
     {
         $query = Capsule::table('tblsslorders');

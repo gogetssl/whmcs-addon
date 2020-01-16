@@ -7,6 +7,15 @@ $_LANG['generalError'] = 'Something has gone wrong. Check logs and contact admin
 $_LANG['addonAA']['pagesLabels']['label']['apiConfiguration']                                          = 'Configuration';
 $_LANG['addonAA']['apiConfiguration']['crons']['header']                                               = 'Crons';
 //synchronization cron
+$_LANG['addonAA']['apiConfiguration']['DailyCron']['pleaseNote']                             = 'Please Note:';
+$_LANG['addonAA']['apiConfiguration']['DailyCron']['info']                                   = 'In order to enable automatic daily synchronization, please set up a following cron command line:';
+$_LANG['addonAA']['apiConfiguration']['DailyCron']['commandLine']['cronFrequency']           = '0 0 * * *';
+//processing cron
+$_LANG['addonAA']['apiConfiguration']['cronProcessing']['pleaseNote']                             = 'Please Note:';
+$_LANG['addonAA']['apiConfiguration']['cronProcessing']['info']                                   = 'In order to enable automatic synchronization of processing orders every 5th minutes, please set up a following cron command line :';
+$_LANG['addonAA']['apiConfiguration']['cronProcessing']['commandLine']['cronFrequency']           = '*/5 * * * *';
+
+//synchronization cron
 $_LANG['addonAA']['apiConfiguration']['cronSynchronization']['pleaseNote']                             = 'Please Note:';
 $_LANG['addonAA']['apiConfiguration']['cronSynchronization']['info']                                   = 'In order to enable automatic synchronization, please set up a following cron command line (every hour suggested):';
 $_LANG['addonAA']['apiConfiguration']['cronSynchronization']['commandLine']['cronFrequency']           = '0 */1 * * *';
