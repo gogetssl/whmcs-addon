@@ -132,14 +132,19 @@
                                     <td colspan="2" class="text-center">{$MGLANG->T({$san.san_name})}</td>
                                 </tr>
                                 {if $san.method == 'http' || $san.method == 'https'}
-                                    <tr>
-                                        <td style="width: 15%" class="text-left">{$MGLANG->T('hashFile')}</td>
-                                        <td class="text-left" style="max-width:200px; word-wrap: break-word;">{$san.san_validation.link}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="width: 15%" class="text-left">{$MGLANG->T('content')}</td>
-                                        <td class="text-left" style="max-width:200px; word-wrap: break-word;">{foreach from=$san.san_validation.content item=$content}{$content}<br />{/foreach}</td>
-                                    </tr> 
+                                    {if $activationStatus === 'processing'}
+                                        <tr>
+                                            <td style="width: 15%" class="text-left">{$MGLANG->T('hashFile')}</td>
+                                            <td class="text-left" style="max-width:200px; word-wrap: break-word;">{$san.san_validation.link}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 15%" class="text-left">{$MGLANG->T('content')}</td>
+                                            <td class="text-left" style="max-width:200px; word-wrap: break-word;">{foreach from=$san.san_validation.content item=$content}{$content}<br />{/foreach}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" class="text-left"><a href="{$actual_link}&download=1&domain={$san.san_name}"><button type="button" class="btn btn-default" style="margin:2px">{$MGLANG->T('download')}</button></a></td>
+                                        </tr> 
+                                    {/if}
                                     {else}
                                         {if $san.method == 'dns'}
                                             <tr>
@@ -194,12 +199,14 @@
                     {if $dcv_method == 'email'}
                         <button type="button" id="resend-validation-email" class="btn btn-default" style="margin:2px">{$MGLANG->T('resendValidationEmail')}</button>
                     {/if}
+                    {if $activationStatus == 'processing'}
                     {if isset($approver_method.https) || isset($approver_method.http)}
                         <a href="{$actual_link}&download=1"><button type="button" class="btn btn-default" style="margin:2px">{$MGLANG->T('download')}</button></a>
                     {/if}
                     {if isset($approver_method.https) || isset($approver_method.http) || isset($approver_method.dns)}
                         <button type="button" id="btnRevalidateNew" class="btn btn-default" style="margin:2px">{$MGLANG->T('revalidate')}</button>
                     {/if}  
+                    {/if}
                     {if $configurationStatus != 'Awaiting Configuration'}
                         {if $dcv_method == 'email' && !$sans}
                             <button type="button" id="btnChange_Approver_Email" class="btn btn-default" style="margin:2px">{$MGLANG->T('changeValidationEmail')}</button>

@@ -84,6 +84,8 @@ class ClientReissueCertificate {
         if (isset($this->post['stepTwoForm'])) {
             try {
                 $this->stepTwoForm();
+                global $CONFIG;
+                $this->vars['actuallink'] = $CONFIG['SystemURL'].'/clientarea.php?action=productdetails&id='. $_GET['id'];
                 return $this->build(self::SUCCESS);
             } catch (Exception $ex) {
                 $this->vars['errors'][] = \MGModule\SSLCENTERWHMCS\eHelpers\Exception::e($ex);

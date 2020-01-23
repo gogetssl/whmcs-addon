@@ -88,7 +88,7 @@ $_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_one_
 $_LANG['addonAA']['apiConfiguration']['item']['automatic_processing_of_renewal_orders']['label']                  = '';
 $_LANG['addonAA']['apiConfiguration']['item']['automatic_processing_of_renewal_orders']['description']            = 'Automatic processing of renewal orders';
 $_LANG['addonAA']['apiConfiguration']['item']['renew_new_order']['label']                  = '';
-$_LANG['addonAA']['apiConfiguration']['item']['renew_new_order']['description']            = 'Renew - New Order';
+$_LANG['addonAA']['apiConfiguration']['item']['renew_new_order']['description']            = 'Renew order via existing order';
 $_LANG['addonAA']['apiConfiguration']['item']['visible_renew_button']['label']                  = '';
 $_LANG['addonAA']['apiConfiguration']['item']['visible_renew_button']['description']            = 'Visible "Renew" button in ClientArea';
 $_LANG['addonAA']['apiConfiguration']['item']['save_activity_logs']['label']                  = 'Activity log';

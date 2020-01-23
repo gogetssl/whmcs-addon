@@ -30,7 +30,7 @@ class Renew {
         $apiConf           = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
         if(isset($apiConf->renew_new_order) && $apiConf->renew_new_order == '1')
         {
-            return 'This action cannot be called, it will only be called when paying for a renew invoice. If you want to run this action manually please uncheck the "Renew - New Order" option in the SSLCENTER module settings.';
+            return 'This action cannot be called, it will only be called when paying for a renew invoice. If you want to run this action manually please uncheck the "Renew order via existing order" option in the SSLCENTER module settings.';
         }
         
         try {

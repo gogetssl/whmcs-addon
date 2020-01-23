@@ -39,7 +39,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository {
         }
 
         foreach ($products as $key => $value) {
-            $products[$key]->pricing = $allPricingArray[$value->id];
+            $products[$key]->pricing[] = $allPricingArray[$value->id];
             //get price with commission
             $commissonValue = $value->{C::COMMISSION};
             foreach($products[$key]->pricing as &$price)

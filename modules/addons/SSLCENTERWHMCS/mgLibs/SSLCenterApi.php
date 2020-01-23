@@ -305,9 +305,11 @@ class SSLCenterApi {
             echo "\n\n";
         }
         
+        $info = curl_getinfo($c);
+        
         logModuleCall(
             'SSLCENTERWHMCS',
-            $uri,
+            'Time: '.$info['total_time'].' '.$uri,
             $this->lastRequest,
             $result
         );

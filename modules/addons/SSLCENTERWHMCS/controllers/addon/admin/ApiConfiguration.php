@@ -369,14 +369,6 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
 
         $field           = new main\mgLibs\forms\TextField();
         $field->readonly = $input['use_admin_contact'] ? true : false;
-        $field->name     = 'tech_fax';
-        $field->required = true;
-        $field->value    = $input['tech_fax'];
-        $field->error    = $this->getFieldError('tech_fax');
-        $form->addField($field);
-
-        $field           = new main\mgLibs\forms\TextField();
-        $field->readonly = $input['use_admin_contact'] ? true : false;
         $field->name     = 'tech_postalcode';
         $field->required = true;
         $field->value    = $input['tech_postalcode'];
