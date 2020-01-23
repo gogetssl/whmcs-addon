@@ -123,21 +123,21 @@
             if(domain === 'MainDomain') {
                 if(method !== 'EMAIL') {
                     $('select[name="approveremail"]').addClass('hidden');
-                    $('select[name="approveremail"]').append('<option value="defaultemail@defaultemail.com"></option>');
-                    $('select[name="approveremail"] option[value="defaultemail@defaultemail.com"]').attr("selected", "selected");
+                    //$('select[name="approveremail"]').append('<option value="defaultemail@defaultemail.com"></option>');
+                    //$('select[name="approveremail"] option[value="defaultemail@defaultemail.com"]').attr("selected", "selected");
                 } else {                    
                     $('select[name="approveremail"]').removeClass('hidden');   
-                    $('select[name="approveremail"] option[value="defaultemail@defaultemail.com"]').remove();
+                    //$('select[name="approveremail"] option[value="defaultemail@defaultemail.com"]').remove();
                 }
             } else {
                 domain = domain.replace("*", "___"); 
                 if(method !== 'EMAIL') {
                     $('select[name="approveremails'+domain+'"]').addClass('hidden');
-                    $('select[name="approveremail"]').append('<option value="defaultemail@defaultemail.com"></option>');
-                    $('select[name="approveremail"] option[value="defaultemail@defaultemail.com"]').attr("selected", "selected");
+                    //$('select[name="approveremail"]').append('<option value="defaultemail@defaultemail.com"></option>');
+                    //$('select[name="approveremail"] option[value="defaultemail@defaultemail.com"]').attr("selected", "selected");
                 } else {
                     $('select[name="approveremails'+domain+'"]').removeClass('hidden'); 
-                    $('select[name="approveremail"] option[value="defaultemail@defaultemail.com"]').remove();
+                    //$('select[name="approveremail"] option[value="defaultemail@defaultemail.com"]').remove();
                 }                 
             }
         });

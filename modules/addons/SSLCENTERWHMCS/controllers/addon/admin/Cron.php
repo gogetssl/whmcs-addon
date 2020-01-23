@@ -273,6 +273,27 @@ class Cron extends main\mgLibs\process\AbstractController
         
         $this->sslRepo = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
 
+        $checkTable = Capsule::schema()->hasTable('mgfw_SSLCENTER_product_brand');
+        if($checkTable === false)
+        {
+            Capsule::schema()->create('mgfw_SSLCENTER_product_brand', function ($table) {
+                $table->increments('id');
+                $table->integer('pid');
+                $table->string('brand');
+            });
+        }
+        
+        Capsule::table('mgfw_SSLCENTER_product_brand')->truncate();
+        
+        $apiProducts = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getProducts();
+        
+        foreach ($apiProducts['products'] as $apiProduct) {
+            Capsule::table('mgfw_SSLCENTER_product_brand')->insert(array(
+                'pid' => $apiProduct['id'],
+                'brand' => $apiProduct['brand']
+            ));
+        }
+
         $sslOrders = $this->getSSLOrders();
         
         foreach ($sslOrders as $sslService)

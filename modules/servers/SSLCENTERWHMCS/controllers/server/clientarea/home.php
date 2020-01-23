@@ -26,7 +26,7 @@ class home extends main\mgLibs\process\AbstractController {
             $ssl        = new main\eRepository\whmcs\service\SSL();
             $sslService = $ssl->getByServiceId($serviceId);
             
-            if(($sslService->configdata->ssl_status == 'new_order' || $sslService->configdata->ssl_status == 'processing' || $sslService->getPartnerOrderId() == '' || $sslService->configdata->ssl_status == '') && $sslService->remoteid != '')
+            if(($sslService->configdata->ssl_status == 'new_order' || $sslService->configdata->ssl_status == 'processing' || $sslService->configdata->ssl_status == '') && $sslService->remoteid != '')
             {
                 $sslRepo    = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
                 $sslService = $sslRepo->getByServiceId($serviceId);
@@ -38,11 +38,12 @@ class home extends main\mgLibs\process\AbstractController {
                 if ($input['params']['userid'] != $sslService->userid) {
                     throw new \Exception('An error occurred');
                 }
-           
-                $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($sslService);
-                $orderStatus = $configDataUpdate->run();
 
-                $apicertdata = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
+                $apicertdata = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);                
+                
+                $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($sslService, $apicertdata);
+                $configDataUpdate->run();
+
                // if($apicertdata['status'] != 'new_order')
                 //{
                 //    $sslService->setSSLStatus($apicertdata['status']);
@@ -177,6 +178,22 @@ class home extends main\mgLibs\process\AbstractController {
             
             if($_GET['download'] == '1')
             {
+                if(isset($vars['sans'][$_GET['domain']]) && !empty($vars['sans'][$_GET['domain']]) && ($vars['sans'][$_GET['domain']]['method'] == 'http' || $vars['sans'][$_GET['domain']]['method'] == 'https'))
+                {
+                    $handle = fopen($vars['sans'][$_GET['domain']]['san_validation']['filename'], "w");
+                    fwrite($handle, implode(PHP_EOL, $vars['sans'][$_GET['domain']]['san_validation']['content']));
+                    fclose($handle);
+
+                    header('Content-Type: application/octet-stream');
+                    header('Content-Disposition: attachment; filename='.basename($vars['sans'][$_GET['domain']]['san_validation']['filename']));
+                    header('Expires: 0');
+                    header('Cache-Control: must-revalidate');
+                    header('Pragma: public');
+                    header('Content-Length: ' . filesize($vars['sans'][$_GET['domain']]['san_validation']['filename']));
+                    readfile($vars['sans'][$_GET['domain']]['san_validation']['filename']);
+                    exit;
+                }
+                
                 if(isset($vars['approver_method']['https']) && !empty($vars['approver_method']['https']))
                 {
                     $handle = fopen($vars['approver_method']['https']['filename'], "w");
@@ -210,7 +227,7 @@ class home extends main\mgLibs\process\AbstractController {
                 }
             }
             
-            $vars['actual_link'] = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+            $vars['actual_link'] = $CONFIG['SystemURL'].'/clientarea.php?action=productdetails&id='.$vars['serviceid'];
                         
         } catch (\Exception $ex) {
             $vars['error'] = $ex->getMessage();
@@ -297,10 +314,11 @@ class home extends main\mgLibs\process\AbstractController {
         $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();        
         $sendCertyficateTermplate = $apiConf->send_certificate_template;  
        
-
+        
         if($sendCertyficateTermplate == NULL)
         {            
             $result = sendMessage(\MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::SEND_CERTIFICATE_TEMPLATE_ID, $input['id'], [
+                'domain' => $orderStatus['domain'],
                 'ssl_certyficate' => nl2br($orderStatus['ca_code']),
                 'crt_code' => nl2br($orderStatus['crt_code']),
             ]);
@@ -309,6 +327,7 @@ class home extends main\mgLibs\process\AbstractController {
         {
             $templateName = \MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::getTemplateName($sendCertyficateTermplate);
             $result = sendMessage($templateName, $input['id'], [
+                'domain' => $orderStatus['domain'],
                 'ssl_certyficate' => nl2br($orderStatus['ca_code']),
                 'crt_code' => nl2br($orderStatus['crt_code']),
             ]);

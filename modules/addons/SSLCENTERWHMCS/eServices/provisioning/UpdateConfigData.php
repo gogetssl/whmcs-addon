@@ -2,13 +2,17 @@
 
 namespace MGModule\SSLCENTERWHMCS\eServices\provisioning;
 
+use WHMCS\Database\Capsule;
+
 class UpdateConfigData
 {
     private $sslService;
+    private $orderdata;
     
-    public function __construct($sslService)
+    public function __construct($sslService, $orderdata = array())
     {
         $this->sslService = $sslService;
+        $this->orderdata = $orderdata;
     }
     
     public function run() {
@@ -27,10 +31,39 @@ class UpdateConfigData
             return;
         }
 
-        $order = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($this->sslService->remoteid);
+        if(empty($this->orderdata))
+        {
+            $order = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($this->sslService->remoteid);
+        }
+        else
+        {
+            $order = $this->orderdata;
+        }
       
         $apiRepo = new \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products();
-        $apiProduct = $apiRepo->getProduct($order['product_id']);
+        
+        if(!isset($this->sslService->configdata->product_brand) || empty($this->sslService->configdata->product_brand))
+        {
+            $checkTable = Capsule::schema()->hasTable('mgfw_SSLCENTER_product_brand');
+            
+            $brandName = null;
+            if($checkTable !== false)
+            {
+                $productData = Capsule::table('mgfw_SSLCENTER_product_brand')->where('pid', $order['product_id'])->first();
+                
+                if(isset($productData->brand) && !empty($productData->brand))
+                {
+                    $brandName = $productData->brand;
+                }
+                
+            }
+            
+            if($brandName === null)
+            {
+                $apiProduct = $apiRepo->getProduct($order['product_id']);
+                $apiProduct->brand = $brandName;
+            }
+        }
 
         if (($order['status'] != 'expired') && ($order['status'] != 'cancelled'))
         {
@@ -44,12 +77,18 @@ class UpdateConfigData
             $sslOrder->setValidTill($order['valid_till']);
 
             $sslOrder->setDomain($order['domain']);
+            $sslOrder->setSSLStatus($order['status']);
             $sslOrder->setOrderStatusDescription($order['status_description']);
 
             $sslOrder->setApproverMethod($order['approver_method']);
             $sslOrder->setDcvMethod($order['dcv_method']);
             $sslOrder->setProductId($order['product_id']);
-            $sslOrder->setProductBrand($apiProduct->brand);
+            
+            if(!isset($this->sslService->configdata->product_brand) || empty($this->sslService->configdata->product_brand))
+            {
+                $sslOrder->setProductBrand($brandName);
+            }
+            
             $sslOrder->setSanDetails($order['san']);
             $sslOrder->setConfigdataKey("approveremail", $order['approver_email']);
 
