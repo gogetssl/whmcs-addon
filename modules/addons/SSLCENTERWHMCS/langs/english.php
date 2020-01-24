@@ -219,7 +219,7 @@ $_LANG['addonAA']['importSSLOrder']['messages']['order_cancelled_import_unable']
 
 $_LANG['addonAA']['userCommissions']['integrationCode']['header']         = 'Integration Code';
 $_LANG['addonAA']['userCommissions']['pleaseNote']                        = 'Please Note';
-$_LANG['addonAA']['userCommissions']['info']                              = 'In order to diplay product prices with additional commission in the Clietn Area: ';
+$_LANG['addonAA']['userCommissions']['info']                              = 'In order to diplay product prices with additional commission in the Client Area: ';
 $_LANG['addonAA']['userCommissions']['info1']                             = '1. Open the file';
 $_LANG['addonAA']['userCommissions']['info2']                             = '2. Add this code on the top of file';
 $_LANG['addonAA']['userCommissions']['info3']                             = '3. Open the file';
