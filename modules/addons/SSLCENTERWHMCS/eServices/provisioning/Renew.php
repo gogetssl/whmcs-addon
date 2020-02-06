@@ -2,6 +2,7 @@
 
 namespace MGModule\SSLCENTERWHMCS\eServices\provisioning;
 
+use WHMCS\Database\Capsule;
 use Exception;
 
 class Renew {
@@ -30,16 +31,67 @@ class Renew {
         $apiConf           = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
         if(isset($apiConf->renew_new_order) && $apiConf->renew_new_order == '1')
         {
+            try {
+                $this->checkRenew($this->p['serviceid']);
+                $this->renewCertificate();
+            } catch (Exception $ex) {
+                return $ex->getMessage();
+            }
+            $this->addRenew($this->p['serviceid']);
+            return 'success';
+        }
+        else 
+        {
             return 'This action cannot be called, it will only be called when paying for a renew invoice. If you want to run this action manually please uncheck the "Renew order via existing order" option in the SSLCENTER module settings.';
         }
-        
-        try {
-            $this->renewCertificate();
-        } catch (Exception $ex) {
-            return $ex->getMessage();
-        }
-        return 'success';
 
+    }
+    
+    private function createRenewTable()
+    {
+        $checkTable = Capsule::schema()->hasTable('mgfw_SSLCENTER_renew');
+        if($checkTable === false)
+        {
+            Capsule::schema()->create('mgfw_SSLCENTER_renew', function ($table) {
+                $table->increments('id');
+                $table->integer('serviceid');
+                $table->dateTime('date');
+            });
+        }
+    }
+
+    private function checkRenew($serviceid)
+    {
+        $this->createRenewTable();
+        
+        $renew = Capsule::table('mgfw_SSLCENTER_renew')->where('serviceid', $serviceid)->where('date', 'like', date('Y-m-d H').'%')->first();
+        
+        if(isset($renew->id) && !empty($renew->id))
+        {
+            throw new Exception('Block double renew.');
+        }
+    }
+    
+    private function addRenew($serviceid)
+    {
+        $this->createRenewTable();
+        
+        $renew = Capsule::table('mgfw_SSLCENTER_renew')->where('serviceid', $serviceid)->first();
+        
+        if(isset($renew->id) && !empty($renew->id))
+        {
+            Capsule::table('mgfw_SSLCENTER_renew')->where('serviceid', $serviceid)->update(array(
+                'date' => date('Y-m-d H:i:s')
+            ));
+        }
+        else
+        {
+            Capsule::table('mgfw_SSLCENTER_renew')->insert(array(
+                'serviceid' => $serviceid,
+                'date' => date('Y-m-d H:i:s')
+            ));
+        }
+        
     }
 
     private function renewCertificate() {

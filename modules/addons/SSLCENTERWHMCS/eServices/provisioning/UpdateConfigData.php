@@ -39,7 +39,7 @@ class UpdateConfigData
         {
             $order = $this->orderdata;
         }
-      
+           
         $apiRepo = new \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products();
         
         if(!isset($this->sslService->configdata->product_brand) || empty($this->sslService->configdata->product_brand))
@@ -65,8 +65,8 @@ class UpdateConfigData
             }
         }
 
-        if (($order['status'] != 'expired') && ($order['status'] != 'cancelled'))
-        {
+//        if (($order['status'] != 'expired') && ($order['status'] != 'cancelled'))
+//        {
             $sslOrder = $this->sslService;
 
             $sslOrder->setCa($order['ca_code']);
@@ -83,6 +83,7 @@ class UpdateConfigData
             $sslOrder->setApproverMethod($order['approver_method']);
             $sslOrder->setDcvMethod($order['dcv_method']);
             $sslOrder->setProductId($order['product_id']);
+            $sslOrder->setSSLTotalDomains($order['total_domains']);
             
             if(!isset($this->sslService->configdata->product_brand) || empty($this->sslService->configdata->product_brand))
             {
@@ -93,7 +94,7 @@ class UpdateConfigData
             $sslOrder->setConfigdataKey("approveremail", $order['approver_email']);
 
             $sslOrder->save();
-        }
+       // }
 
         return $order;
     }

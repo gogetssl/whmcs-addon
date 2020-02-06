@@ -26,7 +26,7 @@ class home extends main\mgLibs\process\AbstractController {
             $ssl        = new main\eRepository\whmcs\service\SSL();
             $sslService = $ssl->getByServiceId($serviceId);
             
-            if(($sslService->configdata->ssl_status == 'new_order' || $sslService->configdata->ssl_status == 'processing' || $sslService->configdata->ssl_status == '') && $sslService->remoteid != '')
+            if(($sslService->configdata->ssl_status == 'reissue' || $sslService->configdata->ssl_status == 'new_order' || $sslService->configdata->ssl_status == 'processing' || $sslService->configdata->ssl_status == '') && $sslService->remoteid != '')
             {
                 $sslRepo    = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
                 $sslService = $sslRepo->getByServiceId($serviceId);
@@ -228,7 +228,22 @@ class home extends main\mgLibs\process\AbstractController {
             }
             
             $vars['actual_link'] = $CONFIG['SystemURL'].'/clientarea.php?action=productdetails&id='.$vars['serviceid'];
-                        
+            
+            $vars['btndownload'] = false;
+            
+            if((isset($vars['approver_method']['http']) && !empty($vars['approver_method']['http'])) || (isset($vars['approver_method']['https']) && !empty($vars['approver_method']['https'])))
+            {
+                $vars['btndownload'] = $vars['actual_link'].'&download=1';
+            }
+            
+            foreach($vars['sans'] as $detailssan)
+            {
+                if($detailssan['method'] == 'http' || $detailssan['method'] == 'https')
+                {
+                    $vars['btndownload'] = $vars['actual_link'].'&download=1&domain='.$detailssan['san_name'];
+                }
+            }
+                       
         } catch (\Exception $ex) {
             $vars['error'] = $ex->getMessage();
         }

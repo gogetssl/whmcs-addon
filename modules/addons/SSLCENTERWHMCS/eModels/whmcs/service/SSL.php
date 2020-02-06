@@ -240,6 +240,10 @@ class SSL extends \Illuminate\Database\Eloquent\Model
     {
         $this->setConfigdataKey('ssl_status', $status);
     }
+    public function setSSLTotalDomains($domains)
+    {
+        $this->setConfigdataKey('total_domains', $domains);
+    }    
     public function getSSLStatus()
     {
         return $this->getConfigdataKey('ssl_status');

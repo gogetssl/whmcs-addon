@@ -152,7 +152,7 @@ class Cron extends main\mgLibs\process\AbstractController
             }
         }
         
-        if($renew_new_order)
+        if(!$renew_new_order)
         {
             $invoicesCreatedCount = $this->createAutoInvoice($packageLists, $serviceIDs);
 
@@ -185,14 +185,14 @@ class Cron extends main\mgLibs\process\AbstractController
         
         logActivity('Notifier completed. Number of emails send: '.$emailSendsCount, 0);
         
-        if($renew_new_order)
+        if(!$renew_new_order)
         {
             echo '<br />Number of invoiced created: ' . $invoicesCreatedCount . PHP_EOL;
         }
         
         main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Notifier completed. Number of emails send: " . $emailSendsCount);
         
-        if($renew_new_order)
+        if(!$renew_new_order)
         {
             main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Notifier completed. Number of invoiced created: " . $invoicesCreatedCount);
         }
@@ -280,8 +280,17 @@ class Cron extends main\mgLibs\process\AbstractController
                 $table->increments('id');
                 $table->integer('pid');
                 $table->string('brand');
+                $table->text('data');
             });
         }
+        
+        if (!Capsule::schema()->hasColumn('mgfw_SSLCENTER_product_brand', 'data'))
+        {
+            Capsule::schema()->table('mgfw_SSLCENTER_product_brand', function($table)
+            {
+                $table->text('data');
+            });
+        }      
         
         Capsule::table('mgfw_SSLCENTER_product_brand')->truncate();
         
@@ -290,7 +299,8 @@ class Cron extends main\mgLibs\process\AbstractController
         foreach ($apiProducts['products'] as $apiProduct) {
             Capsule::table('mgfw_SSLCENTER_product_brand')->insert(array(
                 'pid' => $apiProduct['id'],
-                'brand' => $apiProduct['brand']
+                'brand' => $apiProduct['brand'],
+                'data' => json_encode($apiProduct)
             ));
         }
 
@@ -300,7 +310,7 @@ class Cron extends main\mgLibs\process\AbstractController
         {  
             
             $sslService = \MGModule\SSLCENTERWHMCS\eModels\whmcs\service\SSL::hydrate(array($sslService))[0];
-            
+             
             $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($sslService);
             $configDataUpdate->run();
         }

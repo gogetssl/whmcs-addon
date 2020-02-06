@@ -1,6 +1,8 @@
 <?php
 use Illuminate\Database\Capsule\Manager as Capsule;
 
+if(!defined('DS'))define('DS',DIRECTORY_SEPARATOR);
+
 add_hook('ClientAreaPage', 1, function($params) { 
     
     if (strpos($_SERVER['SCRIPT_NAME'], 'viewinvoice.php') !== false && !empty($_GET['id']) && $_POST['applycredit'] == true) {
@@ -129,7 +131,7 @@ add_hook('ClientLogin', 1, function($vars)
 add_hook('InvoicePaid', 1, function($vars)
 {
     require_once dirname(dirname(dirname(__DIR__))) . DIRECTORY_SEPARATOR . 'init.php';
-    require_once 'Loader.php';
+    require_once __DIR__.DS.'Loader.php';
 
     $loader           = new \MGModule\SSLCENTERWHMCS\Loader();
     $invoiceGenerator = new \MGModule\SSLCENTERWHMCS\eHelpers\Invoice();
@@ -137,8 +139,9 @@ add_hook('InvoicePaid', 1, function($vars)
     $apiConf           = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
     if(isset($apiConf->renew_new_order) && $apiConf->renew_new_order == '1')
     {
-        $invoiceGenerator->invoicePaid($vars['invoiceid']);
+        return true;
     }
+    $invoiceGenerator->invoicePaid($vars['invoiceid']);
 });
 
 
@@ -155,7 +158,7 @@ function SSLCENTER_displaySSLSummaryStats($vars)
     {
         try
         {
-            require_once 'Loader.php';
+            require_once __DIR__.DS.'Loader.php';
             new \MGModule\SSLCENTERWHMCS\Loader();
 
             GLOBAl $smarty;
@@ -242,7 +245,7 @@ function SSLCENTER_displaySSLSummaryInSidebar($secondarySidebar)
 
     try
     {
-        require_once 'Loader.php';
+        require_once __DIR__.DS.'Loader.php';
         new \MGModule\SSLCENTERWHMCS\Loader();
 
         \MGModule\SSLCENTERWHMCS\Addon::I(true);
@@ -387,7 +390,7 @@ add_hook('ClientAreaPageUpgrade', 1, 'SSLCENTER_unableDowngradeConfigOption');
 function SSLCENTER_overideProductPricingBasedOnCommission($vars)
 {
     
-    require_once 'Loader.php';
+    require_once __DIR__.DS.'Loader.php';
     new \MGModule\SSLCENTERWHMCS\Loader();
     MGModule\SSLCENTERWHMCS\Addon::I(true);
 
@@ -432,7 +435,7 @@ add_hook('OrderProductPricingOverride', 1, 'SSLCENTER_overideProductPricingBased
 function SSLCENTER_overideDisaplayedProductPricingBasedOnCommission($vars)
 { 
     global $smarty;
-    require_once 'Loader.php';
+    require_once __DIR__.DS.'Loader.php';
     
     new \MGModule\SSLCENTERWHMCS\Loader();
     MGModule\SSLCENTERWHMCS\Addon::I(true);

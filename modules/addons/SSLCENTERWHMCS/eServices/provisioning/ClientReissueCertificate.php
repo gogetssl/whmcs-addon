@@ -135,6 +135,9 @@ class ClientReissueCertificate {
         $this->validateWebServer();
         $this->validateSanDomains();
         $decodeCSR = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->post['csr']);
+        
+        $_SESSION['decodeCSR'] = $decodeCSR;
+        
         if($decodeCSR['csrResult']['errorMessage']) {
             if(isset($decodeCSR['description']))
                 throw new Exception($decodeCSR['description']);
@@ -176,7 +179,16 @@ class ClientReissueCertificate {
         
         $this->validateWebServer();
         
-        $decodedCSR   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->post['csr']);
+        if(isset($_SESSION['decodeCSR']) && !empty($_SESSION['decodeCSR']))
+        {
+            $decodedCSR = $_SESSION['decodeCSR'];
+        }
+        else
+        {
+            $decodedCSR   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->post['csr']);
+        }
+        
+        
         if ($this->getSansLimit() AND count($_POST['approveremails'])) {
             $this->validateSanDomains();
             $sansDomains             = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($this->post['sans_domains']);
@@ -208,7 +220,19 @@ class ClientReissueCertificate {
             unset($data['approver_emails']);
         }
         
-        $orderStatus = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($this->sslService->remoteid);        
+        $ssl        = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+        $sslService = $ssl->getByServiceId($this->p['serviceid']);
+        
+        $orderStatus = array();
+        
+        if(isset($sslService->configdata->total_domains) && !empty($sslService->configdata->total_domains))
+        {
+            $orderStatus['total_domains'] = $sslService->configdata->total_domains;
+        }
+        else
+        {
+            $orderStatus = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($this->sslService->remoteid);
+        }        
         
         if (count($sansDomains) > $orderStatus['total_domains'] AND $orderStatus['total_domains'] >= 0) {
             $count = count($sansDomains) - $orderStatus['total_domains'];
@@ -228,6 +252,8 @@ class ClientReissueCertificate {
         $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceid']);
         $service->save(array('domain' => $decodedCSR['csrResult']['CN']));
         
+        $this->sslService->setDomain($decodedCSR['csrResult']['CN']);
+        $this->sslService->setSSLStatus('processing');
         $this->sslService->setConfigdataKey('servertype', $data['webserver_type']);
         $this->sslService->setConfigdataKey('csr', $data['csr']);
         $this->sslService->setConfigdataKey('approveremail', $data['approver_email']);
@@ -236,8 +262,8 @@ class ClientReissueCertificate {
         $this->sslService->setSansDomains($data['dns_names']);
         $this->sslService->save();
         
-        $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($this->sslService);
-        $configDataUpdate->run();
+        //$configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($this->sslService);
+        //$configDataUpdate->run();
         
         try
         {
@@ -300,9 +326,9 @@ class ClientReissueCertificate {
             throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('createNotInitialized'));
         }
 
-        $this->orderStatus = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($this->sslService->remoteid);
+        //$this->orderStatus = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($this->sslService->remoteid);
 
-        if ($this->orderStatus['status'] !== 'active') {
+        if ($this->sslService->configdata->ssl_status !== 'active') {
             throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('notAllowToReissue'));
         }
 
@@ -314,7 +340,7 @@ class ClientReissueCertificate {
             $apiRepo                  = new \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products();
             $apiProduct               = $apiRepo->getProduct($this->p[\MGModule\SSLCENTERWHMCS\eServices\provisioning\ConfigOptions::API_PRODUCT_ID]);
             
-             if($apiProduct->brand == 'comodo')
+            if($apiProduct->brand == 'comodo')
             {
                 $apiWebServers = array(
                     array('id' => '35', 'software' => 'IIS'),
