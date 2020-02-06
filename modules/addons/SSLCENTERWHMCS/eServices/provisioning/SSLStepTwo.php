@@ -2,6 +2,7 @@
 
 namespace MGModule\SSLCENTERWHMCS\eServices\provisioning;
 
+use Illuminate\Database\Capsule\Manager as Capsule;
 use Exception;
 
 class SSLStepTwo {
@@ -82,7 +83,23 @@ class SSLStepTwo {
     private function validateCSR() {
         $csr = trim(rtrim($this->p['csr']));
         $decodeCSR = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($csr);
-        $productssl = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->getProduct($this->p['configoption1']);
+        
+        $_SESSION['decodeCSR'] = $decodeCSR;
+
+        $checkTable = Capsule::schema()->hasTable('mgfw_SSLCENTER_product_brand');
+        if($checkTable)
+        {
+            if (Capsule::schema()->hasColumn('mgfw_SSLCENTER_product_brand', 'data'))
+            {
+                $productsslDB = Capsule::table('mgfw_SSLCENTER_product_brand')->where('pid', $this->p['configoption1'])->first();
+                $productssl['product'] = json_decode($productsslDB->data, true); 
+            }
+        }
+        
+        if(!$productssl)
+        {
+            $productssl = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->getProduct($this->p['configoption1']);
+        }
         
         if($productssl['product']['wildcard_enabled'])
         {

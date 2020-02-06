@@ -1,6 +1,8 @@
 <?php
 
-require_once 'Loader.php';
+if(!defined('DS'))define('DS',DIRECTORY_SEPARATOR);
+
+require_once __DIR__.DS.'Loader.php';
 new \MGModule\SSLCENTERWHMCS\Loader();
 MGModule\SSLCENTERWHMCS\Server::I();
 

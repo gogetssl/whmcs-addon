@@ -217,7 +217,7 @@ class Invoice
             $optionname .= formatCurrency($qtyprice);
 
             $postData['itemdescription2'] = $sanCountFrendlyName . ': ' .  $boughtSans . ' x ' . $optionname;
-            $postData['itemamount2'] = $qtyprice;
+            $postData['itemamount2'] = $qtyprice*$boughtSans;
             $postData['itemtaxed2'] = $product->tax;
             
         }
@@ -412,11 +412,26 @@ class Invoice
         $order['org_postalcode']   = $sslOrder['org_postalcode'];
         $order['org_region']       = $sslOrder['org_region'];
         
-        if(isset($sslOrder['domains']) && !empty($sslOrder['domains']))
+//        if(isset($sslOrder['domains']) && !empty($sslOrder['domains']))
+//        {
+//            $order['dns_names']       = $sslOrder['domains'];
+//        }
+        
+        $sansmethod = array();
+        $sansdomains = array();
+        
+        foreach($sslOrder['san'] as $sansdetails)
         {
-            $order['dns_names']       = $sslOrder['domains'];
+            $sansmethod[] = $sansdetails['validation_method'];
+            $sansdomains[] = $sansdetails['san_name'];
         }
-        $order['approver_emails'] = $sslOrder['approver_emails'];
+        
+        if(!empty($sansmethod) && !empty($sansdomains))
+        {
+            $order['dns_names'] = implode(',', $sansdomains);
+            $order['approver_emails'] = implode(',', $sansmethod);
+        }
+        //$order['approver_emails'] = $sslOrder['approver_emails'];
         
         $configdata = json_encode(array(
             'servertype' => $sslOrder['webserver_type'],
@@ -433,6 +448,7 @@ class Invoice
             'postcode' => $sslOrder['tech_postalcode'],
             'country' => $sslOrder['tech_country'],
             'phonenumber' => $sslOrder['tech_phone'],
+            'san_details' => $sslOrder['san'],
             'fields' => array(
                 'order_type' => 'renew',
                 'org_name' => isset($sslOrder['org_name']) && !empty($sslOrder['org_name']) ? $sslOrder['org_name'] : '',
@@ -444,7 +460,9 @@ class Invoice
                 'org_fax' => $sslOrder['org_fax'],
                 'org_phone' => $sslOrder['org_phone'],
                 'org_postalcode' => $sslOrder['org_postalcode'],
-                'org_regions' => $sslOrder['org_region']
+                'org_regions' => $sslOrder['org_region'],
+                'approveremails' => implode(',', $sansmethod),
+                'sans_domains' => implode(',', $sansdomains)
             )
         ));
         

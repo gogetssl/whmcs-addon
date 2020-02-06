@@ -22,6 +22,12 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
     {
         if (is_null($this->get()))
         {
+            
+            if(!isset($params['tech_fax']) || empty($params['tech_fax']))
+            {
+                $params['tech_fax'] = '';
+            }
+            
             Capsule::table($this->tableName)->insert(
                     [
                         'api_login'                              => $params['api_login'],
@@ -59,6 +65,12 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
         }
         else
         {
+            
+            if(!isset($params['tech_fax']) || empty($params['tech_fax']))
+            {
+                $params['tech_fax'] = '';
+            }
+            
             Capsule::table($this->tableName)->update(
                     [
                         'api_login'                              => $params['api_login'],
