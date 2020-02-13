@@ -21,23 +21,28 @@
     text-align: center;
     border-right: 1px solid #ccc;
 }
+
+.dsb-box:last-of-type {
+    border-right: none;
+}
+
 .dsb-box div {
     padding: 20px 15px 20px 15px;
 }
 .dsb-box .icon::before  {
     font-size: 4em;
-    color: #627d1a;
+    color: #768c99;
     top: 1px;
     left:1px;
 }
 .dsb-box .icon  {
     margin-top: auto;
-    margin-bottom: auto;
+    margin-bottom: 10px;
 }
 .dsb-box span {
     display: inline-block;
     padding: 0 15px 0 20px;
-    text-align: left;
+    text-align: center;
     position: relative;
 }
 .dsb-box span > u {
