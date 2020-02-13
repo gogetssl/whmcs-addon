@@ -298,3 +298,5 @@ $_LANG['invalidEmailAddress']           = 'E-mailadressen er ugyldig';
 $_LANG['csrCodeGeneraterdSuccessfully'] = 'CSR-kode blev genereret';
 $_LANG['invalidCountryCode']            = 'Landekode er forkert';
 $_LANG['csrCodeGeneraterFailed']        = 'Kunne ikke generere CSR-kode';
+
+$_LANG['viewAll']		= 'Vis alle';
