@@ -31,18 +31,31 @@ class Renew {
         $apiConf           = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
         if(isset($apiConf->renew_new_order) && $apiConf->renew_new_order == '1')
         {
-            try {
-                $this->checkRenew($this->p['serviceid']);
-                $this->renewCertificate();
-            } catch (Exception $ex) {
-                return $ex->getMessage();
+            if(isset($apiConf->automatic_processing_of_renewal_orders) && $apiConf->automatic_processing_of_renewal_orders == '1')
+            {
+                try {
+                    $this->checkRenew($this->p['serviceid']);
+                    $this->renewCertificate();
+                } catch (Exception $ex) {
+                    return $ex->getMessage();
+                }
+                $this->addRenew($this->p['serviceid']);
+                return 'success';
             }
-            $this->addRenew($this->p['serviceid']);
-            return 'success';
+            else
+            {
+                Capsule::table('tblsslorders')->where('serviceid', $this->p['serviceid'])->update(array(
+                    'remoteid' => '',
+                    'configdata' => '',
+                    'completiondate' => '0000-00-00 00:00:00',
+                    'status' => 'Awaiting Configuration'
+                ));
+                return 'success';
+            }
         }
         else 
         {
-            return 'This action cannot be called, it will only be called when paying for a renew invoice. If you want to run this action manually please uncheck the "Renew order via existing order" option in the SSLCENTER module settings.';
+            return 'This action cannot be called, it will only be called when paying for a renew invoice. If you want to run this action manually please check the "Renew order via existing order" option in the SSLCENTER module settings.';
         }
 
     }
@@ -98,8 +111,13 @@ class Renew {
         $this->loadSslService();
         $this->loadApiProduct();
      
-        $addSSLRenewOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLRenewOrder($this->getOrderParams());        
-    
+        $addSSLRenewOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLRenewOrder($this->getOrderParams()); 
+                
+        Capsule::table('tblsslorders')->where('serviceid', $this->p['serviceid'])->update(array(
+            'remoteid' => $addSSLRenewOrder['order_id']
+        ));     
+        $this->loadSslService();        
+
         $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($this->sslService);
         $configDataUpdate->run();
     }
@@ -246,14 +264,21 @@ class Renew {
             $order['org_region']       = $f->org_regions;
         }
         
-        if(!empty($f->sans_domains)) {
-            $order['dns_names']       = $f->sans_domains;
+        if(!empty($p->san_details)) {
+            
+            $dns_names = array();
+            $approver_emails = array();
+            
+            foreach($p->san_details as $san)
+            {
+                $dns_names[] = $san->san_name;
+                $approver_emails[] = $san->validation_method;
+            }
+            
+            $order['dns_names']       = implode(',', $dns_names);
+            $order['approver_emails'] = implode(',', $approver_emails);
         }
-        
-        if(!empty($f->approveremails)) {
-            $order['approver_emails'] = $f->approveremails;
-        }
-        
+              
         return $order;
     }
 }

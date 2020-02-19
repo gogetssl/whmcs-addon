@@ -204,7 +204,7 @@
                     {if $btndownload}
                         <a href="{$btndownload}"><button type="button" class="btn btn-default" style="margin:2px">{$MGLANG->T('download')}</button></a>
                     {/if}
-                    {if isset($approver_method.https) || isset($approver_method.http) || isset($approver_method.dns)}
+                    {if isset($approver_method.https) || isset($approver_method.http) || isset($approver_method.dns) || $san_revalidate}
                         <button type="button" id="btnRevalidateNew" class="btn btn-default" style="margin:2px">{$MGLANG->T('revalidate')}</button>
                     {/if}  
                     {/if}

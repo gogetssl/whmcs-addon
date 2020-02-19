@@ -544,6 +544,7 @@ class Cron extends main\mgLibs\process\AbstractController
         if (!empty($service))
         {
             $service->nextduedate = $date;
+            $service->nextinvoicedate = $date;
             $service->save();
         }
     }
@@ -551,7 +552,7 @@ class Cron extends main\mgLibs\process\AbstractController
     private function setSSLServiceAsSynchronized($serviceID)
     {
         $sslService = $this->sslRepo->getByServiceId((int) $serviceID);
-        $sslService->setConfigdataKey('synchronized', true);
+        $sslService->setConfigdataKey('synchronized', date('Y-m-d'));
         $sslService->save();
     }
 
@@ -569,7 +570,11 @@ class Cron extends main\mgLibs\process\AbstractController
     {
         $result     = false;
         $sslService = $this->sslRepo->getByServiceId((int) $serviceID);
-        if ($sslService->getConfigdataKey('synchronized'))
+    
+        $date = date('Y-m-d');
+        $date = strtotime("-5 day", strtotime($date));
+        
+        if (strtotime($sslService->getConfigdataKey('synchronized')) > $date)
         {
             $result = true;
         }

@@ -468,6 +468,19 @@
                 var product_id = $(modal).find('select[name="product"]').val();
                 var commission = $(modal).find('input[name="commission"]').val();
 
+                if(commission == '' || product_id == '' || product_id == null || client_id == '' || commission == '0')
+                {
+                    if(product_id == null)
+                    {
+                        $(modal).find('select[name="product"]').parents('.form-group').addClass('has-error');
+                    }
+                    if(commission == '0')
+                    {
+                        $(modal).find('input[name="commission"]').parents('.form-group').addClass('has-error');
+                    }
+                    return false;
+                }
+                
                 JSONParser.create('addonmodules.php?module=SSLCENTERWHMCS&json=1&mg-page=userCommissions', 'POST');
                 JSONParser.request('addNewCommissionRule', {client_id: client_id, product_id: product_id, commission: commission}, function (data) {
                     if (data.success) {
@@ -523,6 +536,12 @@
                 var rule_id = modal.find('input[name="rule_id"]').val();
                 var commission = modal.find('input[name="commission"]').val();
 
+                if(commission == '' || commission == '0')
+                {
+                    $(modal).find('input[name="commission"]').parents('.form-group').addClass('has-error');
+                    return false;
+                }
+                
                 JSONParser.create('addonmodules.php?module=SSLCENTERWHMCS&json=1&mg-page=userCommissions', 'POST');
                 JSONParser.request('updateCommissionRule', {rule_id: rule_id, commission: commission}, function (data) {
                     if (data.success) {

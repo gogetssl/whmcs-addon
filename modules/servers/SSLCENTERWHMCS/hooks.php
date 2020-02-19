@@ -272,6 +272,12 @@ add_hook('InvoiceCreationPreEmail', 1, function($vars)
             ];
 
             $results = localAPI($command2, $postData2);
+            
+            $lastOrder = DB::table('tblorders')->where('userid', $userID)->orderBy('id', 'DESC')->first();
+            
+            DB::table('tblorders')->where('id', $lastOrder->id)->update(array(
+                'amount' => reset($itemamountArray)
+            ));
 
             if (!$results['result'] == 'success')
             {

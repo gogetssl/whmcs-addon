@@ -435,39 +435,45 @@ add_hook('OrderProductPricingOverride', 1, 'SSLCENTER_overideProductPricingBased
 function SSLCENTER_overideDisaplayedProductPricingBasedOnCommission($vars)
 { 
     global $smarty;
+    global $smartyvalues; 
     require_once __DIR__.DS.'Loader.php';
     
     new \MGModule\SSLCENTERWHMCS\Loader();
     MGModule\SSLCENTERWHMCS\Addon::I(true);
     
-    switch ($smarty->tpl_vars['templatefile']->value)
+    if($vars['filename'] == 'cart')
     {
-        case 'products':
-            $products = $smarty->tpl_vars['products']->value;
-            foreach($products as $key => &$product)
-            {
-                $pid = $product['pid'];
-                
-                $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue(array('pid' => $pid));            
-                $products[$key]['pricing'] = MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::getPricingInfo($pid, $commission);
-            }
+    
+        switch ($smarty->tpl_vars['templatefile']->value)
+        {
+            case 'products':
+                $products = $smarty->tpl_vars['products']->value;
+                foreach($products as $key => &$product)
+                {
+                    $pid = $product['pid'];
 
-            $smarty->assign('_products', $products);
-            break;
-        case 'configureproduct':
-            
-            $pid = $smarty->tpl_vars['productinfo']->value['pid'];
-            
-            $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue(array('pid' => $pid));
-            $pricing = MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::getPricingInfo($pid, $commission);
-            
-            $smarty->assign('_pricing', $pricing);
-            break;
-        default:
-            break;
-    } 
+                    $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue(array('pid' => $pid));            
+                    $products[$key]['pricing'] = MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::getPricingInfo($pid, $commission);
+                }
+
+                $smartyvalues['products'] = $products;
+                $smarty->assign('products', $products);
+                break;
+            case 'configureproduct':
+
+                $pid = $smarty->tpl_vars['productinfo']->value['pid'];
+
+                $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue(array('pid' => $pid));
+                $pricing = MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::getPricingInfo($pid, $commission);
+
+                $smartyvalues['pricing'] = $pricing;
+                $smarty->assign('pricing', $pricing);
+                break;
+            default:
+                break;
+        } 
     
+    }
     
-   
 }
-add_hook('ClientAreaPageCart', 1, 'SSLCENTER_overideDisaplayedProductPricingBasedOnCommission');
+add_hook('ClientAreaHeadOutput', 999999999999, 'SSLCENTER_overideDisaplayedProductPricingBasedOnCommission');

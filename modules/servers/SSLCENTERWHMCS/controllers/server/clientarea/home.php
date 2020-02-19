@@ -69,11 +69,12 @@ class home extends main\mgLibs\process\AbstractController {
             if($privateKey) {
                 $vars['privateKey'] = $privateKey;
             }             
+            $vars['san_revalidate'] = false;
             
             if ($sslService->status !== 'Awaiting Configuration') {
                 try {
                     $certificateDetails = (array)$sslService->configdata;
-                   
+                    
                     if(!empty($certificateDetails['partner_order_id'])) {
                         $vars['partner_order_id'] = $certificateDetails['partner_order_id'];
                     }
@@ -119,13 +120,16 @@ class home extends main\mgLibs\process\AbstractController {
                             $vars['sans'][$san->san_name]['method'] = $san->validation_method;
                             switch ($san->validation_method) {
                                 case 'dns':
+                                    $vars['san_revalidate'] = true;
                                     $vars['sans'][$san->san_name]['san_validation'] = $san->validation->dns->record;
                                     break;
                                 case 'http':
+                                    $vars['san_revalidate'] = true;
                                     $vars['sans'][$san->san_name]['san_validation'] = (array)$san->validation->http;
                                     $vars['sans'][$san->san_name]['san_validation']['content'] = explode(PHP_EOL, $san->validation->http->content);
                                     break;
                                 case 'https':
+                                    $vars['san_revalidate'] = true;
                                     $vars['sans'][$san->san_name]['san_validation'] = (array)$san->validation->https;        
                                     $vars['sans'][$san->san_name]['san_validation']['content'] = explode(PHP_EOL, $san->validation->https->content);
                                     break;
@@ -247,7 +251,7 @@ class home extends main\mgLibs\process\AbstractController {
         } catch (\Exception $ex) {
             $vars['error'] = $ex->getMessage();
         }
-
+        
         return array(
             'tpl'  => 'home'
             , 'vars' => $vars
