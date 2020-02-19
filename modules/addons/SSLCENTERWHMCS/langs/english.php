@@ -306,3 +306,5 @@ $_LANG['invalidEmailAddress']           = 'Email Address is incorrect';
 $_LANG['csrCodeGeneraterdSuccessfully'] = 'CSR code has been generated successfully';
 $_LANG['invalidCountryCode']            = 'Country code is incorrect';
 $_LANG['csrCodeGeneraterFailed']        = 'Generate CSR code has been failed';
+
+$_LANG['viewAll']		= 'View All';
