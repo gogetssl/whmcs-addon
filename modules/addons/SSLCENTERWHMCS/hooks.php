@@ -177,6 +177,7 @@ function SSLCENTER_displaySSLSummaryStats($vars)
             $unpaidLang      = \MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('addonCA', 'sslSummary', 'unpaid');
             $processingLang  = \MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('addonCA', 'sslSummary', 'processing');
             $expiresSoonLang = \MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('addonCA', 'sslSummary', 'expiresSoon');
+			$viewAll		 = \MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('viewAll');
 
             //get ssl statistics
             $sslSummaryStats = new MGModule\SSLCENTERWHMCS\eHelpers\SSLSummary($_SESSION['uid']);
@@ -189,31 +190,42 @@ function SSLCENTER_displaySSLSummaryStats($vars)
             $unpaidOrders      = $sslSummaryStats->getUnpaidSSLOrdersCount();
             $processingOrders  = $sslSummaryStats->getProcessingSSLOrdersCount();
             $expiresSoonOrders = $sslSummaryStats->getExpiresSoonSSLOrdersCount();
-
-            $sslSummaryIntegrationCode .= "            
-        <h3 class=\"dsb-title\" align=\"center\">$titleLang</h3>
-        <div class=\"dash-stat-box dlb-border clerarfix\">            
-            <div class=\"dsb-box\">
-                <a href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=total\">
-                    <div><i class=\"fa fa-check icon\"></i><span><b>$totalLang</b><u>$totalOrders</u></span></div>
-                </a>
-            </div>
-            <div class=\"dsb-box\">            
-                <a href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=unpaid\">                
-                        <div><i class=\"fa fa-credit-card icon\"></i><span><b>$unpaidLang</b><u>$unpaidOrders</u></span></div>                
-                </a>
-            </div>
-            <div class=\"dsb-box\">
-                <a href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=processing\">
-                    <div><i class=\"fa fa-cogs icon\"></i><span><b>$processingLang</b><u>$processingOrders</u></span></div>               
-                </a>
-            </div>
-            <div class=\"dsb-box\"   style=\"border-right: none;\">
-                <a href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=expires_soon\">
-                    <div><i class=\"fa fa-hourglass-half  icon\"></i><span><b>$expiresSoonLang</b><u>$expiresSoonOrders</u></span></div>
-                <a href=\"clientarea.php?action=services\">       
-            </div>
-    </div>";
+		
+			$sslSummaryIntegrationCode .= "
+			<div class=\"col-sm-12\">
+				<div menuitemname=\"SSL Order Summary\" class=\"panel panel-default panel-accent-gold\">
+					<div class=\"panel-heading\">
+						<h3 class=\"panel-title\">
+							<div class=\"pull-right\">
+								<a class=\"btn btn-default bg-color-gold btn-xs\"
+									href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=total\">
+									<i class=\"fas fa-plus\"></i>
+									$viewAll
+								</a>
+							</div>
+							<i class=\"fas fa-lock\"></i>
+							$titleLang
+						</h3>
+					</div>
+					<div class=\"list-group\">
+						<div class=\"dsb-box col-sm-4\">
+							<a href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=unpaid\">
+								<div><i class=\"fa fa-credit-card icon icon col-sm-12\"></i><span>$unpaidLang<u>$unpaidOrders</u></span></div>
+							</a>
+						</div>
+						<div class=\"dsb-box col-sm-4\">
+							<a href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=processing\">
+								<div><i class=\"fa fa-cogs icon col-sm-12\"></i><span>$processingLang<u>$processingOrders</u></span></div>
+							</a>
+						</div>
+						<div class=\"dsb-box col-sm-4\">
+							<a href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=expires_soon\">
+								<div><i class=\"fa fa-hourglass-half icon col-sm-12\"></i><span>$expiresSoonLang<u>$expiresSoonOrders</u></span></div>
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>";
 
             $smarty->assign('sslSummaryIntegrationCode', $sslSummaryIntegrationCode);
         }
