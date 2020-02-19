@@ -131,6 +131,14 @@ $_LANG['addonAA']['productsConfiguration']['months']              = 'Max Months:
 $_LANG['addonAA']['productsConfiguration']['enableSans']          = 'Enable SANs:';
 $_LANG['addonAA']['productsConfiguration']['includedSans']        = 'Included SANs:';
 $_LANG['addonAA']['productsConfiguration']['status']              = 'Status:';
+$_LANG['addonAA']['productsConfiguration']['setForManyProducts']  = 'Set for many products';
+$_LANG['addonAA']['productsConfiguration']['statusEnabled']       = 'Status Enabled:';
+$_LANG['addonAA']['productsConfiguration']['allOrSelectedProducts'] = 'All or selected products:';
+$_LANG['addonAA']['productsConfiguration']['selectProducts']      = 'Select products:';
+$_LANG['addonAA']['productsConfiguration']['allProducts']         = 'All products';
+$_LANG['addonAA']['productsConfiguration']['selectedProducts']    = 'Selected products';
+$_LANG['addonAA']['productsConfiguration']['areYouSureManyProducts'] = 'Are you sure you want to use these settings for many products?';
+$_LANG['addonAA']['productsConfiguration']['doNotAnything']       = 'Do not anything';
 
 $_LANG['addonAA']['productsConfiguration']['statusEnable']  = 'Enable';
 $_LANG['addonAA']['productsConfiguration']['statusDisable'] = 'Disable';
@@ -298,5 +306,3 @@ $_LANG['invalidEmailAddress']           = 'Email Address is incorrect';
 $_LANG['csrCodeGeneraterdSuccessfully'] = 'CSR code has been generated successfully';
 $_LANG['invalidCountryCode']            = 'Country code is incorrect';
 $_LANG['csrCodeGeneraterFailed']        = 'Generate CSR code has been failed';
-
-$_LANG['viewAll']		= 'View All';

@@ -238,6 +238,14 @@ class Invoice
                 ->where('invoiceid', '=', $invoiceId)
                 ->update(array('relid' => $service->id));
         
+        if($boughtSans > 0)
+        { 
+            Capsule::table('tblinvoiceitems')
+                    ->where('description', 'like', '%'.$sanCountFrendlyName.'%')
+                    ->where('invoiceid', '=', $invoiceId)
+                    ->update(array('relid' => '0', 'type' => ''));
+        }
+        
         Capsule::table('tblinvoices')->where('id', '=', $invoiceId)->update(array('status' => 'Payment Pending'));
         
         if($returnInvoiceID)

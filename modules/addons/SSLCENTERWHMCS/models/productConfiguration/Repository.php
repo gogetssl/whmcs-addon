@@ -55,6 +55,31 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository {
 
         return $products;
     }
+    
+    public function getSelectedProducts($ids) {
+        
+        $products = $this->getModuleProducts();
+        
+        foreach($products as $key => $value)
+        {
+            if(!in_array($value->id, $ids))
+            {
+                unset($products[$key]);
+            }
+        }
+        
+        return $products;
+    }
+    
+    public function updateProductParam($productId, $paramName, $value) {
+        
+        Capsule::table('tblproducts')->where('id', $productId)->update(array(
+            $paramName => $value
+        ));
+        
+        return true;
+        
+    }
 
     public function getAllCurrencies() {
         return Capsule::table("tblcurrencies")->get();

@@ -16,6 +16,79 @@
 {if $products_count}
     <div class="panel panel-default">
         <div class="panel-body">
+            
+            <! --- start new form --->
+            <form action="" method="post" class="form-horizontal margin-bottom-15" onsubmit="return confirm('{$MGLANG->T('areYouSureManyProducts')}');">
+                
+                <input type="hidden" name="many-products" value="1">
+                
+                <div style="padding:0 15px;">
+                    <h2 style="margin-bottom:50px">{$MGLANG->T('setForManyProducts')}</h2>
+                    <div class="row">
+
+                        <div class="form-group">
+                            <label class="control-label col-sm-2">{$MGLANG->T('autoSetup')}</label>
+                            <div class="col-sm-10">
+                                <select name="autosetup" class="form-control">
+                                    <option value="donot">{$MGLANG->T('doNotAnything')}</option>  
+                                    <option value="order">{$MGLANG->T('autoSetupOrder')}</option>  
+                                    <option value="payment">{$MGLANG->T('autoSetupPayment')}</option> 
+                                    <option value="on">{$MGLANG->T('autoSetupOn')}</option> 
+                                    <option value="">{$MGLANG->T('autoSetupOff')}</option> 
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-sm-2">{$MGLANG->T('commission')}</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control mg-product-commission" name="configoption6" value="" pattern="\d*">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-sm-2">{$MGLANG->T('statusEnabled')}</label>
+                            <div class="col-sm-10" style="padding-top: 8px;">                                    
+                                <input class="form-check-input mg-js-pricing-auto-download" name="hidden" value="1" type="checkbox" style="margin-top: -46px;">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-sm-2">{$MGLANG->T('priceAutoDownlaod')}</label>
+                            <div class="col-sm-10" style="padding-top: 8px;">                                    
+                                <input class="form-check-input mg-js-pricing-auto-download" name="configoption5" value="1" type="checkbox" style="margin-top: -46px;">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-sm-2">{$MGLANG->T('allOrSelectedProducts')}</label>
+                            <div class="col-sm-10">
+                                <select name="type" class="form-control">
+                                    <option value="all">{$MGLANG->T('allProducts')}</option>  
+                                    <option value="selected">{$MGLANG->T('selectedProducts')}</option> 
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group" >
+                            <label class="control-label col-sm-2">{$MGLANG->T('selectProducts')}</label>
+                            <div class="col-sm-10">
+                                <select multiple name="products[]" class="form-control" disabled>
+                                    {foreach $products as $product}
+                                        <option value="{$product->id}">{$product->name}</option>  
+                                    {/foreach}
+                                </select>
+                            </div>
+                        </div>
+
+                                
+                        <input type="submit" name="saveProduct" class="btn btn-success" value="{$MGLANG->T('save')}" />
+
+                    </div>
+                </div>
+            </form>
+            <! --- end new form --->
+            
             {foreach from=$products item=product}
                 <form action="" method="post" class="form-horizontal margin-bottom-15">
                     <table class="table table-condensed" id="product_configuration">
@@ -289,6 +362,21 @@
                 window.open('configproductoptions.php?manageoptions=true&cid=' + id, 'configoptions', 'width=900,height=500,scrollbars=yes');
             }
             $(document).ready(function () {
+                
+                $('body').on('change', 'select[name="type"]', function(){
+        
+                    var valtype = $(this).val();
+        
+                    if(valtype == 'all')
+                    {
+                        $('select[name="products[]"]').prop('disabled', true);
+                    }
+                    else
+                    {
+                        $('select[name="products[]"]').prop('disabled', false);
+                    }
+        
+                });
 
                 $('.mg-js-create-oprions').on('click', function () {
                     $('#createConfOptionsFormId').val($(this).data('id'));

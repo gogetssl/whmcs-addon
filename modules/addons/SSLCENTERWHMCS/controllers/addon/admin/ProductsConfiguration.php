@@ -74,6 +74,51 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
     public function saveProducts($input = array(), $vars = array()) {
         
         $productModel = new \MGModule\SSLCENTERWHMCS\models\productConfiguration\Repository();
+          
+        if(isset($input['many-products']) && $input['many-products'] == '1')
+        {
+            
+            $products = array();
+            
+            switch ($input['type']) {
+                
+                case 'all':
+                    
+                    $products = $productModel->getModuleProducts();
+                    
+                break;
+                
+                case 'selected':
+                    
+                    $products = $productModel->getSelectedProducts($input['products']);
+                    
+                break;
+            
+            }
+            
+            foreach ($products as $product)
+            {
+                if(isset($input['autosetup']) && $input['autosetup'] != 'donot')
+                {
+                    $productModel->updateProductParam($product->id, 'autosetup', $input['autosetup']);
+                }
+                if(isset($input['configoption6']) && !empty($input['configoption6']))
+                {
+                    $productModel->updateProductParam($product->id, 'configoption6', $input['configoption6']/100);
+                }
+                if(isset($input['hidden']) && $input['hidden'] == '1')
+                {
+                    $productModel->updateProductParam($product->id, 'hidden', '0');
+                }
+                if(isset($input['configoption5']) && $input['configoption5'] == '1')
+                {
+                    $productModel->updateProductParam($product->id, 'configoption5', $input['configoption5']);
+                }
+            }
+            
+            return true;
+        }
+        
         foreach ($input['product'] as $key => $value) {
             $productModel->updateProducDetails($key, $value);
         }
