@@ -14,6 +14,8 @@ class home extends main\mgLibs\process\AbstractController {
 
     function indexHTML($input, $vars = array()) {
         try {
+            
+            global $CONFIG;
 
             if($input['params']['status'] != 'Active')
             {
@@ -231,9 +233,67 @@ class home extends main\mgLibs\process\AbstractController {
                 }
             }
             
+            if($_GET['downloadcsr'] == '1' && !empty($certificateDetails['csr']))
+            {
+                $handle = fopen('csr_code.csr', "w");
+                fwrite($handle, $certificateDetails['csr']);
+                fclose($handle);
+
+                header('Content-Type: application/octet-stream');
+                header('Content-Disposition: attachment; filename=csr_code.csr');
+                header('Expires: 0');
+                header('Cache-Control: must-revalidate');
+                header('Pragma: public');
+                header('Content-Length: ' . filesize('csr_code.csr'));
+                readfile('csr_code.csr');
+                exit;
+            }
+            if($_GET['downloadcrt'] == '1' && !empty($certificateDetails['crt']))
+            {
+                $handle = fopen('crt_code.crt', "w");
+                fwrite($handle, $certificateDetails['crt']);
+                fclose($handle);
+
+                header('Content-Type: application/octet-stream');
+                header('Content-Disposition: attachment; filename=crt_code.crt');
+                header('Expires: 0');
+                header('Cache-Control: must-revalidate');
+                header('Pragma: public');
+                header('Content-Length: ' . filesize('crt_code.crt'));
+                readfile('crt_code.crt');
+                exit;
+            }
+            if($_GET['downloadca'] == '1' && !empty($certificateDetails['ca']))
+            {
+                $handle = fopen('ca_code.ca', "w");
+                fwrite($handle, $certificateDetails['ca']);
+                fclose($handle);
+
+                header('Content-Type: application/octet-stream');
+                header('Content-Disposition: attachment; filename=ca_code.ca');
+                header('Expires: 0');
+                header('Cache-Control: must-revalidate');
+                header('Pragma: public');
+                header('Content-Length: ' . filesize('ca_code.ca'));
+                readfile('ca_code.ca');
+                exit;
+            }
+            
             $vars['actual_link'] = $CONFIG['SystemURL'].'/clientarea.php?action=productdetails&id='.$vars['serviceid'];
             
             $vars['btndownload'] = false;
+            
+            if (!empty($certificateDetails['csr'])) {
+                $vars['downloadcsr'] = $vars['actual_link'].'&downloadcsr=1';
+            }
+
+            if (!empty($certificateDetails['crt'])) {
+                $vars['downloadcrt'] = $vars['actual_link'].'&downloadcrt=1';
+            }
+            
+            if (!empty($certificateDetails['ca'])) {
+                $vars['downloadca'] = $vars['actual_link'].'&downloadca=1';
+            }
             
             if((isset($vars['approver_method']['http']) && !empty($vars['approver_method']['http'])) || (isset($vars['approver_method']['https']) && !empty($vars['approver_method']['https'])))
             {
@@ -333,6 +393,50 @@ class home extends main\mgLibs\process\AbstractController {
         $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();        
         $sendCertyficateTermplate = $apiConf->send_certificate_template;  
        
+       
+        $attachments = array();
+
+        if(!empty($orderStatus['ca_code'])) {
+            
+            $tmp_ca_code = tempnam("/tmp", "FOO");
+
+            $handle = fopen($tmp_ca_code, "w");
+            fwrite($handle, $orderStatus['ca_code']);
+            fclose($handle);
+            $attachments[] = array(
+                'displayname' => 'ca_code.ca',
+                'path' => $tmp_ca_code
+            );
+            
+        }
+        
+        if(!empty($orderStatus['crt_code'])) {
+            
+            $tmp_crt_code = tempnam("/tmp", "FOO");
+
+            $handle = fopen($tmp_crt_code, "w");
+            fwrite($handle, $orderStatus['crt_code']);
+            fclose($handle);
+            $attachments[] = array(
+                'displayname' => 'crt_code.crt',
+                'path' => $tmp_crt_code
+            );
+            
+        }
+        
+        if(!empty($orderStatus['csr_code'])) {
+            
+            $tmp_csr_code = tempnam("/tmp", "FOO");
+
+            $handle = fopen($tmp_csr_code, "w");
+            fwrite($handle, $orderStatus['csr_code']);
+            fclose($handle);
+            $attachments[] = array(
+                'displayname' => 'csr_code.csr',
+                'path' => $tmp_csr_code
+            );
+            
+        }
         
         if($sendCertyficateTermplate == NULL)
         {            
@@ -340,7 +444,7 @@ class home extends main\mgLibs\process\AbstractController {
                 'domain' => $orderStatus['domain'],
                 'ssl_certyficate' => nl2br($orderStatus['ca_code']),
                 'crt_code' => nl2br($orderStatus['crt_code']),
-            ]);
+            ], "", $attachments);
         } 
         else
         {
@@ -349,8 +453,27 @@ class home extends main\mgLibs\process\AbstractController {
                 'domain' => $orderStatus['domain'],
                 'ssl_certyficate' => nl2br($orderStatus['ca_code']),
                 'crt_code' => nl2br($orderStatus['crt_code']),
-            ]);
-        }  
+            ], "", $attachments);
+        }
+        
+        if(!empty($orderStatus['ca_code'])) {
+            
+            unlink($tmp_ca_code);
+            
+        }
+        
+        if(!empty($orderStatus['crt_code'])) {
+            
+            unlink($tmp_crt_code);
+            
+        }
+        
+        if(!empty($orderStatus['csr_code'])) {
+            
+            unlink($tmp_csr_code);
+            
+        }
+        
         if($result === true)
         {
              return array(

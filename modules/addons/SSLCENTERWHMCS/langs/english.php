@@ -87,6 +87,8 @@ $_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_one_
 
 $_LANG['addonAA']['apiConfiguration']['item']['automatic_processing_of_renewal_orders']['label']                  = '';
 $_LANG['addonAA']['apiConfiguration']['item']['automatic_processing_of_renewal_orders']['description']            = 'Automatic processing of renewal orders';
+$_LANG['addonAA']['apiConfiguration']['item']['sidebar_templates']['label']                  = 'List of pages with visible sidebar';
+$_LANG['addonAA']['apiConfiguration']['item']['sidebar_templates']['description']            = 'Enter a list of pages separated by a comma, if you leave the field sidbear empty it will be visible on each page. (for example clientareaproducts,clientareaproductdetails,clientareainvoices)';
 $_LANG['addonAA']['apiConfiguration']['item']['renew_new_order']['label']                  = '';
 $_LANG['addonAA']['apiConfiguration']['item']['renew_new_order']['description']            = 'Renew order via existing order';
 $_LANG['addonAA']['apiConfiguration']['item']['visible_renew_button']['label']                  = '';
