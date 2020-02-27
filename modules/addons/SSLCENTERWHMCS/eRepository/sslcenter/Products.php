@@ -60,16 +60,21 @@ class Products {
             {
                 $products = Capsule::table('mgfw_SSLCENTER_product_brand')->get();
                 
-                $this->products = [];
-                foreach ($products as $apiProduct) {
-                    
-                    $apiProduct = json_decode($apiProduct->data, true);
-                    $p = new \MGModule\SSLCENTERWHMCS\eModels\sslcenter\Product();
-                    \MGModule\SSLCENTERWHMCS\eHelpers\Fill::fill($p, $apiProduct);
-                    $this->products[$p->id] = $p;
-                }
+                if(!empty($products))
+                {
+                
+                    $this->products = [];
+                    foreach ($products as $apiProduct) {
 
-                return $this->products;
+                        $apiProduct = json_decode($apiProduct->data, true);
+                        $p = new \MGModule\SSLCENTERWHMCS\eModels\sslcenter\Product();
+                        \MGModule\SSLCENTERWHMCS\eHelpers\Fill::fill($p, $apiProduct);
+                        $this->products[$p->id] = $p;
+                    }
+
+                    return $this->products;
+                
+                }
                 
             }
         }

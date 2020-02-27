@@ -253,6 +253,15 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->continue          = false;
         $field->enableDescription = false;
         $form->addField($field);
+        
+        $field           = new main\mgLibs\forms\TextField();
+        $field->readonly = false;
+        $field->name     = 'sidebar_templates';
+        $field->required = false;
+        $field->enableDescription = true;
+        $field->value    = $input['sidebar_templates'];
+        $field->error    = $this->getFieldError('sidebar_templates');
+        $form->addField($field);
 
         $field                    = new main\mgLibs\forms\SelectField();
         $field->disabled          = false;

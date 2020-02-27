@@ -86,13 +86,17 @@ class SSLStepTwo {
         
         $_SESSION['decodeCSR'] = $decodeCSR;
 
+        $productssl = false;
         $checkTable = Capsule::schema()->hasTable('mgfw_SSLCENTER_product_brand');
         if($checkTable)
         {
             if (Capsule::schema()->hasColumn('mgfw_SSLCENTER_product_brand', 'data'))
             {
                 $productsslDB = Capsule::table('mgfw_SSLCENTER_product_brand')->where('pid', $this->p['configoption1'])->first();
-                $productssl['product'] = json_decode($productsslDB->data, true); 
+                if(isset($productsslDB->data))
+                {
+                    $productssl['product'] = json_decode($productsslDB->data, true); 
+                }
             }
         }
         

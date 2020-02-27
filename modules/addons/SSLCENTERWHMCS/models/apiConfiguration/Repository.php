@@ -60,6 +60,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'summary_expires_soon_days'              => $params['summary_expires_soon_days'],
                         'send_certificate_template'              => $params['send_certificate_template'],
                         'display_ca_summary'                     => $params['display_ca_summary'],
+                        'sidebar_templates'                      => $params['sidebar_templates'],
                         'disable_email_validation'                => $params['disable_email_validation']
             ]);
         }
@@ -103,6 +104,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'summary_expires_soon_days'              => $params['summary_expires_soon_days'],
                         'send_certificate_template'              => $params['send_certificate_template'],
                         'display_ca_summary'                     => $params['display_ca_summary'],
+                        'sidebar_templates'                      => $params['sidebar_templates'],
                         'disable_email_validation'                => $params['disable_email_validation']
             ]);
         }
@@ -144,6 +146,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 $table->string('summary_expires_soon_days')->nullable();
                 $table->integer('send_certificate_template')->nullable();
                 $table->boolean('display_ca_summary');
+                $table->string('sidebar_templates')->nullable();
                 $table->boolean('disable_email_validation');
             });
         }
@@ -249,6 +252,13 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 Capsule::schema()->table($this->tableName, function($table)
                 {
                     $table->boolean('display_ca_summary');
+                });
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'sidebar_templates'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->string('sidebar_templates')->nullable();
                 });
             }
             if (!Capsule::schema()->hasColumn($this->tableName, 'disable_email_validation'))
