@@ -36,6 +36,7 @@ class Renew {
                 try {
                     $this->checkRenew($this->p['serviceid']);
                     $this->renewCertificate();
+                    $this->updateOneTime();
                 } catch (Exception $ex) {
                     return $ex->getMessage();
                 }
@@ -58,6 +59,22 @@ class Renew {
             return 'This action cannot be called, it will only be called when paying for a renew invoice. If you want to run this action manually please check the "Renew order via existing order" option in the SSLCENTER module settings.';
         }
 
+    }
+    
+    private function updateOneTime()
+    {
+        $serviceID = $this->p['serviceid'];
+        
+        $service = (array)Capsule::table('tblhosting')->where('id', $serviceID)->first();
+        $product = (array)Capsule::table('tblproducts')->where('servertype', 'SSLCENTERWHMCS')->where('id', $service['packageid'])->first();
+        
+        $sslOrder = (array)Capsule::table('tblsslorders')->where('serviceid', $serviceID)->first();
+        $configdata = json_decode($sslOrder['configdata'], true);
+
+        if(isset($product['configoption7']) && !empty($product['configoption7']) && $service['billingcycle'] == 'One Time')
+        {
+            Capsule::table('tblhosting')->where('id', $serviceID)->update(array('termination_date' => $configdata['valid_till']));
+        }
     }
     
     private function createRenewTable()
@@ -148,6 +165,11 @@ class Renew {
             'Biennially'    =>  24,
             'Triennially'   =>  36,
         );
+        
+        if($this->p[ConfigOptions::MONTH_ONE_TIME] && !empty($this->p[ConfigOptions::MONTH_ONE_TIME]))
+        {
+            $billingPeriods['One Time'] = $this->p[ConfigOptions::MONTH_ONE_TIME];
+        }
         
         $p = &$this->sslService->configdata;
         $f = &$p->fields;

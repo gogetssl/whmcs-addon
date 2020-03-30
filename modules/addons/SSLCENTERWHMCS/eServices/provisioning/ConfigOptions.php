@@ -23,6 +23,7 @@ class ConfigOptions
     const PRODUCT_INCLUDED_SANS = 'configoption4';
     const PRICE_AUTO_DOWNLOAD   = 'configoption5';
     const COMMISSION            = 'configoption6';
+    const MONTH_ONE_TIME        = 'configoption7';
     const OPTION_SANS_COUNT     = 'sans_count'; // sans_count|SANs http://puu.sh/vXXx3/d08fdb2c2f.png
 
     function __construct(&$params = null)
@@ -69,6 +70,16 @@ class ConfigOptions
                 'Type' => 'yesno',
             ],
             'Included SANs'       => [
+                'Type' => 'text',
+            ],
+            'PRICE AUTO DOWNLOAD' => [
+                'Type' => 'text',
+            ],
+            'COMMISSION'          => [
+                'Type' => 'text',
+                'Description' => '<script>$(function(){$("input[name=\"packageconfigoption[5]\"]").parent("td.fieldarea").parent("tr").hide();});</script>'
+            ],
+            'Months One Time'     => [
                 'Type' => 'text',
             ],
         ];

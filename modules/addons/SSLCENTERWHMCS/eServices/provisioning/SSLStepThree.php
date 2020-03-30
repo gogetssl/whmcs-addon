@@ -119,6 +119,11 @@ class SSLStepThree {
                 $billingPeriods['One Time'] = 12;
             }
         }
+        
+        if($this->p[ConfigOptions::MONTH_ONE_TIME] && !empty($this->p[ConfigOptions::MONTH_ONE_TIME]))
+        {
+            $billingPeriods['One Time'] = $this->p[ConfigOptions::MONTH_ONE_TIME];
+        }
 
         $order               = [];
         $order['dcv_method'] = strtolower($this->p['fields']['dcv_method']);
@@ -227,6 +232,13 @@ class SSLStepThree {
         $service->save(array('domain' => $decodedCSR['csrResult']['CN']));
         
         $orderDetails = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($addedSSLOrder['order_id']);
+        
+        if($this->p[ConfigOptions::MONTH_ONE_TIME] && !empty($this->p[ConfigOptions::MONTH_ONE_TIME]))
+        {
+            $service = new Service($this->p['serviceid']);
+            $service->save(array('termination_date' => $orderDetails['valid_till']));
+        }
+        
         // logModuleCall(
         //     'SSLCENTERWHMCS',
         //     'CREATE',
