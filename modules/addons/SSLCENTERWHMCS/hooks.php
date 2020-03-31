@@ -433,6 +433,10 @@ function SSLCENTER_overideProductPricingBasedOnCommission($vars)
                 if ($pricing->currency == $clientCurrency['id'])
                 {
                     $priceField           = $vars['proddata']['billingcycle'];
+                    if($priceField == 'onetime')
+                    {
+                        $priceField = 'monthly';
+                    }
 
                     $return = ['recurring' => (float) $pricing->{$priceField} + (float) $pricing->{$priceField} * (float) $commission,];
                 }
@@ -490,3 +494,43 @@ function SSLCENTER_overideDisaplayedProductPricingBasedOnCommission($vars)
     
 }
 add_hook('ClientAreaHeadOutput', 999999999999, 'SSLCENTER_overideDisaplayedProductPricingBasedOnCommission');
+
+add_hook('InvoiceCreation', 1, function($vars) {
+    
+    $invoiceid = $vars['invoiceid'];
+    
+    $items = Capsule::table('tblinvoiceitems')->where('invoiceid', $invoiceid)->where('type', 'Upgrade')->get();
+    
+    foreach ($items as $item)
+    {
+        $description = $item->description;
+        
+        $upgradeid = $item->relid;
+        $upgrade = Capsule::table('tblupgrades')->where('id', $upgradeid)->first();
+        
+        $serviceid = $upgrade->relid;
+        $service = Capsule::table('tblhosting')->where('id', $serviceid)->first();
+        
+        $productid = $service->packageid;
+        $product = Capsule::table('tblproducts')->where('id', $productid)->where('paytype', 'onetime')->where('servertype', 'SSLCENTERWHMCS')->first();
+        
+        if(isset($product->configoption7) && !empty($product->configoption7))
+        {
+            
+            if (strpos($description, '00/00/0000') !== false) {
+                
+                $description = str_replace('- 00/00/0000', '', $description);
+                $length = strlen($description);
+                $description = substr($description, 0, $length-13);
+                
+                Capsule::table('tblinvoiceitems')->where('id', $item->id)->update(array('description' => trim($description)));
+                                
+            }
+            
+        }
+        
+        
+        
+    }
+    
+});

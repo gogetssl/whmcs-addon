@@ -33,13 +33,17 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository {
 
         $allPricingArray = array();
         $allPricingDB = $this->getAllProductPricing();
-        foreach($allPricingDB as $sp)
-        {
-            $allPricingArray[$sp->relid] = $sp;
-        }
-
+        
         foreach ($products as $key => $value) {
-            $products[$key]->pricing[] = $allPricingArray[$value->id];
+            
+            foreach($allPricingDB as $sp)
+            {
+                if($sp->relid == $value->id && $sp->type == 'product')
+                {
+                    $products[$key]->pricing[] = $sp;
+                }
+            }
+            
             //get price with commission
             $commissonValue = $value->{C::COMMISSION};
             foreach($products[$key]->pricing as &$price)
