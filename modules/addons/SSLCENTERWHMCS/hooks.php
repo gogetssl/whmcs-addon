@@ -424,6 +424,12 @@ function SSLCENTER_overideProductPricingBasedOnCommission($vars)
     //get sslcenter all products
     foreach ($productModel->getModuleProducts() as $product)
     {
+        
+        if($product->servertype != 'SSLCENTERWHMCS')
+        {
+            continue;
+        }
+        
         if ($product->id == $vars['pid'])
         {
             $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue($vars);
@@ -457,20 +463,30 @@ function SSLCENTER_overideDisaplayedProductPricingBasedOnCommission($vars)
     
     new \MGModule\SSLCENTERWHMCS\Loader();
     MGModule\SSLCENTERWHMCS\Addon::I(true);
-    
+      
     if($vars['filename'] == 'cart')
     {
     
         switch ($smarty->tpl_vars['templatefile']->value)
         {
             case 'products':
-                $products = $smarty->tpl_vars['products']->value;
+                $products = $smarty->tpl_vars['products']->value;     
                 foreach($products as $key => &$product)
                 {
-                    $pid = $product['pid'];
+                    $productSSLCenter = Capsule::table('tblproducts')
+                            ->where('id', $product['pid'])
+                            ->where('servertype', 'SSLCENTERWHMCS')
+                            ->first();
+                    
+                    if(isset($productSSLCenter->id) && !empty($productSSLCenter->id))
+                    {
+                    
+                        $pid = $product['pid'];
 
-                    $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue(array('pid' => $pid));            
-                    $products[$key]['pricing'] = MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::getPricingInfo($pid, $commission);
+                        $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue(array('pid' => $pid));            
+                        $products[$key]['pricing'] = MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::getPricingInfo($pid, $commission);
+                    
+                    }
                 }
 
                 $smartyvalues['products'] = $products;
@@ -480,11 +496,20 @@ function SSLCENTER_overideDisaplayedProductPricingBasedOnCommission($vars)
 
                 $pid = $smarty->tpl_vars['productinfo']->value['pid'];
 
-                $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue(array('pid' => $pid));
-                $pricing = MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::getPricingInfo($pid, $commission);
+                $productSSLCenter = Capsule::table('tblproducts')
+                            ->where('id', $pid)
+                            ->where('servertype', 'SSLCENTERWHMCS')
+                            ->first();
+                    
+                if(isset($productSSLCenter->id) && !empty($productSSLCenter->id))
+                {
 
-                $smartyvalues['pricing'] = $pricing;
-                $smarty->assign('pricing', $pricing);
+                    $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue(array('pid' => $pid));
+                    $pricing = MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::getPricingInfo($pid, $commission);
+
+                    $smartyvalues['pricing'] = $pricing;
+                    $smarty->assign('pricing', $pricing);
+                }
                 break;
             default:
                 break;
