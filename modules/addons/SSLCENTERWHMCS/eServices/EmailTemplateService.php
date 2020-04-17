@@ -2,6 +2,8 @@
 
 namespace MGModule\SSLCENTERWHMCS\eServices;
 
+use WHMCS\Database\Capsule;
+
 class EmailTemplateService {
     
     const CONFIGURATION_TEMPLATE_ID = 'SSLCenter - Configuration Required';
@@ -25,7 +27,13 @@ class EmailTemplateService {
         $newTemplate->custom  = 1;
         $newTemplate->language = '';
         $newTemplate->copyto = '';
-        $newTemplate->blind_copy_to = '';
+        
+        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
+        if(!empty($query))
+        {
+            $newTemplate->blind_copy_to = '';
+        }
+        
         $newTemplate->plaintext = '0';
         $newTemplate->created_at = date('Y-m-d H:i:s');
         $newTemplate->updated_at = date('Y-m-d H:i:s');
@@ -67,7 +75,13 @@ class EmailTemplateService {
         $newTemplate->custom  = 1;
         $newTemplate->language = '';
         $newTemplate->copyto = '';
-        $newTemplate->blind_copy_to = '';
+        
+        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
+        if(!empty($query))
+        {
+            $newTemplate->blind_copy_to = '';
+        }
+        
         $newTemplate->plaintext = '0';
         $newTemplate->created_at = date('Y-m-d H:i:s');
         $newTemplate->updated_at = date('Y-m-d H:i:s');
@@ -113,7 +127,13 @@ class EmailTemplateService {
         $newTemplate->custom  = 1;
         $newTemplate->language = '';
         $newTemplate->copyto = '';
-        $newTemplate->blind_copy_to = '';
+        
+        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
+        if(!empty($query))
+        {
+            $newTemplate->blind_copy_to = '';
+        }
+
         $newTemplate->plaintext = '0';
         $newTemplate->created_at = date('Y-m-d H:i:s');
         $newTemplate->updated_at = date('Y-m-d H:i:s');
