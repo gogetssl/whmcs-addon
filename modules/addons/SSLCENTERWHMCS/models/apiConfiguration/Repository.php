@@ -61,7 +61,8 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'send_certificate_template'              => $params['send_certificate_template'],
                         'display_ca_summary'                     => $params['display_ca_summary'],
                         'sidebar_templates'                      => $params['sidebar_templates'],
-                        'disable_email_validation'                => $params['disable_email_validation']
+                        'custom_guide'                           => $params['custom_guide'],
+                        'disable_email_validation'               => $params['disable_email_validation']
             ]);
         }
         else
@@ -105,7 +106,8 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'send_certificate_template'              => $params['send_certificate_template'],
                         'display_ca_summary'                     => $params['display_ca_summary'],
                         'sidebar_templates'                      => $params['sidebar_templates'],
-                        'disable_email_validation'                => $params['disable_email_validation']
+                        'custom_guide'                           => $params['custom_guide'],
+                        'disable_email_validation'               => $params['disable_email_validation']
             ]);
         }
     }
@@ -147,6 +149,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 $table->integer('send_certificate_template')->nullable();
                 $table->boolean('display_ca_summary');
                 $table->string('sidebar_templates')->nullable();
+                $table->text('custom_guide')->nullable();
                 $table->boolean('disable_email_validation');
             });
         }
@@ -259,6 +262,13 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 Capsule::schema()->table($this->tableName, function($table)
                 {
                     $table->string('sidebar_templates')->nullable();
+                });
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'custom_guide'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->text('custom_guide')->nullable();
                 });
             }
             if (!Capsule::schema()->hasColumn($this->tableName, 'disable_email_validation'))

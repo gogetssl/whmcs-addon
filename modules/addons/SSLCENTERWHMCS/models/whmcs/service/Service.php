@@ -9,7 +9,7 @@ use MGModule\SSLCENTERWHMCS as main;
  * @author Michal Czech <michael@modulesgarden.com>
  * @SuppressWarnings(PHPMD)
  */
-class service extends main\mgLibs\models\Orm{
+class Service extends main\mgLibs\models\Orm{
     
     /**
      * @Column()

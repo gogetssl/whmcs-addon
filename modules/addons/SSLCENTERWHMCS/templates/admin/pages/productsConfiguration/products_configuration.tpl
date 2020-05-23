@@ -17,6 +17,10 @@
     <div class="panel panel-default">
         <div class="panel-body">
             
+            <div class="button-container pull-right">
+                <button type="button" class="btn btn-primary save-all-products">{$MGLANG->T('save_all_products')}</button>
+            </div>
+            
             <! --- start new form --->
             <form action="" method="post" class="form-horizontal margin-bottom-15" onsubmit="return confirm('{$MGLANG->T('areYouSureManyProducts')}');">
                 
@@ -24,6 +28,14 @@
                 
                 <div style="padding:0 15px;">
                     <h2 style="margin-bottom:50px">{$MGLANG->T('setForManyProducts')}</h2>
+                    
+                    <div class="form-group">
+                            <label class="control-label col-sm-2">{$MGLANG->T('customguide')}</label>
+                            <div class="col-sm-10" style="padding:0;"> 
+                                <textarea class="form-control mg-product-commission" name="custom_guide"></textarea>
+                            </div>
+                        </div>                    
+                    
                     <div class="row">
 
                         <div class="form-group">
@@ -90,7 +102,7 @@
             <! --- end new form --->
             
             {foreach from=$products item=product}
-                <form action="" method="post" class="form-horizontal margin-bottom-15">
+                <form action="" method="post" class="save-product-form form-horizontal margin-bottom-15">
                     <table class="table table-condensed" id="product_configuration">
                         <tr class="product-container" data-product="{$product->id}">
                         <input type="hidden" name="product[{$product->id}][id]" value="{$product->id}"/>
@@ -106,6 +118,13 @@
                                 <label class="control-label col-sm-2">{$MGLANG->T('productName')}</label>
                                 <div class="col-sm-10">
                                     <input type="text" class="form-control" name="product[{$product->id}][name]" value="{$product->name}">
+                                </div>
+                            </div>
+                                
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">{$MGLANG->T('customguide')}</label>
+                                <div class="col-sm-10">
+                                    <textarea class="form-control" name="product[{$product->id}][custom_guide]">{$product->configoption24}</textarea>
                                 </div>
                             </div>
 
@@ -354,6 +373,9 @@
                     <input type="submit" name="saveProduct" class="btn btn-success" value="{$MGLANG->T('save')}" />
                 </form>
             {/foreach}
+            <div class="button-container pull-right">
+                <button type="button" class="btn btn-primary save-all-products">{$MGLANG->T('save_all_products')}</button>
+            </div>
         </div>
     </div>
     <script>
@@ -362,6 +384,43 @@
                 window.open('configproductoptions.php?manageoptions=true&cid=' + id, 'configoptions', 'width=900,height=500,scrollbars=yes');
             }
             $(document).ready(function () {
+                
+                $('body').on('click','.save-all-products', function(){
+                    
+                    $('#MGLoader').show();
+                    
+                    var promises = [];
+                    
+                    $('.save-product-form').each( function(){
+                        
+                        var dataForm = $(this).serialize();
+                        var urlFrom = $(this).attr('action');
+
+                        var request = $.ajax({
+                            type: "POST",
+                            url: urlFrom,
+                            async: true,
+                            data: {
+                                'field': dataForm,
+                                'ajax': '1',
+                                'saveProduct': 'Save'
+                            },
+                            success: function(data)
+                            {
+                                
+                            }
+                        });
+                        
+                        promises.push(request);
+                    });
+                    
+                    $.when.apply(null, promises).done(function(){
+                        $('#MGAlerts div[data-prototype="success"] strong').text('{/literal}{$MGLANG->T('products_saved')}{literal}');
+                        $('#MGAlerts div[data-prototype="success"]').show();
+                        $('#MGLoader').hide();
+                        $("html, body").animate({ scrollTop: 0 }, "slow");
+                    });
+                });
                 
                 $('body').on('change', 'select[name="type"]', function(){
         

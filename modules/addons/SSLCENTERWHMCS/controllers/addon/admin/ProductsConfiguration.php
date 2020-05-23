@@ -25,8 +25,34 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
                 $vars['success'] = main\mgLibs\Lang::T('messages', 'configurable_generated');
             }
 
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' AND isset($input['saveProduct'])) {                
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' AND isset($input['saveProduct'])) {  
+                
+                $ajax = false;
+                
+                if(isset($input['ajax']) && $input['ajax'] == '1')
+                {
+                    $ajax = true;
+                    $tempArray = array();
+                    parse_str($input['field'], $output);
+                    foreach($output as $key => $value)
+                    {
+                        $tempArray[str_replace('amp;', '', $key)] = $value;
+                    }
+                    $tempArray['saveProduct'] = 'Save';
+                    
+                    unset($input['field']);
+                    unset($input['ajax']);
+                    
+                    $input = array_merge($input, $tempArray);
+                }
+                
                 $this->saveProducts($input, $vars);
+                
+                if($ajax)
+                {
+                    die('ok');
+                }
+                
                 $vars['success'] = main\mgLibs\Lang::T('messages', 'product_saved');
             }
             $productModel = new \MGModule\SSLCENTERWHMCS\models\productConfiguration\Repository();
@@ -113,6 +139,11 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
                 if(isset($input['configoption5']) && $input['configoption5'] == '1')
                 {
                     $productModel->updateProductParam($product->id, 'configoption5', $input['configoption5']);
+                }
+                
+                if(isset($input['custom_guide']) && !empty($input['custom_guide']))
+                {
+                    $productModel->updateProductParam($product->id, 'configoption24', $input['custom_guide']);
                 }
             }
             

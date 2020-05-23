@@ -156,6 +156,11 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository {
             main\eServices\ConfigurableOptionService::assignToProduct($productId, $update['name']);
         }
         
+        if(isset($params['custom_guide']) && !empty($params['custom_guide']))
+        {
+            $update['configoption24'] = $params['custom_guide'];
+        }
+        
         return Capsule::table('tblproducts')->where('id', $productId)->update($update);
     }
 
