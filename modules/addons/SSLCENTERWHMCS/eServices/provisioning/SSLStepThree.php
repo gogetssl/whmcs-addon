@@ -211,6 +211,21 @@ class SSLStepThree {
             $apiRepo       = new \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products();
             $apiProduct    = $apiRepo->getProduct($order['product_id']);
         }
+        
+        if($order['product_id'] == '144')
+        {
+            $sansDomains = $this->p['configdata']['fields']['sans_domains'];
+            $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($sansDomains);
+            
+            $order['dns_names'] = implode(',', $sansDomains);
+            $order['approver_emails'] = strtolower($_POST['dcvmethodMainDomain']);
+           
+            foreach ($_POST['dcvmethod'] as $method)
+            {
+                $order['approver_emails'] .= ','.strtolower($method);
+            }
+        }
+        
         //if brand is 'geotrust','thawte','rapidssl','symantec' do not send dcv method for sans
         if(in_array($brand, $brandsWithOnlyEmailValidation)) {
             unset($order['approver_emails']);

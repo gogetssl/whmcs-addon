@@ -27,6 +27,17 @@ class SSLStepTwoJS {
         try {
             $this->setBrand($_POST);
             $this->setDisabledValidationMethods($_POST);
+            
+            $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceid']);
+
+            $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($service->productID);
+            
+            if($product->configuration()->text_name == '144')
+            {
+                array_push($this->disabledValidationMethods, 'email');
+                array_push($this->disabledValidationMethods, 'dns');
+            }
+            
             $this->SSLStepTwoJS($this->p);
             
             return \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getSanEmailsScript(json_encode($this->domainsEmailApprovals), json_encode(\MGModule\SSLCENTERWHMCS\eServices\FlashService::getFieldsMemory($_GET['cert'])), json_encode($this->brand), json_encode($this->disabledValidationMethods));

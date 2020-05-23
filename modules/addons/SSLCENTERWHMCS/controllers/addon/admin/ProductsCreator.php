@@ -68,6 +68,12 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
             C::PRODUCT_ENABLE_SAN => $input[C::PRODUCT_ENABLE_SAN] ? $input[C::PRODUCT_ENABLE_SAN] : '',
             C::PRODUCT_INCLUDED_SANS => $input[C::PRODUCT_INCLUDED_SANS] ? $input[C::PRODUCT_INCLUDED_SANS] : 0,
         ];
+        
+        if(isset($input['custom_guide']) && !empty($input['custom_guide']))
+        {
+            $productData['configoption24'] = $input['custom_guide'];
+        }
+        
         $productModel = new \MGModule\SSLCENTERWHMCS\models\productConfiguration\Repository();
         $newProductId = $productModel->createNewProduct($productData);
         foreach ($input['currency'] as $key => $value) {

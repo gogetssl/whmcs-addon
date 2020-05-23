@@ -225,6 +225,15 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field       = new main\mgLibs\forms\LegendField();
         $field->name = 'send_certificate_template';
         $form->addField($field);
+        
+        $field           = new main\mgLibs\forms\TextareaField();
+        $field->readonly = false;
+        $field->name     = 'custom_guide';
+        $field->required = false;
+        $field->enableDescription = true;
+        $field->value    = $input['custom_guide'];
+        $field->error    = $this->getFieldError('custom_guide');
+        $form->addField($field);
 
         $field                    = new main\mgLibs\forms\SelectField();
         $field->disabled          = false;

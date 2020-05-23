@@ -153,9 +153,9 @@ class home extends main\mgLibs\process\AbstractController {
                         $vars['activationStatus'] = $certificateDetails['ssl_status'];
                     }
                     //valid from
-                    $vars['validFrom'] = $certificateDetails['valid_from'];
+                    $vars['validFrom'] = fromMySQLDate($certificateDetails['valid_from'], false, true);
                     //expires
-                    $vars['validTill'] = $certificateDetails['valid_till'];
+                    $vars['validTill'] = fromMySQLDate($certificateDetails['valid_till'],false,true);
                     //service billing cycle
                     $vars['serviceBillingCycle'] = $serviceBillingCycle;
                     $vars['displayRenewButton'] = false;
@@ -173,13 +173,21 @@ class home extends main\mgLibs\process\AbstractController {
                     {
                         array_push($disabledValidationMethods, 'email');
                     }
-
+                    
+                    if($input['params']['configoption1'] == '144')
+                    {
+                        array_push($disabledValidationMethods, 'email');
+                        array_push($disabledValidationMethods, 'dns');
+                    }
+                    
                 } catch (\Exception $ex) {
                     $vars['error'] = 'Can not load order details';
                 }
             }
 
             $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+            
+            $vars['custom_guide'] = $apiConf->custom_guide;
             $vars['visible_renew_button'] = $apiConf->visible_renew_button;
             $vars['disabledValidationMethods'] = $disabledValidationMethods;
             $vars['configurationStatus'] = $sslService->status;
@@ -332,6 +340,8 @@ class home extends main\mgLibs\process\AbstractController {
             $vars['error'] = $ex->getMessage();
         }
 
+        $vars['configoption24'] = $input['params']['configoption24'];
+        
         return array(
             'tpl'  => 'home'
             , 'vars' => $vars

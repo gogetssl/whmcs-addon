@@ -3,6 +3,7 @@
 $_LANG['token'] = 'Token';
 
 $_LANG['serverCA']['home']['configurationStatus']                = 'Configuration Status';
+$_LANG['serverCA']['home']['custom_guide']                       = 'Guide';
 $_LANG['serverCA']['home']['Awaiting Configuration']             = 'Awaiting Configuration';
 $_LANG['serverCA']['home']['Completed']                          = 'Completed';
 $_LANG['serverCA']['home']['configureNow']                       = 'Configure Now';

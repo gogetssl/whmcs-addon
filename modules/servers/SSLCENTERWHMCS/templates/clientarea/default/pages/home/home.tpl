@@ -37,6 +37,16 @@
             <col style="width: 80%"/>
         </colgroup>
         <tbody>
+            {if $activationStatus === 'processing' && $custom_guide} 
+            <tr>
+                <td class="text-left">{$MGLANG->T('custom_guide')}</td>
+                {if $configoption24}
+                    <td class="text-left">{$configoption24|nl2br}</td>
+                {else}
+                    <td class="text-left">{$custom_guide|nl2br}</td>
+                {/if}
+            </tr>
+            {/if}
             <tr>
                 <td class="text-left" >{$MGLANG->T('configurationStatus')}</td>
                 <td class="text-left">{$MGLANG->T($configurationStatus)}{if $configurationStatus === 'Awaiting Configuration'} - <a href="{$configurationURL}">{$MGLANG->T('configureNow')}</a>{/if}</td>
@@ -508,7 +518,9 @@
                                                         {if !$brand|in_array:$brandsWithOnlyEmailValidation}
                                                         <option value="http">{$MGLANG->T('revalidateModalMethodHttp')}</option>
                                                         <option value="https">{$MGLANG->T('revalidateModalMethodHttps')}</option>
+                                                        {if !'dns'|in_array:$disabledValidationMethods}
                                                         <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>
+                                                        {/if}
                                                         {/if}
                                                     </select>
                                                 </div>
@@ -536,7 +548,9 @@
                                                                 {if !$brand|in_array:$brandsWithOnlyEmailValidation}
                                                                 <option value="http">{$MGLANG->T('revalidateModalMethodHttp')}</option>
                                                                 <option value="https">{$MGLANG->T('revalidateModalMethodHttps')}</option>
+                                                                {if !'dns'|in_array:$disabledValidationMethods}
                                                                 <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>
+                                                                {/if}
                                                                 {/if}
                                                             </select>
                                                         </div>

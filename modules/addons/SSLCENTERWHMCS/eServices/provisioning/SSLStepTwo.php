@@ -21,7 +21,7 @@ class SSLStepTwo {
         try {
             $this->SSLStepTwo();
             
-        } catch (Exception $ex) {
+        } catch (Exception $ex) {            
             return ['error' => $ex->getMessage()]; 
         }
         
@@ -50,8 +50,11 @@ class SSLStepTwo {
         
         $this->storeFieldsAutoFill();        
         $this->validateSansDomains();
-        $this->validateFields(); 
-        $this->validateCSR(); 
+        $this->validateFields();
+        if($this->p['configoption1'] != '144')
+        {
+            $this->validateCSR();
+        }
         if(isset($this->p['privateKey']) && $this->p['privateKey'] != null) {            
             $privKey = decrypt($this->p['privateKey']);
             $GenerateSCR = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\GenerateCSR($this->p, $_POST);
@@ -68,9 +71,28 @@ class SSLStepTwo {
         
         $invalidDomains = \MGModule\SSLCENTERWHMCS\eHelpers\Domains::getInvalidDomains($sansDomains, in_array($apiProductId, self::PRODUCTS_WITH_ADDITIONAL_SAN_VALIDATION));
              
-        if (count($invalidDomains)) {
-            throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('incorrectSans') . implode(', ', $invalidDomains));
+        if($apiProductId != '144') {
+            
+            if (count($invalidDomains)) {
+                throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('incorrectSans') . implode(', ', $invalidDomains));
+            }
+            
+        } else {
+            
+            $iperror = false;
+            foreach($sansDomains as $domainname)
+            {
+                if(!filter_var($domainname, FILTER_VALIDATE_IP)) {
+                    $iperror = true;
+                }
+            }
+            
+            if (count($invalidDomains) && $iperror) {
+                throw new Exception('SANs are incorrect');
+            }
+            
         }
+        
         
         $includedSans = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS];
         $boughtSans   = (int) $this->p['configoptions'][ConfigOptions::OPTION_SANS_COUNT];
