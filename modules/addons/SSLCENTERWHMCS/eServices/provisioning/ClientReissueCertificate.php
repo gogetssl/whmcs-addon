@@ -143,14 +143,17 @@ class ClientReissueCertificate {
             
         if($product->configuration()->text_name != '144')
         {
+            if(!isset($decodeCSR['csrResult']['CN']) || strpos($decodeCSR['csrResult']['CN'], '*.') === false)
+            {
         
-            if($decodeCSR['csrResult']['errorMessage']) {
-                if(isset($decodeCSR['description']))
-                    throw new Exception($decodeCSR['description']);
+                if($decodeCSR['csrResult']['errorMessage']) {
+                    if(isset($decodeCSR['description']))
+                        throw new Exception($decodeCSR['description']);
 
-                throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('incorrectCSR'));
+                    throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('incorrectCSR'));
+                }
+            
             }
-        
         }
         
         $mainDomain                   = $decodeCSR['csrResult']['CN'];
