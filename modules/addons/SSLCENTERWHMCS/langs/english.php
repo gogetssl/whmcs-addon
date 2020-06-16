@@ -313,6 +313,3 @@ $_LANG['csrCodeGeneraterdSuccessfully'] = 'CSR code has been generated successfu
 $_LANG['invalidCountryCode']            = 'Country code is incorrect';
 $_LANG['csrCodeGeneraterFailed']        = 'Generate CSR code has been failed';
 
-$_LANG['addonAA']['productsConfiguration']['save_all_products']       = 'Save all products';
-$_LANG['addonAA']['productsConfiguration']['products_saved']       = 'Products has been saved.';
-
