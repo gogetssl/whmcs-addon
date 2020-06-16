@@ -153,7 +153,7 @@ add_hook('InvoicePaid', 1, function($vars)
 
 function SSLCENTER_displaySSLSummaryStats($vars)
 {
-
+    
     if (isset($vars['filename'], $vars['templatefile']) && $vars['filename'] == 'clientarea' && $vars['templatefile'] == 'clientareahome')
     {
         try
@@ -177,7 +177,6 @@ function SSLCENTER_displaySSLSummaryStats($vars)
             $unpaidLang      = \MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('addonCA', 'sslSummary', 'unpaid');
             $processingLang  = \MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('addonCA', 'sslSummary', 'processing');
             $expiresSoonLang = \MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('addonCA', 'sslSummary', 'expiresSoon');
-			$viewAll		 = \MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('viewAll');
 
             //get ssl statistics
             $sslSummaryStats = new MGModule\SSLCENTERWHMCS\eHelpers\SSLSummary($_SESSION['uid']);
@@ -190,42 +189,31 @@ function SSLCENTER_displaySSLSummaryStats($vars)
             $unpaidOrders      = $sslSummaryStats->getUnpaidSSLOrdersCount();
             $processingOrders  = $sslSummaryStats->getProcessingSSLOrdersCount();
             $expiresSoonOrders = $sslSummaryStats->getExpiresSoonSSLOrdersCount();
-		
-			$sslSummaryIntegrationCode .= "
-			<div class=\"col-sm-12\">
-				<div menuitemname=\"SSL Order Summary\" class=\"panel panel-default panel-accent-gold\">
-					<div class=\"panel-heading\">
-						<h3 class=\"panel-title\">
-							<div class=\"pull-right\">
-								<a class=\"btn btn-default bg-color-gold btn-xs\"
-									href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=total\">
-									<i class=\"fas fa-plus\"></i>
-									$viewAll
-								</a>
-							</div>
-							<i class=\"fas fa-lock\"></i>
-							$titleLang
-						</h3>
-					</div>
-					<div class=\"list-group\">
-						<div class=\"dsb-box col-sm-4\">
-							<a href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=unpaid\">
-								<div><i class=\"fa fa-credit-card icon icon col-sm-12\"></i><span>$unpaidLang<u>$unpaidOrders</u></span></div>
-							</a>
-						</div>
-						<div class=\"dsb-box col-sm-4\">
-							<a href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=processing\">
-								<div><i class=\"fa fa-cogs icon col-sm-12\"></i><span>$processingLang<u>$processingOrders</u></span></div>
-							</a>
-						</div>
-						<div class=\"dsb-box col-sm-4\">
-							<a href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=expires_soon\">
-								<div><i class=\"fa fa-hourglass-half icon col-sm-12\"></i><span>$expiresSoonLang<u>$expiresSoonOrders</u></span></div>
-							</a>
-						</div>
-					</div>
-				</div>
-			</div>";
+
+            $sslSummaryIntegrationCode .= "            
+        <h3 class=\"dsb-title\" align=\"center\">$titleLang</h3>
+        <div class=\"dash-stat-box dlb-border clerarfix\">            
+            <div class=\"dsb-box\">
+                <a href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=total\">
+                    <div><i class=\"fa fa-check icon\"></i><span><b>$totalLang</b><u>$totalOrders</u></span></div>
+                </a>
+            </div>
+            <div class=\"dsb-box\">            
+                <a href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=unpaid\">                
+                        <div><i class=\"fa fa-credit-card icon\"></i><span><b>$unpaidLang</b><u>$unpaidOrders</u></span></div>                
+                </a>
+            </div>
+            <div class=\"dsb-box\">
+                <a href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=processing\">
+                    <div><i class=\"fa fa-cogs icon\"></i><span><b>$processingLang</b><u>$processingOrders</u></span></div>               
+                </a>
+            </div>
+            <div class=\"dsb-box\"   style=\"border-right: none;\">
+                <a href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=expires_soon\">
+                    <div><i class=\"fa fa-hourglass-half  icon\"></i><span><b>$expiresSoonLang</b><u>$expiresSoonOrders</u></span></div>
+                <a href=\"clientarea.php?action=services\">       
+            </div>
+    </div>";
 
             $smarty->assign('sslSummaryIntegrationCode', $sslSummaryIntegrationCode);
         }
@@ -251,10 +239,7 @@ add_hook('ClientAreaHeadOutput', 1, 'SSLCENTER_loadSSLSummaryCSSStyle');
 function SSLCENTER_displaySSLSummaryInSidebar($secondarySidebar)
 {
     GLOBAL $smarty;
-
-    if (in_array($smarty->tpl_vars['templatefile']->value, array('clientareahome')) || !isset($_SESSION['uid']))
-        return;
-
+    
     try
     {
         require_once __DIR__.DS.'Loader.php';
@@ -263,6 +248,22 @@ function SSLCENTER_displaySSLSummaryInSidebar($secondarySidebar)
         \MGModule\SSLCENTERWHMCS\Addon::I(true);
 
         $apiConf           = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+        
+        if(!isset($apiConf->sidebar_templates) || empty($apiConf->sidebar_templates))
+        {
+            if (in_array($smarty->tpl_vars['templatefile']->value, array('clientareahome')) || !isset($_SESSION['uid']))
+            {
+                return;
+            }
+        }
+        else
+        {
+            if (!in_array($smarty->tpl_vars['templatefile']->value, explode(',', $apiConf->sidebar_templates)) || !isset($_SESSION['uid']))
+            {
+                return;
+            }
+        }
+        
         $displaySSLSummary = $apiConf->display_ca_summary;
         if (!(bool) $displaySSLSummary)
             return;
@@ -423,6 +424,12 @@ function SSLCENTER_overideProductPricingBasedOnCommission($vars)
     //get sslcenter all products
     foreach ($productModel->getModuleProducts() as $product)
     {
+        
+        if($product->servertype != 'SSLCENTERWHMCS')
+        {
+            continue;
+        }
+        
         if ($product->id == $vars['pid'])
         {
             $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue($vars);
@@ -432,6 +439,10 @@ function SSLCENTER_overideProductPricingBasedOnCommission($vars)
                 if ($pricing->currency == $clientCurrency['id'])
                 {
                     $priceField           = $vars['proddata']['billingcycle'];
+                    if($priceField == 'onetime')
+                    {
+                        $priceField = 'monthly';
+                    }
 
                     $return = ['recurring' => (float) $pricing->{$priceField} + (float) $pricing->{$priceField} * (float) $commission,];
                 }
@@ -452,20 +463,30 @@ function SSLCENTER_overideDisaplayedProductPricingBasedOnCommission($vars)
     
     new \MGModule\SSLCENTERWHMCS\Loader();
     MGModule\SSLCENTERWHMCS\Addon::I(true);
-    
+      
     if($vars['filename'] == 'cart')
     {
     
         switch ($smarty->tpl_vars['templatefile']->value)
         {
             case 'products':
-                $products = $smarty->tpl_vars['products']->value;
+                $products = $smarty->tpl_vars['products']->value;     
                 foreach($products as $key => &$product)
                 {
-                    $pid = $product['pid'];
+                    $productSSLCenter = Capsule::table('tblproducts')
+                            ->where('id', $product['pid'])
+                            ->where('servertype', 'SSLCENTERWHMCS')
+                            ->first();
+                    
+                    if(isset($productSSLCenter->id) && !empty($productSSLCenter->id))
+                    {
+                    
+                        $pid = $product['pid'];
 
-                    $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue(array('pid' => $pid));            
-                    $products[$key]['pricing'] = MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::getPricingInfo($pid, $commission);
+                        $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue(array('pid' => $pid));            
+                        $products[$key]['pricing'] = MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::getPricingInfo($pid, $commission);
+                    
+                    }
                 }
 
                 $smartyvalues['products'] = $products;
@@ -475,11 +496,20 @@ function SSLCENTER_overideDisaplayedProductPricingBasedOnCommission($vars)
 
                 $pid = $smarty->tpl_vars['productinfo']->value['pid'];
 
-                $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue(array('pid' => $pid));
-                $pricing = MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::getPricingInfo($pid, $commission);
+                $productSSLCenter = Capsule::table('tblproducts')
+                            ->where('id', $pid)
+                            ->where('servertype', 'SSLCENTERWHMCS')
+                            ->first();
+                    
+                if(isset($productSSLCenter->id) && !empty($productSSLCenter->id))
+                {
 
-                $smartyvalues['pricing'] = $pricing;
-                $smarty->assign('pricing', $pricing);
+                    $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue(array('pid' => $pid));
+                    $pricing = MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::getPricingInfo($pid, $commission);
+
+                    $smartyvalues['pricing'] = $pricing;
+                    $smarty->assign('pricing', $pricing);
+                }
                 break;
             default:
                 break;
@@ -489,3 +519,43 @@ function SSLCENTER_overideDisaplayedProductPricingBasedOnCommission($vars)
     
 }
 add_hook('ClientAreaHeadOutput', 999999999999, 'SSLCENTER_overideDisaplayedProductPricingBasedOnCommission');
+
+add_hook('InvoiceCreation', 1, function($vars) {
+    
+    $invoiceid = $vars['invoiceid'];
+    
+    $items = Capsule::table('tblinvoiceitems')->where('invoiceid', $invoiceid)->where('type', 'Upgrade')->get();
+    
+    foreach ($items as $item)
+    {
+        $description = $item->description;
+        
+        $upgradeid = $item->relid;
+        $upgrade = Capsule::table('tblupgrades')->where('id', $upgradeid)->first();
+        
+        $serviceid = $upgrade->relid;
+        $service = Capsule::table('tblhosting')->where('id', $serviceid)->first();
+        
+        $productid = $service->packageid;
+        $product = Capsule::table('tblproducts')->where('id', $productid)->where('paytype', 'onetime')->where('servertype', 'SSLCENTERWHMCS')->first();
+        
+        if(isset($product->configoption7) && !empty($product->configoption7))
+        {
+            
+            if (strpos($description, '00/00/0000') !== false) {
+                
+                $description = str_replace('- 00/00/0000', '', $description);
+                $length = strlen($description);
+                $description = substr($description, 0, $length-13);
+                
+                Capsule::table('tblinvoiceitems')->where('id', $item->id)->update(array('description' => trim($description)));
+                                
+            }
+            
+        }
+        
+        
+        
+    }
+    
+});

@@ -82,8 +82,11 @@
                          
                         selectDcvMethod += '<option value="HTTP">'+'{$MGLANG->T('dropdownDcvMethodHttp')}'+'</option><option value="HTTPS">'+'{$MGLANG->T('dropdownDcvMethodHttps')}'+'</option>';
                         
-                        if(ValidateIPaddress(domain) === false)    {
-                            selectDcvMethod += '<option value="DNS">'+'{$MGLANG->T('dropdownDcvMethodDns')}'+'</option>';
+                        if(jQuery.inArray('dns', disabledValidationMethods) < 0)
+                        {
+                            if(ValidateIPaddress(domain) === false)    {
+                                selectDcvMethod += '<option value="DNS">'+'{$MGLANG->T('dropdownDcvMethodDns')}'+'</option>';
+                            }
                         }
                         
                         selectDcvMethod += '</select>'; 
@@ -117,12 +120,22 @@
         
         replaceRadioInputs(JSON.parse('{$sanEmails}'));
         $('select[name^="dcvmethod"]').change( function (){
+             
+            var product144 = $('select[name="approveremail"] option').length; 
+             
             var method = this.value;
             var selectName = this.name;
             var domain = selectName.replace('dcvmethod', '');
             if(domain === 'MainDomain') {
                 if(method !== 'EMAIL') {
                     $('select[name="approveremail"]').addClass('hidden');
+                    
+                    if(product144 <= 0)
+                    {
+                        $('select[name="approveremail"]').append('<option value="defaultemail@defaultemail.com"></option>');
+                        $('select[name="approveremail"] option[value="defaultemail@defaultemail.com"]').attr("selected", "selected");
+                    }
+                    
                     //$('select[name="approveremail"]').append('<option value="defaultemail@defaultemail.com"></option>');
                     //$('select[name="approveremail"] option[value="defaultemail@defaultemail.com"]').attr("selected", "selected");
                 } else {                    
@@ -132,6 +145,13 @@
             } else {
                 domain = domain.replace("*", "___"); 
                 if(method !== 'EMAIL') {
+                    
+                    if(product144 <= 0)
+                    {
+                        $('select[name="approveremail"]').append('<option value="defaultemail@defaultemail.com"></option>');
+                        $('select[name="approveremail"] option[value="defaultemail@defaultemail.com"]').attr("selected", "selected");
+                    }
+                    
                     $('select[name="approveremails'+domain+'"]').addClass('hidden');
                     //$('select[name="approveremail"]').append('<option value="defaultemail@defaultemail.com"></option>');
                     //$('select[name="approveremail"] option[value="defaultemail@defaultemail.com"]').attr("selected", "selected");

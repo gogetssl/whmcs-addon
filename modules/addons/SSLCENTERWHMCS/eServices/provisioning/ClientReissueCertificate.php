@@ -138,11 +138,22 @@ class ClientReissueCertificate {
         
         $_SESSION['decodeCSR'] = $decodeCSR;
         
-        if($decodeCSR['csrResult']['errorMessage']) {
-            if(isset($decodeCSR['description']))
-                throw new Exception($decodeCSR['description']);
+        $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceid']);
+        $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($service->productID);
             
-            throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('incorrectCSR'));
+        if($product->configuration()->text_name != '144')
+        {
+            if(!isset($decodeCSR['csrResult']['CN']) || strpos($decodeCSR['csrResult']['CN'], '*.') === false)
+            {
+        
+                if($decodeCSR['csrResult']['errorMessage']) {
+                    if(isset($decodeCSR['description']))
+                        throw new Exception($decodeCSR['description']);
+
+                    throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('incorrectCSR'));
+                }
+            
+            }
         }
         
         $mainDomain                   = $decodeCSR['csrResult']['CN'];
@@ -162,7 +173,14 @@ class ClientReissueCertificate {
         if($apiConf->disable_email_validation && !in_array($this->getCertificateBrand(), ['geotrust','thawte','rapidssl','symantec']))
         {
             array_push($disabledValidationMethods, 'email');
-        }  
+        }
+                
+        if($product->configuration()->text_name == '144')
+        {
+            array_push($disabledValidationMethods, 'email');
+            array_push($disabledValidationMethods, 'dns');
+        }
+        
         $this->vars['disabledValidationMethods'] = json_encode($disabledValidationMethods);
     }
     
@@ -214,7 +232,23 @@ class ClientReissueCertificate {
                 $data['approver_emails'] = implode(',', $_POST['approveremails']);
             } 
         }
-
+        
+        $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceid']);
+        $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($service->productID);
+            
+        if($product->configuration()->text_name == '144')
+        {
+            $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($this->post['sans_domains']);
+            
+            $data['dns_names'] = implode(',', $sansDomains);
+            $data['approver_emails'] = strtolower($_POST['dcvmethodMainDomain']);
+           
+            foreach ($_POST['dcvmethod'] as $method)
+            {
+                $data['approver_emails'] .= ','.strtolower($method);
+            }
+        }
+    
         //if brand is 'geotrust','thawte','rapidssl','symantec' do not send dcv method for sans        
         if(in_array($brand, $brandsWithOnlyEmailValidation)) {
             unset($data['approver_emails']);
@@ -306,8 +340,27 @@ class ClientReissueCertificate {
         $apiProductId     = $this->p[ConfigOptions::API_PRODUCT_ID];
         
         $invalidDomains = \MGModule\SSLCENTERWHMCS\eHelpers\Domains::getInvalidDomains($sansDomains, in_array($apiProductId, self::PRODUCTS_WITH_ADDITIONAL_SAN_VALIDATION));
-        if (count($invalidDomains)) {
-            throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('incorrectSans') . implode(', ', $invalidDomains));
+        
+        if($apiProductId != '144') {
+        
+            if (count($invalidDomains)) {
+                throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('incorrectSans') . implode(', ', $invalidDomains));
+            }
+        
+        } else {
+            
+            $iperror = false;
+            foreach($sansDomains as $domainname)
+            {
+                if(!filter_var($domainname, FILTER_VALIDATE_IP)) {
+                    $iperror = true;
+                }
+            }
+            
+            if (count($invalidDomains) && $iperror) {
+                throw new Exception('SANs are incorrect');
+            }
+            
         }
 
         $includedSans = $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS];

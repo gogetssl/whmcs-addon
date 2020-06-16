@@ -1,7 +1,7 @@
 <?php
 
 $_LANG['token']        = ', Error Token:';
-$_LANG['generalError'] = 'Something has gone wrong. Check logs and contact admin';
+$_LANG['generalError'] = 'Something has went wrong. Please check the logs and contact an administrator';
 
 //SSLCENTER configuration
 $_LANG['addonAA']['pagesLabels']['label']['apiConfiguration']                                          = 'Configuration';
@@ -12,7 +12,7 @@ $_LANG['addonAA']['apiConfiguration']['DailyCron']['info']                      
 $_LANG['addonAA']['apiConfiguration']['DailyCron']['commandLine']['cronFrequency']           = '0 0 * * *';
 //processing cron
 $_LANG['addonAA']['apiConfiguration']['cronProcessing']['pleaseNote']                             = 'Please Note:';
-$_LANG['addonAA']['apiConfiguration']['cronProcessing']['info']                                   = 'In order to enable automatic synchronization of processing orders every 5th minutes, please set up a following cron command line :';
+$_LANG['addonAA']['apiConfiguration']['cronProcessing']['info']                                   = 'In order to enable automatic synchronization of processing orders every 5th minutes, please set up a following cron command line:';
 $_LANG['addonAA']['apiConfiguration']['cronProcessing']['commandLine']['cronFrequency']           = '*/5 * * * *';
 
 //synchronization cron
@@ -52,7 +52,7 @@ $_LANG['addonAA']['apiConfiguration']['item']['client_area_summary_orders']['lab
 $_LANG['addonAA']['apiConfiguration']['item']['validation_settings']['label']                          = 'Validation Settings';
 $_LANG['addonAA']['apiConfiguration']['item']['disable_email_validation']['label']                     = 'Disable Email Validation';
 $_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['label']                    = 'Expires Soon';
-$_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['description']              = 'Count SSL order for statistics, if there are fewer or equal days to expire than the selected ones.';
+$_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['description']              = 'Count SSL order in statistics if it expires in fewer or equal days than the above selection.';
 $_LANG['addonAA']['apiConfiguration']['item']['send_certificate_template']['label']                    = 'Send Certificate Email Template';
 $_LANG['addonAA']['apiConfiguration']['item']['send_certificate_template']['description']              = 'To send an SSL certificate through the chosen template, edit it and place the {$ssl_certyficate} field in it.';
 //
@@ -87,16 +87,20 @@ $_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_one_
 
 $_LANG['addonAA']['apiConfiguration']['item']['automatic_processing_of_renewal_orders']['label']                  = '';
 $_LANG['addonAA']['apiConfiguration']['item']['automatic_processing_of_renewal_orders']['description']            = 'Automatic processing of renewal orders';
+$_LANG['addonAA']['apiConfiguration']['item']['sidebar_templates']['label']                  = 'List of pages with visible sidebar';
+$_LANG['addonAA']['apiConfiguration']['item']['sidebar_templates']['description']            = 'Enter a list of pages separated by a comma. If you leave the field sidebar empty, it will be visible on each page. (Example: clientareaproducts,clientareaproductdetails,clientareainvoices)';
+$_LANG['addonAA']['apiConfiguration']['item']['custom_guide']['label']                  = 'Custom Guide on Product Page';
+$_LANG['addonAA']['apiConfiguration']['item']['custom_guide']['description']            = '';
 $_LANG['addonAA']['apiConfiguration']['item']['renew_new_order']['label']                  = '';
 $_LANG['addonAA']['apiConfiguration']['item']['renew_new_order']['description']            = 'Renew order via existing order';
 $_LANG['addonAA']['apiConfiguration']['item']['visible_renew_button']['label']                  = '';
-$_LANG['addonAA']['apiConfiguration']['item']['visible_renew_button']['description']            = 'Visible "Renew" button in ClientArea';
+$_LANG['addonAA']['apiConfiguration']['item']['visible_renew_button']['description']            = 'Visible "Renew" button in Client Area';
 $_LANG['addonAA']['apiConfiguration']['item']['save_activity_logs']['label']                  = 'Activity log';
 $_LANG['addonAA']['apiConfiguration']['item']['save_activity_logs']['description']            = 'Tick this field to save logs';
 //
-$_LANG['addonAA']['apiConfiguration']['item']['tech_firstname']['label']                               = 'Firstname';
+$_LANG['addonAA']['apiConfiguration']['item']['tech_firstname']['label']                               = 'First Name';
 $_LANG['addonAA']['apiConfiguration']['item']['use_admin_contact']['label']                            = 'Use Administrative Contact Details';
-$_LANG['addonAA']['apiConfiguration']['item']['tech_lastname']['label']                                = 'Lastname';
+$_LANG['addonAA']['apiConfiguration']['item']['tech_lastname']['label']                                = 'Last Name';
 $_LANG['addonAA']['apiConfiguration']['item']['tech_organization']['label']                            = 'Organization Name';
 $_LANG['addonAA']['apiConfiguration']['item']['tech_title']['label']                                   = 'Job Title';
 $_LANG['addonAA']['apiConfiguration']['item']['tech_addressline1']['label']                            = 'Address';
@@ -119,6 +123,7 @@ $_LANG['addonAA']['apiConfiguration']['messages']['api_connection_success'] = 'C
 
 $_LANG['addonAA']['productsConfiguration']['sslCenterProduct']    = 'SSLCenter Product:';
 $_LANG['addonAA']['productsConfiguration']['productName']         = 'Product Name:';
+$_LANG['addonAA']['productsConfiguration']['customguide']         = 'Custom Guide:';
 $_LANG['addonAA']['productsConfiguration']['configurableOptions'] = 'Configurable Options:';
 $_LANG['addonAA']['productsConfiguration']['createConfOptions']   = 'Generate';
 $_LANG['addonAA']['productsConfiguration']['editPrices']          = 'Edit Prices';
@@ -131,13 +136,13 @@ $_LANG['addonAA']['productsConfiguration']['months']              = 'Max Months:
 $_LANG['addonAA']['productsConfiguration']['enableSans']          = 'Enable SANs:';
 $_LANG['addonAA']['productsConfiguration']['includedSans']        = 'Included SANs:';
 $_LANG['addonAA']['productsConfiguration']['status']              = 'Status:';
-$_LANG['addonAA']['productsConfiguration']['setForManyProducts']  = 'Set for many products';
+$_LANG['addonAA']['productsConfiguration']['setForManyProducts']  = 'Set for multiple products';
 $_LANG['addonAA']['productsConfiguration']['statusEnabled']       = 'Status Enabled:';
 $_LANG['addonAA']['productsConfiguration']['allOrSelectedProducts'] = 'All or selected products:';
 $_LANG['addonAA']['productsConfiguration']['selectProducts']      = 'Select products:';
 $_LANG['addonAA']['productsConfiguration']['allProducts']         = 'All products';
 $_LANG['addonAA']['productsConfiguration']['selectedProducts']    = 'Selected products';
-$_LANG['addonAA']['productsConfiguration']['areYouSureManyProducts'] = 'Are you sure you want to use these settings for many products?';
+$_LANG['addonAA']['productsConfiguration']['areYouSureManyProducts'] = 'Are you sure you want to use these settings for multiple products?';
 $_LANG['addonAA']['productsConfiguration']['doNotAnything']       = 'Do not anything';
 
 $_LANG['addonAA']['productsConfiguration']['statusEnable']  = 'Enable';
@@ -152,7 +157,7 @@ $_LANG['addonAA']['productsConfiguration']['paymentTypeRecurring'] = 'Recurring'
 $_LANG['addonAA']['productsConfiguration']['paymentTypeOneTime']   = 'One Time';
 
 $_LANG['addonAA']['productsConfiguration']['pricing']             = 'Pricing:';
-$_LANG['addonAA']['productsConfiguration']['pricingMonthly']      = 'One Time/Monthly';
+$_LANG['addonAA']['productsConfiguration']['pricingMonthly']      = 'Monthly/One Time';
 $_LANG['addonAA']['productsConfiguration']['pricingQuarterly']    = 'Quarterly';
 $_LANG['addonAA']['productsConfiguration']['pricingSemiAnnually'] = 'Semi-Annually';
 $_LANG['addonAA']['productsConfiguration']['pricingAnnually']     = 'Annually';
@@ -171,6 +176,7 @@ $_LANG['addonAA']['productsConfiguration']['messages'][''] = '';
 $_LANG['addonAA']['productsCreator']['singleProductCreator'] = 'Single Product Creator';
 $_LANG['addonAA']['productsCreator']['sslCenterProduct']     = 'SSLCenter Product:';
 $_LANG['addonAA']['productsCreator']['productName']          = 'Product Name:';
+$_LANG['addonAA']['productsCreator']['customguide']          = 'Custom Guide:';
 $_LANG['addonAA']['productsCreator']['productGroup']         = 'Product Group:';
 $_LANG['addonAA']['productsCreator']['autoSetup']            = 'Auto Setup:';
 $_LANG['addonAA']['productsCreator']['autoSetupOrder']       = 'Automatically setup the product as soon as an order is placed';
@@ -185,7 +191,7 @@ $_LANG['addonAA']['productsCreator']['enableSans']   = 'Enable SANs:';
 $_LANG['addonAA']['productsCreator']['includedSans'] = 'Included SANs:';
 
 $_LANG['addonAA']['productsCreator']['pricing']             = 'Pricing:';
-$_LANG['addonAA']['productsCreator']['pricingMonthly']      = 'One Time/Monthly';
+$_LANG['addonAA']['productsCreator']['pricingMonthly']      = 'Monthly/One Time';
 $_LANG['addonAA']['productsCreator']['pricingQuarterly']    = 'Quarterly';
 $_LANG['addonAA']['productsCreator']['pricingSemiAnnually'] = 'Semi-Annually';
 $_LANG['addonAA']['productsCreator']['pricingAnnually']     = 'Annually';
@@ -200,8 +206,8 @@ $_LANG['addonAA']['productsCreator']['saveSingle']      = 'Create Single Product
 $_LANG['addonAA']['productsCreator']['multipleProductCreator'] = 'Multiple Product Creator';
 $_LANG['addonAA']['productsCreator']['saveMultiple']           = 'Create Multiple Products';
 
-$_LANG['addonAA']['productsCreator']['messages']['mass_product_created']    = 'Products has been added as hidden, go to `Products Configuration` to unhide it, before that verify product configuration and set prices.';
-$_LANG['addonAA']['productsCreator']['messages']['single_product_created']  = 'Product has been added as hidden, go to `Products Configuration` to unhide it, before that verify product configuration.';
+$_LANG['addonAA']['productsCreator']['messages']['mass_product_created']    = 'Products has been added as hidden. Go to "Products Configuration" to unhide it. Before that, verify product configuration and set prices.';
+$_LANG['addonAA']['productsCreator']['messages']['single_product_created']  = 'Product has been added as hidden. Go to "Products Configuration" to unhide it. Before that, verify product configuration.';
 $_LANG['addonAA']['productsCreator']['messages']['no_product_group_found']  = 'No product group found.';
 $_LANG['addonAA']['productsCreator']['messages']['api_product_not_chosen']  = 'SSLCenter product not chosen.';
 $_LANG['addonAA']['productsCreator']['messages']['api_configuration_empty'] = 'API configuration are empty';
@@ -227,7 +233,7 @@ $_LANG['addonAA']['importSSLOrder']['messages']['order_cancelled_import_unable']
 
 $_LANG['addonAA']['userCommissions']['integrationCode']['header']         = 'Integration Code';
 $_LANG['addonAA']['userCommissions']['pleaseNote']                        = 'Please Note';
-$_LANG['addonAA']['userCommissions']['info']                              = 'In order to diplay product prices with additional commission in the Clietn Area: ';
+$_LANG['addonAA']['userCommissions']['info']                              = 'To display product prices with additional commission in the Client Area: ';
 $_LANG['addonAA']['userCommissions']['info1']                             = '1. Open the file';
 $_LANG['addonAA']['userCommissions']['info2']                             = '2. Add this code on the top of file';
 $_LANG['addonAA']['userCommissions']['info3']                             = '3. Open the file';
@@ -307,4 +313,3 @@ $_LANG['csrCodeGeneraterdSuccessfully'] = 'CSR code has been generated successfu
 $_LANG['invalidCountryCode']            = 'Country code is incorrect';
 $_LANG['csrCodeGeneraterFailed']        = 'Generate CSR code has been failed';
 
-$_LANG['viewAll']		= 'View All';

@@ -18,7 +18,7 @@ class Cron extends main\mgLibs\process\AbstractController
         $this->sslRepo = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
 
         //get all completed ssl orders
-        $sslOrders = $this->getSSLOrders();
+        $sslOrders = $this->getSSLOrders();        
         foreach ($sslOrders as $sslService)
         {
             $serviceID = $sslService->serviceid;
@@ -28,8 +28,20 @@ class Cron extends main\mgLibs\process\AbstractController
                 continue;
             }
 
-            $order = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
-
+            try{
+                $order = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
+            } catch (\Exception $e) {
+                continue;
+            }
+            
+            $service = (array)Capsule::table('tblhosting')->where('id', $serviceID)->first();
+            $product = (array)Capsule::table('tblproducts')->where('servertype', 'SSLCENTERWHMCS')->where('id', $service['packageid'])->first();
+            
+            if(isset($product['configoption7']) && !empty($product['configoption7']) && $service['billingcycle'] == 'One Time')
+            {
+                Capsule::table('tblhosting')->where('id', $serviceID)->update(array('termination_date' => $order['valid_till']));
+            }
+             
             if ($order['status'] == 'expired' || $order['status'] == 'cancelled')
             {
                 $this->setSSLServiceAsTerminated($serviceID);
@@ -38,12 +50,12 @@ class Cron extends main\mgLibs\process\AbstractController
             //if service is montlhy, one time, free skip it
             if ($this->checkServiceBillingPeriod($serviceID))
                 continue;
-
+            
             //if service is synchronized skip it
             if ($this->checkIfSynchronized($serviceID))
                 continue;
             //if certificate is active
-
+       
             if ($order['status'] == 'active')
             {
                 //update whmcs service next due date
@@ -543,8 +555,9 @@ class Cron extends main\mgLibs\process\AbstractController
         $service = \WHMCS\Service\Service::find($serviceID);
         if (!empty($service))
         {
+            $createInvoiceDaysBefore = Capsule::table("tblconfiguration")->where('setting', 'CreateInvoiceDaysBefore')->first();
             $service->nextduedate = $date;
-            $service->nextinvoicedate = $date;
+            $service->nextinvoicedate = date('Y-m-d', strtotime("-{$createInvoiceDaysBefore->value} day", strtotime($date)));
             $service->save();
         }
     }

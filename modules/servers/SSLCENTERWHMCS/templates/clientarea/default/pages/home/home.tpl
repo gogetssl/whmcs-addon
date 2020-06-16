@@ -4,14 +4,14 @@
         max-width: 100% !important;
         overflow-x:auto;
         border-collapse: collapse;
-        border-style: hidden;   
+        border-style: hidden;
     }
-    .sansTable th, .sansTable td {        
+    .sansTable th, .sansTable td {
     border: 1px solid #ddd;
     text-align: left;
     padding-left:8px;
     padding-right:2px;
-    
+
     }
     #sansTd {
         padding: 0px !important;
@@ -29,7 +29,7 @@
         text-align: left !important;
     }
 </style>
-<script type="text/javascript" src="{$assetsURL}/js/mgLibs.js"></script>    
+<script type="text/javascript" src="{$assetsURL}/js/mgLibs.js"></script>
 {if $allOk === true}
     <table id="mainTable" class="table table-bordered">
         <colgroup>
@@ -37,6 +37,16 @@
             <col style="width: 80%"/>
         </colgroup>
         <tbody>
+            {if $activationStatus === 'processing' && $custom_guide} 
+            <tr>
+                <td class="text-left">{$MGLANG->T('custom_guide')}</td>
+                {if $configoption24}
+                    <td class="text-left">{$configoption24|nl2br}</td>
+                {else}
+                    <td class="text-left">{$custom_guide|nl2br}</td>
+                {/if}
+            </tr>
+            {/if}
             <tr>
                 <td class="text-left" >{$MGLANG->T('configurationStatus')}</td>
                 <td class="text-left">{$MGLANG->T($configurationStatus)}{if $configurationStatus === 'Awaiting Configuration'} - <a href="{$configurationURL}">{$MGLANG->T('configureNow')}</a>{/if}</td>
@@ -67,7 +77,7 @@
                     </td>
                 </tr>
             {/if}
-            {if $activationStatus === 'active'}            
+            {if $activationStatus === 'active'}
                 <tr>
                     <td class="text-left">{$MGLANG->T('validFrom')}</td>
                     <td class="text-left">{$validFrom}</td>
@@ -96,17 +106,17 @@
                     <td class="text-left">{$partner_order_id}</td>
                 </tr>
             {/if}
-            
+
             {if $approver_method}
-                {if $dcv_method == 'http' || $dcv_method == 'https'}                
+                {if $dcv_method == 'http' || $dcv_method == 'https'}
                     <tr>
                         <td class="text-left">{$MGLANG->T('hashFile')}</td>
                         <td class="text-left" style="max-width:200px; word-wrap: break-word;">{$approver_method.$dcv_method.link}</td>
                     </tr>
                     <tr>
                         <td class="text-left">{$MGLANG->T('content')}</td>
-                        <td class="text-left" style="max-width:200px; word-wrap: break-word;">{foreach from=$approver_method.$dcv_method.content item=$content}{$content}<br />{/foreach}</td>
-                    </tr>                    
+                        <td class="text-left" style="max-width:200px; word-wrap: break-word;">{foreach $approver_method.$dcv_method.content as $content}{$content}<br />{/foreach}</td>
+                    </tr>
                 {else}
                     <tr id="validationData" >
                         {if $dcv_method == 'email'}
@@ -120,14 +130,14 @@
                     </tr>
                 {/if}
             {/if}
-            
+
             {if $sans}
                 <tr>
                     <td class="text-left">{$MGLANG->T('sans')}</td>
                     <td id="sansTd" colspan="2" class="text-left">
                             <table class="sansTable table table-bordered" >
                             <tbody>
-                            {foreach from=$sans item=san} 
+                            {foreach $sans as $san}
                                 <tr>
                                     <td colspan="2" class="text-center">{$MGLANG->T({$san.san_name})}</td>
                                 </tr>
@@ -139,8 +149,8 @@
                                         </tr>
                                         <tr>
                                             <td style="width: 15%" class="text-left">{$MGLANG->T('content')}</td>
-                                            <td class="text-left" style="max-width:200px; word-wrap: break-word;">{foreach from=$san.san_validation.content item=$content}{$content}<br />{/foreach}</td>
-                                        </tr> 
+                                            <td class="text-left" style="max-width:200px; word-wrap: break-word;">{foreach $san.san_validation.content as $content}{$content}<br />{/foreach}</td>
+                                        </tr>
                                     {/if}
                                {else}
                                     {if $san.method == 'dns'}
@@ -148,7 +158,7 @@
                                             <tr>
                                                 <td style="width: 15%" class="text-left">{$MGLANG->T('dnsCnameRecord')}</td>
                                                 <td class="text-left" style="max-width:200px; word-wrap: break-word;">{$san.san_validation|strtolower|replace:'cname':'CNAME'}</td>
-                                            </tr> 
+                                            </tr>
                                         {/if}
                                     {else}
                                         {if $san.san_validation != ''}
@@ -156,14 +166,14 @@
                                                 <tr>
                                                     <td style="width: 15%" class="text-left">{$MGLANG->T('validationEmail')}</td>
                                                     <td class="text-left" style="word-wrap: break-word;">{$san.san_validation}</td>
-                                                </tr> 
+                                                </tr>
                                             {/if}
                                         {/if}
-                                    {/if} 
+                                    {/if}
                                 {/if}
                             {/foreach}
                             </tbody>
-                        </table>                        
+                        </table>
                     </td>
                 </tr>
                <!--<tr>
@@ -182,7 +192,7 @@
                     <td class="text-left">{$MGLANG->T('ca_chain')}</td>
                     <td class="text-left"><textarea onfocus="this.select()" rows="5" class="form-control">{$ca}</textarea></td>
                 </tr>
-            {/if}            
+            {/if}
             {if $csr}
                 <tr>
                     <td class="text-left">{$MGLANG->T('csr')}</td>
@@ -200,13 +210,13 @@
                     {if $dcv_method == 'email'}
                         <button type="button" id="resend-validation-email" class="btn btn-default" style="margin:2px">{$MGLANG->T('resendValidationEmail')}</button>
                     {/if}
-                    {if $activationStatus == 'processing'}
+                    {if $activationStatus == 'processing' || $activationStatus == 'cancelled'}
                     {if $btndownload}
                         <a href="{$btndownload}"><button type="button" class="btn btn-default" style="margin:2px">{$MGLANG->T('download')}</button></a>
                     {/if}
                     {if isset($approver_method.https) || isset($approver_method.http) || isset($approver_method.dns) || $san_revalidate}
                         <button type="button" id="btnRevalidateNew" class="btn btn-default" style="margin:2px">{$MGLANG->T('revalidate')}</button>
-                    {/if}  
+                    {/if}
                     {/if}
                     {if $configurationStatus != 'Awaiting Configuration'}
                         {if $dcv_method == 'email' && !$sans}
@@ -217,22 +227,25 @@
                         {elseif $activationStatus == 'active'}
                             <a class="btn btn-default" role="button" href="" id="Action_Custom_Module_Button_Reissue_Certificate">{$MGLANG->T('reissueCertificate')}</a>
                             <button type="button" id="send-certificate-email" class="btn btn-default" style="margin:2px">{$MGLANG->T('sendCertificate')}</button>
-                        {/if}                        
+                            {if $downloadca}<a href="{$downloadca}"><button type="button" id="download-ca" class="btn btn-default" style="margin:2px">{$MGLANG->T('downloadca')}</button></a>{/if}
+                            {if $downloadcrt}<a href="{$downloadcrt}"><button type="button" id="download-crt" class="btn btn-default" style="margin:2px">{$MGLANG->T('downloadcrt')}</button></a>{/if}
+                            {if $downloadcsr}<a href="{$downloadcsr}"><button type="button" id="download-csr" class="btn btn-default" style="margin:2px">{$MGLANG->T('downloadcsr')}</button></a>{/if}
+                        {/if}
                         <!--<button type="button" id="{if $dcv_method == 'email'}btnChange_Approver_Email{else}btnRevalidate{/if}" class="btn btn-default" style="margin:2px">{if $dcv_method == 'email'}{$MGLANG->T('changeValidationEmail')}{else}{$MGLANG->T('revalidate')}{/if}</button>-->
                         {if $privateKey}
                         <button type="button" id="getPrivateKey" class="btn btn-default" style="margin:2px">{$MGLANG->T('getPrivateKeyBtn')}</button>
-                        {/if}   
+                        {/if}
                         {if $activationStatus == 'unpaid'}
                             <button type="button" id="recheckDetails" class="btn btn-default" style="margin:2px">{$MGLANG->T('recheckCertificateDetails')}</button>
                         {/if}
-                    {/if}  
+                    {/if}
                 </td>
             </tr>
         </tbody>
     </table>
     <script type="text/javascript">
         $(document).ready(function () {
-            {if $activationStatus !== 'active'} 
+            {if $activationStatus !== 'active'}
                 //$('#Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Reissue_Certificate').remove();
             {else}
                 $('#resend-validation-email').remove();
@@ -240,10 +253,10 @@
             {/if}
             var reissueUrl= $('#Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Reissue_Certificate').attr('href');
             $('#Action_Custom_Module_Button_Reissue_Certificate').prop('href', reissueUrl);
-            $('#Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Reissue_Certificate').remove();            
+            $('#Primary_Sidebar-Service_Details_Actions-Custom_Module_Button_Reissue_Certificate').remove();
         });
     </script>
-    
+
     <!--RENEW MODAL-->
     <div class="modal fade" id="modalRenew" role="dialog" aria-hidden="true">
         <div class="modal-dialog">
@@ -256,7 +269,7 @@
                     <h4 class="modal-title">{$MGLANG->T('renewModalTitle')}</h4>
                 </div>
                 <div class="modal-body panel-body" id="modalRenewBody">
-                    
+
                     <div class="alert alert-success hidden" id="modalRenewSuccess">
                         <strong>Success!</strong> <span></span>
                     </div>
@@ -266,7 +279,7 @@
                     <form class="form-horizontal" role="form" id="modalRenewForm">
                             <div class="col-sm-12" style="padding: 25px;">
                                 {$MGLANG->T('renewModalConfirmInformation')}
-                            </div> 
+                            </div>
                     </form>
                 </div>
                 <div class="modal-footer panel-footer">
@@ -282,7 +295,7 @@
     </div>
     <script type="text/javascript">
         $(document).ready(function () {
-            
+
             var serviceUrl = 'clientarea.php?action=productdetails&id={$serviceid}&json=1',
                     renewBtn = $('#btnRenew'),
                     renewForm,
@@ -293,7 +306,7 @@
                     renewSuccessAlert,
                     renewSubmitBtn,
                     body = $('body');
-            
+
             function assignModalElements(init) {
                 renewModal = $('#modalRenew');
                 renewBody = $('#modalRenewBody');
@@ -319,9 +332,9 @@
             }
 
             function moveModalToBody() {
-                
+
                 body.append(renewModal.clone());
-                assignModalElements(false);                
+                assignModalElements(false);
                 renewModal.remove();
             }
 
@@ -347,7 +360,7 @@
             function showSuccessAlert(msg) {
                 var reloadInfo = '{$MGLANG->T('redirectToInvoiceInformation')}'
                 show(renewSuccessAlert);
-                hide(renewDangerAlert);                
+                hide(renewDangerAlert);
                 renewSuccessAlert.children('span').html(msg + ' ' + reloadInfo);
             }
 
@@ -400,7 +413,7 @@
                 }
                 return true;
             }
-            
+
             function resize(element) {
                 element.css('height', "");
             }
@@ -408,7 +421,7 @@
             function submitrenewModal() {
                 addSpiner(renewSubmitBtn);
                 disable(renewSubmitBtn);
-                
+
                 var data = {
                     renewModal: 'yes',
                     serviceId: {$serviceid},
@@ -432,17 +445,17 @@
                             showSuccessAlert(data.data.msg);
                             hide(renewSubmitBtn);
                             resize(renewBody);
-                            hide(renewForm);   
+                            hide(renewForm);
                             window.setTimeout(function(){ window.location.replace('viewinvoice.php?id=' + data.data.invoiceID) }, 5000);
-                        } else {    
+                        } else {
                             if(typeof data.data.invoiceID !== 'undefined')
-                            {   
+                            {
                                 var reloadInfo = '{$MGLANG->T('redirectToInvoiceInformation')}'
                                 showDangerAlert(data.error + ' ' + reloadInfo);
                                 window.setTimeout(function(){ window.location.replace('viewinvoice.php?id=' + data.data.invoiceID) }, 5000);
                             } else {
                                 showDangerAlert(data.error);
-                            } 
+                            }
                         }
                     },
                     error: function (jqXHR, errorText, errorThrown) {
@@ -454,13 +467,13 @@
                     }
                 });
             }
-            
+
             assignModalElements(true);
             moveModalToBody();
             renewForm.trigger("reset");
             unbindOnClickForrenewBtn();
             bindModalFrorenewBtn();
-            bindSubmitBtn(); 
+            bindSubmitBtn();
         });
     </script>
     <!--END RENEW MODAL-->
@@ -475,7 +488,7 @@
                     <h4 class="modal-title">{$MGLANG->T('revalidateModalTitle')}</h4>
                 </div>
                 <div {if $sans && !$brand|in_array:$brandsWithOnlyEmailValidation}style="overflow-y: auto; height:{if $sans|@count == 1 }200{elseif $sans|@count == 2}275{else}350{/if}px;"{/if} class="modal-body panel-body" id="modalRevalidateBody">
-                    
+
                     <div class="alert alert-success hidden" id="modalRevalidateSuccess">
                         <strong>Success!</strong> <span></span>
                     </div>
@@ -496,16 +509,18 @@
                                         <tr>
                                             <td>{$domain}</td>
                                             <td>
-                                                <div class="form-group">  
+                                                <div class="form-group">
                                                     <select style="width:70%;" type="text" name="newDcvMethod_0" class="form-control modalRevalidateInput" >
                                                         <option value="" selected>{$MGLANG->T('pleaseChooseOne')}</option>
                                                         {if !'email'|in_array:$disabledValidationMethods}
                                                             <option value="email">{$MGLANG->T('revalidateModalMethodEmail')}</option>
-                                                        {/if}                                                        
-                                                        {if !$brand|in_array:$brandsWithOnlyEmailValidation}                                                            
+                                                        {/if}
+                                                        {if !$brand|in_array:$brandsWithOnlyEmailValidation}
                                                         <option value="http">{$MGLANG->T('revalidateModalMethodHttp')}</option>
                                                         <option value="https">{$MGLANG->T('revalidateModalMethodHttps')}</option>
-                                                        <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>                                                        
+                                                        {if !'dns'|in_array:$disabledValidationMethods}
+                                                        <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>
+                                                        {/if}
                                                         {/if}
                                                     </select>
                                                 </div>
@@ -520,20 +535,22 @@
                                         </tr>
                                         {if $sans && !$brand|in_array:$brandsWithOnlyEmailValidation}
                                             {$i = 1}
-                                            {foreach from=$sans item=san}
+                                            {foreach $sans as $san}
                                                 <tr>
                                                     <td>{$san.san_name}</td>
                                                     <td>
-                                                        <div class="form-group">  
+                                                        <div class="form-group">
                                                             <select style="width:70%;" type="text" name="newDcvMethod_{$i}" class="form-control modalRevalidateInput">
                                                                 <option value="" selected>{$MGLANG->T('pleaseChooseOne')}</option>
                                                                 {if !'email'|in_array:$disabledValidationMethods}
                                                                     <option value="email">{$MGLANG->T('revalidateModalMethodEmail')}</option>
-                                                                {/if} 
-                                                                {if !$brand|in_array:$brandsWithOnlyEmailValidation}                                                            
+                                                                {/if}
+                                                                {if !$brand|in_array:$brandsWithOnlyEmailValidation}
                                                                 <option value="http">{$MGLANG->T('revalidateModalMethodHttp')}</option>
                                                                 <option value="https">{$MGLANG->T('revalidateModalMethodHttps')}</option>
-                                                                <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>                                                        
+                                                                {if !'dns'|in_array:$disabledValidationMethods}
+                                                                <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>
+                                                                {/if}
                                                                 {/if}
                                                             </select>
                                                         </div>
@@ -544,13 +561,13 @@
                                                             </select>
                                                         </div>
                                                     </td>
-                                                </tr>  
+                                                </tr>
                                             {$i=$i+1}
                                             {/foreach}
                                         {/if}
                                     </tbody>
                                 </table>
-                            </div> 
+                            </div>
                     </form>
                 </div>
                 <div class="modal-footer panel-footer">
@@ -566,7 +583,7 @@
     </div>
     <script type="text/javascript">
         $(document).ready(function () {
-            
+
             var serviceUrl = 'clientarea.php?action=productdetails&id={$serviceid}&json=1',
                     revalidateBtn = $('#btnRevalidate'),
                     revalidateForm,
@@ -577,7 +594,7 @@
                     revalidateSuccessAlert,
                     revalidateSubmitBtn,
                     body = $('body');
-            
+
             function assignModalElements(init) {
                 revalidateModal = $('#modalRevalidate');
                 revalidateBody = $('#modalRevalidateBody');
@@ -604,9 +621,9 @@
             }
 
             function moveModalToBody() {
-                
+
                 body.append(revalidateModal.clone());
-                assignModalElements(false);                
+                assignModalElements(false);
                 revalidateModal.remove();
             }
 
@@ -632,7 +649,7 @@
             function showSuccessAlert(msg) {
                 var reloadInfo = '{$MGLANG->T('reloadInformation')}'
                 show(revalidateSuccessAlert);
-                hide(revalidateDangerAlert);                
+                hide(revalidateDangerAlert);
                 revalidateSuccessAlert.children('span').html(msg + ' ' + reloadInfo);
             }
 
@@ -685,7 +702,7 @@
                 }
                 return true;
             }
-            
+
             function resize(element) {
                 element.css('height', "");
             }
@@ -694,14 +711,14 @@
                 addSpiner(revalidateSubmitBtn);
                 disable(revalidateSubmitBtn);
                 var newMethods = {};
-                revalidateInput.each(function(key,value){                    
+                revalidateInput.each(function(key,value){
                     var node = $('.revalidateTable>tbody').find('tr:eq('+key+')').find('td:eq(0)')[1];
                     if(typeof node !== 'undefined') {
                         domain = node.textContent;
                     }
-                    domain = domain.replace("*", "___"); 
+                    domain = domain.replace("*", "___");
                     if(this.value === 'email') {
-                        if(key === 0) {                            
+                        if(key === 0) {
                             newMethods[domain] = $('select[name="newApproverEmailInput_'+key+'"]')[2].value;
                         } else {
                             newMethods[domain] = $('select[name="newApproverEmailInput_'+key+'"]')[1].value;
@@ -709,7 +726,7 @@
                     } else {
                         if(this.value !== "") {
                             newMethods[domain] = this.value;
-                        }                        
+                        }
                     }
                 });
                 if(jQuery.isEmptyObject(newMethods)) {
@@ -720,16 +737,16 @@
                 }
                 var noEmailError = '';
                 $.each(newMethods,function(key, value){
-                    if(value === '{$MGLANG->T('pleaseChooseOne')}' || value === '{$MGLANG->T('loading')}') {                       
+                    if(value === '{$MGLANG->T('pleaseChooseOne')}' || value === '{$MGLANG->T('loading')}') {
                         noEmailError = '{$MGLANG->T('noEmailSelectedForDomain')}' + key.replace("___", "*");
-                        return true;                        
+                        return true;
                     }
                 });
                 if(noEmailError !== '') {
                     showDangerAlert(noEmailError);
                     removeSpiner(revalidateSubmitBtn);
                     enable(revalidateSubmitBtn);
-                    return;    
+                    return;
                 }
                 var data = {
                     revalidateModal: 'yes',
@@ -752,11 +769,11 @@
                         }
                         data = JSON.parse(ret);
                         if (data.success === 1 || data.success === true) {
-                            showSuccessAlert(data.data.msg);                            
+                            showSuccessAlert(data.data.msg);
                             revalidateInput.val('');
                             hide(revalidateSubmitBtn);
                             resize(revalidateBody);
-                            hide(revalidateForm);   
+                            hide(revalidateForm);
                             window.setTimeout(function(){ location.reload() }, 5000);
                         } else {
                             showDangerAlert(data.data.msg);
@@ -771,13 +788,13 @@
                     }
                 });
             }
-            
+
             assignModalElements(true);
             moveModalToBody();
             revalidateForm.trigger("reset");
             unbindOnClickForrevalidateBtn();
             bindModalFrorevalidateBtn();
-            bindSubmitBtn();            
+            bindSubmitBtn();
             revalidateInput.on("change", function() {
                     var fieldIndex = this.name.replace('newDcvMethod_', '');
                     var domain = $(this).closest('td').prev('td').text();
@@ -788,7 +805,7 @@
                         getDomainEmails(null, domain, fieldIndex);
                     } else {
                         $(".newApproverEmailFormGroup_"+fieldIndex).css('display', 'none');
-                    }                    
+                    }
             });
         });
     </script>
@@ -867,7 +884,7 @@
             function moveModalToBody() {
                 body.append(changeEmailModal.clone());
                 assignModalElements(false);
-                
+
                 changeEmailModal.remove();
             }
 
@@ -945,7 +962,7 @@
                     return false;
                 }
                 return true;
-            }            
+            }
 
             function submitChangeEmailModal() {
                 addSpiner(changeEmailSubmitBtn);
@@ -997,8 +1014,8 @@
             bindModalFroChangeEmailBtn();
             bindSubmitBtn();
         });
-    </script>    
-{/if}   
+    </script>
+{/if}
     <div class="modal fade" id="viewPrivateKey" role="dialog" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content panel panel-primary">
@@ -1009,10 +1026,10 @@
                     </button>
                     <h4 class="modal-title">{$MGLANG->T('viewPrivateKeyModalTitle')}</h4>
                 </div>
-                <div class="modal-body panel-body" id="modalViewPrivateKey">                    
+                <div class="modal-body panel-body" id="modalViewPrivateKey">
                      <div class="form-group">
                         <textarea id="privateKey" class="form-control"  rows="13" style="overflow:auto;resize:none"></textarea>
-                     </div> 
+                     </div>
                 </div>
                 <div class="modal-footer panel-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">
@@ -1023,33 +1040,33 @@
         </div>
     </div>
     <script type="text/javascript">
-        
+
         {literal}
-            
+
             function getDomainEmails(serviceid = null, domain, index){
-                var brand = {/literal}'{$brand}'{literal};  
+                var brand = {/literal}'{$brand}'{literal};
                 var serviceUrl = 'clientarea.php?action=productdetails&json=1&mg-action=getApprovalEmailsForDomain&brand=' + brand + '&domain=' + domain;
-                                 
+
                 serviceUrl += '&id=' + {/literal}'{$serviceid}'{literal};
-                
+
                 $.ajax({
                         type: "POST",
                         url: serviceUrl,
                         success: function (ret) {
-                            var data;    
+                            var data;
                             $('select[name="newApproverEmailInput_'+index+'"]').empty();
                             ret = ret.replace("<JSONRESPONSE#", "");
                             ret = ret.replace("#ENDJSONRESPONSE>", "");
-                            
+
                             data = JSON.parse(ret);
                             if (data.success === 1) {
                                 var  htmlOptions = [];
                                 htmlOptions += '<option>'+{/literal}'{$MGLANG->T('pleaseChooseOne')}'{literal}+'</option>';
                                 var domainEmails = data.data.domainEmails;
-                                for (var i = 0; i < domainEmails.length; i++) {  
-                                     htmlOptions += '<option value="' + domainEmails[i] + '">' + domainEmails[i] + '</option>';                                        
+                                for (var i = 0; i < domainEmails.length; i++) {
+                                     htmlOptions += '<option value="' + domainEmails[i] + '">' + domainEmails[i] + '</option>';
                                 }
-                                
+
                                 $('select[name="newApproverEmailInput_'+index+'"]').append(htmlOptions);
                             } else {
                                 showDangerAlert(data.msg);
@@ -1061,12 +1078,12 @@
                     });
             }
             $(document).ready(function () {
-                
-                var serviceid = {/literal}'{$serviceid}'{literal};  
-                var domain =   {/literal}'{$domain}'{literal};  
+
+                var serviceid = {/literal}'{$serviceid}'{literal};
+                var domain =   {/literal}'{$domain}'{literal};
                 jQuery('#btnChange_Approver_Email').on("click", function(){
                     getDomainEmails(serviceid, domain, 0);
-                });    
+                });
                 var additionalActions = $('#additionalActionsTd').html().trim();
                 if(additionalActions.length == 0) {
                     $('#additionalActionsTr').remove();
@@ -1074,7 +1091,7 @@
                 jQuery('#resend-validation-email').on("click",function(){
                     $('#resend-validation-email').append(' <i id="resendSpinner" class="fa fa-spinner fa-spin"></i>');
                     JSONParser.request('resendValidationEmail',{json: 1, id: serviceid}, function (data) {
-                        if (data.success == true) {                            
+                        if (data.success == true) {
                             $('#MGAlerts>div[data-prototype="success"]').show();
                             $('#MGAlerts>div[data-prototype="success"] strong').html(data.message);
                         } else if (data.success == false) {
@@ -1088,7 +1105,7 @@
                     $('#send-certificate-email').find('.fa-spinner').remove();
                     $('#send-certificate-email').append(' <i id="resendSpinner" class="fa fa-spinner fa-spin"></i>');
                     JSONParser.request('sendCertificateEmail',{json: 1, id: serviceid}, function (data) {
-                        if (data.success == true) {                            
+                        if (data.success == true) {
                             $('#MGAlerts>div[data-prototype="success"]').show();
                             $('#MGAlerts>div[data-prototype="success"] strong').html(data.message);
                         } else if (data.success == false) {
@@ -1099,7 +1116,7 @@
                     }, false);
                 });
                 jQuery('#getPrivateKey').on("click",function(){
-                    
+
                     $('#getPrivateKey').append(' <i class="fa fa-spinner fa-spin"></i>');
                     JSONParser.request('getPrivateKey',{json: 1,id: serviceid}, function (data) {
                         if (data.success == true) {
@@ -1114,9 +1131,9 @@
                         }
                     }, false);
                 });
-                
+
                 jQuery('#btnRevalidateNew').on("click",function(){
-                    
+
                     $('#btnRevalidateNew').append(' <i class="fa fa-spinner fa-spin"></i>');
                     JSONParser.request('revalidateNew',{json: 1,id: serviceid}, function (data) {
                         if (data.success == true) {
@@ -1131,7 +1148,7 @@
                         }
                     }, false);
                 });
-                
+
                 jQuery('#reissue-order').on("click",function(){
                     JSONParser.request('reIssueOrder',{json: 1}, function (data) {
                         if (data.success == true) {
@@ -1143,7 +1160,7 @@
                         }
                     }, false);
                 });
-                
+
                 //for template simplicity modal header bug
                 var color = $('#modalRevalidate').find('.panel-heading').css('background-color');
                 $('#viewPrivateKey').find('.panel-heading').css('background-color', color);
@@ -1180,7 +1197,7 @@
                         <tr id="configuration_status">
                             <td class="text-left" >{$MGLANG->T('configurationStatus')}</td>
                             <td class="text-left"></td>
-                        </tr>    
+                        </tr>
                         <tr id="order_status">
                             <td class="text-left">{$MGLANG->T('activationStatus')}</td>
                             <td class="text-left"></td>
@@ -1206,7 +1223,7 @@
                             <td id="sansTd" colspan="2" class="text-left">
                                 <table class="sansTable table table-bordered" >
 
-                                </table>                        
+                                </table>
                             </td>
                         </tr>
                         <tr id="crt">
@@ -1220,7 +1237,7 @@
                         <tr id="csr">
                             <td class="text-left">{$MGLANG->T('csr')}</td>
                             <td class="text-left"><textarea onfocus="this.select()" rows="5" class="form-control"></textarea></td>
-                        </tr>                     
+                        </tr>
                     </table>
                 </div>
             </div>
@@ -1238,7 +1255,7 @@
 
         var serviceUrl = 'clientarea.php?action=productdetails&id='+ {/literal}'{$serviceid}'{literal} + '&mg-action=getCertificateDetails&json=1',
                 recheckBtn = $('#recheckDetails');
-        
+
         function showLoader()
         {
             show($('#modalRecheckLoading'));
@@ -1293,13 +1310,13 @@
             hide($('#modalRecheckSuccessAlert'));
             hide($('#modalRecheckDetails'));
         }
-        
+
         function removeData()
         {
-            
-            var keys = ["configuration_status", "ca", "crt", "csr", "order_status", "sans", "valid_from", "valid_till", 
+
+            var keys = ["configuration_status", "ca", "crt", "csr", "order_status", "sans", "valid_from", "valid_till",
                 "partner_order_id", "domain", "approver_method"];
-            
+
             for(var i = 0; i < keys.length; i++)
             {
                 if(["crt", "ca", "csr"].indexOf(keys[i]) !== -1)
@@ -1328,10 +1345,10 @@
             if (typeof data === 'undefined') {
                 return;
             }
-            
-            var keys = ["configuration_status", "ca", "crt", "csr", "order_status", "sans", "valid_from", "valid_till", 
+
+            var keys = ["configuration_status", "ca", "crt", "csr", "order_status", "sans", "valid_from", "valid_till",
                 "partner_order_id", "domain", "approver_method"];
-    
+
             for(var i = 0; i < keys.length; i++)
             {
                 if(!data.hasOwnProperty(keys[i]) || !data[keys[i]])
@@ -1339,7 +1356,7 @@
                     $("table#certificate_details tr#" + keys[i]).hide();
                     continue;
                 }
-                
+
                 if(["crt", "ca", "csr"].indexOf(keys[i]) !== -1)
                 {
                     $("table#certificate_details tr#" + keys[i] + " td:nth-child(2) textarea").text(data[keys[i]]);
@@ -1350,43 +1367,43 @@
                     {
                         var tr = $("<tr />");
                         tr.append($("<td />", {colspan: "2", class: "text-center", text: sanname}));
-                        
+
                         $('#sans #sansTd table').append(tr);
-                        
-                        
+
+
                         if((data.sans[sanname].method == "http") || (data.sans[sanname].method == "https"))
                         {
                             var tr = $("<tr />");
                             tr.append($("<td />", {width: "15%", class: "text-left", text: "Hash File"}));
                             tr.append($("<td />", {style: "max-width:200px;word-wrap: break-word;", class: "text-left", text: data.sans[sanname].san_validation.link}));
-                        
+
                             $('#sans #sansTd table').append(tr);
-                            
+
                             var tr = $("<tr />");
                             tr.append($("<td />", {width: "15%", class: "text-left", text: "Content"}));
-                            
+
                             var content = "";
-                            
+
                             for(var j = 0; j < (data.sans[sanname].san_validation.content).length; j++)
                             {
                                 content += data.sans[sanname].san_validation.content[j] + "<br />";
                             }
-                            
+
                             tr.append($("<td />", {style: "max-width:200px;word-wrap: break-word;", class: "text-left", html: content}));
-                        
+
                             $('#sans #sansTd table').append(tr);
                         }
                         else if(data.sans[sanname].method == "dns")
                         {
                             var tr = $("<tr />");
                             tr.append($("<td />", {width: "15%", class: "text-left", text: "DNS CNAME Record"}));
-                            
+
                             var content = (data.sans[sanname].san_validation).toLowerCase();
                             content = content.replace("cname", "CNAME");
-                            
+
                             tr.append($("<td />", {style: "max-width:200px;word-wrap: break-word;", class: "text-left", text: content}));
                             $('#sans #sansTd table').append(tr);
-                        }  
+                        }
                         else
                         {
                             if(data.sans[sanname].san_validation != "")
@@ -1409,20 +1426,20 @@
                         tr.append($("<td />", {width: "15%", class: "text-left", text: "Hash File"}));
                         tr.append($("<td />", {style: "max-width:200px;word-wrap: break-word;", class: "text-left", text: data.approver_method[dcv_method].link}));
                         $('table#certificate_details tr#partner_order_id').after(tr);
-                        
+
                         var tr = $("<tr />", {id: "approver_method_content"});
                         tr.append($("<td />", {width: "15%", class: "text-left", text: "Content"}));
-                        
+
                         var content = "";
-                            
+
                         for(var j = 0; j < (data.approver_method[dcv_method].content).length; j++)
                         {
                             content += data.approver_method[dcv_method].content[j] + "<br />";
                         }
-                        
+
                         tr.append($("<td />", {style: "max-width:200px;word-wrap: break-word;", class: "text-left", html: content}));
                         $('table#certificate_details tr#partner_order_id').next().after(tr);
-                    }  
+                    }
                     else if(dcv_method == "dns")
                     {
                         var tr = $("<tr />", {id: "approver_method_record"});
@@ -1445,9 +1462,9 @@
                 else
                 {
                     $("table#certificate_details tr#" + keys[i] + " td:nth-child(2)").text(data[keys[i]]);
-                }      
+                }
             }
-            
+
             show($('#modalRecheckDetails'));
         }
 
@@ -1462,7 +1479,7 @@
                 json: 1
             };
              $.ajax({
-                
+
                 url: serviceUrl,
                 data: params,
                 success: function (ret) {
@@ -1474,18 +1491,18 @@
                         return;
                     }
                     data = JSON.parse(ret);
-                    hide($('#modalRecheckLoading')); 
+                    hide($('#modalRecheckLoading'));
                     if (data.success === 1) {
                         renderCertificates(data.data);
-                    } 
-                    else {    
+                    }
+                    else {
                         showDangerAlert(data.msg);
                     }
                 },
                 error: function (jqXHR, errorText, errorThrown) {
                     anErrorOccurred();
                 }
-            }); 
+            });
         }
 
         bindModalToRecheckCertificateBtn();

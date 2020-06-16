@@ -119,6 +119,11 @@ class SSLStepThree {
                 $billingPeriods['One Time'] = 12;
             }
         }
+        
+        if($this->p[ConfigOptions::MONTH_ONE_TIME] && !empty($this->p[ConfigOptions::MONTH_ONE_TIME]))
+        {
+            $billingPeriods['One Time'] = $this->p[ConfigOptions::MONTH_ONE_TIME];
+        }
 
         $order               = [];
         $order['dcv_method'] = strtolower($this->p['fields']['dcv_method']);
@@ -206,6 +211,21 @@ class SSLStepThree {
             $apiRepo       = new \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products();
             $apiProduct    = $apiRepo->getProduct($order['product_id']);
         }
+        
+        if($order['product_id'] == '144')
+        {
+            $sansDomains = $this->p['configdata']['fields']['sans_domains'];
+            $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($sansDomains);
+            
+            $order['dns_names'] = implode(',', $sansDomains);
+            $order['approver_emails'] = strtolower($_POST['dcvmethodMainDomain']);
+           
+            foreach ($_POST['dcvmethod'] as $method)
+            {
+                $order['approver_emails'] .= ','.strtolower($method);
+            }
+        }
+        
         //if brand is 'geotrust','thawte','rapidssl','symantec' do not send dcv method for sans
         if(in_array($brand, $brandsWithOnlyEmailValidation)) {
             unset($order['approver_emails']);
@@ -227,6 +247,13 @@ class SSLStepThree {
         $service->save(array('domain' => $decodedCSR['csrResult']['CN']));
         
         $orderDetails = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($addedSSLOrder['order_id']);
+        
+        if($this->p[ConfigOptions::MONTH_ONE_TIME] && !empty($this->p[ConfigOptions::MONTH_ONE_TIME]))
+        {
+            $service = new Service($this->p['serviceid']);
+            $service->save(array('termination_date' => $orderDetails['valid_till']));
+        }
+        
         // logModuleCall(
         //     'SSLCENTERWHMCS',
         //     'CREATE',

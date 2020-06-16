@@ -537,12 +537,21 @@ class Invoice
             'noemail' => true,
         );
         
-        
+                
         $adminUsername = Admin::getAdminUserName();
        
         $results = localAPI($command, $postData, $adminUsername);
         
         if ($results['result'] == 'success') {
+            
+            $service = (array)Capsule::table('tblhosting')->where('id', $results['productids'])->first();
+            $product = (array)Capsule::table('tblproducts')->where('servertype', 'SSLCENTERWHMCS')->where('id', $service['packageid'])->first();
+
+            if(isset($product['configoption7']) && !empty($product['configoption7']) && $service['billingcycle'] == 'One Time')
+            {
+                $dueDateNewOrder = '0000-00-00';
+            }
+            
             $postData = array(
                 'serviceid' => $results['productids'],
                 'nextduedate' => $dueDateNewOrder,

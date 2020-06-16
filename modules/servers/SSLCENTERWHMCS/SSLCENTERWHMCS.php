@@ -94,7 +94,17 @@ function SSLCENTERWHMCS_SSLAdminGetCertificate($p) {
 }
 
 function SSLCENTERWHMCS_FlashErrorStepOne() {
-    return \MGModule\SSLCENTERWHMCS\eServices\FlashService::getStepOneError();
+    $errors = \MGModule\SSLCENTERWHMCS\eServices\FlashService::getStepOneError();
+    if(isset($errors['errormessage']) && !empty($errors['errormessage']))
+    {
+        // WHMCS v7.2
+       global $smartyvalues; 
+       $smartyvalues['errormessage'] = $errors['errormessage'];
+       
+       // < WHMCS v7.2
+       global $smarty;
+       $smarty->assign('errormessage', $errors['errormessage']);
+    }
 }
 
 if (isset($_POST['changeEmailModal'], $_SESSION['adminid']) AND $_POST['changeEmailModal'] === 'yes' AND $_SESSION['adminid']) {
@@ -194,4 +204,4 @@ function SSLCENTERWHMCS_ClientAreaCustomButtonArray() {
 }
 //add_hook('ClientAreaHeadOutput', 1, 'SSLCENTERWHMCS_ClientAreaCustomButtonArray');
 add_hook('ClientAreaHeadOutput', 1, 'SSLCENTERWHMCS_SSLStepTwoJS');
-add_hook('ClientAreaPage', 1, 'SSLCENTERWHMCS_FlashErrorStepOne');
+add_hook('ClientAreaHeadOutput', 9999999999, 'SSLCENTERWHMCS_FlashErrorStepOne');

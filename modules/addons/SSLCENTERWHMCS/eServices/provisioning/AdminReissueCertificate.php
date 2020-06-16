@@ -70,6 +70,23 @@ class AdminReissueCertificate extends Ajax {
             $data['approver_emails'] = implode(',', $this->p['approveremails']);
         }
         
+        $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceId']);
+        $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($service->productID);
+            
+        if($product->configuration()->text_name == '144')
+        {
+            $sansDomains             = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($this->p['sanDomains']);
+            
+            $data['dns_names'] = implode(',', $sansDomains);
+            $data['approver_emails'] = $sslService->configdata->dcv_method;
+           
+            for($i=0;$i<count($sansDomains)-1;$i++)
+            {
+                $data['approver_emails'] .= ','.$sslService->configdata->dcv_method;
+            }
+            $data['dcv_method'] = $sslService->configdata->dcv_method;
+        }
+                
         $orderStatus = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
         if (count($sansDomains) > $orderStatus['total_domains'] AND $orderStatus['total_domains'] >= 0) {
             $count = count($sansDomains) - $orderStatus['total_domains'];
@@ -126,11 +143,18 @@ class AdminReissueCertificate extends Ajax {
         $this->validateSanDomains();
         $this->validateServerType();
         $decodeCSR    = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->p['csr']);
-        if($decodeCSR['csrResult']['errorMessage']) {
-            if(isset($decodeCSR['description']))
-                throw new Exception($decodeCSR['description']);
+        
+        $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceId']);
+        $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($service->productID);
             
-            throw new Exception('Incorrect CSR');
+        if($product->configuration()->text_name != '144')
+        {
+            if($decodeCSR['csrResult']['errorMessage']) {
+                if(isset($decodeCSR['description']))
+                    throw new Exception($decodeCSR['description']);
+
+                throw new Exception('Incorrect CSR');
+            }
         }
         $mainDomain   = $decodeCSR['csrResult']['CN'];
         $domains      = $mainDomain . PHP_EOL . $this->p['sanDomains'];
@@ -142,15 +166,38 @@ class AdminReissueCertificate extends Ajax {
 
     private function validateSanDomains() {
         $this->moduleBuildParams();
-
+ 
         $sansDomains = $this->p['sanDomains'];
         $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($sansDomains);
 
         $invalidDomains = \MGModule\SSLCENTERWHMCS\eHelpers\Domains::getInvalidDomains($sansDomains);
-        if (count($invalidDomains)) {
-            throw new Exception('Folowed SAN domains are incorrect: ' . implode(', ', $invalidDomains));
+        
+        
+        $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceId']);
+        $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($service->productID);
+               
+        if($product->configuration()->text_name != '144')
+        {
+            if (count($invalidDomains)) {
+                throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('incorrectSans') . implode(', ', $invalidDomains));
+            }
+        
+         } else {
+            
+            $iperror = false;
+            foreach($sansDomains as $domainname)
+            {
+                if(!filter_var($domainname, FILTER_VALIDATE_IP)) {
+                    $iperror = true;
+                }
+            }
+            
+            if (count($invalidDomains) && $iperror) {
+                throw new Exception('SANs are incorrect');
+            }
+            
         }
-
+        
         $includedSans = $this->serviceParams[ConfigOptions::PRODUCT_INCLUDED_SANS];
         $boughtSans   = $this->serviceParams['configoptions'][ConfigOptions::OPTION_SANS_COUNT];
         $sansLimit    = $includedSans + $boughtSans;

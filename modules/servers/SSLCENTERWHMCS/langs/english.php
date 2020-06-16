@@ -3,6 +3,7 @@
 $_LANG['token'] = 'Token';
 
 $_LANG['serverCA']['home']['configurationStatus']                = 'Configuration Status';
+$_LANG['serverCA']['home']['custom_guide']                       = 'Guide';
 $_LANG['serverCA']['home']['Awaiting Configuration']             = 'Awaiting Configuration';
 $_LANG['serverCA']['home']['Completed']                          = 'Completed';
 $_LANG['serverCA']['home']['configureNow']                       = 'Configure Now';
@@ -60,6 +61,9 @@ $_LANG['serverCA']['home']['Actions']                            = 'Actions';
 $_LANG['serverCA']['home']['Submit']                             = 'Submit';
 $_LANG['serverCA']['home']['Close']                              = 'Close';
 $_LANG['serverCA']['home']['sendCertificate']                    = 'Send Certificate';
+$_LANG['serverCA']['home']['downloadca']                         = 'Download Intermediate/Chain';
+$_LANG['serverCA']['home']['downloadcrt']                        = 'Download Certificate';
+$_LANG['serverCA']['home']['downloadcsr']                        = 'Download CSR';
 $_LANG['serverCA']['home']['orderNotActiveError']                = 'Can not send certificate. Order status is different than active.';
 $_LANG['serverCA']['home']['CACodeEmptyError']                   = 'An error occurred. Certificate body is empty.';
 $_LANG['serverCA']['home']['sendCertificateSuccess']             = 'The certificate has been sent successfully.';
