@@ -141,7 +141,7 @@ class SSLStepTwo {
         
         if($decodeCSR['csrResult']['errorMessage']) {
             
-            if(isset($decodeCSR['csrResult']['CN']) && strpos($decodeCSR, '*.') !== false)
+            if(isset($decodeCSR['csrResult']['CN']) && strpos($decodeCSR['csrResult']['CN'], '*.') !== false)
             {
                 return true;
             }
