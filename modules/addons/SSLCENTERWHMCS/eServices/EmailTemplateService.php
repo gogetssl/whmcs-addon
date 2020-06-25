@@ -9,8 +9,56 @@ class EmailTemplateService {
     const CONFIGURATION_TEMPLATE_ID = 'SSLCenter - Configuration Required';
     const EXPIRATION_TEMPLATE_ID = 'SSLCenter - Service Expiration';
     const SEND_CERTIFICATE_TEMPLATE_ID = 'SSLCenter - Send Certificate';
+    const RENEWAL_TEMPLATE_ID = 'SSLCenter - Renewal';
 
-    
+    public static function createRenewalTemplate() {
+        if(!is_null(self::getTemplate(self::RENEWAL_TEMPLATE_ID))) {
+            return 'Template exist, nothing to do here';
+        }
+        $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
+        $newTemplate->type    = 'product';
+        $newTemplate->name    = self::RENEWAL_TEMPLATE_ID;
+        $newTemplate->subject = 'SSL Certificate - Renewal';
+        $newTemplate->message = '<p>Dear {$client_name},</p><p>Thank you for your renew for an SSL Certificate.</p><p>{$signature}</p>';
+        $newTemplate->attachments  = '';
+        $newTemplate->fromname  = '';
+        $newTemplate->fromemail  = '';
+        $newTemplate->disabled  = '0';
+        $newTemplate->custom  = 1;
+        $newTemplate->language = '';
+        $newTemplate->copyto = '';
+        
+        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
+        if(!empty($query))
+        {
+            $newTemplate->blind_copy_to = '';
+        }
+        
+        $newTemplate->plaintext = '0';
+        $newTemplate->created_at = date('Y-m-d H:i:s');
+        $newTemplate->updated_at = date('Y-m-d H:i:s');
+        $newTemplate->save();
+    }
+    public static function updateRenewalTemplate() {        
+        $template          =  \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::RENEWAL_TEMPLATE_ID)->first();     
+        
+        if(empty($template))
+        {
+            self::createRenewalTemplate();
+        }
+        
+        $template          =  \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::RENEWAL_TEMPLATE_ID)->first(); 
+        $template->message = '<p>Dear {$client_name},</p><p>Thank you for your renew for an SSL Certificate.</p><p>{$signature}</p>';
+        $template->save();
+    }
+    public static function deleteRenewalTemplate() {
+        $template = self::getTemplate(self::CONFIGURATION_TEMPLATE_ID);
+        if(is_null($template)) {
+            return 'Template not exist, nothing to do here';
+        }
+        $template->delete();
+    }
+        
     public static function createConfigurationTemplate() {
         if(!is_null(self::getTemplate(self::CONFIGURATION_TEMPLATE_ID))) {
             return 'Template exist, nothing to do here';

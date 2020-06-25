@@ -136,6 +136,22 @@ add_hook('InvoicePaid', 1, function($vars)
     $loader           = new \MGModule\SSLCENTERWHMCS\Loader();
     $invoiceGenerator = new \MGModule\SSLCENTERWHMCS\eHelpers\Invoice();
     
+    $invoiceInfo = $invoiceGenerator->getInvoiceCreatedInfo($vars['invoiceid']);
+    if (!empty($invoiceInfo)) {
+        $command = 'SendEmail';
+        $postData = array(
+            'id'          => $invoiceInfo['service_id'],
+            'messagename' => \MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::RENEWAL_TEMPLATE_ID
+        );
+        $adminUserName = \MGModule\SSLCENTERWHMCS\eHelpers\Admin::getAdminUserName();
+        $results = localAPI($command, $postData, $adminUserName);
+        $resultSuccess = $results['result'] == 'success';
+        if (!$resultSuccess)
+        {
+            \MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS Notifier: Error while sending customer notifications (service ' . $invoiceInfo['service_id'] . '): ' . $results['message'], 0);
+        }
+    }
+    
     $apiConf           = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
     if(isset($apiConf->renew_new_order) && $apiConf->renew_new_order == '1')
     {
