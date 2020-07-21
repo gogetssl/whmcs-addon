@@ -1,1 +1,8 @@
 /nbproject/private/
+.idea
+
+# Mac
+.DS_Store
+
+# Thumbnails
+._*
