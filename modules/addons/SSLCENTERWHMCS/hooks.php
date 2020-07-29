@@ -3,8 +3,8 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 if(!defined('DS'))define('DS',DIRECTORY_SEPARATOR);
 
-add_hook('ClientAreaPage', 1, function($params) {
-
+add_hook('ClientAreaPage', 1, function($params) { 
+    
     if (strpos($_SERVER['SCRIPT_NAME'], 'viewinvoice.php') !== false && !empty($_GET['id']) && $_POST['applycredit'] == true) {
         $invoice = Capsule::table('tblinvoices')->where('id', $_GET['id'])->first();
         if(isset($invoice->status) && $invoice->status == 'Payment Pending')
@@ -32,7 +32,7 @@ add_hook('ClientAreaPage', 1, function($params) {
             redir('id='.$_GET['id'], 'viewinvoice.php');
         }
     }
-
+    
     if($params['filename'] == 'viewinvoice' && $params['status'] == 'Payment Pending')
     {
         $invoice = new WHMCS\Invoice($params['invoiceid']);
@@ -40,21 +40,21 @@ add_hook('ClientAreaPage', 1, function($params) {
 
         $userID = $_SESSION['uid'];
         $credits = Capsule::table('tblcredit')->where('clientid', $userID)->get();
-
+        
         $invoiceDB = Capsule::table('tblinvoices')->where('id', $params['invoiceid'])->first();
-
+        
         $amount = 0;
         foreach($credits as $credit)
         {
             $amount = $amount + $credit->amount;
         }
-
+        
         $applyCredit = false;
         if($amount > 0)
         {
             $applyCredit = true;
         }
-
+ 
         return [
             'totalcredit' => formatCurrency($amount),
             'creditamount' => $invoiceDB->total,
@@ -88,7 +88,7 @@ add_hook('ClientAreaHeadOutput', 1, function($params)
         }
         catch (Exception $exc)
         {
-
+            
         }
     }
     elseif ($params['modulename'] === 'SSLCENTERWHMCS')
@@ -135,9 +135,9 @@ add_hook('InvoicePaid', 1, function($vars)
 
     new \MGModule\SSLCENTERWHMCS\Loader();
     \MGModule\SSLCENTERWHMCS\Addon::I(true);
-
+    
     $invoiceGenerator = new \MGModule\SSLCENTERWHMCS\eHelpers\Invoice();
-
+    
     $invoiceInfo = $invoiceGenerator->getInvoiceCreatedInfo($vars['invoiceid']);
     if (!empty($invoiceInfo)) {
         $command = 'SendEmail';
@@ -153,10 +153,13 @@ add_hook('InvoicePaid', 1, function($vars)
             \MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS Notifier: Error while sending customer notifications (service ' . $invoiceInfo['service_id'] . '): ' . $results['message'], 0);
         }
     }
-
+    
     $apiConf           = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
     if(isset($apiConf->renew_new_order) && $apiConf->renew_new_order == '1')
     {
+        if (!empty($invoiceInfo)) {
+            modulecallfunction("Renew", $invoiceInfo['service_id']);
+        }
         return true;
     }
     $invoiceGenerator->invoicePaid($vars['invoiceid']);
@@ -165,13 +168,13 @@ add_hook('InvoicePaid', 1, function($vars)
 
 /*
  *
- * assign ssl summary stats to clieat area page
- *
+ * assign ssl summary stats to clieat area page 
+ * 
  */
 
 function SSLCENTER_displaySSLSummaryStats($vars)
 {
-
+    
     if (isset($vars['filename'], $vars['templatefile']) && $vars['filename'] == 'clientarea' && $vars['templatefile'] == 'clientareahome')
     {
         try
@@ -237,7 +240,7 @@ function SSLCENTER_displaySSLSummaryStats($vars)
         }
         catch (\Exception $e)
         {
-
+            
         }
     }
 }
@@ -257,7 +260,7 @@ add_hook('ClientAreaHeadOutput', 1, 'SSLCENTER_loadSSLSummaryCSSStyle');
 function SSLCENTER_displaySSLSummaryInSidebar($secondarySidebar)
 {
     GLOBAL $smarty;
-
+    
     try
     {
         require_once __DIR__.DS.'Loader.php';
@@ -266,7 +269,7 @@ function SSLCENTER_displaySSLSummaryInSidebar($secondarySidebar)
         \MGModule\SSLCENTERWHMCS\Addon::I(true);
 
         $apiConf           = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
-
+        
         if(!isset($apiConf->sidebar_templates) || empty($apiConf->sidebar_templates))
         {
             if (in_array($smarty->tpl_vars['templatefile']->value, array('clientareahome')) || !isset($_SESSION['uid']))
@@ -281,7 +284,7 @@ function SSLCENTER_displaySSLSummaryInSidebar($secondarySidebar)
                 return;
             }
         }
-
+        
         $displaySSLSummary = $apiConf->display_ca_summary;
         if (!(bool) $displaySSLSummary)
             return;
@@ -298,54 +301,54 @@ function SSLCENTER_displaySSLSummaryInSidebar($secondarySidebar)
 
         /** @var \WHMCS\View\Menu\Item $secondarySidebar */
         $newMenu = $secondarySidebar->addChild(
-            'uniqueMenuSLLSummaryName', array(
-                'name'  => 'Home',
-                'label' => \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->absoluteT('addonCA', 'sslSummary', 'title'),
-                'uri'   => '',
-                'order' => 99,
-                'icon'  => '',
-            )
+                'uniqueMenuSLLSummaryName', array(
+            'name'  => 'Home',
+            'label' => \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->absoluteT('addonCA', 'sslSummary', 'title'),
+            'uri'   => '',
+            'order' => 99,
+            'icon'  => '',
+                )
         );
         $newMenu->addChild(
-            'uniqueSubMenuSLLSummaryTotal', array(
-                'name'  => 'totalOrders',
-                'label' => \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->absoluteT('addonCA', 'sslSummary', 'total'),
-                'uri'   => 'index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=total',
-                'order' => 10,
-                'badge' => $totalOrders,
-            )
+                'uniqueSubMenuSLLSummaryTotal', array(
+            'name'  => 'totalOrders',
+            'label' => \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->absoluteT('addonCA', 'sslSummary', 'total'),
+            'uri'   => 'index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=total',
+            'order' => 10,
+            'badge' => $totalOrders,
+                )
         );
         $newMenu->addChild(
-            'uniqueSubMenuSLLSummaryUnpaid', array(
-                'name'  => 'unpaidOrders',
-                'label' => \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->absoluteT('addonCA', 'sslSummary', 'unpaid'),
-                'uri'   => 'index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=unpaid',
-                'order' => 11,
-                'badge' => $unpaidOrders,
-            )
+                'uniqueSubMenuSLLSummaryUnpaid', array(
+            'name'  => 'unpaidOrders',
+            'label' => \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->absoluteT('addonCA', 'sslSummary', 'unpaid'),
+            'uri'   => 'index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=unpaid',
+            'order' => 11,
+            'badge' => $unpaidOrders,
+                )
         );
         $newMenu->addChild(
-            'uniqueSubMenuSLLSummaryProcessing', array(
-                'name'  => 'processingOrders',
-                'label' => \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->absoluteT('addonCA', 'sslSummary', 'processing'),
-                'uri'   => 'index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=processing',
-                'order' => 12,
-                'badge' => $processingOrders,
-            )
+                'uniqueSubMenuSLLSummaryProcessing', array(
+            'name'  => 'processingOrders',
+            'label' => \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->absoluteT('addonCA', 'sslSummary', 'processing'),
+            'uri'   => 'index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=processing',
+            'order' => 12,
+            'badge' => $processingOrders,
+                )
         );
         $newMenu->addChild(
-            'uniqueSubMenuSLLSummaryExpires', array(
-                'name'  => 'expiresSoonOrders',
-                'label' => \MGModule\SSLCENTERWHMCS\mgLibs\Lang::absoluteT('addonCA', 'sslSummary', 'expiresSoon'),
-                'uri'   => 'index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=expires_soon',
-                'order' => 13,
-                'badge' => $expiresSoonOrders,
-            )
+                'uniqueSubMenuSLLSummaryExpires', array(
+            'name'  => 'expiresSoonOrders',
+            'label' => \MGModule\SSLCENTERWHMCS\mgLibs\Lang::absoluteT('addonCA', 'sslSummary', 'expiresSoon'),
+            'uri'   => 'index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=expires_soon',
+            'order' => 13,
+            'badge' => $expiresSoonOrders,
+                )
         );
     }
     catch (\Exception $e)
     {
-
+        
     }
 }
 add_hook('ClientAreaSecondarySidebar', 1, 'SSLCENTER_displaySSLSummaryInSidebar');
@@ -420,7 +423,7 @@ add_hook('ClientAreaPageUpgrade', 1, 'SSLCENTER_unableDowngradeConfigOption');
 
 function SSLCENTER_overideProductPricingBasedOnCommission($vars)
 {
-
+    
     require_once __DIR__.DS.'Loader.php';
     new \MGModule\SSLCENTERWHMCS\Loader();
     MGModule\SSLCENTERWHMCS\Addon::I(true);
@@ -437,21 +440,21 @@ function SSLCENTER_overideProductPricingBasedOnCommission($vars)
     else
     {
         $currency = Capsule::table('tblcurrencies')->where('default', '1')->first();
-        $clientCurrency['id'] = isset($_SESSION['currency']) && !empty($_SESSION['currency']) ? $_SESSION['currency'] : $currency->id;
+        $clientCurrency['id'] = isset($_SESSION['currency']) && !empty($_SESSION['currency']) ? $_SESSION['currency'] : $currency->id; 
     }
     //get sslcenter all products
     foreach ($productModel->getModuleProducts() as $product)
     {
-
+        
         if($product->servertype != 'SSLCENTERWHMCS')
         {
             continue;
         }
-
+        
         if ($product->id == $vars['pid'])
         {
             $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue($vars);
-
+            
             foreach ($product->pricing as $pricing)
             {
                 if ($pricing->currency == $clientCurrency['id'])
@@ -474,36 +477,36 @@ function SSLCENTER_overideProductPricingBasedOnCommission($vars)
 add_hook('OrderProductPricingOverride', 1, 'SSLCENTER_overideProductPricingBasedOnCommission');
 
 function SSLCENTER_overideDisaplayedProductPricingBasedOnCommission($vars)
-{
+{ 
     global $smarty;
-    global $smartyvalues;
+    global $smartyvalues; 
     require_once __DIR__.DS.'Loader.php';
-
+    
     new \MGModule\SSLCENTERWHMCS\Loader();
     MGModule\SSLCENTERWHMCS\Addon::I(true);
-
+      
     if($vars['filename'] == 'cart')
     {
-
+    
         switch ($smarty->tpl_vars['templatefile']->value)
         {
             case 'products':
-                $products = $smarty->tpl_vars['products']->value;
+                $products = $smarty->tpl_vars['products']->value;     
                 foreach($products as $key => &$product)
                 {
                     $productSSLCenter = Capsule::table('tblproducts')
-                        ->where('id', $product['pid'])
-                        ->where('servertype', 'SSLCENTERWHMCS')
-                        ->first();
-
+                            ->where('id', $product['pid'])
+                            ->where('servertype', 'SSLCENTERWHMCS')
+                            ->first();
+                    
                     if(isset($productSSLCenter->id) && !empty($productSSLCenter->id))
                     {
-
+                    
                         $pid = $product['pid'];
 
-                        $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue(array('pid' => $pid));
+                        $commission = MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue(array('pid' => $pid));            
                         $products[$key]['pricing'] = MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::getPricingInfo($pid, $commission);
-
+                    
                     }
                 }
 
@@ -515,10 +518,10 @@ function SSLCENTER_overideDisaplayedProductPricingBasedOnCommission($vars)
                 $pid = $smarty->tpl_vars['productinfo']->value['pid'];
 
                 $productSSLCenter = Capsule::table('tblproducts')
-                    ->where('id', $pid)
-                    ->where('servertype', 'SSLCENTERWHMCS')
-                    ->first();
-
+                            ->where('id', $pid)
+                            ->where('servertype', 'SSLCENTERWHMCS')
+                            ->first();
+                    
                 if(isset($productSSLCenter->id) && !empty($productSSLCenter->id))
                 {
 
@@ -531,49 +534,49 @@ function SSLCENTER_overideDisaplayedProductPricingBasedOnCommission($vars)
                 break;
             default:
                 break;
-        }
-
+        } 
+    
     }
-
+    
 }
 add_hook('ClientAreaHeadOutput', 999999999999, 'SSLCENTER_overideDisaplayedProductPricingBasedOnCommission');
 
 add_hook('InvoiceCreation', 1, function($vars) {
-
+    
     $invoiceid = $vars['invoiceid'];
-
+    
     $items = Capsule::table('tblinvoiceitems')->where('invoiceid', $invoiceid)->where('type', 'Upgrade')->get();
-
+    
     foreach ($items as $item)
     {
         $description = $item->description;
-
+        
         $upgradeid = $item->relid;
         $upgrade = Capsule::table('tblupgrades')->where('id', $upgradeid)->first();
-
+        
         $serviceid = $upgrade->relid;
         $service = Capsule::table('tblhosting')->where('id', $serviceid)->first();
-
+        
         $productid = $service->packageid;
         $product = Capsule::table('tblproducts')->where('id', $productid)->where('paytype', 'onetime')->where('servertype', 'SSLCENTERWHMCS')->first();
-
+        
         if(isset($product->configoption7) && !empty($product->configoption7))
         {
-
+            
             if (strpos($description, '00/00/0000') !== false) {
-
+                
                 $description = str_replace('- 00/00/0000', '', $description);
                 $length = strlen($description);
                 $description = substr($description, 0, $length-13);
-
+                
                 Capsule::table('tblinvoiceitems')->where('id', $item->id)->update(array('description' => trim($description)));
-
+                                
             }
-
+            
         }
-
-
-
+        
+        
+        
     }
-
+    
 });
