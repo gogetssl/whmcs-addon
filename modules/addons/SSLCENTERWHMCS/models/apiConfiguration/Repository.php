@@ -22,93 +22,93 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
     {
         if (is_null($this->get()))
         {
-
+            
             if(!isset($params['tech_fax']) || empty($params['tech_fax']))
             {
                 $params['tech_fax'] = '';
             }
-
+            
             Capsule::table($this->tableName)->insert(
-                [
-                    'api_login'                              => $params['api_login'],
-                    'api_password'                           => $params['api_password'],
-                    'use_admin_contact'                      => $params['use_admin_contact'],
-                    'display_csr_generator'                  => $params['display_csr_generator'],
-                    'tech_firstname'                         => $params['tech_firstname'],
-                    'tech_lastname'                          => $params['tech_lastname'],
-                    'tech_organization'                      => $params['tech_organization'],
-                    'tech_addressline1'                      => $params['tech_addressline1'],
-                    'tech_phone'                             => $params['tech_phone'],
-                    'tech_title'                             => $params['tech_title'],
-                    'tech_email'                             => $params['tech_email'],
-                    'tech_city'                              => $params['tech_city'],
-                    'tech_country'                           => $params['tech_country'],
-                    'tech_fax'                               => $params['tech_fax'],
-                    'tech_postalcode'                        => $params['tech_postalcode'],
-                    'tech_region'                            => $params['tech_region'],
-                    'auto_renew_invoice_one_time'            => $params['auto_renew_invoice_one_time'],
-                    'auto_renew_invoice_reccuring'           => $params['auto_renew_invoice_reccuring'],
-                    'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
-                    'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
-                    'automatic_processing_of_renewal_orders' => $params['automatic_processing_of_renewal_orders'],
-                    'renew_new_order'                        => $params['renew_new_order'],
-                    'visible_renew_button'                   => $params['visible_renew_button'],
-                    'save_activity_logs'                     => $params['save_activity_logs'],
-                    'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
-                    'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
-                    'default_csr_generator_country'          => $params['default_csr_generator_country'],
-                    'summary_expires_soon_days'              => $params['summary_expires_soon_days'],
-                    'send_certificate_template'              => $params['send_certificate_template'],
-                    'display_ca_summary'                     => $params['display_ca_summary'],
-                    'sidebar_templates'                      => $params['sidebar_templates'],
-                    'custom_guide'                           => $params['custom_guide'],
-                    'disable_email_validation'               => $params['disable_email_validation']
-                ]);
+                    [
+                        'api_login'                              => $params['api_login'],
+                        'api_password'                           => $params['api_password'],
+                        'use_admin_contact'                      => $params['use_admin_contact'],
+                        'display_csr_generator'                  => $params['display_csr_generator'],
+                        'tech_firstname'                         => $params['tech_firstname'],
+                        'tech_lastname'                          => $params['tech_lastname'],
+                        'tech_organization'                      => $params['tech_organization'],
+                        'tech_addressline1'                      => $params['tech_addressline1'],
+                        'tech_phone'                             => $params['tech_phone'],
+                        'tech_title'                             => $params['tech_title'],
+                        'tech_email'                             => $params['tech_email'],
+                        'tech_city'                              => $params['tech_city'],
+                        'tech_country'                           => $params['tech_country'],
+                        'tech_fax'                               => $params['tech_fax'],
+                        'tech_postalcode'                        => $params['tech_postalcode'],
+                        'tech_region'                            => $params['tech_region'],
+                        'auto_renew_invoice_one_time'            => $params['auto_renew_invoice_one_time'],
+                        'auto_renew_invoice_reccuring'           => $params['auto_renew_invoice_reccuring'],
+                        'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
+                        'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
+                        'automatic_processing_of_renewal_orders' => $params['automatic_processing_of_renewal_orders'],
+                        'renew_new_order'                        => $params['renew_new_order'],
+                        'visible_renew_button'                   => $params['visible_renew_button'],
+                        'save_activity_logs'                     => $params['save_activity_logs'],
+                        'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
+                        'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
+                        'default_csr_generator_country'          => $params['default_csr_generator_country'],
+                        'summary_expires_soon_days'              => $params['summary_expires_soon_days'],
+                        'send_certificate_template'              => $params['send_certificate_template'],
+                        'display_ca_summary'                     => $params['display_ca_summary'],
+                        'sidebar_templates'                      => $params['sidebar_templates'],
+                        'custom_guide'                           => $params['custom_guide'],
+                        'disable_email_validation'               => $params['disable_email_validation']
+            ]);
         }
         else
         {
-
+            
             if(!isset($params['tech_fax']) || empty($params['tech_fax']))
             {
                 $params['tech_fax'] = '';
             }
-
+            
             Capsule::table($this->tableName)->update(
-                [
-                    'api_login'                              => $params['api_login'],
-                    'api_password'                           => $params['api_password'],
-                    'use_admin_contact'                      => $params['use_admin_contact'],
-                    'display_csr_generator'                  => $params['display_csr_generator'],
-                    'tech_firstname'                         => $params['tech_firstname'],
-                    'tech_lastname'                          => $params['tech_lastname'],
-                    'tech_organization'                      => $params['tech_organization'],
-                    'tech_addressline1'                      => $params['tech_addressline1'],
-                    'tech_phone'                             => $params['tech_phone'],
-                    'tech_title'                             => $params['tech_title'],
-                    'tech_email'                             => $params['tech_email'],
-                    'tech_city'                              => $params['tech_city'],
-                    'tech_country'                           => $params['tech_country'],
-                    'tech_fax'                               => $params['tech_fax'],
-                    'tech_postalcode'                        => $params['tech_postalcode'],
-                    'tech_region'                            => $params['tech_region'],
-                    'auto_renew_invoice_one_time'            => $params['auto_renew_invoice_one_time'], //
-                    'auto_renew_invoice_reccuring'           => $params['auto_renew_invoice_reccuring'],
-                    'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
-                    'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
-                    'automatic_processing_of_renewal_orders' => $params['automatic_processing_of_renewal_orders'],
-                    'renew_new_order'                        => $params['renew_new_order'],
-                    'visible_renew_button'                   => $params['visible_renew_button'],
-                    'save_activity_logs'                     => $params['save_activity_logs'],
-                    'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
-                    'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
-                    'default_csr_generator_country'          => $params['default_csr_generator_country'],
-                    'summary_expires_soon_days'              => $params['summary_expires_soon_days'],
-                    'send_certificate_template'              => $params['send_certificate_template'],
-                    'display_ca_summary'                     => $params['display_ca_summary'],
-                    'sidebar_templates'                      => $params['sidebar_templates'],
-                    'custom_guide'                           => $params['custom_guide'],
-                    'disable_email_validation'               => $params['disable_email_validation']
-                ]);
+                    [
+                        'api_login'                              => $params['api_login'],
+                        'api_password'                           => $params['api_password'],
+                        'use_admin_contact'                      => $params['use_admin_contact'],
+                        'display_csr_generator'                  => $params['display_csr_generator'],
+                        'tech_firstname'                         => $params['tech_firstname'],
+                        'tech_lastname'                          => $params['tech_lastname'],
+                        'tech_organization'                      => $params['tech_organization'],
+                        'tech_addressline1'                      => $params['tech_addressline1'],
+                        'tech_phone'                             => $params['tech_phone'],
+                        'tech_title'                             => $params['tech_title'],
+                        'tech_email'                             => $params['tech_email'],
+                        'tech_city'                              => $params['tech_city'],
+                        'tech_country'                           => $params['tech_country'],
+                        'tech_fax'                               => $params['tech_fax'],
+                        'tech_postalcode'                        => $params['tech_postalcode'],
+                        'tech_region'                            => $params['tech_region'],
+                        'auto_renew_invoice_one_time'            => $params['auto_renew_invoice_one_time'], //
+                        'auto_renew_invoice_reccuring'           => $params['auto_renew_invoice_reccuring'],
+                        'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
+                        'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
+                        'automatic_processing_of_renewal_orders' => $params['automatic_processing_of_renewal_orders'],
+                        'renew_new_order'                        => $params['renew_new_order'],
+                        'visible_renew_button'                   => $params['visible_renew_button'],
+                        'save_activity_logs'                     => $params['save_activity_logs'],
+                        'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
+                        'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
+                        'default_csr_generator_country'          => $params['default_csr_generator_country'],
+                        'summary_expires_soon_days'              => $params['summary_expires_soon_days'],
+                        'send_certificate_template'              => $params['send_certificate_template'],
+                        'display_ca_summary'                     => $params['display_ca_summary'],
+                        'sidebar_templates'                      => $params['sidebar_templates'],
+                        'custom_guide'                           => $params['custom_guide'],
+                        'disable_email_validation'               => $params['disable_email_validation']
+            ]);
         }
     }
 
@@ -200,7 +200,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 {
                     $table->boolean('renew_new_order');
                 });
-            }
+            } 
             if (!Capsule::schema()->hasColumn($this->tableName, 'visible_renew_button'))
             {
                 Capsule::schema()->table($this->tableName, function($table)
@@ -214,7 +214,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 {
                     $table->boolean('save_activity_logs');
                 });
-            }
+            }  
             if (!Capsule::schema()->hasColumn($this->tableName, 'renew_invoice_days_reccuring'))
             {
                 Capsule::schema()->table($this->tableName, function($table)
@@ -278,7 +278,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                     $table->boolean('disable_email_validation');
                 });
             }
-            /* 'renew_invoice_days_reccuring'
+            /* 'renew_invoice_days_reccuring'          
               'renew_invoice_days_one_time' */
         }
     }

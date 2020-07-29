@@ -248,6 +248,17 @@ class Invoice
         
         Capsule::table('tblinvoices')->where('id', '=', $invoiceId)->update(array('status' => 'Payment Pending'));
         
+        $invoiceData = Capsule::table('tblinvoices')->where('id', '=', $invoiceId)->first();
+        
+        if($invoiceData->total == '0.00')
+        {
+            Capsule::table('tblinvoices')->where('id', '=', $invoiceId)->update(array('status' => 'Unpaid'));
+            $postData = array('invoiceid' => $invoiceId, 'status' => 'Paid');
+            localAPI('UpdateInvoice', $postData, $adminUserName);
+            
+            run_hook("InvoicePaid", array( "invoiceid" => $invoiceId ));
+        }
+        
         if($returnInvoiceID)
             return $invoiceId;
             
