@@ -64,9 +64,6 @@ class Cron extends main\mgLibs\process\AbstractController
                 $newNextDueDate = $order['valid_till'];
                 $this->updateServiceNextDueDate($serviceID, $newNextDueDate);
 
-                //set ssl certificate as synchronized
-                $this->setSSLServiceAsSynchronized($serviceID);
-
                 //set ssl certificate as terminated if expired  
                 if (strtotime($order['valid_till']) < strtotime(date('Y-m-d')))
                 {
@@ -75,6 +72,8 @@ class Cron extends main\mgLibs\process\AbstractController
 
                 $updatedServices[] = $serviceID;
             }
+            //set ssl certificate as synchronized
+            $this->setSSLServiceAsSynchronized($serviceID);
         }
         echo 'Synchronization completed.';
         echo '<br />Number of synchronized services: ' . count($updatedServices);
@@ -438,7 +437,7 @@ class Cron extends main\mgLibs\process\AbstractController
     }
     public function dailyStatusCheckCRON($input, $vars = array())
     {
-        echo 'Products Price Updater started.' . PHP_EOL;
+        echo 'Certificates (ssl status Completed) Data Updater started.' . PHP_EOL;
         $this->sslRepo = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
         $sslorders = Capsule::table('tblhosting')
         ->join('tblproducts', 'tblhosting.packageid', '=', 'tblproducts.id')
@@ -447,18 +446,18 @@ class Cron extends main\mgLibs\process\AbstractController
         ->where('tblsslorders.status', 'Completed')
         ->get(['tblsslorders.*']);
 
-        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Products Price Updater started.");
+        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Certificates (ssl status Completed) Data Updater started.");
        
         $this->checkOrdersStatus($sslorders);
         
         echo '<br/ >';
-        echo 'Products Price Updater completed.' . PHP_EOL;
-        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Products Price Updater completed.");
+        echo 'Certificates (ssl status Completed) Data Updater completed.' . PHP_EOL;
+        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Certificates (ssl status Completed) Data Updater completed.");
         return array();
     }
     public function processingOrdersCheckCRON($input, $vars = array())
     {
-        echo 'Products Price Updater started.' . PHP_EOL;
+        echo 'Certificates (ssl status Processing) Data Updater started.' . PHP_EOL;
         $this->sslRepo = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
         $sslorders = Capsule::table('tblhosting')
         ->join('tblproducts', 'tblhosting.packageid', '=', 'tblproducts.id')
@@ -467,13 +466,13 @@ class Cron extends main\mgLibs\process\AbstractController
         ->where('tblsslorders.configdata', 'like', '%"ssl_status":"processing"%')
         ->get(['tblsslorders.*']);
 
-        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Products Price Updater started.");
+        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Certificates (ssl status Processing) Data Updater started.");
        
         $this->checkOrdersStatus($sslorders, true);
         
         echo '<br/ >';
-        echo 'Products Price Updater completed.' . PHP_EOL;
-        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Products Price Updater completed.");
+        echo 'Certificates (ssl status Processing) Data Updater completed.' . PHP_EOL;
+        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Certificates (ssl status Processing) Data Updater completed.");
         return array();
     }
     private function generateNewPricesBasedOnAPI($currentPrices, $apiPrices)

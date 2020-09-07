@@ -50,6 +50,7 @@ class AdminServicesTabFields {
 
             $orderDetails = (array)$sslService->configdata;
  
+            $return['Cron Synchronized'] = isset($orderDetails['synchronized']) && !empty($orderDetails['synchronized']) ? $orderDetails['synchronized'] : 'Not synchronized';
             $return['Comodo Order ID'] = $orderDetails['partner_order_id']?:"-"; 
             $return['Configuration Status'] = $sslService->status;  
             $return['Domain'] = $orderDetails['domain'];
