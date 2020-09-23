@@ -315,3 +315,5 @@ $_LANG['csrCodeGeneraterFailed']        = 'Das Generieren des CSR-Codes ist fehl
 
 $_LANG['addonAA']['productsConfiguration']['save_all_products']       = 'Save all products';
 $_LANG['addonAA']['productsConfiguration']['products_saved']       = 'Products has been saved.';
+
+$_LANG['viewAll']		= 'View All';
