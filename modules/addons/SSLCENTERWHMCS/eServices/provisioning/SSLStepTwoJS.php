@@ -16,7 +16,7 @@ class SSLStepTwoJS {
     }
 
     public function run() {
-        
+
         if (!$this->canRun()) {
             return '';
         }
@@ -27,19 +27,19 @@ class SSLStepTwoJS {
         try {
             $this->setBrand($_POST);
             $this->setDisabledValidationMethods($_POST);
-            
+
             $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceid']);
 
             $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($service->productID);
-            
+
             if($product->configuration()->text_name == '144')
             {
                 array_push($this->disabledValidationMethods, 'email');
                 array_push($this->disabledValidationMethods, 'dns');
             }
-            
+
             $this->SSLStepTwoJS($this->p);
-            
+
             return \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getSanEmailsScript(json_encode($this->domainsEmailApprovals), json_encode(\MGModule\SSLCENTERWHMCS\eServices\FlashService::getFieldsMemory($_GET['cert'])), json_encode($this->brand), json_encode($this->disabledValidationMethods));
         } catch (Exception $ex) {
             return '';
@@ -55,29 +55,29 @@ class SSLStepTwoJS {
             return false;
         }
         return true;
-    }    
+    }
 
     private function setBrand($params) {
         if(isset($params['sslbrand']) &&  $params['sslbrand'] != null){
             $this->brand = $params['sslbrand'];
         }
     }
-    
+
     private function setDisabledValidationMethods($params) {
-        $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();        
+        $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
         if($apiConf->disable_email_validation)
         {
             array_push($this->disabledValidationMethods, 'email');
         }
     }
-    
+
     private function isValidModule() {
         return \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSLTemplorary::getInstance()->get($_GET['cert']) === true;
 
     }
 
     private function SSLStepTwoJS() {
-        
+
         if(isset($_SESSION['decodeCSR']) && !empty($_SESSION['decodeCSR']))
         {
             $decodedCSR = $_SESSION['decodeCSR'];
@@ -87,21 +87,18 @@ class SSLStepTwoJS {
         {
             $decodedCSR   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR(trim(rtrim($_POST['csr'])));
         }
-        if($decodedCSR['error']) {
-            if(isset($decodedCSR['description']))
-                throw new Exception($decodedCSR['description']);
-            
-            throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('incorrectCSR'));
+        if(isset($decodedCSR['csrResult']['errorMessage'])) {
+            throw new Exception($decodedCSR['csrResult']['errorMessage']);
         }
         $mainDomain       = $decodedCSR['csrResult']['CN'];
         $domains = $mainDomain . PHP_EOL . $_POST['fields']['sans_domains'];
         $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));
-        $this->fetchApprovalEmailsForSansDomains($sansDomains);        
+        $this->fetchApprovalEmailsForSansDomains($sansDomains);
         if(\MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::isWHMCS73()) {
-            if(isset($_POST['privateKey']) && $_POST['privateKey'] != null) {            
+            if(isset($_POST['privateKey']) && $_POST['privateKey'] != null) {
                 $privKey = decrypt($_POST['privateKey']);
                 $GenerateSCR = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\GenerateCSR($this->p, $_POST);
-                $GenerateSCR->savePrivateKeyToDatabase($this->p['serviceid'], $privKey);  
+                $GenerateSCR->savePrivateKeyToDatabase($this->p['serviceid'], $privKey);
             }
         }
     }
