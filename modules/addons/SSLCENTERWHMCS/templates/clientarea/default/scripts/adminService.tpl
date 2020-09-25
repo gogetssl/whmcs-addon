@@ -6,12 +6,12 @@
             hideMe.closest('tr').hide();
         }
         hideJsHtmlInjection();
-
+        
         $('#profileContent').find('#frm1').after('<form id="loginAndRedirectForm" target="_blank" action="../dologin.php?language=" action="POST"><input type="hidden" name="redirectToProductDetails" value="true"/><input type="hidden" name="username" value="{$email}"/><input type="hidden" name="serviceID" value="{$serviceid}"/></form>');
         $('#btnManage_SSL').removeAttr('onclick');
-        $('#btnManage_SSL').on('click', function(e) {
+        $('#btnManage_SSL').on('click', function(e) { 
             //$('#modcmdbtns').css('opacity', '0.2');
-            //$('#modcmdworking').css('display', 'block').css('text-align', 'left').css('position', 'relative').css('left', '50px').css('bottom', '60px').css('z-index', '1');
+            //$('#modcmdworking').css('display', 'block').css('text-align', 'left').css('position', 'relative').css('left', '50px').css('bottom', '60px').css('z-index', '1');    
             $('#loginAndRedirectForm').submit();
         });
     });
@@ -37,7 +37,7 @@
                 <div class="form-group newApproverEmailFormGroup" id="modalChangeApprovedEmailForm">
                     <label class="col-sm-3 control-label">New Approver Email:</label>
                     <div class="col-sm-9">
-                        <select type="text" name="newApproverEmailInput" id="modalChangeApprovedEmailInput" class="form-control"/>
+                        <select type="text" name="newApproverEmailInput" id="modalChangeApprovedEmailInput" class="form-control"/>                            
                         </select>
                     </div>
                 </div>
@@ -56,30 +56,30 @@
 <script type="text/javascript">
     $(document).ready(function () {
         var serviceUrl = 'clientsservices.php?userid={$userid}&id={$serviceid}',
-            changeEmailBtn = $('#btnChange_Approver_Email'),
-            changeEmailForm,
-            changeEmailModal,
-            changeEmailBody,
-            changeEmailInput,
-            changeEmailDangerAlert,
-            changeEmailSuccessAlert,
-            changeEmailSubmitBtn,
-            body = $('body');
+                changeEmailBtn = $('#btnChange_Approver_Email'),
+                changeEmailForm,
+                changeEmailModal,
+                changeEmailBody,
+                changeEmailInput,
+                changeEmailDangerAlert,
+                changeEmailSuccessAlert,
+                changeEmailSubmitBtn,
+                body = $('body');
 
         function assignModalElements(init) {
             changeEmailModal = $('#modalChangeApprovedEmail');
             changeEmailBody = $('#modalChangeApprovedEmailBody');
-
+            
             if (init) {
                 changeEmailBody.contents()
-                    .filter(function(){
-                        return this.nodeType === 8;
-                    })
-                    .replaceWith(function(){
-                        return this.data;
-                    });
+                .filter(function(){
+                    return this.nodeType === 8;
+                })
+                .replaceWith(function(){
+                    return this.data;
+                });
             }
-
+            
             if (!init) {
                 changeEmailForm = $('#modalChangeApprovedEmailForm');
                 changeEmailSubmitBtn = $('#modalChangeApprovedEmailSubmit');
@@ -122,7 +122,7 @@
 
         function showDangerAlert(msg) {
             hide(changeEmailSuccessAlert);
-            show(changeEmailDangerAlert);
+            show(changeEmailDangerAlert);   
             changeEmailDangerAlert.children('span').html(msg);
         }
 
@@ -169,7 +169,7 @@
             }
             return true;
         }
-        function getDomainEmails(serviceUrl){
+        function getDomainEmails(serviceUrl){            
             $.ajax({
                 type: "POST",
                 url: serviceUrl,
@@ -180,18 +180,18 @@
                     changeEmailInput.append('<option id="loadingDomainEmails">Loading...</option>');
                 },
                 success: function (ret) {
-                    var data;
+                    var data;    
                     changeEmailInput.empty();
                     ret = ret.replace("<JSONRESPONSE#", "");
                     ret = ret.replace("#ENDJSONRESPONSE>", "");
-
+                            
                     data = JSON.parse(ret);
                     if (data.success === 1) {
                         var  htmlOptions = [];
                         htmlOptions += '<option>'+'{$MGLANG->T('Please choose one...')}'+'</option>';
                         var domainEmails = data.domainEmails;
-                        for (var i = 0; i < domainEmails.length; i++) {
-                            htmlOptions += '<option value="' + domainEmails[i] + '">' + domainEmails[i] + '</option>';
+                        for (var i = 0; i < domainEmails.length; i++) {  
+                            htmlOptions += '<option value="' + domainEmails[i] + '">' + domainEmails[i] + '</option>';                                        
                         }
                         changeEmailInput.append(htmlOptions);
                     } else {
@@ -246,12 +246,12 @@
         assignModalElements(true);
         moveModalToBody();
         unbindOnClickForChangeEmailBtn();
-
+        
         bindModalFroChangeEmailBtn();
-        bindSubmitBtn();
-        changeEmailBtn.on('click', function(){
+        bindSubmitBtn();   
+        changeEmailBtn.on('click', function(){            
             getDomainEmails(serviceUrl);
-        });
+        });     
     });
 </script>
 
@@ -333,37 +333,37 @@
     $(document).ready(function () {
 
         var serviceUrl = 'clientsservices.php?userid={$userid}&id={$serviceid}',
-            reisueBtn = $('#btnReissue_Certificate'),
-            reisueModal,
-            reisueBody,
-            reissueCsrInput,
-            reissueCsrDefault,
-            reissueSansInput,
-            reissueWebServerInput,
-            reissueFormStepInput,
-            reissueEmailApprovalsArea,
-            reissueSubmitBtn,
-            reissueSubmitContinue,
-            reissueDangerAlert,
-            reissueSuccessAlert,
-            webServersLoaded = false,
-            optionsHtml = '',
-            body = $('body');
+                reisueBtn = $('#btnReissue_Certificate'),
+                reisueModal,
+                reisueBody,
+                reissueCsrInput,
+                reissueCsrDefault,
+                reissueSansInput,
+                reissueWebServerInput,
+                reissueFormStepInput,
+                reissueEmailApprovalsArea,
+                reissueSubmitBtn,
+                reissueSubmitContinue,
+                reissueDangerAlert,
+                reissueSuccessAlert,
+                webServersLoaded = false,
+                optionsHtml = '',
+                body = $('body');
 
         function assignModalElements(init) {
             reisueModal = $('#modalReissue');
             reisueBody = $('#modalReissueBody');
-
+            
             if(init) {
                 reisueBody.contents()
-                    .filter(function(){
-                        return this.nodeType === 8;
-                    })
-                    .replaceWith(function(){
-                        return this.data;
-                    });
+                .filter(function(){
+                    return this.nodeType === 8;
+                })
+                .replaceWith(function(){
+                    return this.data;
+                });
             }
-
+            
             if (!init) {
                 reissueSubmitBtn = $('#modalReissueSubmit');
                 reissueSubmitContinue = $('#modalReissueContinue');
@@ -592,8 +592,8 @@
         }
         function replaceRadioInputs(sanEmails) {
             var fullHtml = '',
-                partHtml = '',
-                x = 0;
+                    partHtml = '',
+                    x = 0;
 
             reissueEmailApprovalsArea.parent().find('*').not(reissueEmailApprovalsArea).remove();
 
@@ -629,12 +629,12 @@
             reissueWebServerInput.val('0');
         }
 
-                {literal}var sanEmails = JSON.parse('{\"friz.pl\":[\"admin@friz.pl\",\"administrator@friz.pl\"],\"kot.pl\":[\"admin@kot.pl\",\"administrator@kot.pl\"]}');{/literal}
-        replaceRadioInputs(sanEmails);
+    {literal}var sanEmails = JSON.parse('{\"friz.pl\":[\"admin@friz.pl\",\"administrator@friz.pl\"],\"kot.pl\":[\"admin@kot.pl\",\"administrator@kot.pl\"]}');{/literal}
+            replaceRadioInputs(sanEmails);
 
-    });
+        });
 </script>
-
+ 
 <div class="modal fade" id="modalView" role="dialog" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content panel panel-primary">
@@ -661,7 +661,7 @@
                         <textarea class="form-control" onfocus="this.select();" rows="5" id="viewCRTInput"></textarea>
                     </div>
                     <div class="clearfix"></div>
-
+                    
                     <div class="form-group hidden">
                         <label class="col-sm-3 control-label">Intermediate/Chain files</label>
                         <textarea class="form-control" onfocus="this.select();" rows="10" id="viewCertificateInput"></textarea>
@@ -689,29 +689,29 @@
     $(document).ready(function () {
 
         var serviceUrl = 'clientsservices.php?userid={$userid}&id={$serviceid}',
-            viewBtn = $('#btnView_Certificate'),
-            viewModal,
-            viewBody,
-            viewLoading,
-            viewDangerAlert,
-            viewSuccessAlert,
-            viewCertificateInput,
-            viewCRTInput,
-            viewCSRInput,
-            body = $('body');
+                viewBtn = $('#btnView_Certificate'),
+                viewModal,
+                viewBody,
+                viewLoading,
+                viewDangerAlert,
+                viewSuccessAlert,
+                viewCertificateInput,
+                viewCRTInput,
+                viewCSRInput,
+                body = $('body');
 
         function assignModalElements(init) {
             viewModal = $('#modalView');
             viewBody = $('#modalViewBody');
-
+            
             if (init) {
                 viewBody.contents()
-                    .filter(function(){
-                        return this.nodeType === 8;
-                    })
-                    .replaceWith(function(){
-                        return this.data;
-                    });
+                .filter(function(){
+                    return this.nodeType === 8;
+                })
+                .replaceWith(function(){
+                    return this.data;
+                });
             }
 
             if (!init) {
@@ -888,27 +888,27 @@
     $(document).ready(function () {
 
         var serviceUrl = 'clientsservices.php?userid={$userid}&id={$serviceid}',
-            recheckBtn = $('#btnRecheck_Certificate_Details'),
-            recheckModal,
-            recheckBody,
-            recheckLoading,
-            recheckDangerAlert,
-            recheckSuccessAlert,
-            recheckDetails,
-            body = $('body');
+                recheckBtn = $('#btnRecheck_Certificate_Details'),
+                recheckModal,
+                recheckBody,
+                recheckLoading,
+                recheckDangerAlert,
+                recheckSuccessAlert,
+                recheckDetails,
+                body = $('body');
 
         function assignModalElements(init) {
             recheckModal = $('#modalRecheck');
             recheckBody = $('#modalRecheckBody');
-
+            
             if (init) {
                 recheckBody.contents()
-                    .filter(function(){
-                        return this.nodeType === 8;
-                    })
-                    .replaceWith(function(){
-                        return this.data;
-                    });
+                .filter(function(){
+                    return this.nodeType === 8;
+                })
+                .replaceWith(function(){
+                    return this.data;
+                });
             }
 
             if (!init) {
@@ -918,7 +918,7 @@
                 recheckDetails = $('#modalRecheckDetails');
             }
         }
-
+        
         function showLoader()
         {
             show(recheckLoading);
@@ -985,13 +985,13 @@
         }
 
         function renderCertificates(data) {
-
+            
             $("table#details").empty();
 
             if (typeof data === 'undefined') {
                 return;
             }
-
+     
             for(var key in data)
             {
                 var tr = $("<tr />");
@@ -1001,7 +1001,7 @@
                 tr.append(td);
                 $("table#details").append(tr);
             }
-
+            
             show(recheckDetails);
         }
 
@@ -1026,14 +1026,14 @@
                         return;
                     }
                     data = JSON.parse(ret);
-
+                    
                     hide(recheckLoading);
-
-                    if (data.success === 1)
+                    
+                    if (data.success === 1) 
                     {
-                        renderCertificates(data.data);
-                    }
-                    else
+                       renderCertificates(data.data);
+                    } 
+                    else 
                     {
                         showDangerAlert(data.msg);
                     }

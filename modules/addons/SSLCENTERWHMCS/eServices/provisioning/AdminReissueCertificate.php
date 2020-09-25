@@ -23,8 +23,8 @@ class AdminReissueCertificate extends Ajax {
     }
 
     private function miniControler() {
-
-
+        
+        
         if ($this->p['action'] === 'reissueCertificate') {
             return $this->reissueCertificate();
         }
@@ -59,7 +59,7 @@ class AdminReissueCertificate extends Ajax {
             'csr'             => $this->p['csr'],
             'approver_email' => $this->p['approveremail'],
         ];
-
+        
         $sansDomains = [];
 
         $sanEnabledForWHMCSProduct = $this->serviceParams[ConfigOptions::PRODUCT_ENABLE_SAN] === 'on';
@@ -69,24 +69,24 @@ class AdminReissueCertificate extends Ajax {
             $data['dns_names']       = implode(',', $sansDomains);
             $data['approver_emails'] = implode(',', $this->p['approveremails']);
         }
-
+        
         $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceId']);
         $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($service->productID);
-
+            
         if($product->configuration()->text_name == '144')
         {
             $sansDomains             = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($this->p['sanDomains']);
-
+            
             $data['dns_names'] = implode(',', $sansDomains);
             $data['approver_emails'] = $sslService->configdata->dcv_method;
-
+           
             for($i=0;$i<count($sansDomains)-1;$i++)
             {
                 $data['approver_emails'] .= ','.$sslService->configdata->dcv_method;
             }
             $data['dcv_method'] = $sslService->configdata->dcv_method;
         }
-
+                
         $orderStatus = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
         if (count($sansDomains) > $orderStatus['total_domains'] AND $orderStatus['total_domains'] >= 0) {
             $count = count($sansDomains) - $orderStatus['total_domains'];
@@ -94,30 +94,30 @@ class AdminReissueCertificate extends Ajax {
         }
 
         \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->reIssueOrder($sslService->remoteid, $data);
-
+        
         $sslService->setConfigdataKey('servertype', $data['webserver_type']);
         $sslService->setConfigdataKey('csr', $data['csr']);
         $sslService->setConfigdataKey('approveremail', $data['approver_email']);
         $sslService->setApproverEmails($data['approver_emails']);
         $sslService->setSansDomains($data['dns_names']);
         $sslService->save();
-
+        
         try
         {
             $decodedCSR   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->p['csr']);
             \MGModule\SSLCENTERWHMCS\eHelpers\Invoice::insertDomainInfoIntoInvoiceItemDescription($this->p['serviceId'], $decodedCSR['csrResult']['CN'], true);
-
+            
             $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceId']);
             $service->save(array('domain' => $decodedCSR['csrResult']['CN']));
-
+            
             $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($sslService);
             $configDataUpdate->run();
         }
         catch(Exception $e)
         {
-
-        }
-
+            
+        } 
+        
         $this->response(true, 'Certificate was successfully reissued.');
 
     }
@@ -143,14 +143,14 @@ class AdminReissueCertificate extends Ajax {
         $this->validateSanDomains();
         $this->validateServerType();
         $decodeCSR    = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->p['csr']);
-
+        
         $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceId']);
         $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($service->productID);
-
+            
         if($product->configuration()->text_name != '144')
         {
             if(isset($decodeCSR['csrResult']['errorMessage'])){
-                throw new Exception($decodeCSR['csrResult']['errorMessage']);
+                throw new Exception($decodeCSR['csrResult']['errorMessage']);  
             }
         }
         $mainDomain   = $decodeCSR['csrResult']['CN'];
@@ -163,24 +163,24 @@ class AdminReissueCertificate extends Ajax {
 
     private function validateSanDomains() {
         $this->moduleBuildParams();
-
+ 
         $sansDomains = $this->p['sanDomains'];
         $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($sansDomains);
 
         $invalidDomains = \MGModule\SSLCENTERWHMCS\eHelpers\Domains::getInvalidDomains($sansDomains);
-
-
+        
+        
         $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceId']);
         $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($service->productID);
-
+               
         if($product->configuration()->text_name != '144')
         {
             if (count($invalidDomains)) {
                 throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('incorrectSans') . implode(', ', $invalidDomains));
             }
-
-        } else {
-
+        
+         } else {
+            
             $iperror = false;
             foreach($sansDomains as $domainname)
             {
@@ -188,13 +188,13 @@ class AdminReissueCertificate extends Ajax {
                     $iperror = true;
                 }
             }
-
+            
             if (count($invalidDomains) && $iperror) {
                 throw new Exception('SANs are incorrect');
             }
-
+            
         }
-
+        
         $includedSans = $this->serviceParams[ConfigOptions::PRODUCT_INCLUDED_SANS];
         $boughtSans   = $this->serviceParams['configoptions'][ConfigOptions::OPTION_SANS_COUNT];
         $sansLimit    = $includedSans + $boughtSans;
@@ -203,7 +203,7 @@ class AdminReissueCertificate extends Ajax {
         }
 
     }
-
+    
     private function validateServerType() {
         if($this->p['webServer'] == 0) {
             throw new Exception('You must select client server type');
