@@ -28,12 +28,15 @@ class Cron extends main\mgLibs\process\AbstractController
                 continue;
             }
             
-            //if service is montlhy, one time, free skip it
-            if ($this->checkServiceBillingPeriod($serviceID))
-                continue;
-            
             //if service is synchronized skip it
             if ($this->checkIfSynchronized($serviceID))
+                continue;
+            
+            //set ssl certificate as synchronized
+            $this->setSSLServiceAsSynchronized($serviceID);
+            
+            //if service is montlhy, one time, free skip it
+            if ($this->checkServiceBillingPeriod($serviceID))
                 continue;
 
             try{
@@ -72,8 +75,6 @@ class Cron extends main\mgLibs\process\AbstractController
 
                 $updatedServices[] = $serviceID;
             }
-            //set ssl certificate as synchronized
-            $this->setSSLServiceAsSynchronized($serviceID);
         }
         echo 'Synchronization completed.';
         echo '<br />Number of synchronized services: ' . count($updatedServices);
@@ -131,7 +132,7 @@ class Cron extends main\mgLibs\process\AbstractController
             //if service is One Time and nextduedate is setted as 0000-00-00 get valid_till from SSLCenter API
             if ($srv->billingcycle == 'One Time')
             {
-                $sslOrder = $this->getSSLOrders($srv->id)[0];
+                $sslOrder = Capsule::table('tblsslorders')->where('serviceid', $srv->id)->first();
                 
                 if(isset($sslOrder->remoteid) && !empty($sslOrder->remoteid)) {
                 
