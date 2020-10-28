@@ -187,6 +187,26 @@ class SSL extends \Illuminate\Database\Eloquent\Model
         $this->setConfigdataKey('fields', $fileds);
     }
     
+    public function setSubscriptionStarts($date)
+    {
+        $this->setConfigdataKey('begin_date', $date);
+    }
+    
+    public function getSubscriptionStarts($date)
+    {
+        return $this->getConfigdataKey('begin_date');
+    }
+    
+    public function setSubscriptionEnds($date)
+    {
+        $this->setConfigdataKey('end_date', $date);
+    }
+    
+    public function getSubscriptionEnd($date)
+    {
+        return $this->getConfigdataKey('end_date');
+    }
+    
     public function setValidFrom($date)
     {
         $this->setConfigdataKey('valid_from', $date);

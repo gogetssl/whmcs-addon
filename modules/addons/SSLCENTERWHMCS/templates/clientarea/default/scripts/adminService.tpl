@@ -7,7 +7,11 @@
         }
         hideJsHtmlInjection();
         
-        $('#profileContent').find('#frm1').after('<form id="loginAndRedirectForm" target="_blank" action="../dologin.php?language=" action="POST"><input type="hidden" name="redirectToProductDetails" value="true"/><input type="hidden" name="username" value="{$email}"/><input type="hidden" name="serviceID" value="{$serviceid}"/></form>');
+        
+        var tokenf = $('#frm1 input[name="token"]').val();
+        
+        $('#profileContent').find('#frm1').after('<form id="loginAndRedirectForm" target="_blank" action="index.php?rp=/admin/client/{$userid}/login" method="GET"><input type="hidden" name="token" value="'+tokenf+'" /><input type="hidden" name="goto" value="clientarea.php?action=productdetails&id=3"><input type="hidden" name="redirectToProductDetails" value="true"/><input type="hidden" name="username" value="{$email}"/><input type="hidden" name="serviceID" value="{$serviceid}"/></form>');
+        $('#loginAndRedirectForm').attr('method', 'POST');
         $('#btnManage_SSL').removeAttr('onclick');
         $('#btnManage_SSL').on('click', function(e) { 
             //$('#modcmdbtns').css('opacity', '0.2');

@@ -173,7 +173,7 @@ class SSLStepTwo {
             'postcode', 'country', 'phonenumber','privateKey'];
 
         $b = [
-            'order_type', 'sans_domains', 'org_name', 'org_division', 'org_duns', 'org_addressline1',
+            'order_type', 'sans_domains', 'org_name', 'org_division', 'org_lei', 'org_duns', 'org_addressline1',
             'org_city', 'org_country', 'org_fax', 'org_phone', 'org_postalcode', 'org_regions'
         ];
         

@@ -129,7 +129,7 @@ class SSLStepThree {
         $order['dcv_method'] = strtolower($this->p['fields']['dcv_method']);
        
         $order['product_id'] = $this->p[ConfigOptions::API_PRODUCT_ID]; // Required
-        $order['period']     = $billingPeriods[$this->p['model']['attributes']['billingcycle']];//$this->p[ConfigOptions::API_PRODUCT_MONTHS]; // Required  
+        $order['period']     = $billingPeriods[$this->p['model']->billingcycle];//$this->p[ConfigOptions::API_PRODUCT_MONTHS]; // Required  
         $order['csr']        = $this->p['csr']; // Required
         $order['server_count']       = -1; // Required . amount of servers, for Unlimited pass “-1”
         $order['approver_email']     = ($order['dcv_method'] == 'email') ? $this->p['approveremail'] : ''; // Required . amount of servers, for Unlimited pass “-1”
@@ -169,6 +169,7 @@ class SSLStepThree {
             $org                       = &$this->p['fields'];
             $order['org_name']         = $org['org_name'];
             $order['org_division']     = $org['org_division'];
+            $order['org_lei']          = $org['org_lei'];
             $order['org_duns']         = $org['org_duns'];
             $order['org_addressline1'] = $org['org_addressline1'];
             $order['org_city']         = $org['org_city'];

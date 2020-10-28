@@ -3,7 +3,54 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 if(!defined('DS'))define('DS',DIRECTORY_SEPARATOR);
 
-add_hook('ClientAreaPage', 1, function($params) { 
+add_hook("ClientAreaPage",1 ,function($vars) {
+
+    global $CONFIG;
+
+    if(isset($_GET['id'])) return true;
+    
+    $urldata = parse_url($_SERVER['HTTP_REFERER']);
+    parse_str($urldata['query'], $query);
+
+    $serviceid = null;
+
+    foreach($query as $key => $value)
+    {
+        unset($query[$key]);
+        $query[str_replace('amp;', '', $key)] = $value;
+    }
+
+    if (strpos($urldata['path'], 'clientsservices.php') !== false) {
+
+        if(isset($query['id']) && !empty($query['id']))
+        {
+            $serviceid = $query['id'];
+        }
+        if(isset($query['productselect']) && !empty($query['productselect']))
+        {
+            $serviceid = $query['productselect'];
+        }
+        if($serviceid === null)
+        {
+            $service = Capsule::table('tblhosting')->where('userid', $query['userid'])->first();
+            $serviceid = $service->id;
+        }
+    
+        $service = Capsule::table('tblhosting')->where('id', $serviceid)->first();
+        
+        if(isset($service->packageid) && !empty($service->packageid))
+        {
+            $product = Capsule::table('tblproducts')->where('id', $service->packageid)->where('servertype', 'SSLCENTERWHMCS')->first();
+            
+            if(isset($product->id))
+            {
+                redir('action=productdetails&id='.$serviceid, 'clientarea.php');
+            }
+        }
+    }
+});
+
+add_hook('ClientAreaPage', 99999, function($params) { 
     
     if (strpos($_SERVER['SCRIPT_NAME'], 'viewinvoice.php') !== false && !empty($_GET['id']) && $_POST['applycredit'] == true) {
         $invoice = Capsule::table('tblinvoices')->where('id', $_GET['id'])->first();
@@ -503,8 +550,7 @@ function SSLCENTER_overideDisaplayedProductPricingBasedOnCommission($vars)
     
     new \MGModule\SSLCENTERWHMCS\Loader();
     MGModule\SSLCENTERWHMCS\Addon::I(true);
-      
-    if($vars['filename'] == 'cart')
+    if($vars['filename'] == 'cart' || $vars['filename'] == 'index')
     {
     
         switch ($smarty->tpl_vars['templatefile']->value)
