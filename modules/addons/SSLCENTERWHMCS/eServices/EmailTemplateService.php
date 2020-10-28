@@ -10,6 +10,7 @@ class EmailTemplateService {
     const EXPIRATION_TEMPLATE_ID = 'SSLCenter - Service Expiration';
     const SEND_CERTIFICATE_TEMPLATE_ID = 'SSLCenter - Send Certificate';
     const RENEWAL_TEMPLATE_ID = 'SSLCenter - Renewal';
+    const REISSUE_TEMPLATE_ID = 'SSLCenter - Reissue';
 
     public static function createRenewalTemplate() {
         if(!is_null(self::getTemplate(self::RENEWAL_TEMPLATE_ID))) {
@@ -195,4 +196,54 @@ class EmailTemplateService {
         }
         $template->delete();
     }
+
+    public static function createReissueTemplate() {
+        if(!is_null(self::getTemplate(self::REISSUE_TEMPLATE_ID))) {
+            return 'Template exist, nothing to do here';
+        }
+        $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
+        $newTemplate->type    = 'product';
+        $newTemplate->name    = self::REISSUE_TEMPLATE_ID;
+        $newTemplate->subject = 'SSL Certificate - Reissue';
+        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your subscription will expire in 30 days. To renew it, please reissue your certificate.</p><p>{$signature}</p>';
+        $newTemplate->attachments  = '';
+        $newTemplate->fromname  = '';
+        $newTemplate->fromemail  = '';
+        $newTemplate->disabled  = '0';
+        $newTemplate->custom  = 1;
+        $newTemplate->language = '';
+        $newTemplate->copyto = '';
+        
+        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
+        if(!empty($query))
+        {
+            $newTemplate->blind_copy_to = '';
+        }
+        
+        $newTemplate->plaintext = '0';
+        $newTemplate->created_at = date('Y-m-d H:i:s');
+        $newTemplate->updated_at = date('Y-m-d H:i:s');
+        $newTemplate->save();
+    }
+    public static function updateReissueTemplate() {        
+        $template          =  \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::REISSUE_TEMPLATE_ID)->first();     
+        
+        if(empty($template))
+        {
+            self::createReissueTemplate();
+        }
+        
+        $template          =  \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::REISSUE_TEMPLATE_ID)->first(); 
+        $template->message = '<p>Dear {$client_name},</p><p>Your subscription will expire in 30 days. To renew it, please reissue your certificate.</p><p>{$signature}</p>';
+        $template->save();
+    }
+    
+    public static function deleteReissueTemplate() {
+        $template = self::getTemplate(self::REISSUE_TEMPLATE_ID);
+        if(is_null($template)) {
+            return 'Template not exist, nothing to do here';
+        }
+        $template->delete();
+    }
+    
 }

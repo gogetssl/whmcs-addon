@@ -76,6 +76,9 @@ class UpdateConfigData
             $sslOrder->setValidFrom($order['valid_from']);
             $sslOrder->setValidTill($order['valid_till']);
 
+            $sslOrder->setSubscriptionStarts($order['begin_date']);
+            $sslOrder->setSubscriptionEnds($order['end_date']);
+
             $sslOrder->setDomain($order['domain']);
             $sslOrder->setSSLStatus($order['status']);
             $sslOrder->setOrderStatusDescription($order['status_description']);

@@ -109,27 +109,23 @@
             
             $.each(sanEmails, function (domain, emails) {
                 
-                if(jQuery.inArray(brand, onlyEmailValidationFoBrands) < 0){
-                    selectDcvMethod = '<div class="form-group"><select style="width:65%;" type="text" name="selectName" class="form-control">';
-                    
-                    if(ValidateIPaddress(domain) === false)    {
-                    //if not disabled display
-                    if(jQuery.inArray('email', disabledValidationMethods) < 0)  
-                        selectDcvMethod +='<option value="EMAIL">'+'{$MGLANG->T('dropdownDcvMethodEmail')}'+'</option>';
-                    
-                    }
 
-                    selectDcvMethod += '<option value="HTTP">'+'{$MGLANG->T('dropdownDcvMethodHttp')}'+'</option><option value="HTTPS">'+'{$MGLANG->T('dropdownDcvMethodHttps')}'+'</option>';
-                    
-                    if(jQuery.inArray('dns', disabledValidationMethods) < 0)
-                    {
-                        if(ValidateIPaddress(domain) === false) {
-                            selectDcvMethod += '<option value="DNS">'+'{$MGLANG->T('dropdownDcvMethodDns')}'+'</option>';
-                        }
-                    }
-                    selectDcvMethod += '</select>';             } else { 
-                    selectDcvMethod = '<div class="form-group"><select style="width:65%;" type="text" name="selectName" class="form-control"><option value="EMAIL">'+'{$MGLANG->T('dropdownDcvMethodEmail')}'+'</option></select>';
+                selectDcvMethod = '<div class="form-group"><select style="width:65%;" type="text" name="selectName" class="form-control">';
+
+                if(jQuery.inArray('email', disabledValidationMethods) < 0)  {
+                    selectDcvMethod +='<option value="EMAIL">'+'{$MGLANG->T('dropdownDcvMethodEmail')}'+'</option>';
                 }
+                if(jQuery.inArray('http', disabledValidationMethods) < 0)  {
+                    selectDcvMethod += '<option value="HTTP">'+'{$MGLANG->T('dropdownDcvMethodHttp')}'+'</option>';
+                }
+                if(jQuery.inArray('https', disabledValidationMethods) < 0)  {                
+                    selectDcvMethod += '<option value="HTTPS">'+'{$MGLANG->T('dropdownDcvMethodHttps')}'+'</option>';
+                }   
+                if(jQuery.inArray('dns', disabledValidationMethods) < 0)
+                {
+                    selectDcvMethod += '<option value="DNS">'+'{$MGLANG->T('dropdownDcvMethodDns')}'+'</option>';
+                }
+                selectDcvMethod += '</select>';            
                 
                 partHtml = partHtml + selectDcvMethod.replace('name="selectName"', getNameForSelectMethod(x, domain));
                 selectEmailHtml = selectBegin.replace('name="selectName"', getNameForSelectEmail(x, domain));

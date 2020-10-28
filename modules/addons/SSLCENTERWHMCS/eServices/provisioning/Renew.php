@@ -165,7 +165,7 @@ class Renew {
             'Biennially'    =>  24,
             'Triennially'   =>  36,
         );
-        
+                
         if($this->p[ConfigOptions::MONTH_ONE_TIME] && !empty($this->p[ConfigOptions::MONTH_ONE_TIME]))
         {
             $billingPeriods['One Time'] = $this->p[ConfigOptions::MONTH_ONE_TIME];
@@ -227,7 +227,7 @@ class Renew {
         $order                   = [];
         $order['dcv_method']     = $p->dcv_method;        
         $order['product_id']     = $this->p[ConfigOptions::API_PRODUCT_ID]; // Required
-        $order['period']         = $billingPeriods[$this->p['model']['attributes']['billingcycle']];//$this->p[ConfigOptions::API_PRODUCT_MONTHS]; // Required
+        $order['period']         = $billingPeriods[$this->p['model']->billingcycle];//$this->p[ConfigOptions::API_PRODUCT_MONTHS]; // Required
         $order['csr']            = $p->csr; // Required
         $order['server_count']   = -1; // Required . amount of servers, for Unlimited pass “-1”
         
@@ -311,7 +311,7 @@ class Renew {
             $order['dns_names']       = implode(',', $dns_names);
             $order['approver_emails'] = implode(',', $approver_emails);
         }
-              
+             
         return $order;
     }
 }

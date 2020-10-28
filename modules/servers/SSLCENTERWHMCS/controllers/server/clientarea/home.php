@@ -27,8 +27,8 @@ class home extends main\mgLibs\process\AbstractController {
             $userid = $input['params']['userid'];
             $ssl        = new main\eRepository\whmcs\service\SSL();
             $sslService = $ssl->getByServiceId($serviceId);
-
-            if(($sslService->configdata->ssl_status == 'reissue' || $sslService->configdata->ssl_status == 'new_order' || $sslService->configdata->ssl_status == 'processing' || $sslService->configdata->ssl_status == '') && $sslService->remoteid != '')
+            
+            if(($sslService->configdata->ssl_status == 'pending' || $sslService->configdata->ssl_status == 'reissue' || $sslService->configdata->ssl_status == 'new_order' || $sslService->configdata->ssl_status == 'processing' || $sslService->configdata->ssl_status == '') && $sslService->remoteid != '')
             {
                 $sslRepo    = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
                 $sslService = $sslRepo->getByServiceId($serviceId);
@@ -156,6 +156,25 @@ class home extends main\mgLibs\process\AbstractController {
                     $vars['validFrom'] = fromMySQLDate($certificateDetails['valid_from'], false, true);
                     //expires
                     $vars['validTill'] = fromMySQLDate($certificateDetails['valid_till'],false,true);
+                    
+                    if(isset($certificateDetails['begin_date']) && !empty($certificateDetails['begin_date']))
+                    {
+                        $vars['subscriptionStarts'] = fromMySQLDate($certificateDetails['begin_date'],false,true);
+                    }
+                    
+                    if(isset($certificateDetails['end_date']) && !empty($certificateDetails['end_date']))
+                    {
+                        $vars['subscriptionEnds'] = fromMySQLDate($certificateDetails['end_date'],false,true);
+                        
+                        
+                        $now = time(); 
+                        $end_date = strtotime($certificateDetails['end_date']);
+                        $datediff = $now - $end_date;
+
+                        $vars['nextReissue'] = abs(round($datediff / (60 * 60 * 24)));
+                        
+                    }
+                    
                     //service billing cycle
                     $vars['serviceBillingCycle'] = $serviceBillingCycle;
                     $vars['displayRenewButton'] = false;
@@ -169,15 +188,42 @@ class home extends main\mgLibs\process\AbstractController {
                     //get dsiabled validation methods
                     $disabledValidationMethods = array();
                     $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
-                    if($apiConf->disable_email_validation && !in_array($vars['brand'], $vars['brandsWithOnlyEmailValidation']))
+                    
+                    $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($input['params']['pid']);
+                    $productssl = false;
+                    $checkTable = Capsule::schema()->hasTable('mgfw_SSLCENTER_product_brand');
+                    if($checkTable)
+                    {
+                        if (Capsule::schema()->hasColumn('mgfw_SSLCENTER_product_brand', 'data'))
+                        {
+                            $productsslDB = Capsule::table('mgfw_SSLCENTER_product_brand')->where('pid', $product->configuration()->text_name)->first();
+                            if(isset($productsslDB->data))
+                            {
+                                $productssl['product'] = json_decode($productsslDB->data, true); 
+                            }
+                        }
+                    }
+
+                    if(!$productssl)
+                    {
+                        $productssl = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->getProduct($product->configuration()->text_name);
+                    }
+
+                    if(!$productssl['product']['dcv_email'])
                     {
                         array_push($disabledValidationMethods, 'email');
                     }
-                    
-                    if($input['params']['configoption1'] == '144')
+                    if(!$productssl['product']['dcv_dns'])
                     {
-                        array_push($disabledValidationMethods, 'email');
                         array_push($disabledValidationMethods, 'dns');
+                    }
+                    if(!$productssl['product']['dcv_http'])
+                    {
+                        array_push($disabledValidationMethods, 'http');
+                    }
+                    if(!$productssl['product']['dcv_https'])
+                    {
+                        array_push($disabledValidationMethods, 'https');
                     }
                     
                 } catch (\Exception $ex) {
@@ -196,8 +242,11 @@ class home extends main\mgLibs\process\AbstractController {
             $vars['assetsURL'] = main\Server::I()->getAssetsURL();
             $vars['serviceid'] = $serviceId;
             $vars['userid'] = $userid;
-
-
+            
+            $filenameCsr = isset($vars['domain']) && !empty($vars['domain']) ? $vars['domain'] : 'csr_code';
+            $filenameCrt = isset($vars['domain']) && !empty($vars['domain']) ? $vars['domain'] : 'crt_code';
+            $filenameCa = isset($vars['domain']) && !empty($vars['domain']) ? $vars['domain'] : 'ca_code';
+            
             if($_GET['download'] == '1')
             {
                 if(isset($vars['sans'][$_GET['domain']]) && !empty($vars['sans'][$_GET['domain']]) && ($vars['sans'][$_GET['domain']]['method'] == 'http' || $vars['sans'][$_GET['domain']]['method'] == 'https'))
@@ -257,14 +306,14 @@ class home extends main\mgLibs\process\AbstractController {
 
             if($_GET['downloadcsr'] == '1' && !empty($certificateDetails['csr']))
             {
-                $tmpName = tempnam(sys_get_temp_dir(), 'csr_code.csr');
+                $tmpName = tempnam(sys_get_temp_dir(), $filenameCsr.'.csr');
                 $handle = fopen($tmpName, "w");
 
                 fwrite($handle, $certificateDetails['csr']);
                 fclose($handle);
 
                 header('Content-Type: application/octet-stream');
-                header('Content-Disposition: attachment; filename=csr_code.csr');
+                header('Content-Disposition: attachment; filename='.$filenameCsr.'.csr');
                 header('Expires: 0');
                 header('Cache-Control: must-revalidate');
                 header('Pragma: public');
@@ -274,14 +323,14 @@ class home extends main\mgLibs\process\AbstractController {
             }
             if($_GET['downloadcrt'] == '1' && !empty($certificateDetails['crt']))
             {
-                $tmpName = tempnam(sys_get_temp_dir(), 'crt_code.crt');
+                $tmpName = tempnam(sys_get_temp_dir(), $filenameCrt.'.crt');
                 $handle = fopen($tmpName, "w");
 
                 fwrite($handle, $certificateDetails['crt']);
                 fclose($handle);
 
                 header('Content-Type: application/octet-stream');
-                header('Content-Disposition: attachment; filename=crt_code.crt');
+                header('Content-Disposition: attachment; filename='.$filenameCrt.'.crt');
                 header('Expires: 0');
                 header('Cache-Control: must-revalidate');
                 header('Pragma: public');
@@ -291,14 +340,14 @@ class home extends main\mgLibs\process\AbstractController {
             }
             if($_GET['downloadca'] == '1' && !empty($certificateDetails['ca']))
             {
-                $tmpName = tempnam(sys_get_temp_dir(), 'ca_code.ca');
+                $tmpName = tempnam(sys_get_temp_dir(), $filenameCa.'.ca');
                 $handle = fopen($tmpName, "w");
 
                 fwrite($handle, $certificateDetails['ca']);
                 fclose($handle);
 
                 header('Content-Type: application/octet-stream');
-                header('Content-Disposition: attachment; filename=ca_code.ca');
+                header('Content-Disposition: attachment; filename='.$filenameCa.'.ca');
                 header('Expires: 0');
                 header('Cache-Control: must-revalidate');
                 header('Pragma: public');
@@ -341,7 +390,7 @@ class home extends main\mgLibs\process\AbstractController {
         }
 
         $vars['configoption24'] = $input['params']['configoption24'];
-        
+                
         return array(
             'tpl'  => 'home'
             , 'vars' => $vars
