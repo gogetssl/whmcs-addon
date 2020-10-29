@@ -87,11 +87,20 @@ class AdminServicesTabFields {
         $boughtSans   = (int) $this->p['configoptions'][ConfigOptions::OPTION_SANS_COUNT];
         $sansLimit = $includedSans + $boughtSans;
         
+        require dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'configuration.php';
+
+        $adminpath = 'admin';
+        if(isset($customadminpath))
+        {
+            $adminpath = $customadminpath;
+        }
+        
         return [
             'serviceid' => $this->p['serviceid'],
             'email'     => $this->p['clientsdetails']['email'],
             'userid'    => $this->p['userid'],
             'sansLimit' => $sansLimit,
+            'adminpath' => $adminpath
         ];
     }
 }

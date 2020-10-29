@@ -32,8 +32,12 @@ add_hook("ClientAreaPage",1 ,function($vars) {
         }
         if($serviceid === null)
         {
-            $service = Capsule::table('tblhosting')->where('userid', $query['userid'])->first();
-            $serviceid = $service->id;
+            $service = Capsule::table('tblhosting')->select(['tblhosting.id as serviceid'])
+                     ->join('tblproducts', 'tblproducts.id', '=', 'tblhosting.packageid')
+                    ->where('tblhosting.userid', $query['userid'])
+                    ->where('tblproducts.servertype', 'SSLCENTERWHMCS')
+                    ->first();
+            $serviceid = $service->serviceid;
         }
     
         $service = Capsule::table('tblhosting')->where('id', $serviceid)->first();
