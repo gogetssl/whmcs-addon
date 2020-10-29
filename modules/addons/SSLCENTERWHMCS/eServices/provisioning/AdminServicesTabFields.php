@@ -49,6 +49,15 @@ class AdminServicesTabFields {
             $return['SSLCenter API Order ID'] = $sslService->remoteid;
 
             $orderDetails = (array)$sslService->configdata;
+            
+            if(!$orderDetails['domain'])
+            {
+                $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($sslService);
+                $orderStatus = $configDataUpdate->run();
+                
+                $sslService = $ssl->getByServiceId($this->p['serviceid']);    
+                $orderDetails = (array)$sslService->configdata;
+            }
  
             $return['Cron Synchronized'] = isset($orderDetails['synchronized']) && !empty($orderDetails['synchronized']) ? $orderDetails['synchronized'] : 'Not synchronized';
             $return['Comodo Order ID'] = $orderDetails['partner_order_id']?:"-"; 
