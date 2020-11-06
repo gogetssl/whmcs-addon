@@ -3,7 +3,7 @@
 Free of charge SSL Addon for WHMCS to automate SSL certificate sales/distribution of via GoGetSSL.com platform
 
 ***
-**Note:** This version is fully compatible with 7.x.x versions of WHMCS.
+**Note:** This version is fully compatible with 8.x.x versions of WHMCS.
 ***
 
 ### Prerequisites
@@ -12,8 +12,6 @@ Free of charge SSL Addon for WHMCS to automate SSL certificate sales/distributio
 
 ### Releases/Downloads
 Please check the latest [Releases](https://github.com/gogetssl/whmcs-addon/releases) and Download files 
-
-Version 2.0.0 released on 05.12.2018, please use [migration manual](https://github.com/gogetssl/whmcs-addon/releases/tag/v2.0.0) to switch from latest 1.0.42 version
 
 ### WIKI
 Check [WIKI](https://github.com/gogetssl/whmcs-addon/wiki) for manuals and description of all features
@@ -28,9 +26,10 @@ You are highly welcome to send us requests for new features, suggestions, issues
 
 ### List of addon features
 - Full integration, no invite links;
-- Multiple year support, up to 2 years;
+- Multiple year support, up to 3 years;
 - One-time and Recurring payments
 - SAN/UCC/MDC support;
+- LEI codes for OV/EV orders
 - Online CSR Generator
 - Option to set default country for CSR Generator
 - Fully White Labeled solution
@@ -40,6 +39,7 @@ You are highly welcome to send us requests for new features, suggestions, issues
 - Multiple Product Creator option
 - Automated Price import and commission setup
 - Multibrand For WHMCS support
+- SSL Import
 
 ***
 
