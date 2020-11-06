@@ -96,7 +96,7 @@
                 </tr>
                 <tr>
                     <td class="text-left">{$MGLANG->T('nextReissue')}</td>
-                    <td class="text-left">{$MGLANG->T('Reissue SSL within')} {$nextReissue} {$MGLANG->T('days')}</td>
+                    <td class="text-left"><strong>{$MGLANG->T('Reissue SSL within')} {$nextReissue} {$MGLANG->T('days')}</strong></td>
                 </tr>
             {/if}
             <!--{if $order_id}

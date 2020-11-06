@@ -157,6 +157,12 @@ class home extends main\mgLibs\process\AbstractController {
                     //expires
                     $vars['validTill'] = fromMySQLDate($certificateDetails['valid_till'],false,true);
                     
+                    $now = strtotime($certificateDetails['valid_from']);
+                    $end_date = strtotime($certificateDetails['valid_till']);
+                    $datediff = $now - $end_date;
+                        
+                    $vars['nextReissue'] = abs(round($datediff / (60 * 60 * 24)));
+                    
                     if(isset($certificateDetails['begin_date']) && !empty($certificateDetails['begin_date']))
                     {
                         $vars['subscriptionStarts'] = fromMySQLDate($certificateDetails['begin_date'],false,true);
@@ -165,14 +171,6 @@ class home extends main\mgLibs\process\AbstractController {
                     if(isset($certificateDetails['end_date']) && !empty($certificateDetails['end_date']))
                     {
                         $vars['subscriptionEnds'] = fromMySQLDate($certificateDetails['end_date'],false,true);
-                        
-                        
-                        $now = time(); 
-                        $end_date = strtotime($certificateDetails['end_date']);
-                        $datediff = $now - $end_date;
-
-                        $vars['nextReissue'] = abs(round($datediff / (60 * 60 * 24)));
-                        
                     }
                     
                     //service billing cycle
