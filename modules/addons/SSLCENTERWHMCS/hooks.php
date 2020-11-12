@@ -6,49 +6,52 @@ if(!defined('DS'))define('DS',DIRECTORY_SEPARATOR);
 add_hook("ClientAreaPage",1 ,function($vars) {
 
     global $CONFIG;
-
-    if(isset($_GET['id'])) return true;
     
-    $urldata = parse_url($_SERVER['HTTP_REFERER']);
-    parse_str($urldata['query'], $query);
-
-    $serviceid = null;
-
-    foreach($query as $key => $value)
+    if(substr($CONFIG['Version'],0,1) == '8')
     {
-        unset($query[$key]);
-        $query[str_replace('amp;', '', $key)] = $value;
-    }
+        if(isset($_GET['id'])) return true;
 
-    if (strpos($urldata['path'], 'clientsservices.php') !== false) {
+        $urldata = parse_url($_SERVER['HTTP_REFERER']);
+        parse_str($urldata['query'], $query);
 
-        if(isset($query['id']) && !empty($query['id']))
+        $serviceid = null;
+
+        foreach($query as $key => $value)
         {
-            $serviceid = $query['id'];
+            unset($query[$key]);
+            $query[str_replace('amp;', '', $key)] = $value;
         }
-        if(isset($query['productselect']) && !empty($query['productselect']))
-        {
-            $serviceid = $query['productselect'];
-        }
-        if($serviceid === null)
-        {
-            $service = Capsule::table('tblhosting')->select(['tblhosting.id as serviceid'])
-                     ->join('tblproducts', 'tblproducts.id', '=', 'tblhosting.packageid')
-                    ->where('tblhosting.userid', $query['userid'])
-                    ->where('tblproducts.servertype', 'SSLCENTERWHMCS')
-                    ->first();
-            $serviceid = $service->serviceid;
-        }
-    
-        $service = Capsule::table('tblhosting')->where('id', $serviceid)->first();
-        
-        if(isset($service->packageid) && !empty($service->packageid))
-        {
-            $product = Capsule::table('tblproducts')->where('id', $service->packageid)->where('servertype', 'SSLCENTERWHMCS')->first();
-            
-            if(isset($product->id))
+
+        if (strpos($urldata['path'], 'clientsservices.php') !== false) {
+
+            if(isset($query['id']) && !empty($query['id']))
             {
-                redir('action=productdetails&id='.$serviceid, 'clientarea.php');
+                $serviceid = $query['id'];
+            }
+            if(isset($query['productselect']) && !empty($query['productselect']))
+            {
+                $serviceid = $query['productselect'];
+            }
+            if($serviceid === null)
+            {
+                $service = Capsule::table('tblhosting')->select(['tblhosting.id as serviceid'])
+                         ->join('tblproducts', 'tblproducts.id', '=', 'tblhosting.packageid')
+                        ->where('tblhosting.userid', $query['userid'])
+                        ->where('tblproducts.servertype', 'SSLCENTERWHMCS')
+                        ->first();
+                $serviceid = $service->serviceid;
+            }
+
+            $service = Capsule::table('tblhosting')->where('id', $serviceid)->first();
+
+            if(isset($service->packageid) && !empty($service->packageid))
+            {
+                $product = Capsule::table('tblproducts')->where('id', $service->packageid)->where('servertype', 'SSLCENTERWHMCS')->first();
+
+                if(isset($product->id))
+                {
+                    redir('action=productdetails&id='.$serviceid, 'clientarea.php');
+                }
             }
         }
     }
