@@ -83,6 +83,8 @@ class AdminServicesTabFields {
     }
 
     private function getServiceVars() {
+        global $CONFIG;
+        
         $includedSans = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS];
         $boughtSans   = (int) $this->p['configoptions'][ConfigOptions::OPTION_SANS_COUNT];
         $sansLimit = $includedSans + $boughtSans;
@@ -94,13 +96,14 @@ class AdminServicesTabFields {
         {
             $adminpath = $customadminpath;
         }
-        
+         
         return [
             'serviceid' => $this->p['serviceid'],
             'email'     => $this->p['clientsdetails']['email'],
             'userid'    => $this->p['userid'],
             'sansLimit' => $sansLimit,
-            'adminpath' => $adminpath
+            'adminpath' => $adminpath,
+            'version'   => substr($CONFIG['Version'],0,1)
         ];
     }
 }
