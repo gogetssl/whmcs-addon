@@ -101,8 +101,10 @@ class ImportSSLOrder extends main\mgLibs\process\AbstractController
                 throw new \Exception(main\mgLibs\Lang::T('messages', 'order_cancelled_import_unable'));
          
             $SSLOrder = new main\eModels\whmcs\service\SSL();
+            $tblsslorder = $SSLOrder->getWhere(array('remoteid' => $sslOrderID))->get();
+            
             //check if SSL already exist 
-            if (!$SSLOrder->getWhere(array('remoteid' => $sslOrderID))->get()->isEmpty())
+            if (isset($tblsslorder[0]->id))
             {
                 throw new \Exception(main\mgLibs\Lang::T('messages', 'ssl_order_already_exist'));
             }
