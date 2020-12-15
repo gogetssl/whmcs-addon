@@ -136,7 +136,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->colWidth          = 2;
         $field->continue          = false;
         $field->enableDescription = true;
-        $field->options           = array('90' => '90', '60' => '60', '45' => '45', '30' => '30', '15' => '15');
+        $field->options           = array('30' => '30', '21' => '21', '14' => '14', '7' => '7', '3' => '3', '1' => '1', '0' => '0');
         $field->error             = $this->getFieldError('renew_invoice_days_reccuring');
         $form->addField($field);
         
@@ -171,7 +171,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->colWidth          = 2;
         $field->continue          = false;
         $field->enableDescription = true;
-        $field->options           = array('90' => '90', '60' => '60', '45' => '45', '30' => '30', '15' => '15');
+        $field->options           = array('30' => '30', '21' => '21', '14' => '14', '7' => '7', '3' => '3', '1' => '1', '0' => '0');
         $field->error             = $this->getFieldError('renew_invoice_days_one_time');
         $form->addField($field);
 

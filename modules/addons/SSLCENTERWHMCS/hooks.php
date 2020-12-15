@@ -652,3 +652,19 @@ add_hook('InvoiceCreation', 1, function($vars) {
     }
     
 });
+
+
+add_hook('ClientAreaHeadOutput', 1, function($vars) {
+    $template = $vars['template'];
+    return <<<HTML
+    <style>
+    .hidden {
+        display:none;
+    }
+    </style>
+<script type="text/javascript">
+//custom javascript here
+</script>
+HTML;
+
+});

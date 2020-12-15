@@ -14,10 +14,14 @@
         else if($('.main-content form').length > 0) {
             var element = $('.main-content form');
         }
+        else if($('#main-body .primary-content form').length > 0) {
+            var element = $('#main-body .primary-content form');
+        }
         //for flare template
         else if($('#main-body form').length > 0) {
             var element = $('#main-body form');
         }
+        
         element.append('\
                         <div class="modal fade" id="modalGenerateCsr" role="dialog" aria-hidden="true">\n\
                             <div class="modal-dialog">\n\
