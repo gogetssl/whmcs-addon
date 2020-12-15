@@ -5,6 +5,8 @@ namespace MGModule\SSLCENTERWHMCS\eServices\provisioning;
 use Exception;
 use \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service as Service;
 use \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product as Product;
+use WHMCS\Database\Capsule;
+
 class SSLStepThree {
 
     /**
@@ -164,6 +166,13 @@ class SSLStepThree {
         $order['tech_fax']          = ($useAdminContact) ? '' : $apiConf->tech_fax;
         $order['tech_postalcode']   = ($useAdminContact) ? $order['admin_postalcode'] : $apiConf->tech_postalcode;
         $order['tech_region']       = ($useAdminContact) ? $order['admin_region'] : $apiConf->tech_region;
+        
+        $template = Capsule::table('tblconfiguration')->where('setting', 'Template')->first();
+        if(isset($template->value) && $template->value == 'twenty-one')
+        {
+            $order['tech_country'] = \MGModule\SSLCENTERWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountryCodeByName($order['tech_country']);
+            $order['admin_country'] = \MGModule\SSLCENTERWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountryCodeByName($order['admin_country']);
+        }
         
         if ($this->apiProduct->isOrganizationRequired()) {
             $org                       = &$this->p['fields'];
