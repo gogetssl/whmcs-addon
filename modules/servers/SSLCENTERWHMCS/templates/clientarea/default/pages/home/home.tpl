@@ -112,6 +112,12 @@
                     <td class="text-left">{$domain}</td>
                 </tr>
             {/if}
+            {if $approver_email}
+                <tr>
+                    <td class="text-left">{$MGLANG->T('Approver email')}</td>
+                    <td class="text-left">{$approver_email}</td>
+                </tr>
+            {/if}
             {if $partner_order_id}
                 <tr>
                     <td class="text-left">{$MGLANG->T('Partner Order ID')}</td>
