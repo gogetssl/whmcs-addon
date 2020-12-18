@@ -27,7 +27,7 @@ class home extends main\mgLibs\process\AbstractController {
             $userid = $input['params']['userid'];
             $ssl        = new main\eRepository\whmcs\service\SSL();
             $sslService = $ssl->getByServiceId($serviceId);
-            
+        
             if(($sslService->configdata->ssl_status == 'pending' || $sslService->configdata->ssl_status == 'reissue' || $sslService->configdata->ssl_status == 'new_order' || $sslService->configdata->ssl_status == 'processing' || $sslService->configdata->ssl_status == '') && $sslService->remoteid != '')
             {
                 $sslRepo    = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
@@ -388,7 +388,9 @@ class home extends main\mgLibs\process\AbstractController {
         }
 
         $vars['configoption24'] = $input['params']['configoption24'];
-                
+           
+        $vars['approver_email'] = isset($sslService->configdata->approver_method->email) && !empty($sslService->configdata->approver_method->email) ? $sslService->configdata->approver_method->email : false;
+
         return array(
             'tpl'  => 'home'
             , 'vars' => $vars
