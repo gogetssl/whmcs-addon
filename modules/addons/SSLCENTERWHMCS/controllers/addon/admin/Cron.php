@@ -167,8 +167,10 @@ class Cron extends main\mgLibs\process\AbstractController
                 
                 }
             }
-                    
-            if($daysReissue == '30')
+            
+            $product = Capsule::table('tblproducts')->where('id', $srv->packageid)->first();
+            
+            if($daysReissue == '30' && $product->configoption2 > 12)
             {
                 // send email 
                 $emailSendsCountReissue += $this->sendReissueNotfiyEmail($srv->id);
@@ -692,10 +694,10 @@ class Cron extends main\mgLibs\process\AbstractController
             
             if(isset($configdata['end_date']) && !empty($configdata['end_date']))
             {
-                $now = time(); 
-                $end_date = strtotime($configdata['end_date']);
+                $now = strtotime($certificateDetails['valid_from']);
+                $end_date = strtotime($certificateDetails['valid_till']);
                 $datediff = $now - $end_date;
-
+                
                 $nextReissue = abs(round($datediff / (60 * 60 * 24)));
                 return $nextReissue;
             }
@@ -751,7 +753,7 @@ class Cron extends main\mgLibs\process\AbstractController
         $command = 'SendEmail';
         
         $postData = array(
-            'id'          => $serviceId,
+            'serviceid'          => $serviceId,
             'messagename' => main\eServices\EmailTemplateService::REISSUE_TEMPLATE_ID,
         );
         

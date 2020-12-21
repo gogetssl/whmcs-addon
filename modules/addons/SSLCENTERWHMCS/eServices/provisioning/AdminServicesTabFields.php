@@ -64,6 +64,10 @@ class AdminServicesTabFields {
             $return['Configuration Status'] = $sslService->status;  
             $return['Domain'] = $orderDetails['domain'];
             $return['Order Status'] = ucfirst($orderDetails['ssl_status']);   
+            if(isset($orderDetails['approver_method']->email) && !empty($orderDetails['approver_method']->email))
+            {
+                $return['Approver email'] = $orderDetails['approver_method']->email;
+            }
             $return['Order Status Description'] = $orderDetails['order_status_description'] ? : '-';  
             
             if($orderDetails['ssl_status'] == 'active') {                
