@@ -204,8 +204,8 @@ class EmailTemplateService {
         $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
         $newTemplate->type    = 'product';
         $newTemplate->name    = self::REISSUE_TEMPLATE_ID;
-        $newTemplate->subject = 'SSL Certificate - Reissue';
-        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your subscription will expire in 30 days. To renew it, please reissue your certificate.</p><p>{$signature}</p>';
+        $newTemplate->subject = 'SSL Certificate - Renewal';
+        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your subscription service {$serviceid} will expire in 30 days. To renew it, please renew your certificate.</p><p>{$signature}</p>';
         $newTemplate->attachments  = '';
         $newTemplate->fromname  = '';
         $newTemplate->fromemail  = '';
@@ -234,7 +234,8 @@ class EmailTemplateService {
         }
         
         $template          =  \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::REISSUE_TEMPLATE_ID)->first(); 
-        $template->message = '<p>Dear {$client_name},</p><p>Your subscription will expire in 30 days. To renew it, please reissue your certificate.</p><p>{$signature}</p>';
+        $template->subject = 'SSL Certificate - Renewal';
+        $template->message = '<p>Dear {$client_name},</p><p>Your subscription service #{$serviceid} will expire in 30 days. To renew it, please renew your certificate.</p><p>{$signature}</p>';
         $template->save();
     }
     
