@@ -44,6 +44,12 @@ class Countries {
      * @throws Exception
      */
     public function getCountryCodeByName($name) {
+        
+        if(strlen($name) <= 2)
+        {
+            return $name;
+        }
+        
         foreach ($this->countries as $countryCode => $countryName) {
             if (strtolower($countryName) === strtolower($name)) {
                 return $countryCode;
