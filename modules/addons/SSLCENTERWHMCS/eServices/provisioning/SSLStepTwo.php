@@ -31,7 +31,67 @@ class SSLStepTwo {
         /*if(!isset($this->p['fields']['sans_domains']) || $this->p['fields']['sans_domains'] == '') {            
             $this->redirectToStepThree();                    
         }*/
-        return ['approveremails' => 'loading...'];
+        
+        $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceid']);
+        $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($service->productID);
+        
+        $productssl = false;
+        $checkTable = Capsule::schema()->hasTable('mgfw_SSLCENTER_product_brand');
+        if($checkTable)
+        {
+            if (Capsule::schema()->hasColumn('mgfw_SSLCENTER_product_brand', 'data'))
+            {
+                $productsslDB = Capsule::table('mgfw_SSLCENTER_product_brand')->where('pid', $product->configuration()->text_name)->first();
+                if(isset($productsslDB->data))
+                {
+                    $productssl['product'] = json_decode($productsslDB->data, true); 
+                }
+            }
+        }
+        if(!$productssl)
+        {
+            $productssl = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->getProduct($product->configuration()->text_name);
+        }
+
+        $ValidationMethods = ['email', 'dns', 'http', 'https'];        
+        if(!$productssl['product']['dcv_email'])
+        {
+            $ValidationMethods = array_diff($ValidationMethods, ['email']);
+        }
+        if(!$productssl['product']['dcv_dns'])
+        {
+            $ValidationMethods = array_diff($ValidationMethods, ['dns']);
+        }
+        if(!$productssl['product']['dcv_http'])
+        {
+            $ValidationMethods = array_diff($ValidationMethods, ['http']);
+        }
+        if(!$productssl['product']['dcv_https'])
+        {
+            $ValidationMethods = array_diff($ValidationMethods, ['https']);
+        }
+
+        if(isset($_SESSION['decodeCSR']) && !empty($_SESSION['decodeCSR']))
+        {
+            $decodedCSR = $_SESSION['decodeCSR'];
+            unset($_SESSION['decodeCSR']);
+        }
+        else
+        {
+            $decodedCSR   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR(trim(rtrim($_POST['csr'])));
+        }
+        $step2js = new SSLStepTwoJS($this->p);
+        $mainDomain       = $decodedCSR['csrResult']['CN'];
+        $domains = $mainDomain . PHP_EOL . $_POST['fields']['sans_domains'];
+        $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));
+        $approveremails = $step2js->fetchApprovalEmailsForSansDomains($sansDomains);
+        
+        return [
+            'approveremails' => 'loading...', 
+            'approveremails2' => $approveremails, 
+            'approvalmethods' => $ValidationMethods,
+            'brand' => $productssl['product']['brand']
+        ];
     }
     public function setPrivateKey($privKey) {
         $this->p['privateKey'] = $privKey;
