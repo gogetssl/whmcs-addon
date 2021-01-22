@@ -41,6 +41,8 @@ You are highly welcome to send us requests for new features, suggestions, issues
 - Multibrand For WHMCS support
 - SSL Import
 
+### Sub-Reseller network
+Starting at version [2.5.4a](https://github.com/gogetssl/whmcs-addon/releases/tag/v2.5.4a) we support ["Products Reseller For WHMCS"](https://www.modulesgarden.com/products/whmcs/products-reseller#changelog) module from Modules Garden allowing to have own Sub-Resellers using WHMCS to expand your network.
 ***
 
 ### License
