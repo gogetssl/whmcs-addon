@@ -170,7 +170,7 @@ class Cron extends main\mgLibs\process\AbstractController
             
             $product = Capsule::table('tblproducts')->where('id', $srv->packageid)->first();
             
-            if($daysReissue == '30' && $product->configoption2 > 12)
+            if($srv->domainstatus == 'Active' && $daysReissue == '30' && $product->configoption2 > 12)
             {
                 // send email 
                 $emailSendsCountReissue += $this->sendReissueNotfiyEmail($srv->id);
