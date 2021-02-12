@@ -74,6 +74,11 @@ class Cron extends main\mgLibs\process\AbstractController
             {
                 //update whmcs service next due date
                 $newNextDueDate = $order['valid_till'];
+                if(!empty($order['end_date']))
+                {
+                    $newNextDueDate = $order['end_date'];
+                }
+                
                 $this->updateServiceNextDueDate($serviceID, $newNextDueDate);
 
                 //set ssl certificate as terminated if expired  
