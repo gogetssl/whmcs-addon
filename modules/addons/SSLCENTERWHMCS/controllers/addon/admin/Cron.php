@@ -45,8 +45,8 @@ class Cron extends main\mgLibs\process\AbstractController
             $this->setSSLServiceAsSynchronized($serviceID);
             
             //if service is montlhy, one time, free skip it
-            if ($this->checkServiceBillingPeriod($serviceID))
-                continue;
+            //if ($this->checkServiceBillingPeriod($serviceID))
+            //    continue;
 
             try{
                 $order = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
