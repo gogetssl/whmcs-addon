@@ -44,10 +44,6 @@ class Cron extends main\mgLibs\process\AbstractController
             //set ssl certificate as synchronized
             $this->setSSLServiceAsSynchronized($serviceID);
             
-            //if service is montlhy, one time, free skip it
-            //if ($this->checkServiceBillingPeriod($serviceID))
-            //    continue;
-
             try{
                 $order = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
             } catch (\Exception $e) {
@@ -79,13 +75,17 @@ class Cron extends main\mgLibs\process\AbstractController
                     $newNextDueDate = $order['end_date'];
                 }
                 
-                $this->updateServiceNextDueDate($serviceID, $newNextDueDate);
-
                 //set ssl certificate as terminated if expired  
                 if (strtotime($order['valid_till']) < strtotime(date('Y-m-d')))
                 {
                     $this->setSSLServiceAsTerminated($serviceID);
                 }
+                
+                //if service is montlhy, one time, free skip it
+                if ($this->checkServiceBillingPeriod($serviceID))
+                    continue;
+                
+                $this->updateServiceNextDueDate($serviceID, $newNextDueDate);
 
                 $updatedServices[] = $serviceID;
             }
