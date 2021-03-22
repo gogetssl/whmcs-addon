@@ -12,8 +12,16 @@ class SSLStepTwo {
     
     private $p;
     private $errors = [];
+    private $additional_san_validation = array(139, 100, 99, 63, 25, 24);
     
     function __construct(&$params) {
+        
+        $productssl = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->getProductDetails($params['configoption1']);
+        if(isset($productssl['product_san_wildcard']) && $productssl['product_san_wildcard'] == 'yes')
+        {
+            $this->additional_san_validation[] = $params['configoption1']; 
+        }
+          
         $this->p = &$params;
     }
 
@@ -69,6 +77,12 @@ class SSLStepTwo {
         if(!$productssl['product']['dcv_https'])
         {
             $ValidationMethods = array_diff($ValidationMethods, ['https']);
+        }
+        
+        if($product->configuration()->text_name == '144') 
+        {
+            $ValidationMethods = array_diff($ValidationMethods, ['email']);
+            $ValidationMethods = array_diff($ValidationMethods, ['dns']);
         }
 
         if(isset($_SESSION['decodeCSR']) && !empty($_SESSION['decodeCSR']))
@@ -129,7 +143,7 @@ class SSLStepTwo {
         
         $apiProductId     = $this->p[ConfigOptions::API_PRODUCT_ID];
         
-        $invalidDomains = \MGModule\SSLCENTERWHMCS\eHelpers\Domains::getInvalidDomains($sansDomains, in_array($apiProductId, self::PRODUCTS_WITH_ADDITIONAL_SAN_VALIDATION));
+        $invalidDomains = \MGModule\SSLCENTERWHMCS\eHelpers\Domains::getInvalidDomains($sansDomains, in_array($apiProductId, $this->additional_san_validation));
              
         if($apiProductId != '144') {
             
