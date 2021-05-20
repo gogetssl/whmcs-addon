@@ -149,11 +149,8 @@ class AdminReissueCertificate extends Ajax {
             
         if($product->configuration()->text_name != '144')
         {
-            if($decodeCSR['csrResult']['errorMessage']) {
-                if(isset($decodeCSR['description']))
-                    throw new Exception($decodeCSR['description']);
-
-                throw new Exception('Incorrect CSR');
+            if(isset($decodeCSR['csrResult']['errorMessage'])){
+                throw new Exception($decodeCSR['csrResult']['errorMessage']);  
             }
         }
         $mainDomain   = $decodeCSR['csrResult']['CN'];

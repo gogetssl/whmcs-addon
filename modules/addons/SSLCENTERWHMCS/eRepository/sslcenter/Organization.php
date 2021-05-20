@@ -38,6 +38,15 @@ class Organization {
             'Required'     => true
             
         ];
+        $org['org_lei']     = [
+            'FriendlyName' => 'LEI code',
+            'FriendlyName' => \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('LEI code'),
+            'Type'         => 'text',
+            'Size'         => '30',
+            'Description'  => '',
+            'Required'     => false
+            
+        ];
         $org['org_duns']         = [
             'FriendlyName' => \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('confOrganizationDuns'),
             'Type'         => 'text',

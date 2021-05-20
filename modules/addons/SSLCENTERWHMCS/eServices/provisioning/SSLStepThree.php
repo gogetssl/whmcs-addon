@@ -5,6 +5,8 @@ namespace MGModule\SSLCENTERWHMCS\eServices\provisioning;
 use Exception;
 use \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service as Service;
 use \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product as Product;
+use WHMCS\Database\Capsule;
+
 class SSLStepThree {
 
     /**
@@ -129,7 +131,7 @@ class SSLStepThree {
         $order['dcv_method'] = strtolower($this->p['fields']['dcv_method']);
        
         $order['product_id'] = $this->p[ConfigOptions::API_PRODUCT_ID]; // Required
-        $order['period']     = $billingPeriods[$this->p['model']['attributes']['billingcycle']];//$this->p[ConfigOptions::API_PRODUCT_MONTHS]; // Required  
+        $order['period']     = $billingPeriods[$this->p['model']->billingcycle];//$this->p[ConfigOptions::API_PRODUCT_MONTHS]; // Required  
         $order['csr']        = $this->p['csr']; // Required
         $order['server_count']       = -1; // Required . amount of servers, for Unlimited pass “-1”
         $order['approver_email']     = ($order['dcv_method'] == 'email') ? $this->p['approveremail'] : ''; // Required . amount of servers, for Unlimited pass “-1”
@@ -165,10 +167,18 @@ class SSLStepThree {
         $order['tech_postalcode']   = ($useAdminContact) ? $order['admin_postalcode'] : $apiConf->tech_postalcode;
         $order['tech_region']       = ($useAdminContact) ? $order['admin_region'] : $apiConf->tech_region;
         
+        $template = Capsule::table('tblconfiguration')->where('setting', 'Template')->first();
+        if(isset($template->value) && $template->value == 'twenty-one')
+        {
+            $order['tech_country'] = \MGModule\SSLCENTERWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountryCodeByName($order['tech_country']);
+            $order['admin_country'] = \MGModule\SSLCENTERWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountryCodeByName($order['admin_country']);
+        }
+        
         if ($this->apiProduct->isOrganizationRequired()) {
             $org                       = &$this->p['fields'];
             $order['org_name']         = $org['org_name'];
             $order['org_division']     = $org['org_division'];
+            $order['org_lei']          = $org['org_lei'];
             $order['org_duns']         = $org['org_duns'];
             $order['org_addressline1'] = $org['org_addressline1'];
             $order['org_city']         = $org['org_city'];

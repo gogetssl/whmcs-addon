@@ -30,7 +30,7 @@ class Countries {
         $whmcsVersion = Config::getInstance()->getVersionMajor();
         if ($whmcsVersion === 6) {
             $this->loadCountriesWhmcs6();
-        } elseif ($whmcsVersion === 7) {
+        } elseif ($whmcsVersion === 7 || $whmcsVersion === 8) {
             $this->loadCountriesWhmcs7();
         } else {
             throw new Exception('WHMCS version not supported');
@@ -44,6 +44,12 @@ class Countries {
      * @throws Exception
      */
     public function getCountryCodeByName($name) {
+        
+        if(strlen($name) <= 2)
+        {
+            return $name;
+        }
+        
         foreach ($this->countries as $countryCode => $countryName) {
             if (strtolower($countryName) === strtolower($name)) {
                 return $countryCode;

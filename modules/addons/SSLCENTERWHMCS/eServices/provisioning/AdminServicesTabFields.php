@@ -49,11 +49,25 @@ class AdminServicesTabFields {
             $return['SSLCenter API Order ID'] = $sslService->remoteid;
 
             $orderDetails = (array)$sslService->configdata;
+            
+            if(!$orderDetails['domain'])
+            {
+                $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($sslService);
+                $orderStatus = $configDataUpdate->run();
+                
+                $sslService = $ssl->getByServiceId($this->p['serviceid']);    
+                $orderDetails = (array)$sslService->configdata;
+            }
  
+            $return['Cron Synchronized'] = isset($orderDetails['synchronized']) && !empty($orderDetails['synchronized']) ? $orderDetails['synchronized'] : 'Not synchronized';
             $return['Comodo Order ID'] = $orderDetails['partner_order_id']?:"-"; 
             $return['Configuration Status'] = $sslService->status;  
             $return['Domain'] = $orderDetails['domain'];
             $return['Order Status'] = ucfirst($orderDetails['ssl_status']);   
+            if(isset($orderDetails['approver_method']->email) && !empty($orderDetails['approver_method']->email))
+            {
+                $return['Approver email'] = $orderDetails['approver_method']->email;
+            }
             $return['Order Status Description'] = $orderDetails['order_status_description'] ? : '-';  
             
             if($orderDetails['ssl_status'] == 'active') {                
@@ -73,15 +87,27 @@ class AdminServicesTabFields {
     }
 
     private function getServiceVars() {
+        global $CONFIG;
+        
         $includedSans = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS];
         $boughtSans   = (int) $this->p['configoptions'][ConfigOptions::OPTION_SANS_COUNT];
         $sansLimit = $includedSans + $boughtSans;
         
+        require dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'configuration.php';
+
+        $adminpath = 'admin';
+        if(isset($customadminpath))
+        {
+            $adminpath = $customadminpath;
+        }
+         
         return [
             'serviceid' => $this->p['serviceid'],
             'email'     => $this->p['clientsdetails']['email'],
             'userid'    => $this->p['userid'],
             'sansLimit' => $sansLimit,
+            'adminpath' => $adminpath,
+            'version'   => substr($CONFIG['Version'],0,1)
         ];
     }
 }

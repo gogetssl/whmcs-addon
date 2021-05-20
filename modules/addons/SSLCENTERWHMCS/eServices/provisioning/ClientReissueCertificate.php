@@ -3,6 +3,7 @@
 namespace MGModule\SSLCENTERWHMCS\eServices\provisioning;
 
 use Exception;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 class ClientReissueCertificate {
 
@@ -145,14 +146,9 @@ class ClientReissueCertificate {
         {
             if(!isset($decodeCSR['csrResult']['CN']) || strpos($decodeCSR['csrResult']['CN'], '*.') === false)
             {
-        
-                if($decodeCSR['csrResult']['errorMessage']) {
-                    if(isset($decodeCSR['description']))
-                        throw new Exception($decodeCSR['description']);
-
-                    throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('incorrectCSR'));
+                if(isset($decodeCSR['csrResult']['errorMessage'])){
+                    throw new Exception($decodeCSR['csrResult']['errorMessage']);
                 }
-            
             }
         }
         
@@ -170,17 +166,42 @@ class ClientReissueCertificate {
         $disabledValidationMethods = array();
         $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();    
        
-        if($apiConf->disable_email_validation && !in_array($this->getCertificateBrand(), ['geotrust','thawte','rapidssl','symantec']))
+        $productssl = false;
+        $checkTable = Capsule::schema()->hasTable('mgfw_SSLCENTER_product_brand');
+        if($checkTable)
+        {
+            if (Capsule::schema()->hasColumn('mgfw_SSLCENTER_product_brand', 'data'))
+            {
+                $productsslDB = Capsule::table('mgfw_SSLCENTER_product_brand')->where('pid', $product->configuration()->text_name)->first();
+                if(isset($productsslDB->data))
+                {
+                    $productssl['product'] = json_decode($productsslDB->data, true); 
+                }
+            }
+        }
+
+        if(!$productssl)
+        {
+            $productssl = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->getProduct($product->configuration()->text_name);
+        }
+
+        if(!$productssl['product']['dcv_email'])
         {
             array_push($disabledValidationMethods, 'email');
         }
-                
-        if($product->configuration()->text_name == '144')
+        if(!$productssl['product']['dcv_dns'])
         {
-            array_push($disabledValidationMethods, 'email');
             array_push($disabledValidationMethods, 'dns');
         }
-        
+        if(!$productssl['product']['dcv_http'])
+        {
+            array_push($disabledValidationMethods, 'http');
+        }
+        if(!$productssl['product']['dcv_https'])
+        {
+            array_push($disabledValidationMethods, 'https');
+        }
+
         $this->vars['disabledValidationMethods'] = json_encode($disabledValidationMethods);
     }
     

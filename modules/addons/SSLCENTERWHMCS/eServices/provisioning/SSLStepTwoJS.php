@@ -3,6 +3,7 @@
 namespace MGModule\SSLCENTERWHMCS\eServices\provisioning;
 
 use Exception;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 class SSLStepTwoJS {
 
@@ -32,12 +33,47 @@ class SSLStepTwoJS {
 
             $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($service->productID);
             
-            if($product->configuration()->text_name == '144')
+            $productssl = false;
+            $checkTable = Capsule::schema()->hasTable('mgfw_SSLCENTER_product_brand');
+            if($checkTable)
+            {
+                if (Capsule::schema()->hasColumn('mgfw_SSLCENTER_product_brand', 'data'))
+                {
+                    $productsslDB = Capsule::table('mgfw_SSLCENTER_product_brand')->where('pid', $product->configuration()->text_name)->first();
+                    if(isset($productsslDB->data))
+                    {
+                        $productssl['product'] = json_decode($productsslDB->data, true); 
+                    }
+                }
+            }
+
+            if(!$productssl)
+            {
+                $productssl = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->getProduct($product->configuration()->text_name);
+            }
+
+            if(!$productssl['product']['dcv_email'])
             {
                 array_push($this->disabledValidationMethods, 'email');
+            }
+            if(!$productssl['product']['dcv_dns'])
+            {
                 array_push($this->disabledValidationMethods, 'dns');
             }
+            if(!$productssl['product']['dcv_http'])
+            {
+                array_push($this->disabledValidationMethods, 'http');
+            }
+            if(!$productssl['product']['dcv_https'])
+            {
+                array_push($this->disabledValidationMethods, 'https');
+            }
             
+//            if($product->configuration()->text_name == '144')
+//            {
+//                array_push($this->disabledValidationMethods, 'email');
+//                array_push($this->disabledValidationMethods, 'dns');
+//            }
             $this->SSLStepTwoJS($this->p);
             
             return \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getSanEmailsScript(json_encode($this->domainsEmailApprovals), json_encode(\MGModule\SSLCENTERWHMCS\eServices\FlashService::getFieldsMemory($_GET['cert'])), json_encode($this->brand), json_encode($this->disabledValidationMethods));
@@ -87,11 +123,40 @@ class SSLStepTwoJS {
         {
             $decodedCSR   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR(trim(rtrim($_POST['csr'])));
         }
-        if($decodedCSR['error']) {
-            if(isset($decodedCSR['description']))
-                throw new Exception($decodedCSR['description']);
-            
-            throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('incorrectCSR'));
+        $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceid']);
+        $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($service->productID);
+        
+        $productssl = false;
+        $checkTable = Capsule::schema()->hasTable('mgfw_SSLCENTER_product_brand');
+        if($checkTable)
+        {
+            if (Capsule::schema()->hasColumn('mgfw_SSLCENTER_product_brand', 'data'))
+            {
+                $productsslDB = Capsule::table('mgfw_SSLCENTER_product_brand')->where('pid', $product->configuration()->text_name)->first();
+                if(isset($productsslDB->data))
+                {
+                    $productssl['product'] = json_decode($productsslDB->data, true); 
+                }
+            }
+        }
+        
+        if(!$productssl)
+        {
+            $productssl = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->getProduct($product->configuration()->text_name);
+        }
+        
+        if($product->configuration()->text_name != '144')
+        {
+            if($productssl['product']['wildcard_enabled'])
+            {
+                if(strpos($decodedCSR['csrResult']['CN'], '*.') === false)
+                {
+                    if(isset($decodedCSR['csrResult']['errorMessage']))
+                        throw new Exception($decodedCSR['csrResult']['errorMessage']);
+
+                    throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('incorrectCSR'));
+                }
+            }
         }
         $mainDomain       = $decodedCSR['csrResult']['CN'];
         $domains = $mainDomain . PHP_EOL . $_POST['fields']['sans_domains'];

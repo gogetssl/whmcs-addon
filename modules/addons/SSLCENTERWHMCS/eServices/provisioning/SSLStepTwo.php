@@ -12,8 +12,16 @@ class SSLStepTwo {
     
     private $p;
     private $errors = [];
+    private $additional_san_validation = array(139, 100, 99, 63, 25, 24);
     
     function __construct(&$params) {
+        
+        $productssl = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->getProductDetails($params['configoption1']);
+        if(isset($productssl['product_san_wildcard']) && $productssl['product_san_wildcard'] == 'yes')
+        {
+            $this->additional_san_validation[] = $params['configoption1']; 
+        }
+          
         $this->p = &$params;
     }
 
@@ -31,7 +39,73 @@ class SSLStepTwo {
         /*if(!isset($this->p['fields']['sans_domains']) || $this->p['fields']['sans_domains'] == '') {            
             $this->redirectToStepThree();                    
         }*/
-        return ['approveremails' => 'loading...'];
+        
+        $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceid']);
+        $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($service->productID);
+        
+        $productssl = false;
+        $checkTable = Capsule::schema()->hasTable('mgfw_SSLCENTER_product_brand');
+        if($checkTable)
+        {
+            if (Capsule::schema()->hasColumn('mgfw_SSLCENTER_product_brand', 'data'))
+            {
+                $productsslDB = Capsule::table('mgfw_SSLCENTER_product_brand')->where('pid', $product->configuration()->text_name)->first();
+                if(isset($productsslDB->data))
+                {
+                    $productssl['product'] = json_decode($productsslDB->data, true); 
+                }
+            }
+        }
+        if(!$productssl)
+        {
+            $productssl = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->getProduct($product->configuration()->text_name);
+        }
+
+        $ValidationMethods = ['email', 'dns', 'http', 'https'];        
+        if(!$productssl['product']['dcv_email'])
+        {
+            $ValidationMethods = array_diff($ValidationMethods, ['email']);
+        }
+        if(!$productssl['product']['dcv_dns'])
+        {
+            $ValidationMethods = array_diff($ValidationMethods, ['dns']);
+        }
+        if(!$productssl['product']['dcv_http'])
+        {
+            $ValidationMethods = array_diff($ValidationMethods, ['http']);
+        }
+        if(!$productssl['product']['dcv_https'])
+        {
+            $ValidationMethods = array_diff($ValidationMethods, ['https']);
+        }
+        
+        if($product->configuration()->text_name == '144') 
+        {
+            $ValidationMethods = array_diff($ValidationMethods, ['email']);
+            $ValidationMethods = array_diff($ValidationMethods, ['dns']);
+        }
+
+        if(isset($_SESSION['decodeCSR']) && !empty($_SESSION['decodeCSR']))
+        {
+            $decodedCSR = $_SESSION['decodeCSR'];
+            unset($_SESSION['decodeCSR']);
+        }
+        else
+        {
+            $decodedCSR   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR(trim(rtrim($_POST['csr'])));
+        }
+        $step2js = new SSLStepTwoJS($this->p);
+        $mainDomain       = $decodedCSR['csrResult']['CN'];
+        $domains = $mainDomain . PHP_EOL . $_POST['fields']['sans_domains'];
+        $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));
+        $approveremails = $step2js->fetchApprovalEmailsForSansDomains($sansDomains);
+        
+        return [
+            'approveremails' => 'loading...', 
+            'approveremails2' => $approveremails, 
+            'approvalmethods' => $ValidationMethods,
+            'brand' => $productssl['product']['brand']
+        ];
     }
     public function setPrivateKey($privKey) {
         $this->p['privateKey'] = $privKey;
@@ -69,7 +143,7 @@ class SSLStepTwo {
         
         $apiProductId     = $this->p[ConfigOptions::API_PRODUCT_ID];
         
-        $invalidDomains = \MGModule\SSLCENTERWHMCS\eHelpers\Domains::getInvalidDomains($sansDomains, in_array($apiProductId, self::PRODUCTS_WITH_ADDITIONAL_SAN_VALIDATION));
+        $invalidDomains = \MGModule\SSLCENTERWHMCS\eHelpers\Domains::getInvalidDomains($sansDomains, in_array($apiProductId, $this->additional_san_validation));
              
         if($apiProductId != '144') {
             
@@ -135,21 +209,21 @@ class SSLStepTwo {
             }
             else
             {
+                if(isset($decodeCSR['csrResult']['errorMessage']))
+                    throw new Exception($decodeCSR['csrResult']['errorMessage']);
+                
                 throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('incorrectCSR'));
             }
         }
         
-        if($decodeCSR['csrResult']['errorMessage']) {
+        if(isset($decodeCSR['csrResult']['errorMessage'])) {
             
             if(isset($decodeCSR['csrResult']['CN']) && strpos($decodeCSR['csrResult']['CN'], '*.') !== false)
             {
                 return true;
             }
             
-            if(isset($decodeCSR['description']))
-                throw new Exception($decodeCSR['description']);
-                
-            throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('incorrectCSR'));
+            throw new Exception($decodeCSR['csrResult']['errorMessage']);
         }
     }
     
@@ -173,7 +247,7 @@ class SSLStepTwo {
             'postcode', 'country', 'phonenumber','privateKey'];
 
         $b = [
-            'order_type', 'sans_domains', 'org_name', 'org_division', 'org_duns', 'org_addressline1',
+            'order_type', 'sans_domains', 'org_name', 'org_division', 'org_lei', 'org_duns', 'org_addressline1',
             'org_city', 'org_country', 'org_fax', 'org_phone', 'org_postalcode', 'org_regions'
         ];
         

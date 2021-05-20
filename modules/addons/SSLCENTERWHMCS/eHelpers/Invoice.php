@@ -537,6 +537,13 @@ class Invoice
     
     public function createOrder($userId, $paymentMethod, $productID, $domain, $dueDateNewOrder, $serviceBillingCycle, $configOptions = array()) {
         $command = 'AddOrder';
+        
+        $orginaldomain = $domain;
+        
+        if (strpos($domain, '*.') !== false) {
+            $domain = str_repeat('*.', '',$domain);
+        }
+        
         $postData = array(
             'clientid' => $userId,
             'paymentmethod' => $paymentMethod,
@@ -558,6 +565,10 @@ class Invoice
             $service = (array)Capsule::table('tblhosting')->where('id', $results['productids'])->first();
             $product = (array)Capsule::table('tblproducts')->where('servertype', 'SSLCENTERWHMCS')->where('id', $service['packageid'])->first();
 
+            Capsule::table('tblhosting')->where('id', $results['productids'])->update([
+                'domain' => $orginaldomain
+            ]);
+            
             if(isset($product['configoption7']) && !empty($product['configoption7']) && $service['billingcycle'] == 'One Time')
             {
                 $dueDateNewOrder = '0000-00-00';

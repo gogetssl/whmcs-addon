@@ -314,14 +314,24 @@ if ($vars['filename'] == 'clientsservices' && $_GET['userid'] && $_GET['id']) {
 <script>
 $(function(){
     $('#btnCreate').hide();
-    //$('table.form tr:nth(2)').find('td:nth(0), td:nth(1)').hide();
-    $('table.form tr:nth(7) > td:nth(0), table.form tr:nth(7) > td:nth(1)').detach().prependTo('table.form tr:nth(2)')
-    $('table.form tr:nth(2) > td:nth(2),table.form tr:nth(2) > td:nth(3)').hide();
+    
+    var statushtrml = $('select[name="domainstatus"]').parent().html();
+    var statustext = $('select[name="domainstatus"]').parent('.fieldarea').prev().text();
 
-    $('table.form tr:nth(4) > td:nth(0),table.form tr:nth(4) > td:nth(1)').hide();
-    $('table.form tr:nth(5) > td:nth(0),table.form tr:nth(5) > td:nth(1)').hide();
-    $('table.form tr:nth(6) > td:nth(0),table.form tr:nth(6) > td:nth(1)').hide();
-    //$('table.form tr:nth(6)').find('td:nth(2), td:nth(3)').detach().append('table.form tr:nth(2)')
+    $('#inputDedicatedip').parent('.fieldarea').prev().hide();
+    $('#inputDedicatedip').parent('.fieldarea').hide();
+    $('#inputUsername').parent('.fieldarea').prev().hide();
+    $('#inputUsername').parent('.fieldarea').hide();
+    $('#inputPassword').parent('.fieldarea').prev().hide();
+    $('#inputPassword').parent('.fieldarea').hide();
+    
+    
+    $('select[name="domainstatus"]').parent('.fieldarea').prev().hide();
+    $('select[name="domainstatus"]').parent('.fieldarea').hide();
+    $('select[name="domainstatus"]').remove();
+    
+    $('select[name="server"]').parent('.fieldarea').prev().html(statustext);
+    $('select[name="server"]').parent('.fieldarea').html(statushtrml);
 });
 </script>
 

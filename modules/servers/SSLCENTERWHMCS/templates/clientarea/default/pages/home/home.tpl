@@ -86,6 +86,18 @@
                     <td class="text-left">{$MGLANG->T('validTill')}</td>
                     <td class="text-left">{$validTill}</td>
                 </tr>
+                <tr>
+                    <td class="text-left">{$MGLANG->T('subscriptionStarts')}</td>
+                    <td class="text-left">{$subscriptionStarts}</td>
+                </tr>
+                <tr>
+                    <td class="text-left">{$MGLANG->T('subscriptionEnds')}</td>
+                    <td class="text-left">{$subscriptionEnds}</td>
+                </tr>
+                <tr>
+                    <td class="text-left">{$MGLANG->T('nextReissue')}</td>
+                    <td class="text-left"><strong>{$MGLANG->T('Reissue SSL within')} {$nextReissue} {$MGLANG->T('days')}</strong></td>
+                </tr>
             {/if}
             <!--{if $order_id}
                 <tr>
@@ -98,6 +110,12 @@
                 <tr>
                     <td class="text-left">{$MGLANG->T('domain')}</td>
                     <td class="text-left">{$domain}</td>
+                </tr>
+            {/if}
+            {if $approver_email}
+                <tr>
+                    <td class="text-left">{$MGLANG->T('Approver email')}</td>
+                    <td class="text-left">{$approver_email}</td>
                 </tr>
             {/if}
             {if $partner_order_id}
@@ -515,13 +533,16 @@
                                                         {if !'email'|in_array:$disabledValidationMethods}
                                                             <option value="email">{$MGLANG->T('revalidateModalMethodEmail')}</option>
                                                         {/if}
-                                                        {if !$brand|in_array:$brandsWithOnlyEmailValidation}
-                                                        <option value="http">{$MGLANG->T('revalidateModalMethodHttp')}</option>
-                                                        <option value="https">{$MGLANG->T('revalidateModalMethodHttps')}</option>
+                                                        {if !'http'|in_array:$disabledValidationMethods}
+                                                            <option value="http">{$MGLANG->T('revalidateModalMethodHttp')}</option>
+                                                        {/if}
+                                                        {if !'https'|in_array:$disabledValidationMethods}
+                                                            <option value="https">{$MGLANG->T('revalidateModalMethodHttps')}</option>
+                                                        {/if}
                                                         {if !'dns'|in_array:$disabledValidationMethods}
                                                         <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>
                                                         {/if}
-                                                        {/if}
+                                                        
                                                     </select>
                                                 </div>
                                             </td>
@@ -545,12 +566,14 @@
                                                                 {if !'email'|in_array:$disabledValidationMethods}
                                                                     <option value="email">{$MGLANG->T('revalidateModalMethodEmail')}</option>
                                                                 {/if}
-                                                                {if !$brand|in_array:$brandsWithOnlyEmailValidation}
-                                                                <option value="http">{$MGLANG->T('revalidateModalMethodHttp')}</option>
-                                                                <option value="https">{$MGLANG->T('revalidateModalMethodHttps')}</option>
-                                                                {if !'dns'|in_array:$disabledValidationMethods}
-                                                                <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>
+                                                                {if !'http'|in_array:$disabledValidationMethods}
+                                                                    <option value="http">{$MGLANG->T('revalidateModalMethodHttp')}</option>
                                                                 {/if}
+                                                                {if !'https'|in_array:$disabledValidationMethods}
+                                                                    <option value="https">{$MGLANG->T('revalidateModalMethodHttps')}</option>
+                                                                {/if}
+                                                                {if !'dns'|in_array:$disabledValidationMethods}
+                                                                    <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>
                                                                 {/if}
                                                             </select>
                                                         </div>

@@ -53,7 +53,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
      * Module version
      * @var string
      */
-    public $version = '2.4.8';
+    public $version = '2.5.9';
 
     /**
      * Module author
@@ -200,6 +200,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
         eServices\EmailTemplateService::createCertyficateTemplate();
         eServices\EmailTemplateService::createExpireNotificationTemplate();
         eServices\EmailTemplateService::createRenewalTemplate();
+        eServices\EmailTemplateService::createReissueTemplate();
         eHelpers\Invoice::createInfosTable();
     }
 
@@ -217,6 +218,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
         eServices\EmailTemplateService::deleteCertyficateTemplate();
         eServices\EmailTemplateService::deleteExpireNotificationTemplate();
         eServices\EmailTemplateService::deleteRenewalTemplate();
+        eServices\EmailTemplateService::deleteReissueTemplate();
     }
 
     /**
@@ -230,6 +232,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
         eServices\EmailTemplateService::createExpireNotificationTemplate();
         eServices\EmailTemplateService::updateConfigurationTemplate();
         eServices\EmailTemplateService::updateRenewalTemplate();
+        eServices\EmailTemplateService::updateReissueTemplate();
         eHelpers\Invoice::createInfosTable();
         $apiConfigRepo       = new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository();
         $apiConfigRepo->updateApiConfigurationTable();

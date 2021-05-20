@@ -7,7 +7,14 @@
         }
         hideJsHtmlInjection();
         
-        $('#profileContent').find('#frm1').after('<form id="loginAndRedirectForm" target="_blank" action="../dologin.php?language=" action="POST"><input type="hidden" name="redirectToProductDetails" value="true"/><input type="hidden" name="username" value="{$email}"/><input type="hidden" name="serviceID" value="{$serviceid}"/></form>');
+        {if $version == '8'}
+            var tokenf = $('#frm1 input[name="token"]').val();
+        
+            $('#profileContent').find('#frm1').after('<form id="loginAndRedirectForm" target="_blank" action="index.php?rp=/{$adminpath}/client/{$userid}/login" method="GET"><input type="hidden" name="token" value="'+tokenf+'" /><input type="hidden" name="goto" value="clientarea.php?action=productdetails&id=3"><input type="hidden" name="redirectToProductDetails" value="true"/><input type="hidden" name="username" value="{$email}"/><input type="hidden" name="serviceID" value="{$serviceid}"/></form>');
+            $('#loginAndRedirectForm').attr('method', 'POST');
+        {else}
+            $('#profileContent').find('#frm1').after('<form id="loginAndRedirectForm" target="_blank" action="../dologin.php?language=" action="POST"><input type="hidden" name="redirectToProductDetails" value="true"/><input type="hidden" name="username" value="{$email}"/><input type="hidden" name="serviceID" value="{$serviceid}"/></form>');
+        {/if}
         $('#btnManage_SSL').removeAttr('onclick');
         $('#btnManage_SSL').on('click', function(e) { 
             //$('#modcmdbtns').css('opacity', '0.2');
@@ -657,19 +664,19 @@
                 </div>
                 <form class="form" role="form" id="modalViewForm">
                     <div class="form-group hidden">
-                        <label class="col-sm-3 control-label">Certificate</label>
+                        <label class="col-sm-3 control-label">Certificate (CRT)</label>
+                        <textarea class="form-control" onfocus="this.select();" rows="5" id="viewCRTInput"></textarea>
+                    </div>
+                    <div class="clearfix"></div>
+                    
+                    <div class="form-group hidden">
+                        <label class="col-sm-3 control-label">Intermediate/Chain files</label>
                         <textarea class="form-control" onfocus="this.select();" rows="10" id="viewCertificateInput"></textarea>
                     </div>
                     <div class="clearfix"></div>
 
                     <div class="form-group hidden">
-                        <label class="col-sm-3 control-label">CRT</label>
-                        <textarea class="form-control" onfocus="this.select();" rows="5" id="viewCRTInput"></textarea>
-                    </div>
-                    <div class="clearfix"></div>
-
-                    <div class="form-group hidden">
-                        <label class="col-sm-3 control-label">CSR</label>
+                        <label class="col-sm-3 control-label">CSR (Certificate Signing Request)</label>
                         <textarea class="form-control" onfocus="this.select();" rows="5" id="viewCSRInput"></textarea>
                     </div>
                     <div class="clearfix"></div>

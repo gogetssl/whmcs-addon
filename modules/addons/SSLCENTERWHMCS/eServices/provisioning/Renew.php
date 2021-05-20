@@ -165,7 +165,7 @@ class Renew {
             'Biennially'    =>  24,
             'Triennially'   =>  36,
         );
-        
+                
         if($this->p[ConfigOptions::MONTH_ONE_TIME] && !empty($this->p[ConfigOptions::MONTH_ONE_TIME]))
         {
             $billingPeriods['One Time'] = $this->p[ConfigOptions::MONTH_ONE_TIME];
@@ -227,13 +227,17 @@ class Renew {
         $order                   = [];
         $order['dcv_method']     = $p->dcv_method;        
         $order['product_id']     = $this->p[ConfigOptions::API_PRODUCT_ID]; // Required
-        $order['period']         = $billingPeriods[$this->p['model']['attributes']['billingcycle']];//$this->p[ConfigOptions::API_PRODUCT_MONTHS]; // Required
+        $order['period']         = $billingPeriods[$this->p['model']->billingcycle];//$this->p[ConfigOptions::API_PRODUCT_MONTHS]; // Required
         $order['csr']            = $p->csr; // Required
         $order['server_count']   = -1; // Required . amount of servers, for Unlimited pass “-1”
         
         if($p->dcv_method == 'email')
         {
             $order['approver_email'] = $p->approveremail; // Required . amount of servers, for Unlimited pass “-1”
+            if(empty($order['approver_email']) && isset($p->approver_method->email))
+            {
+                $order['approver_email'] = $p->approver_method->email;
+            }
         }
         else 
         {
@@ -279,7 +283,14 @@ class Renew {
             $order['org_duns']         = $f->org_duns;
             $order['org_addressline1'] = $f->org_addressline1;
             $order['org_city']         = $f->org_city;
-            $order['org_country']      = $f->org_country;
+            if(strlen($f->org_country) != 2)
+            {
+                $order['org_country']      = \MGModule\SSLCENTERWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountryCodeByName($f->org_country);
+            }
+            else
+            {
+                $order['org_country']      = $f->org_country;
+            }
             $order['org_fax']          = $f->org_fax;
             $order['org_phone']        = $f->org_phone;
             $order['org_postalcode']   = $f->org_postalcode;
@@ -300,7 +311,7 @@ class Renew {
             $order['dns_names']       = implode(',', $dns_names);
             $order['approver_emails'] = implode(',', $approver_emails);
         }
-              
+             
         return $order;
     }
 }

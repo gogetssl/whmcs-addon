@@ -70,7 +70,7 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
                 
                 $apiConfig                  = (object) null;
                 $apiConfig->name            = $apiProduct->product;
-                $apiConfig->peroids         = max($apiProduct->getPeriods());
+                $apiConfig->peroids         = $apiProduct->max_period;
                 $apiConfig->availablePeriods= $apiProduct->getPeriods();                
                 $apiConfig->isSanEnabled    = $apiProduct->isSanEnabled();
                 $products[$key]->apiConfig  = $apiConfig;

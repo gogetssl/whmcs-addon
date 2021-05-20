@@ -28,14 +28,22 @@ class Cron extends main\mgLibs\process\AbstractController
                 continue;
             }
             
-            //if service is montlhy, one time, free skip it
-            if ($this->checkServiceBillingPeriod($serviceID))
-                continue;
+            if($sslService->status != 'Awaiting Configuration')
+            {             
+                $configdata = json_decode($sslService->configdata, true);
+                if(isset($configdata['domain']) && !empty($configdata['domain']))
+                {
+                    Capsule::table('tblhosting')->where('id', $serviceID)->update(['domain' => $configdata['domain']]);
+                }
+            }
             
             //if service is synchronized skip it
             if ($this->checkIfSynchronized($serviceID))
                 continue;
-
+            
+            //set ssl certificate as synchronized
+            $this->setSSLServiceAsSynchronized($serviceID);
+            
             try{
                 $order = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
             } catch (\Exception $e) {
@@ -62,16 +70,22 @@ class Cron extends main\mgLibs\process\AbstractController
             {
                 //update whmcs service next due date
                 $newNextDueDate = $order['valid_till'];
-                $this->updateServiceNextDueDate($serviceID, $newNextDueDate);
-
-                //set ssl certificate as synchronized
-                $this->setSSLServiceAsSynchronized($serviceID);
-
+                if(!empty($order['end_date']))
+                {
+                    $newNextDueDate = $order['end_date'];
+                }
+                
                 //set ssl certificate as terminated if expired  
                 if (strtotime($order['valid_till']) < strtotime(date('Y-m-d')))
                 {
                     $this->setSSLServiceAsTerminated($serviceID);
                 }
+                
+                //if service is montlhy, one time, free skip it
+                if ($this->checkServiceBillingPeriod($serviceID))
+                    continue;
+                
+                $this->updateServiceNextDueDate($serviceID, $newNextDueDate);
 
                 $updatedServices[] = $serviceID;
             }
@@ -102,23 +116,36 @@ class Cron extends main\mgLibs\process\AbstractController
 
         //get all completed ssl orders
         $sslOrders       = $this->getSSLOrders();
-        $synchServicesId = array_map(
-                function($row)
+        
+        $synchServicesId = [];
+        foreach($sslOrders as $row)
         {
             $config = json_decode($row->configdata);
             if (isset($config->synchronized))
             {
-                return $row->serviceid;
+                $synchServicesId[] = $row->serviceid;
             }
             else
             {
-                return \WHMCS\Service\Service::where('id', $row->serviceid)->where('billingcycle', 'One Time')->first()['id'];
+                $serviceonetime = \WHMCS\Service\Service::where('id', $row->serviceid)->where('billingcycle', 'One Time')->first();
+                if(isset($serviceonetime->id))
+                {
+                    $synchServicesId[] = $serviceonetime->id;
+                }
             }
-        }, $sslOrders);
-
-        $services = \WHMCS\Service\Service::whereIn('id', $synchServicesId)->get();
-
+        }
+        
+        if(!empty($synchServicesId))
+        {
+            $services = \WHMCS\Service\Service::whereIn('id', $synchServicesId)->get();
+        }
+        else 
+        {
+            $services = [];
+        }
+                
         $emailSendsCount = 0;
+        $emailSendsCountReissue = 0;
 
         $packageLists = [];
         $serviceIDs   = [];
@@ -129,10 +156,14 @@ class Cron extends main\mgLibs\process\AbstractController
                 continue;
             //get days left to expire from WHMCS              
             $daysLeft         = $this->checkOrderExpireDate($srv->nextduedate);
+            
+            $daysReissue         = $this->checkReissueDate($srv->id);
+            
             //if service is One Time and nextduedate is setted as 0000-00-00 get valid_till from SSLCenter API
+
             if ($srv->billingcycle == 'One Time')
             {
-                $sslOrder = $this->getSSLOrders($srv->id)[0];
+                $sslOrder = Capsule::table('tblsslorders')->where('serviceid', $srv->id)->first();
                 
                 if(isset($sslOrder->remoteid) && !empty($sslOrder->remoteid)) {
                 
@@ -142,6 +173,14 @@ class Cron extends main\mgLibs\process\AbstractController
                 }
             }
             
+            $product = Capsule::table('tblproducts')->where('id', $srv->packageid)->first();
+            
+            if($srv->domainstatus == 'Active' && $daysReissue == '30' && $product->configoption2 > 12)
+            {
+                // send email 
+                $emailSendsCountReissue += $this->sendReissueNotfiyEmail($srv->id);
+            }
+                        
             //service was synchronized, so we can base on nextduedate, that should be the same as valid_till
             //$daysLeft = 90;
             if ($daysLeft >= 0)
@@ -165,7 +204,7 @@ class Cron extends main\mgLibs\process\AbstractController
                 }
             }
         }
-        
+
         if(!$renew_new_order)
         {
             $invoicesCreatedCount = $this->createAutoInvoice($packageLists, $serviceIDs);
@@ -195,7 +234,8 @@ class Cron extends main\mgLibs\process\AbstractController
         }
         
         echo 'Notifier completed.' . PHP_EOL;
-        echo '<br />Number of emails send: ' . $emailSendsCount . PHP_EOL;
+        echo '<br />Number of emails send (expire): ' . $emailSendsCount . PHP_EOL;
+        echo '<br />Number of emails send (reissue): ' . $emailSendsCountReissue . PHP_EOL;
         
         logActivity('Notifier completed. Number of emails send: '.$emailSendsCount, 0);
         
@@ -438,7 +478,7 @@ class Cron extends main\mgLibs\process\AbstractController
     }
     public function dailyStatusCheckCRON($input, $vars = array())
     {
-        echo 'Products Price Updater started.' . PHP_EOL;
+        echo 'Certificates (ssl status Completed) Data Updater started.' . PHP_EOL;
         $this->sslRepo = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
         $sslorders = Capsule::table('tblhosting')
         ->join('tblproducts', 'tblhosting.packageid', '=', 'tblproducts.id')
@@ -447,18 +487,18 @@ class Cron extends main\mgLibs\process\AbstractController
         ->where('tblsslorders.status', 'Completed')
         ->get(['tblsslorders.*']);
 
-        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Products Price Updater started.");
+        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Certificates (ssl status Completed) Data Updater started.");
        
         $this->checkOrdersStatus($sslorders);
         
         echo '<br/ >';
-        echo 'Products Price Updater completed.' . PHP_EOL;
-        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Products Price Updater completed.");
+        echo 'Certificates (ssl status Completed) Data Updater completed.' . PHP_EOL;
+        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Certificates (ssl status Completed) Data Updater completed.");
         return array();
     }
     public function processingOrdersCheckCRON($input, $vars = array())
     {
-        echo 'Products Price Updater started.' . PHP_EOL;
+        echo 'Certificates (ssl status Processing) Data Updater started.' . PHP_EOL;
         $this->sslRepo = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
         $sslorders = Capsule::table('tblhosting')
         ->join('tblproducts', 'tblhosting.packageid', '=', 'tblproducts.id')
@@ -467,13 +507,13 @@ class Cron extends main\mgLibs\process\AbstractController
         ->where('tblsslorders.configdata', 'like', '%"ssl_status":"processing"%')
         ->get(['tblsslorders.*']);
 
-        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Products Price Updater started.");
+        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Certificates (ssl status Processing) Data Updater started.");
        
         $this->checkOrdersStatus($sslorders, true);
         
         echo '<br/ >';
-        echo 'Products Price Updater completed.' . PHP_EOL;
-        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Products Price Updater completed.");
+        echo 'Certificates (ssl status Processing) Data Updater completed.' . PHP_EOL;
+        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Certificates (ssl status Processing) Data Updater completed.");
         return array();
     }
     private function generateNewPricesBasedOnAPI($currentPrices, $apiPrices)
@@ -648,6 +688,27 @@ class Cron extends main\mgLibs\process\AbstractController
 
         return $skip;
     }
+    
+    public function checkReissueDate($serviceid)
+    {
+        $sslOrder = Capsule::table('tblsslorders')->where('serviceid', $serviceid)->first();
+        
+        if(isset($sslOrder->configdata) && !empty($sslOrder->configdata)){
+        
+            $configdata = json_decode($sslOrder->configdata, true);
+            
+            if(isset($configdata['end_date']) && !empty($configdata['end_date']))
+            {
+                $now = strtotime($certificateDetails['valid_from']);
+                $end_date = strtotime($certificateDetails['valid_till']);
+                $datediff = $now - $end_date;
+                
+                $nextReissue = abs(round($datediff / (60 * 60 * 24)));
+                return $nextReissue;
+            }
+        }
+        return false;
+    }
 
     public function checkOrderExpireDate($expireDate)
     {
@@ -678,6 +739,27 @@ class Cron extends main\mgLibs\process\AbstractController
             'id'          => $serviceId,
             'messagename' => main\eServices\EmailTemplateService::EXPIRATION_TEMPLATE_ID,
             'customvars'  => base64_encode(serialize(array("expireDaysLeft" => $daysLeft))),
+        );
+        
+        $adminUserName = main\eHelpers\Admin::getAdminUserName();
+
+        $results = localAPI($command, $postData, $adminUserName);
+
+        $resultSuccess = $results['result'] == 'success';
+        if (!$resultSuccess)
+        {
+            main\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS Notifier: Error while sending customer notifications (service ' . $serviceId . '): ' . $results['message'], 0);
+        }
+        return $resultSuccess;
+    }
+    
+    public function sendReissueNotfiyEmail($serviceId)
+    {
+        $command = 'SendEmail';
+        
+        $postData = array(
+            'serviceid'          => $serviceId,
+            'messagename' => main\eServices\EmailTemplateService::REISSUE_TEMPLATE_ID,
         );
         
         $adminUserName = main\eHelpers\Admin::getAdminUserName();
