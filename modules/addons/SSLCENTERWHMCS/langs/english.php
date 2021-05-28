@@ -51,6 +51,7 @@ $_LANG['addonAA']['apiConfiguration']['item']['display_ca_summary']['label']    
 $_LANG['addonAA']['apiConfiguration']['item']['client_area_summary_orders']['label']                   = 'Client Area Orders Summary';
 $_LANG['addonAA']['apiConfiguration']['item']['validation_settings']['label']                          = 'Validation Settings';
 $_LANG['addonAA']['apiConfiguration']['item']['disable_email_validation']['label']                     = 'Disable Email Validation';
+$_LANG['addonAA']['apiConfiguration']['item']['email_whois']['label']                                  = 'Email WHOIS';
 $_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['label']                    = 'Expires Soon';
 $_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['description']              = 'Count SSL order in statistics if it expires in fewer or equal days than the above selection.';
 $_LANG['addonAA']['apiConfiguration']['item']['send_certificate_template']['label']                    = 'Send Certificate Email Template';

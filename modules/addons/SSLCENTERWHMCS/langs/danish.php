@@ -51,6 +51,7 @@ $_LANG['addonAA']['apiConfiguration']['item']['display_ca_summary']['label']    
 $_LANG['addonAA']['apiConfiguration']['item']['client_area_summary_orders']['label']                   = 'Klientområde Ordreoversigt';
 $_LANG['addonAA']['apiConfiguration']['item']['validation_settings']['label']                          = 'Valideringsindstillinger';
 $_LANG['addonAA']['apiConfiguration']['item']['disable_email_validation']['label']                     = 'Deaktiver validering via e-mail';
+$_LANG['addonAA']['apiConfiguration']['item']['email_whois']['label']                                  = 'Email WHOIS';
 $_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['label']                    = 'Udløber snart';
 $_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['description']              = 'Medregn SSL-ordre til statistik, hvis der er færre eller lige dage, der skal udløbe end de valgte';
 $_LANG['addonAA']['apiConfiguration']['item']['send_certificate_template']['label']                    = 'Send Certifikat E-mailskabelon';

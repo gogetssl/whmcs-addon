@@ -100,6 +100,25 @@ class SSLStepTwo {
         $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));
         $approveremails = $step2js->fetchApprovalEmailsForSansDomains($sansDomains);
         
+        $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+        if($apiConf->email_whois)
+        {
+            foreach($approveremails as $domainkey => $approveremail_domain)
+            {
+                foreach($approveremail_domain as $emailkey => $email)
+                {
+                    if (strpos($email, 'admin@') === false && 
+                        strpos($email, 'administrator@') === false && 
+                        strpos($email, 'hostmaster@') === false && 
+                        strpos($email, 'postmaster@') === false && 
+                        strpos($email, 'webmaster@') === false) 
+                    {
+                        unset($approveremails[$domainkey][$emailkey]);
+                    }
+                }
+            }
+        }
+        
         return [
             'approveremails' => 'loading...', 
             'approveremails2' => $approveremails, 

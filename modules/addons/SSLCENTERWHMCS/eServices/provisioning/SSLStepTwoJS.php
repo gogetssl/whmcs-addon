@@ -174,8 +174,28 @@ class SSLStepTwoJS {
     public function fetchApprovalEmailsForSansDomains($sansDomains) {
         foreach ($sansDomains as $sansDomain) {
             $apiDomainEmails             = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getDomainEmails($sansDomain);
+
+            $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+            if($apiConf->email_whois)
+            {
+                foreach($apiDomainEmails['ComodoApprovalEmails'] as $emailkey => $email)
+                {
+                    if (strpos($email, 'admin@') === false && 
+                            strpos($email, 'administrator@') === false && 
+                            strpos($email, 'hostmaster@') === false && 
+                            strpos($email, 'postmaster@') === false && 
+                            strpos($email, 'webmaster@') === false) 
+                    {
+                        unset($apiDomainEmails['ComodoApprovalEmails'][$emailkey]);
+                        
+                    }
+                }
+                $apiDomainEmails['ComodoApprovalEmails'] = array_values($apiDomainEmails['ComodoApprovalEmails']);
+            }
+            
             $this->domainsEmailApprovals[$sansDomain] = $apiDomainEmails['ComodoApprovalEmails'];
         }
+        
         return $this->domainsEmailApprovals;
     }
 }

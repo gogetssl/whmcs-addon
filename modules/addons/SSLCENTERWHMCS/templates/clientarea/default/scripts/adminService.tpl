@@ -280,7 +280,7 @@
                     <strong>Error!</strong> <span></span>
                 </div>
 
-                <!--<form class="form-horizontal" role="form" id="modalReissueForm">
+                <form class="form-horizontal" role="form" id="modalReissueForm">
                     <input type="hidden" name="formStep" id="modalReissueFormStepInput">
                     <div class="form-group mg-js-step-one">
                         <label class="col-sm-3 control-label">Web Server</label>
@@ -319,7 +319,7 @@
                             <div id="modalReissueEmailApprovalsArea"></div>
                         </div>
                     </div>
-                </form>-->
+                </form>
             </div>
             <div class="modal-footer panel-footer">
                 <button type="button" id="modalReissueContinue" disabled class="btn btn-primary mg-js-step-one">
