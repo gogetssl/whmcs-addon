@@ -299,6 +299,16 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->continue          = false;
         $field->enableDescription = false;
         $form->addField($field);
+        
+        $field                    = new main\mgLibs\forms\CheckboxField();
+        $field->name              = 'email_whois';
+        $field->options           = ['email_whois'];
+        $field->value             = $input['email_whois'] ? ['email_whois'] : [''];
+        $field->inline            = false;
+        $field->colWidth          = 2;
+        $field->continue          = false;
+        $field->enableDescription = false;
+        $form->addField($field);
 
         $field       = new main\mgLibs\forms\LegendField();
         $field->name = 'tech_legend';
@@ -441,6 +451,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
                     'automatic_processing_of_renewal_orders',
                     'display_ca_summary',
                     'disable_email_validation',
+                    'email_whois',
                     'renew_new_order',
                     'visible_renew_button',
                     'save_activity_logs'

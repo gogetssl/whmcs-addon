@@ -51,6 +51,7 @@ $_LANG['addonAA']['apiConfiguration']['item']['display_ca_summary']['label']    
 $_LANG['addonAA']['apiConfiguration']['item']['client_area_summary_orders']['label']                   = 'Zusammenfassung der Kundenbereichsbestellungen';
 $_LANG['addonAA']['apiConfiguration']['item']['validation_settings']['label']                          = 'Validierungseinstellungen';
 $_LANG['addonAA']['apiConfiguration']['item']['disable_email_validation']['label']                     = 'E-Mail-Überprüfung deaktivieren';
+$_LANG['addonAA']['apiConfiguration']['item']['email_whois']['label']                                  = 'Email WHOIS';
 $_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['label']                    = 'Läuft bald ab';
 $_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['description']              = 'Bald ablaufende SSL-Bestellungen in Statistiken einbeziehen, wenn sie innerhalb der oben ausgewählten Anzahl von Tagen ablaufen.';
 $_LANG['addonAA']['apiConfiguration']['item']['send_certificate_template']['label']                    = 'Zertifikat-E-Mail-Vorlage senden';

@@ -62,7 +62,8 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'display_ca_summary'                     => $params['display_ca_summary'],
                         'sidebar_templates'                      => $params['sidebar_templates'],
                         'custom_guide'                           => $params['custom_guide'],
-                        'disable_email_validation'               => $params['disable_email_validation']
+                        'disable_email_validation'               => $params['disable_email_validation'],
+                        'email_whois'                            => $params['email_whois']
             ]);
         }
         else
@@ -107,7 +108,8 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'display_ca_summary'                     => $params['display_ca_summary'],
                         'sidebar_templates'                      => $params['sidebar_templates'],
                         'custom_guide'                           => $params['custom_guide'],
-                        'disable_email_validation'               => $params['disable_email_validation']
+                        'disable_email_validation'               => $params['disable_email_validation'],
+                        'email_whois'                            => $params['email_whois'],
             ]);
         }
     }
@@ -151,6 +153,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 $table->string('sidebar_templates')->nullable();
                 $table->text('custom_guide')->nullable();
                 $table->boolean('disable_email_validation');
+                $table->boolean('email_whois');
             });
         }
     }
@@ -276,6 +279,13 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 Capsule::schema()->table($this->tableName, function($table)
                 {
                     $table->boolean('disable_email_validation');
+                });
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'email_whois'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->boolean('email_whois');
                 });
             }
             /* 'renew_invoice_days_reccuring'          
