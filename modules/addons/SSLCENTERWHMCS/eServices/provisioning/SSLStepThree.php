@@ -126,6 +126,10 @@ class SSLStepThree {
         {
             $billingPeriods['One Time'] = $this->p[ConfigOptions::MONTH_ONE_TIME];
         }
+        
+        $apiRepo       = new \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products();
+        $apiProduct    = $apiRepo->getProduct($this->p[ConfigOptions::API_PRODUCT_ID]);
+        $brand = $apiProduct->brand;
 
         $order               = [];
         $order['dcv_method'] = strtolower($this->p['fields']['dcv_method']);
@@ -135,8 +139,17 @@ class SSLStepThree {
         $order['csr']        = $this->p['csr']; // Required
         $order['server_count']       = -1; // Required . amount of servers, for Unlimited pass “-1”
         $order['approver_email']     = ($order['dcv_method'] == 'email') ? $this->p['approveremail'] : ''; // Required . amount of servers, for Unlimited pass “-1”
+        
         $order['webserver_type']     = $this->p['servertype']; // Required . webserver type, can be taken from getWebservers method
-                        
+        if($brand == 'geotrust' || $brand == 'rapidssl' || $brand == 'digicert' || $brand == 'thawte')
+        {
+            $order['webserver_type']     = '18'; // Required . webserver type, can be taken from getWebservers method
+        }
+        else
+        {
+            $order['webserver_type']     = '-1'; // Required . webserver type, can be taken from getWebservers method
+        }
+              
         $order['admin_firstname']    = $this->p['firstname']; // Required
         $order['admin_lastname']     = $this->p['lastname']; // Required
         $order['admin_organization'] = $this->p['orgname']; // required for OV SSL certificates
