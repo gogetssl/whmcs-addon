@@ -304,8 +304,16 @@ class Renew {
             
             foreach($p->san_details as $san)
             {
-                $dns_names[] = $san->san_name;
-                $approver_emails[] = $san->validation_method;
+                if($san->validation_method == 'email')
+                {
+                    $dns_names[] = $san->san_name;
+                    $approver_emails[] = $san->validation->email;
+                }
+                else
+                {
+                    $dns_names[] = $san->san_name;
+                    $approver_emails[] = $san->validation_method;
+                }
             }
             
             $order['dns_names']       = implode(',', $dns_names);

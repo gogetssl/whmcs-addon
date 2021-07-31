@@ -249,108 +249,72 @@ class home extends main\mgLibs\process\AbstractController {
             {
                 if(isset($vars['sans'][$_GET['domain']]) && !empty($vars['sans'][$_GET['domain']]) && ($vars['sans'][$_GET['domain']]['method'] == 'http' || $vars['sans'][$_GET['domain']]['method'] == 'https'))
                 {
-                    $tmpName = tempnam(sys_get_temp_dir(), $vars['sans'][$_GET['domain']]['san_validation']['filename']);
-                    $handle = fopen($tmpName, "w");
-
-                    fwrite($handle, implode(PHP_EOL, $vars['sans'][$_GET['domain']]['san_validation']['content']));
-                    fclose($handle);
-
                     header('Content-Type: application/octet-stream');
                     header('Content-Disposition: attachment; filename='.basename($vars['sans'][$_GET['domain']]['san_validation']['filename']));
                     header('Expires: 0');
                     header('Cache-Control: must-revalidate');
                     header('Pragma: public');
                     header('Content-Length: ' . filesize($handle));
-                    readfile($handle);
+                    echo(implode(PHP_EOL, $vars['sans'][$_GET['domain']]['san_validation']['content']));
                     exit;
                 }
 
                 if(isset($vars['approver_method']['https']) && !empty($vars['approver_method']['https']))
                 {
-                    $tmpName = tempnam(sys_get_temp_dir(), $vars['approver_method']['https']['filename']);
-                    $handle = fopen($tmpName, "w");
-
-                    fwrite($handle, implode(PHP_EOL, $vars['approver_method']['https']['content']));
-                    fclose($handle);
-
                     header('Content-Type: application/octet-stream');
                     header('Content-Disposition: attachment; filename='.basename($vars['approver_method']['https']['filename']));
                     header('Expires: 0');
                     header('Cache-Control: must-revalidate');
                     header('Pragma: public');
                     header('Content-Length: ' . filesize($tmpName));
-                    readfile($tmpName);
+                    echo(implode(PHP_EOL, $vars['approver_method']['https']['content']));
                     exit;
                 }
 
                 if(isset($vars['approver_method']['http']) && !empty($vars['approver_method']['http']))
                 {
-                    $tmpName = tempnam(sys_get_temp_dir(), $vars['approver_method']['http']['filename']);
-                    $handle = fopen($tmpName, "w");
-
-                    fwrite($handle, implode(PHP_EOL, $vars['approver_method']['http']['content']));
-                    fclose($handle);
-
                     header('Content-Type: application/octet-stream');
                     header('Content-Disposition: attachment; filename='.basename($vars['approver_method']['http']['filename']));
                     header('Expires: 0');
                     header('Cache-Control: must-revalidate');
                     header('Pragma: public');
                     header('Content-Length: ' . filesize($tmpName));
-                    readfile($tmpName);
+                    echo(implode(PHP_EOL, $vars['approver_method']['http']['content']));
                     exit;
                 }
             }
 
             if($_GET['downloadcsr'] == '1' && !empty($certificateDetails['csr']))
             {
-                $tmpName = tempnam(sys_get_temp_dir(), $filenameCsr.'.csr');
-                $handle = fopen($tmpName, "w");
-
-                fwrite($handle, $certificateDetails['csr']);
-                fclose($handle);
-
                 header('Content-Type: application/octet-stream');
                 header('Content-Disposition: attachment; filename='.$filenameCsr.'.csr');
                 header('Expires: 0');
                 header('Cache-Control: must-revalidate');
                 header('Pragma: public');
                 header('Content-Length: ' . filesize($tmpName));
-                readfile($tmpName);
+                echo($certificateDetails['csr']);
                 exit;
             }
             if($_GET['downloadcrt'] == '1' && !empty($certificateDetails['crt']))
             {
-                $tmpName = tempnam(sys_get_temp_dir(), $filenameCrt.'.crt');
-                $handle = fopen($tmpName, "w");
-
-                fwrite($handle, $certificateDetails['crt']);
-                fclose($handle);
-
                 header('Content-Type: application/octet-stream');
                 header('Content-Disposition: attachment; filename='.$filenameCrt.'.crt');
                 header('Expires: 0');
                 header('Cache-Control: must-revalidate');
                 header('Pragma: public');
                 header('Content-Length: ' . filesize($tmpName));
-                readfile($tmpName);
+                echo($certificateDetails['crt']);
                 exit;
             }
             if($_GET['downloadca'] == '1' && !empty($certificateDetails['ca']))
             {
-                $tmpName = tempnam(sys_get_temp_dir(), $filenameCa.'.ca');
-                $handle = fopen($tmpName, "w");
-
-                fwrite($handle, $certificateDetails['ca']);
-                fclose($handle);
-
                 header('Content-Type: application/octet-stream');
                 header('Content-Disposition: attachment; filename='.$filenameCa.'.ca');
                 header('Expires: 0');
                 header('Cache-Control: must-revalidate');
                 header('Pragma: public');
                 header('Content-Length: ' . filesize($tmpName));
-                readfile($tmpName);
+                echo($certificateDetails['ca']);
                 exit;
             }
 
