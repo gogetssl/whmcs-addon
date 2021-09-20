@@ -156,8 +156,8 @@ class home extends main\mgLibs\process\AbstractController {
                     $vars['validFrom'] = fromMySQLDate($certificateDetails['valid_from'], false, true);
                     //expires
                     $vars['validTill'] = fromMySQLDate($certificateDetails['valid_till'],false,true);
-                    
-                    $now = strtotime($certificateDetails['valid_from']);
+                                        
+                    $now = strtotime(date('Y-m-d'));
                     $end_date = strtotime($certificateDetails['valid_till']);
                     $datediff = $now - $end_date;
                         
@@ -177,9 +177,9 @@ class home extends main\mgLibs\process\AbstractController {
                     $vars['serviceBillingCycle'] = $serviceBillingCycle;
                     $vars['displayRenewButton'] = false;
                     $today = date('Y-m-d');
-                    $diffDays =  abs(strtotime($certificateDetails['valid_till']) - strtotime($today))/86400;
+                    $diffDays =  abs(strtotime($certificateDetails['end_date']) - strtotime($today))/86400;
 
-                    if($diffDays < 90)
+                    if($diffDays < 30)
                         $vars['displayRenewButton'] = true;
 
 

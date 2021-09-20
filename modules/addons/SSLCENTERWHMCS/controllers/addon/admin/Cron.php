@@ -699,7 +699,7 @@ class Cron extends main\mgLibs\process\AbstractController
             
             if(isset($configdata['end_date']) && !empty($configdata['end_date']))
             {
-                $now = strtotime($certificateDetails['valid_from']);
+                $now = strtotime(date('Y-m-d'));
                 $end_date = strtotime($certificateDetails['valid_till']);
                 $datediff = $now - $end_date;
                 

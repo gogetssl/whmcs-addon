@@ -252,6 +252,11 @@ class SSL extends \Illuminate\Database\Eloquent\Model
         return $this->getConfigdataKey('san_details');
     }
     
+    public function getSanDomains()
+    {
+        return $this->getConfigdataKey('fields');
+    }
+    
     public function setSanDetails($details)
     {
         $this->setConfigdataKey('san_details', $details);

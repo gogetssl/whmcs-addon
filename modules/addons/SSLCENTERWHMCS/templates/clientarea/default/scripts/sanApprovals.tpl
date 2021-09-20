@@ -168,6 +168,22 @@
             $('#selectDcvMethodsTable').closest('form').find('h2:first').text('{$MGLANG->T('sslcertSelectVerificationMethodTitle')}');  
             $('#selectDcvMethodsTable').closest('form').find('p:first').text('{$MGLANG->T('sslcertSelectVerificationMethodDescription')}'); 
         }  
+            
+        if (!$('select[name="approveremail"] option').length)
+        {
+            $('select[name="dcvmethodMainDomain"] option[value="EMAIL"]').remove();
+            $('select[name="approveremail"]').hide();
+        } 
+        
+        $.each(JSON.parse('{$sanEmails}'), function (domain, emails) {
+
+            if (!$('select[name="approveremails['+domain+']"] option').length)
+            {
+                $('select[name="dcvmethod['+domain+']"] option[value="EMAIL"]').remove();
+                $('select[name="approveremails['+domain+']"]').hide();
+            } 
+
+        });
         
             
         {literal}//var sanEmails = JSON.parse('{\"friz.pl\":[\"admin@friz.pl\",\"administrator@friz.pl\"],\"kot.pl\":[\"admin@kot.pl\",\"administrator@kot.pl\"]}');{/literal} 
