@@ -173,8 +173,19 @@ class SSLStepTwoJS {
 
     public function fetchApprovalEmailsForSansDomains($sansDomains) {
         foreach ($sansDomains as $sansDomain) {
-            $apiDomainEmails             = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getDomainEmails($sansDomain);
-
+            
+            $this->domainsEmailApprovals[$sansDomain] = [];
+            
+            try{
+            
+                $apiDomainEmails = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getDomainEmails($sansDomain);
+            
+            } catch (\Exception $e) {
+                
+                continue;
+                
+            }
+            
             $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
             if($apiConf->email_whois)
             {

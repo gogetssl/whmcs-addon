@@ -72,7 +72,7 @@ class ClientReissueCertificate {
         } catch (Exception $ex) {     
             return '- ' . \MGModule\SSLCENTERWHMCS\eHelpers\Exception::e($ex);
         }
-        if (isset($this->post['stepOneForm'])) {           
+        if (isset($this->post['stepOneForm'])) {  
             try {
                 $this->stepOneForm();
                 return $this->build(self::STEP_TWO);
@@ -116,6 +116,10 @@ class ClientReissueCertificate {
        
         $this->loadServerList(); 
         $this->vars['sansLimit'] = $this->getSansLimit();       
+              
+        $ssl = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+        $sandetails = (array)$ssl->getByServiceId($this->p['serviceid'])->getSanDomains(); 
+        $this->vars['sans_domains'] = $sandetails['sans_domains'];
         
         return $this->build(self::STEP_ONE);
 
@@ -151,7 +155,7 @@ class ClientReissueCertificate {
                 }
             }
         }
-        
+                
         $mainDomain                   = $decodeCSR['csrResult']['CN'];
         $domains                      = $mainDomain . PHP_EOL . $this->post['sans_domains'];
         $parseDomains                 = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));
