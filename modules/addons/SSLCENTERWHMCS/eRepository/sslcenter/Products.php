@@ -59,10 +59,8 @@ class Products {
             if (Capsule::schema()->hasColumn('mgfw_SSLCENTER_product_brand', 'data'))
             {
                 $products = Capsule::table('mgfw_SSLCENTER_product_brand')->get();
-                
-                if(!empty($products))
+                if(isset($products[0]->id))
                 {
-                
                     $this->products = [];
                     foreach ($products as $apiProduct) {
 
