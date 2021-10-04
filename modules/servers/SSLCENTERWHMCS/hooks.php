@@ -8,11 +8,21 @@ if(!defined('DS'))define('DS',DIRECTORY_SEPARATOR);
 
 add_hook('ClientAreaPage', 1, function ($params)
 {
-    // uncomment to boost, need test ;)
-    //if(!isset($_SESSION['SSLCENTER_WHMCS_SERVICE_TO_ACTIVE'])) {
-    //    return;
-    //}
-    require_once __DIR__.DS.'Loader.php';
+    $loaderdir = false;
+    if(file_exists(__DIR__.DS.'Loader.php'))
+    {
+        $loaderdir = __DIR__.DS.'Loader.php';
+    } 
+    else if(file_exists(getcwd().DS.'modules'.DS.'servers'.DS.'SSLCENTERWHMCS'.DS.'Loader.php'))
+    {
+        $loaderdir = getcwd().DS.'modules'.DS.'servers'.DS.'SSLCENTERWHMCS'.DS.'Loader.php';
+    }
+    if($loaderdir === false)
+    {
+        return;
+    }
+    
+    require_once $loaderdir;
     new main\Loader();
     $activator = new main\eServices\provisioning\Activator();
     $activator->run();
