@@ -154,6 +154,13 @@
                     //$('select[name="approveremail"] option[value="defaultemail@defaultemail.com"]').remove();
                 }                 
             }
+            
+            var domainname = $(this).parent('div.form-group').parent('td').prev().text();
+            if(domainname.indexOf('*.') >= 0){
+                $(this).find('option[value="HTTP"]').remove();
+                $(this).find('option[value="HTTPS"]').remove();
+            }
+            
         });
         
         $('select[name^="dcvmethod"]').change();
