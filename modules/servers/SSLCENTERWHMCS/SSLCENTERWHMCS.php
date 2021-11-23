@@ -43,11 +43,20 @@ function SSLCENTERWHMCS_SSLStepOne($params) {
 }
 
 function SSLCENTERWHMCS_SSLStepTwo($params) {
-    $SSLStepTwo = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\SSLStepTwo($params);
-    if(isset($_POST['privateKey']) && $_POST['privateKey'] != null) {
-        $SSLStepTwo->setPrivateKey($_POST['privateKey']);
-    }    
-    return $SSLStepTwo->run();
+    
+    try{
+    
+        $SSLStepTwo = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\SSLStepTwo($params);
+        if(isset($_POST['privateKey']) && $_POST['privateKey'] != null) {
+            $SSLStepTwo->setPrivateKey($_POST['privateKey']);
+        }    
+        return $SSLStepTwo->run();
+        
+    } catch (\Exception $e) {
+        
+        return $e->getMessage();
+        
+    }
 }
 function SSLCENTERWHMCS_SSLStepTwoJS($params) {
     $SSLStepTwoJS = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\SSLStepTwoJS($params);    
