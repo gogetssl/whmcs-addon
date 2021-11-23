@@ -113,7 +113,7 @@
         }
         
         replaceRadioInputs(JSON.parse('{$sanEmails}'));
-        $('select[name^="dcvmethod"]').change( function (){
+        $('body').on('change','select[name^="dcvmethod"]',function(){
              
             var product144 = $('select[name="approveremail"] option').length; 
              
@@ -163,8 +163,6 @@
             
         });
         
-        $('select[name^="dcvmethod"]').change();
-        
         if(jQuery.inArray(brand, onlyEmailValidationFoBrands) >= 0){
             $('select[name^="approveremails"]').closest('tr').prop('hidden', true);
         }
@@ -181,6 +179,8 @@
             $('select[name="dcvmethodMainDomain"] option[value="EMAIL"]').remove();
             $('select[name="approveremail"]').hide();
         } 
+        
+        $('select[name^="dcvmethod"]').change();
         
         $.each(JSON.parse('{$sanEmails}'), function (domain, emails) {
 
