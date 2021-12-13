@@ -113,6 +113,14 @@
         }
         
         replaceRadioInputs(JSON.parse('{$sanEmails}'));
+        
+        $('#containerApprovalMethodEmail').parent('div').prev('label').prev('h2').hide();
+        $('#containerApprovalMethodEmail').parent('div').prev('label').hide();
+        $('#containerApprovalMethodEmail p').next('div').removeClass('col-sm-offset-1');
+        $('#containerApprovalMethodEmail p').next('div').removeClass('col-sm-10');
+        $('#containerApprovalMethodEmail p').prev('div.alert').hide();
+        $('#containerApprovalMethodEmail p').hide();
+        
         $('body').on('change','select[name^="dcvmethod"]',function(){
              
             var product144 = $('select[name="approveremail"] option').length; 

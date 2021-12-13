@@ -26,12 +26,12 @@
                         <div class="modal fade" id="modalGenerateCsr" role="dialog" aria-hidden="true">\n\
                             <div class="modal-dialog">\n\
                                 <div class="modal-content panel panel-primary">\n\
-                                    <div class="modal-header panel-heading">\n\
+                                    <div class="modal-header panel-heading" style="display:block;">\n\
                                         <button type="button" class="close" data-dismiss="modal">\n\
                                             <span aria-hidden="true">&times;</span>\n\
                                             <span class="sr-only">Close</span>\n\
                                         </button>\n\
-                                        <h4 class="modal-title">'+'{$MGLANG->T('generateCsrModalTitle')}'+'</h4>\n\
+                                        <h4 class="pull-left modal-title">'+'{$MGLANG->T('generateCsrModalTitle')}'+'</h4>\n\
                                     </div>\n\
                                     <form>\n\
                                     <div class="modal-body panel-body" id="modalgenerateCsrBody">\n\
