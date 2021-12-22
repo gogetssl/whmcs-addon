@@ -254,8 +254,7 @@ class home extends main\mgLibs\process\AbstractController {
                     header('Expires: 0');
                     header('Cache-Control: must-revalidate');
                     header('Pragma: public');
-                    header('Content-Length: ' . filesize($handle));
-                    echo(implode(PHP_EOL, $vars['sans'][$_GET['domain']]['san_validation']['content']));
+                    print implode(PHP_EOL, $vars['sans'][$_GET['domain']]['san_validation']['content']);
                     exit;
                 }
 
@@ -266,8 +265,7 @@ class home extends main\mgLibs\process\AbstractController {
                     header('Expires: 0');
                     header('Cache-Control: must-revalidate');
                     header('Pragma: public');
-                    header('Content-Length: ' . filesize($tmpName));
-                    echo(implode(PHP_EOL, $vars['approver_method']['https']['content']));
+                    print implode(PHP_EOL, $vars['approver_method']['https']['content']);
                     exit;
                 }
 
@@ -278,8 +276,7 @@ class home extends main\mgLibs\process\AbstractController {
                     header('Expires: 0');
                     header('Cache-Control: must-revalidate');
                     header('Pragma: public');
-                    header('Content-Length: ' . filesize($tmpName));
-                    echo(implode(PHP_EOL, $vars['approver_method']['http']['content']));
+                    print implode(PHP_EOL, $vars['approver_method']['http']['content']);
                     exit;
                 }
             }
@@ -291,8 +288,7 @@ class home extends main\mgLibs\process\AbstractController {
                 header('Expires: 0');
                 header('Cache-Control: must-revalidate');
                 header('Pragma: public');
-                header('Content-Length: ' . filesize($tmpName));
-                echo($certificateDetails['csr']);
+                print $certificateDetails['csr'];
                 exit;
             }
             if($_GET['downloadcrt'] == '1' && !empty($certificateDetails['crt']))
@@ -302,8 +298,7 @@ class home extends main\mgLibs\process\AbstractController {
                 header('Expires: 0');
                 header('Cache-Control: must-revalidate');
                 header('Pragma: public');
-                header('Content-Length: ' . filesize($tmpName));
-                echo($certificateDetails['crt']);
+                print $certificateDetails['crt'];
                 exit;
             }
             if($_GET['downloadca'] == '1' && !empty($certificateDetails['ca']))
@@ -313,8 +308,7 @@ class home extends main\mgLibs\process\AbstractController {
                 header('Expires: 0');
                 header('Cache-Control: must-revalidate');
                 header('Pragma: public');
-                header('Content-Length: ' . filesize($tmpName));
-                echo($certificateDetails['ca']);
+                print $certificateDetails['ca'];
                 exit;
             }
 

@@ -294,7 +294,15 @@ class SSL extends \Illuminate\Database\Eloquent\Model
                 $query = $query->where('serviceid', $where['serviceid']);
             }
             
-            $query = $query->where('status', 'Completed')->where('module', 'SSLCENTERWHMCS')->orWhere('module', 'gogetssl');
+            $query = $query->where(function($q) {
+                $q->where('status', "Completed");
+                $q->orWhere('status', "Configuration Submitted");
+            });
+            
+            $query = $query->where(function($q) {
+                $q->where('module', "SSLCENTERWHMCS");
+                $q->orWhere('module', "gogetssl");
+            });
         }
         
         return $query;

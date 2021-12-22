@@ -374,16 +374,20 @@ class ClientReissueCertificate {
         
         } else {
             
-            $iperror = false;
-            foreach($sansDomains as $domainname)
-            {
-                if(!filter_var($domainname, FILTER_VALIDATE_IP)) {
-                    $iperror = true;
+            if (count($invalidDomains)) {
+                
+                $iperror = false;
+                
+                foreach($invalidDomains as $domainname)
+                {
+                    if(!filter_var($domainname, FILTER_VALIDATE_IP)) {
+                        $iperror = true;
+                    }
                 }
-            }
-            
-            if (count($invalidDomains) && $iperror) {
-                throw new Exception('SANs are incorrect');
+
+                if ($iperror) {
+                    throw new Exception('SANs are incorrect');
+                }
             }
             
         }
