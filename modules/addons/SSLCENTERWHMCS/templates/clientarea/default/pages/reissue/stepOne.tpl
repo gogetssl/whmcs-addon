@@ -31,7 +31,9 @@
                 <div class="col-sm-10">
                     {if $smarty.post.csr}
                         <textarea name="csr" class="form-control" rows="8">{$smarty.post.csr}</textarea>
-                    {else}
+                    {else if $csrreissue}
+                        <textarea name="csr" class="form-control" rows="8">{$csrreissue}</textarea>
+                             {else}
                         <textarea name="csr" class="form-control" rows="8">-----BEGIN CERTIFICATE REQUEST-----
 
 -----END CERTIFICATE REQUEST-----</textarea>
@@ -43,7 +45,16 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label">{$MGLANG->T('reissueOneSanDomains')} ({$sansLimit})</label>
                     <div class="col-sm-10">
-                        <textarea name="sans_domains" rows="4" class="form-control">{if !$smarty.post.sans_domains}{$sans_domains}{else}{$smarty.post.sans_domains}{/if}</textarea>
+                        <textarea name="sans_domains" rows="4" class="form-control">{if !$smarty.post.sans_domains}{$sandetails.sans_domains}{else}{$smarty.post.sans_domains}{/if}</textarea>
+                    </div>
+                </div>
+            {/if}
+            
+            {if $sansLimitWildCard}
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">{$MGLANG->T('reissueOneSanDomainsWildcard')} ({$sansLimitWildCard})</label>
+                    <div class="col-sm-10">
+                        <textarea name="sans_domains_wildcard" rows="4" class="form-control">{if !$smarty.post.sans_domains_wildcard}{$sandetails.wildcard_san}{else}{$smarty.post.sans_domains_wildcard}{/if}</textarea>
                     </div>
                 </div>
             {/if}

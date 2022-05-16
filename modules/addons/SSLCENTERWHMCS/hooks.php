@@ -6,7 +6,7 @@ if(!defined('DS'))define('DS',DIRECTORY_SEPARATOR);
 add_hook("ClientAreaPage",1 ,function($vars) {
 
     global $CONFIG;
-    
+
     if(substr($CONFIG['Version'],0,1) == '8')
     {
         if(isset($_GET['id'])) return true;
@@ -122,6 +122,43 @@ add_hook('ClientAreaPage', 99999, function($params) {
 
 add_hook('ClientAreaHeadOutput', 1, function($params)
 {
+    if($params['clientareaaction'] == 'services')
+    {
+        $services = Capsule::table('tblhosting')
+                ->select(['tblhosting.id'])
+                ->join('tblproducts', 'tblproducts.id', 'tblhosting.packageid')
+                ->join('tblsslorders', 'tblsslorders.serviceid', 'tblhosting.id')
+                ->where('tblhosting.userid', $_SESSION['uid'])
+                ->where('tblsslorders.status', 'Awaiting Configuration')
+                ->where('tblproducts.servertype', 'SSLCENTERWHMCS')
+                ->get();
+        
+        $awaitingServicesSSLCENTER = [];
+        foreach($services as $service)
+        {
+            $awaitingServicesSSLCENTER[$service->id] = $service->id;
+        }
+        
+        
+        
+        return '<script type="text/javascript">
+        $(document).ready(function () {
+        
+            var awaitingServicesSSLCENTER = '. json_encode($awaitingServicesSSLCENTER).';
+
+            $("#tableServicesList tbody tr").each(function(index) {
+                var serviceid = $(this).find("td:first-child").attr("data-element-id");
+                
+                if(awaitingServicesSSLCENTER[serviceid])
+                {
+                    $(this).find("td:nth-child(2)").append("<br><span class=\"label label-warning\">Awaiting Configuration</span>");
+                }
+
+            });
+        });
+    </script>';
+    }
+    
     $show = false;
 
     if ($params['filename'] === 'configuressl' && $params['loggedin'] == '1' && isset($_REQUEST['action']) && $_REQUEST['action'] === 'generateCsr')
@@ -282,7 +319,7 @@ function SSLCENTER_displaySSLSummaryStats($vars)
                                                 $titleLang
                                         </h3>
                                 </div>
-                                <div class=\"list-group\">
+                                <div>
                                         <div class=\"dsb-box col-sm-4\">
                                                 <a href=\"index.php?m=SSLCENTERWHMCS&mg-page=Orders&type=unpaid\">
                                                         <div><i class=\"fa fa-credit-card icon icon col-sm-12\"></i><span>$unpaidLang<u>$unpaidOrders</u></span></div>

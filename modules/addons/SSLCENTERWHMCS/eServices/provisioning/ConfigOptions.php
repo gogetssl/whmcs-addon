@@ -17,14 +17,16 @@ use Exception;
 class ConfigOptions
 {
     private $p;
-    const API_PRODUCT_ID        = 'configoption1';
-    const API_PRODUCT_MONTHS    = 'configoption2';
-    const PRODUCT_ENABLE_SAN    = 'configoption3';
-    const PRODUCT_INCLUDED_SANS = 'configoption4';
-    const PRICE_AUTO_DOWNLOAD   = 'configoption5';
-    const COMMISSION            = 'configoption6';
-    const MONTH_ONE_TIME        = 'configoption7';
-    const OPTION_SANS_COUNT     = 'sans_count'; // sans_count|SANs http://puu.sh/vXXx3/d08fdb2c2f.png
+    const API_PRODUCT_ID                 = 'configoption1';
+    const API_PRODUCT_MONTHS             = 'configoption2';
+    const PRODUCT_ENABLE_SAN             = 'configoption3';
+    const PRODUCT_INCLUDED_SANS          = 'configoption4';
+    const PRICE_AUTO_DOWNLOAD            = 'configoption5';
+    const COMMISSION                     = 'configoption6';
+    const MONTH_ONE_TIME                 = 'configoption7';
+    const PRODUCT_INCLUDED_SANS_WILDCARD = 'configoption8';
+    const OPTION_SANS_COUNT              = 'sans_count'; // sans_count|SANs http://puu.sh/vXXx3/d08fdb2c2f.png
+    const OPTION_SANS_WILDCARD_COUNT     = 'sans_wildcard_count';
 
     function __construct(&$params = null)
     {

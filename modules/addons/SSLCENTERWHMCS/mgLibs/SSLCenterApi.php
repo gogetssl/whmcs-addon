@@ -2,6 +2,7 @@
 
 namespace MGModule\SSLCENTERWHMCS\mgLibs;
 
+use WHMCS\Database\Capsule;
 /**
  * Use any way you want. Free for all
  *
@@ -53,17 +54,42 @@ class SSLCenterApi {
     }
 
     public function auth($user, $pass) {
-        $response = $this->call('/auth/', array(), array(
-            'user' => $user,
-            'pass' => $pass
-        ));
         
-        if (!empty($response ['key'])) {
-            $this->key = $response ['key'];
+        $checkKey = Capsule::table('tblconfiguration')->where('setting', 'sslcenter_authkey')->first();
+        if(!isset($checkKey->value) || empty($checkKey->value))
+        {
+            $response = $this->call('/auth/', array(), array(
+                'user' => $user,
+                'pass' => $pass
+            ));
+
+            if (!empty($response['key'])) {
+                
+                if(!isset($checkKey->value))
+                {
+                    Capsule::table('tblconfiguration')->insert([
+                        'setting' => 'sslcenter_authkey',
+                        'value' => $response['key']
+                    ]);
+                }
+                else if(empty($checkKey->value))
+                {
+                    Capsule::table('tblconfiguration')->where('setting', 'sslcenter_authkey')->update([
+                        'value' => $response['key']
+                    ]);
+                }
+                
+                $this->key = $response ['key'];
+                return $response;
+            }
+            Capsule::table('tblconfiguration')->where('setting', 'sslcenter_authkey')->delete();
             return $response;
         }
-        
-        return $response;
+        else
+        {
+            $this->key = $checkKey->value;
+            return ['key' => $checkKey->value];
+        }
     }
 
     public function addSslSan($orderId, $count) {
@@ -87,6 +113,9 @@ class SSLCenterApi {
     }
     public function changeValidationMethod($orderId, $data) {
         return $this->call('/orders/ssl/change_validation_method/' . (int) $orderId, $getData, $data);
+    }
+    public function changeDomainValidationMethod($orderId, $data) {
+        return $this->call('/orders/ssl/change_domains_validation_method/' . (int) $orderId, $getData, $data);
     }
     public function revalidate($orderId, $data) {
         return $this->call('/orders/ssl/revalidate/' . (int) $orderId, $getData, $data);
@@ -319,6 +348,12 @@ class SSLCenterApi {
         }
         
         $status = curl_getinfo($c, CURLINFO_HTTP_CODE);
+        
+        if($status == '403')
+        {
+            Capsule::table('tblconfiguration')->where('setting', 'sslcenter_authkey')->delete();
+        }
+        
         curl_close($c);
         $this->lastStatus = $status;
         $this->lastResponse = json_decode($result, true);

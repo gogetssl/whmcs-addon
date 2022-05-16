@@ -24,7 +24,6 @@ class AdminServicesTabFields {
     private function adminServicesTabFields() {
         $return = [];
         $return['JS/HTML'] = \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getAdminServiceScript($this->getServiceVars());
-        
         return array_merge($return, $this->getCertificateDetails());
     }
     
@@ -78,7 +77,7 @@ class AdminServicesTabFields {
             foreach ($orderDetails['san_details'] as $key => $san) {
                 $return['SAN ' . ($key + 1)] = sprintf('%s / %s', $san->san_name, $san->status_description);
             }
-            
+
             return $return;
             
         } catch (Exception $ex) {
@@ -91,7 +90,11 @@ class AdminServicesTabFields {
         
         $includedSans = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS];
         $boughtSans   = (int) $this->p['configoptions'][ConfigOptions::OPTION_SANS_COUNT];
-        $sansLimit = $includedSans + $boughtSans;
+        $sansLimit = $boughtSans;
+
+        $includedSansWildcard = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS_WILDCARD];
+        $boughtSansWildcard   = (int) $this->p['configoptions'][ConfigOptions::OPTION_SANS_WILDCARD_COUNT];
+        $sansLimitWildcard = $boughtSansWildcard;
         
         require dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'configuration.php';
 
@@ -106,6 +109,7 @@ class AdminServicesTabFields {
             'email'     => $this->p['clientsdetails']['email'],
             'userid'    => $this->p['userid'],
             'sansLimit' => $sansLimit,
+            'sansLimitWildcard' => $sansLimitWildcard,
             'adminpath' => $adminpath,
             'version'   => substr($CONFIG['Version'],0,1)
         ];

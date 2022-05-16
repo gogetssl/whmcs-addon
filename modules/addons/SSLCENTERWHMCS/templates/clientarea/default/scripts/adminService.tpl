@@ -306,9 +306,21 @@
 
                     {if $sansLimit}
                         <div class="form-group mg-js-step-one">
-                            <label  class="col-sm-3 control-label">SAN Domains ({$sansLimit})</label>
+                            <label  class="col-sm-3 control-label">SAN Single Domains ({$sansLimit})</label>
                             <div class="col-sm-9">
                                 <textarea rows="3" class="form-control" name="sanDomains" id="modalReissueSansInput"></textarea>
+                            </div>
+                        </div>
+                    {/if}
+
+                    <div class="clearfix mg-js-step-one"></div>
+                    <br class="mg-js-step-one">
+
+                    {if $sansLimitWildcard}
+                        <div class="form-group mg-js-step-one">
+                            <label  class="col-sm-3 control-label">SAN Wildcard Domains ({$sansLimitWildcard})</label>
+                            <div class="col-sm-9">
+                                <textarea rows="3" class="form-control" name="sanDomainsWildcard" id="modalReissueSansWildcardInput"></textarea>
                             </div>
                         </div>
                     {/if}
@@ -483,9 +495,10 @@
                 data['action'] = 'reissueCertificate';
             }
 
-            $(formData).each(function (index, obj) {
-                data[obj.name] = obj.value;
-            });
+            data['webServer'] = $('select#modalReissueWebServerInput').val();
+            data['csr'] = $('textarea#modalReissueCsrInput').val();
+            data['sanDomains'] = $('textarea#modalReissueSansInput').val();
+            data['sanDomainsWildcard'] = $('textarea#modalReissueSansWildcardInput').val();
 
             hideAlerts();
             disable(reissueSubmitContinue);

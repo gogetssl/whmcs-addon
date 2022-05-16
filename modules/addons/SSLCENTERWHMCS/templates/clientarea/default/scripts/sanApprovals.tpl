@@ -45,7 +45,9 @@
                 return true;
             }  
             return false;
-        }  
+        }
+
+        var checkwildcard = false;
         
         function replaceRadioInputs(sanEmails) {
             var template = $('input[value="loading..."]').closest('.row'),
@@ -67,10 +69,16 @@
            
             template.hide();
             $('input[value="loading..."]').remove();
-            
+
+
+
             $.each(sanEmails, function (domain, emails) {
-                
-                 
+
+                if(domain.includes('*.'))
+                {
+                    checkwildcard = true;
+                }
+
                 selectDcvMethod = '<div class="form-group"><select style="width:65%;" type="text" name="selectName" class="form-control">';
 
                 //if not disabled display
@@ -88,9 +96,9 @@
                         selectDcvMethod += '<option value="DNS">'+'{$MGLANG->T('dropdownDcvMethodDns')}'+'</option>';
                 }
 
-                selectDcvMethod += '</select>'; 
-           
-                
+                selectDcvMethod += '</select>';
+
+
                 //if(jQuery.inArray('email', disabledValidationMethods) < 0)
                 partHtml = partHtml + selectDcvMethod.replace('name="selectName"', getNameForSelectMethod(x, domain));                                
                 selectEmailHtml = selectBegin.replace('name="selectName"', getNameForSelectEmail(x, domain));
@@ -103,8 +111,8 @@
                     selectEmailHtml = selectEmailHtml +  getSelectHtml(emails[i], i === 0);
                 }
                 selectEmailHtml = selectEmailHtml + selectEnd;
-                fullHtml = fullHtml + getRowHtml(domain, partHtml, selectEmailHtml);                
-                
+                fullHtml = fullHtml + getRowHtml(domain, partHtml, selectEmailHtml);
+
                 partHtml = '';
                 x++;
             });
@@ -120,10 +128,24 @@
         $('#containerApprovalMethodEmail p').next('div').removeClass('col-sm-10');
         $('#containerApprovalMethodEmail p').prev('div.alert').hide();
         $('#containerApprovalMethodEmail p').hide();
+
+        if(brand == 'digicert' || brand == 'geotrust' || brand == 'thawte' || brand == 'rapidssl')
+        {
+            $('select[name^="dcvmethod["]').remove();
+            $('select[name^="approveremails"]').remove();
+        
+        
+            if(checkwildcard)
+            {
+                $('select[name="dcvmethodMainDomain"] option[value="HTTP"]').remove();
+                $('select[name="dcvmethodMainDomain"] option[value="HTTPS"]').remove();
+            }
+
+        }
         
         $('body').on('change','select[name^="dcvmethod"]',function(){
              
-            var product144 = $('select[name="approveremail"] option').length; 
+            var product144 = $('select[name="approveremail"] option').length;
              
             var method = this.value;
             var selectName = this.name;
@@ -172,7 +194,7 @@
         });
         
         if(jQuery.inArray(brand, onlyEmailValidationFoBrands) >= 0){
-            $('select[name^="approveremails"]').closest('tr').prop('hidden', true);
+           // $('select[name^="approveremails"]').closest('tr').prop('hidden', true);
         }
         if(jQuery.inArray('email', disabledValidationMethods) >= 0 && jQuery.inArray(brand, onlyEmailValidationFoBrands) < 0)
         {

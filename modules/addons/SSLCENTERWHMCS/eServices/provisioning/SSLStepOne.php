@@ -47,6 +47,8 @@ class SSLStepOne {
         $sanEnabledForWHMCSProduct = $this->p[ConfigOptions::PRODUCT_ENABLE_SAN] === 'on';
 
         $includedSans = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS];
+        $includedSansWildcard = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS_WILDCARD];
+        
         $boughtSans   = (int) $this->p['configoptions'][ConfigOptions::OPTION_SANS_COUNT];
         
         $orderTypes = ['new', 'renew'];
@@ -63,7 +65,7 @@ class SSLStepOne {
         //$fields['additionalfields'][\MGModule\SSLCENTERWHMCS\eRepository\sslcenter\OrderType::getTitle()] = \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\OrderType::getFields();
         
         if ($sansLimit > 0) {
-            $fields['additionalfields'][\MGModule\SSLCENTERWHMCS\eRepository\sslcenter\San::getTitle()] = \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\San::getFields($sansLimit);
+            $fields['additionalfields'][\MGModule\SSLCENTERWHMCS\eRepository\sslcenter\San::getTitle()] = \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\San::getFields($sansLimit, $this->p['configoptions']['sans_wildcard_count']+$includedSansWildcard);
         }
         if ($apiProduct->isOrganizationRequired()) {
             $fields['additionalfields'][\MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Organization::getTitle()] = \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Organization::getFields();

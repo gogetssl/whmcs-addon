@@ -10,6 +10,7 @@
             <input type="hidden" name="webservertype" value="{$smarty.post.webservertype}">
             <input type="hidden" name="csr" value="{$smarty.post.csr}">
             <input type="hidden" name="sans_domains" value="{$smarty.post.sans_domains}">
+            <input type="hidden" name="sans_domains_wildcard" value="{$smarty.post.sans_domains_wildcard}">
             <input type="hidden" name="privateKey" value="{$privateKey}">
             <div class="loading">
                 Loading...
@@ -109,18 +110,31 @@
             
             $.each(sanEmails, function (domain, emails) {
                 
+                
+                var checkwildcard = false;
+                
+                if(domain.includes('*.'))
+                {
+                    checkwildcard = true;
+                }
+                
 
                 selectDcvMethod = '<div class="form-group"><select style="width:65%;" type="text" name="selectName" class="form-control">';
 
                 if(jQuery.inArray('email', disabledValidationMethods) < 0)  {
                     selectDcvMethod +='<option value="EMAIL">'+'{$MGLANG->T('dropdownDcvMethodEmail')}'+'</option>';
                 }
-                if(jQuery.inArray('http', disabledValidationMethods) < 0)  {
-                    selectDcvMethod += '<option value="HTTP">'+'{$MGLANG->T('dropdownDcvMethodHttp')}'+'</option>';
+                
+                
+                if(!checkwildcard)
+                {
+                    if(jQuery.inArray('http', disabledValidationMethods) < 0)  {
+                        selectDcvMethod += '<option value="HTTP">'+'{$MGLANG->T('dropdownDcvMethodHttp')}'+'</option>';
+                    }
+                    if(jQuery.inArray('https', disabledValidationMethods) < 0)  {                
+                        selectDcvMethod += '<option value="HTTPS">'+'{$MGLANG->T('dropdownDcvMethodHttps')}'+'</option>';
+                    }
                 }
-                if(jQuery.inArray('https', disabledValidationMethods) < 0)  {                
-                    selectDcvMethod += '<option value="HTTPS">'+'{$MGLANG->T('dropdownDcvMethodHttps')}'+'</option>';
-                }   
                 if(jQuery.inArray('dns', disabledValidationMethods) < 0)
                 {
                     selectDcvMethod += '<option value="DNS">'+'{$MGLANG->T('dropdownDcvMethodDns')}'+'</option>';
@@ -148,6 +162,13 @@
         }
         
         replaceRadioInputs(JSON.parse('{$approvalEmails}'));
+        
+        if(brand == 'digicert' || brand == 'geotrust' || brand == 'thawte' || brand == 'rapidssl')
+        {
+            $('select[name^="dcvmethod["]').remove();
+            $('select[name^="approveremails"]').remove();
+        }
+        
         $('select[name^="dcvmethod"]').change( function (){
             
             var product144 = $('select[name="approveremail"] option').length; 
@@ -190,7 +211,7 @@
         });
         $('select[name^="dcvmethod"]').change();
         if(jQuery.inArray(brand, onlyEmailValidationFoBrands) >= 0){
-            $('select[name^="approveremails"]').closest('tr').prop('hidden', true);
+           // $('select[name^="approveremails"]').closest('tr').prop('hidden', true);
         }
         
         if(jQuery.inArray('email', disabledValidationMethods) >= 0 && jQuery.inArray(brand, onlyEmailValidationFoBrands) < 0)
