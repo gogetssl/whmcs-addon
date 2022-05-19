@@ -129,7 +129,116 @@ class Renew {
         $this->loadApiProduct();
      
         $addSSLRenewOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLRenewOrder($this->getOrderParams()); 
-                
+        $service = Capsule::table('tblhosting')->where('id', $this->p['serviceid'])->first();
+
+        // dns manager
+        sleep(2);
+        $dnsmanagerfile = dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'includes'.DIRECTORY_SEPARATOR.'api'.DIRECTORY_SEPARATOR.'dnsmanager.php';
+        if(file_exists($dnsmanagerfile))
+        {
+            $zoneDomain = $service->domain;
+            $loaderDNS = dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR.'addons'.DIRECTORY_SEPARATOR.'DNSManager2'.DIRECTORY_SEPARATOR.'loader.php';
+            if(file_exists($loaderDNS)) {
+                require_once $loaderDNS;
+                $loader = new \MGModule\DNSManager2\loader();
+                \MGModule\DNSManager2\addon::I(true);
+                $helper = new \MGModule\DNSManager2\mgLibs\custom\helpers\DomainHelper($service->domain);
+                $zoneDomain = $helper->getDomainWithTLD();
+            }
+
+            $records = [];
+            if(isset($addSSLRenewOrder['approver_method']['dns']['record']) && !empty($addSSLRenewOrder['approver_method']['dns']['record']))
+            {
+                $dnsrecord = explode("IN   TXT", $addSSLRenewOrder['approver_method']['dns']['record']);
+                $length = strlen(trim(rtrim($dnsrecord[1])));
+                $records[] = array(
+                    'name' => trim(rtrim($dnsrecord[0])),
+                    'type' => 'TXT',
+                    'ttl' => '14440',
+                    'data' => substr(trim(rtrim($dnsrecord[1])),1, $length-2)
+                );
+
+                $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
+                if(!isset($zone->id) || empty($zone->id))
+                {
+                    $postfields = array(
+                        'action' => 'dnsmanager',
+                        'dnsaction' => 'createZone',
+                        'zone_name' => $zoneDomain,
+                        'type' => '2',
+                        'relid' => $this->p['serviceid'],
+                        'zone_ip' => '',
+                        'userid' => $this->p['userid']
+                    );
+                    $createZoneResults = localAPI('dnsmanager' ,$postfields);
+                    logModuleCall('sslcenter [dns]', 'createZone', print_r($postfields, true), print_r($createZoneResults, true));
+                }
+
+                $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
+                if(isset($zone->id) && !empty($zone->id))
+                {
+                    $postfields =  array(
+                        'dnsaction' => 'updateZone',
+                        'zone_id' => $zone->id,
+                        'records' => $records);
+                    $createRecordCnameResults = localAPI('dnsmanager' ,$postfields);
+                    logModuleCall('sslcenter [dns]', 'updateZone', print_r($postfields, true), print_r($createRecordCnameResults, true));
+                }
+
+            }
+            if(isset($addSSLRenewOrder['san']) && !empty($addSSLRenewOrder['san']))
+            {
+                foreach($addSSLRenewOrder['san'] as $sanrecord)
+                {
+                    $records = [];
+                    if(isset($sanrecord['validation']['dns']['record']) && !empty($sanrecord['validation']['dns']['record']))
+                    {
+                        if(file_exists($loaderDNS)) {
+                            $helper = new \MGModule\DNSManager2\mgLibs\custom\helpers\DomainHelper(str_replace('*.', '',$sanrecord['san_name']));
+                            $zoneDomain = $helper->getDomainWithTLD();
+                        }
+
+                        $dnsrecord = explode("IN   TXT", $sanrecord['validation']['dns']['record']);
+                        $length = strlen(trim(rtrim($dnsrecord[1])));
+                        $records[] = array(
+                            'name' => trim(rtrim($dnsrecord[0])),
+                            'type' => 'TXT',
+                            'ttl' => '14440',
+                            'data' => substr(trim(rtrim($dnsrecord[1])),1, $length-2)
+                        );
+
+                        $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
+                        if(!isset($zone->id) || empty($zone->id))
+                        {
+                            $postfields = array(
+                                'action' => 'dnsmanager',
+                                'dnsaction' => 'createZone',
+                                'zone_name' => $zoneDomain,
+                                'type' => '2',
+                                'relid' => $this->p['serviceid'],
+                                'zone_ip' => '',
+                                'userid' => $this->p['userid']
+                            );
+                            $createZoneResults = localAPI('dnsmanager' ,$postfields);
+                            logModuleCall('sslcenter [dns]', 'createZone', print_r($postfields, true), print_r($createZoneResults, true));
+                        }
+
+                        $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
+                        if(isset($zone->id) && !empty($zone->id))
+                        {
+                            $postfields =  array(
+                                'dnsaction' => 'updateZone',
+                                'zone_id' => $zone->id,
+                                'records' => $records);
+                            $createRecordCnameResults = localAPI('dnsmanager' ,$postfields);
+                            logModuleCall('sslcenter [dns]', 'updateZone', print_r($postfields, true), print_r($createRecordCnameResults, true));
+                        }
+
+                    }
+                }
+            }
+        }
+
         Capsule::table('tblsslorders')->where('serviceid', $this->p['serviceid'])->update(array(
             'remoteid' => $addSSLRenewOrder['order_id']
         ));     
@@ -241,10 +350,23 @@ class Renew {
         }
         else 
         {
-            $order['approver_method'] = $p->approver_method;
+            $order['approver_method'] = $p->dcv_method;
         }
         
         $order['webserver_type'] = $p->servertype; // Required . webserver type, can be taken from getWebservers method
+        
+        $apiRepo       = new \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products();
+        $apiProduct    = $apiRepo->getProduct($this->p[ConfigOptions::API_PRODUCT_ID]);
+        $brand = $apiProduct->brand;
+        
+        if($brand == 'geotrust' || $brand == 'rapidssl' || $brand == 'digicert' || $brand == 'thawte')
+        {
+            $order['webserver_type']     = '18'; // Required . webserver type, can be taken from getWebservers method
+        }
+        else
+        {
+            $order['webserver_type']     = '-1'; // Required . webserver type, can be taken from getWebservers method
+        }
 
         $order['admin_firstname']    = $p->firstname; // Required
         $order['admin_lastname']     = $p->lastname; // Required

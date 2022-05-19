@@ -13,10 +13,31 @@ class SSLStepTwo {
     private $p;
     private $errors = [];
     private $additional_san_validation = array(139, 100, 99, 63, 25, 24);
+    private $csrDecode = []; 
     
     function __construct(&$params) {
         
-        $productssl = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->getProductDetails($params['configoption1']);
+        $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($params['serviceid']);
+        $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($service->productID);
+        
+        $productssl = false;
+        $checkTable = Capsule::schema()->hasTable('mgfw_SSLCENTER_product_brand');
+        if($checkTable)
+        {
+            if (Capsule::schema()->hasColumn('mgfw_SSLCENTER_product_brand', 'data'))
+            {
+                $productsslDB = Capsule::table('mgfw_SSLCENTER_product_brand')->where('pid', $product->configuration()->text_name)->first();
+                if(isset($productsslDB->data))
+                {
+                    $productssl['product'] = json_decode($productsslDB->data, true); 
+                }
+            }
+        }
+        if(!$productssl)
+        {
+            $productssl = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->getProductDetails($params['configoption1']);
+        }
+        
         if(isset($productssl['product_san_wildcard']) && $productssl['product_san_wildcard'] == 'yes')
         {
             $this->additional_san_validation[] = $params['configoption1']; 
@@ -85,20 +106,19 @@ class SSLStepTwo {
             $ValidationMethods = array_diff($ValidationMethods, ['dns']);
         }
 
-        if(isset($_SESSION['decodeCSR']) && !empty($_SESSION['decodeCSR']))
+        if(empty($this->csrDecode))
         {
-            $decodedCSR = $_SESSION['decodeCSR'];
-            unset($_SESSION['decodeCSR']);
+            $this->csrDecode   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR(trim(rtrim($_POST['csr'])));
         }
-        else
-        {
-            $decodedCSR   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR(trim(rtrim($_POST['csr'])));
-        }
+        $decodedCSR = $this->csrDecode;
+        $_SESSION['csrDecode'] = $decodedCSR;
         $step2js = new SSLStepTwoJS($this->p);
         $mainDomain       = $decodedCSR['csrResult']['CN'];
         $domains = $mainDomain . PHP_EOL . $_POST['fields']['sans_domains'];
-        $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));
+        $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));        
         $approveremails = $step2js->fetchApprovalEmailsForSansDomains($sansDomains);
+        
+        $_SESSION['approveremails'] = $approveremails;
         
         $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
         if($apiConf->email_whois)
@@ -143,6 +163,7 @@ class SSLStepTwo {
         
         $this->storeFieldsAutoFill();        
         $this->validateSansDomains();
+        $this->validateSansDomainsWildcard();
         $this->validateFields();
         if($this->p['configoption1'] != '144')
         {
@@ -156,13 +177,40 @@ class SSLStepTwo {
       
     }
     
+    private function validateSansDomainsWildcard() {
+        $sansDomainsWildcard = $this->p['fields']['wildcard_san'];
+        $sansDomainsWildcard = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($sansDomainsWildcard);
+        
+        foreach($sansDomainsWildcard as $domain)
+        {
+            $check = substr($domain, 0,2);
+            if($check != '*.')
+            {
+                throw new Exception('SAN\'s Wildcard are incorrect');
+            }
+            $domaincheck = \MGModule\SSLCENTERWHMCS\eHelpers\Domains::validateDomain(substr($domain, 2));
+            if($domaincheck !== true)
+            {
+                throw new Exception('SAN\'s Wildcard are incorrect');
+            }
+        }
+   
+        $includedSans = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS_WILDCARD];
+        $boughtSans   = (int) $this->p['configoptions']['sans_wildcard_count'];
+        
+        $sansLimit = $includedSans + $boughtSans;
+        if (count($sansDomainsWildcard) > $sansLimit) {
+            throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('sanLimitExceededWildcard'));
+        }
+    }
+    
     private function validateSansDomains() {
         $sansDomains    = $this->p['fields']['sans_domains'];
         $sansDomains    = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($sansDomains);
         
         $apiProductId     = $this->p[ConfigOptions::API_PRODUCT_ID];
         
-        $invalidDomains = \MGModule\SSLCENTERWHMCS\eHelpers\Domains::getInvalidDomains($sansDomains, in_array($apiProductId, $this->additional_san_validation));
+        $invalidDomains = \MGModule\SSLCENTERWHMCS\eHelpers\Domains::getInvalidDomains($sansDomains, false);
              
         if($apiProductId != '144') {
             
@@ -197,10 +245,9 @@ class SSLStepTwo {
 
     private function validateCSR() {
         $csr = trim(rtrim($this->p['csr']));
-        $decodeCSR = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($csr);
-        
-        $_SESSION['decodeCSR'] = $decodeCSR;
-
+        $this->csrDecode = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($csr);
+        $decodedCSR = $this->csrDecode;
+        $_SESSION['csrDecode'] = $decodedCSR;
         $productssl = false;
         $checkTable = Capsule::schema()->hasTable('mgfw_SSLCENTER_product_brand');
         if($checkTable)

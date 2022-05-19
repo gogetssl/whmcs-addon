@@ -32,7 +32,43 @@ add_hook('ClientAreaPage', 1, function ($params)
         global $smarty;
         switch ($params['templatefile'])
         {
+            case 'configureproduct':
+                $product = DB::table('tblproducts')->where('id', $params['productinfo']['pid'])->where('servertype', 'SSLCENTERWHMCS')->first();
+                $includedsan = $product->configoption4;
+                $includedsanwildcard = $product->configoption8;
+                
+                $txtincluded = '';
+                
+                if($includedsan > 0)
+                {
+                    $txt = sprintf (\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('additionalSingleDomainInfo'), $includedsan);
+                    $txtincluded .= '<p>'.$txt.'</p>';
+                }
+                if($includedsanwildcard > 0)
+                {
+                    $txt = sprintf (\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('additionalSingleDomainWildcardInfo'), $includedsanwildcard);
+                    $txtincluded .= '<p>'.$txt.'</p>';
+                }
+                $smarty->assign('txtincluded', $txtincluded);
+                break;
             case 'clientareaproductdetails':
+                $product = DB::table('tblproducts')->where('id', $params['pid'])->where('servertype', 'SSLCENTERWHMCS')->first();
+                $includedsan = $product->configoption4;
+                $includedsanwildcard = $product->configoption8;
+                
+                $txtincluded = '';
+                
+                if($includedsan > 0)
+                {
+                    $txt = sprintf (\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->absoluteT('additionalSingleDomainInfo'), $includedsan);
+                    $txtincluded .= '<p>'.$txt.'</p>';
+                }
+                if($includedsanwildcard > 0)
+                {
+                    $txt = sprintf (\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->absoluteT('additionalSingleDomainWildcardInfo'), $includedsanwildcard);
+                    $txtincluded .= '<p>'.$txt.'</p>';
+                }                
+                $smarty->assign('txtincluded', $txtincluded);
                 $smarty->assign('customSSLCenterAssetsURL', main\Server::I()->getAssetsURL());
                 $smarty->assign('customProductDetailsIcon', true);
                 break;

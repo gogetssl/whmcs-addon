@@ -85,18 +85,25 @@
                     <td class="text-left">{$MGLANG->T('validTill')}</td>
                     <td class="text-left">{$validTill}</td>
                 </tr>
-                <tr>
-                    <td class="text-left">{$MGLANG->T('subscriptionStarts')}</td>
-                    <td class="text-left">{$subscriptionStarts}</td>
-                </tr>
-                <tr>
-                    <td class="text-left">{$MGLANG->T('subscriptionEnds')}</td>
-                    <td class="text-left">{$subscriptionEnds}</td>
-                </tr>
-                <tr>
-                    <td class="text-left">{$MGLANG->T('nextReissue')}</td>
-                    <td class="text-left"><strong>{$MGLANG->T('Reissue SSL within')} {$nextReissue} {$MGLANG->T('days')}</strong></td>
-                </tr>
+                {if $serviceBillingCycle != 'Annually'}
+                    <tr>
+                        <td class="text-left">{$MGLANG->T('subscriptionStarts')}</td>
+                        <td class="text-left">{$subscriptionStarts}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">{$MGLANG->T('subscriptionEnds')}</td>
+                        <td class="text-left">{$subscriptionEnds}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">{$MGLANG->T('nextReissue')}</td>
+                        <td class="text-left"><strong>{$MGLANG->T('Reissue SSL within')} {$nextReissue} {$MGLANG->T('days')}</strong></td>
+                    </tr>
+                {else}
+                    <tr>
+                        <td class="text-left">{$MGLANG->T('nextRenewal')}</td>
+                        <td class="text-left"><strong>{$MGLANG->T('Renew SSL within')} {$nextReissue} {$MGLANG->T('days')}</strong></td>
+                    </tr>
+                {/if}
             {/if}
             <!--{if $order_id}
                 <tr>
@@ -219,6 +226,7 @@
             <tr id="additionalActionsTr">
                 <td class="text-left">{$MGLANG->T('Actions')}</td>
                 <td id="additionalActionsTd" class="text-left">
+                    
                     {if $visible_renew_button}
                     {if $displayRenewButton}
                         <button type="button" id="btnRenew" class="btn btn-default" style="margin:2px">{$MGLANG->T('renew')}</button>
@@ -247,6 +255,7 @@
                             {if $downloadca}<a href="{$downloadca}"><button type="button" id="download-ca" class="btn btn-default" style="margin:2px">{$MGLANG->T('downloadca')}</button></a>{/if}
                             {if $downloadcrt}<a href="{$downloadcrt}"><button type="button" id="download-crt" class="btn btn-default" style="margin:2px">{$MGLANG->T('downloadcrt')}</button></a>{/if}
                             {if $downloadcsr}<a href="{$downloadcsr}"><button type="button" id="download-csr" class="btn btn-default" style="margin:2px">{$MGLANG->T('downloadcsr')}</button></a>{/if}
+                            {if $downloadpem}<a href="{$downloadpem}"><button type="button" id="download-ca" class="btn btn-default" style="margin:2px">{$MGLANG->T('downloadpem')}</button></a>{/if}
                         {/if}
                         <!--<button type="button" id="{if $dcv_method == 'email'}btnChange_Approver_Email{else}btnRevalidate{/if}" class="btn btn-default" style="margin:2px">{if $dcv_method == 'email'}{$MGLANG->T('changeValidationEmail')}{else}{$MGLANG->T('revalidate')}{/if}</button>-->
                         {if $privateKey}
@@ -553,40 +562,46 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                        {if $sans && !$brand|in_array:$brandsWithOnlyEmailValidation}
+                                        {*if $sans && !$brand|in_array:$brandsWithOnlyEmailValidation*}
                                             {$i = 1}
                                             {foreach $sans as $san}
                                                 <tr>
-                                                    <td>{$san.san_name}</td>
-                                                    <td>
-                                                        <div class="form-group">
-                                                            <select style="width:70%;" type="text" name="newDcvMethod_{$i}" class="form-control modalRevalidateInput">
-                                                                <option value="" selected>{$MGLANG->T('pleaseChooseOne')}</option>
-                                                                {if !'email'|in_array:$disabledValidationMethods}
-                                                                    <option value="email">{$MGLANG->T('revalidateModalMethodEmail')}</option>
-                                                                {/if}
-                                                                {if !'http'|in_array:$disabledValidationMethods}
-                                                                    <option value="http">{$MGLANG->T('revalidateModalMethodHttp')}</option>
-                                                                {/if}
-                                                                {if !'https'|in_array:$disabledValidationMethods}
-                                                                    <option value="https">{$MGLANG->T('revalidateModalMethodHttps')}</option>
-                                                                {/if}
-                                                                {if !'dns'|in_array:$disabledValidationMethods}
-                                                                    <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>
-                                                                {/if}
-                                                            </select>
-                                                        </div>
-                                                    <td>
-                                                        <div style="display:none;" class="form-group newApproverEmailFormGroup_{$i}">
-                                                            <select type="text" name="newApproverEmailInput_{$i}" class="form-control newApproverEmailInputValidation"/>
-                                                                <option id="loadingDomainEmails">{$MGLANG->T('loading')}</option>
-                                                            </select>
-                                                        </div>
-                                                    </td>
+                                                    {if $brand == 'digicert' || $brand == 'geotrust' || $brand == 'thawte' || $brand == 'rapidssl'} 
+                                                        <td>{$san.san_name}</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                    {else}
+                                                        <td>{$san.san_name}</td>
+                                                        <td>
+                                                            <div class="form-group">
+                                                                <select style="width:70%;" type="text" name="newDcvMethod_{$i}" class="form-control modalRevalidateInput">
+                                                                    <option value="" selected>{$MGLANG->T('pleaseChooseOne')}</option>
+                                                                    {if !'email'|in_array:$disabledValidationMethods}
+                                                                        <option value="email">{$MGLANG->T('revalidateModalMethodEmail')}</option>
+                                                                    {/if}
+                                                                    {if !'http'|in_array:$disabledValidationMethods}
+                                                                        <option value="http">{$MGLANG->T('revalidateModalMethodHttp')}</option>
+                                                                    {/if}
+                                                                    {if !'https'|in_array:$disabledValidationMethods}
+                                                                        <option value="https">{$MGLANG->T('revalidateModalMethodHttps')}</option>
+                                                                    {/if}
+                                                                    {if !'dns'|in_array:$disabledValidationMethods}
+                                                                        <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>
+                                                                    {/if}
+                                                                </select>
+                                                            </div>
+                                                        <td>
+                                                            <div style="display:none;" class="form-group newApproverEmailFormGroup_{$i}">
+                                                                <select type="text" name="newApproverEmailInput_{$i}" class="form-control newApproverEmailInputValidation"/>
+                                                                    <option id="loadingDomainEmails">{$MGLANG->T('loading')}</option>
+                                                                </select>
+                                                            </div>
+                                                        </td>
+                                                    {/if}
                                                 </tr>
                                             {$i=$i+1}
                                             {/foreach}
-                                        {/if}
+                                        {*/if*}
                                     </tbody>
                                 </table>
                             </div>
@@ -605,7 +620,40 @@
     </div>
     <script type="text/javascript">
         $(document).ready(function () {
-
+            
+            var wildcard = false;
+            
+            $('.revalidateTable tbody tr').each(function() {
+                var string = $(this).find('td:first-child').text();
+                var substring = '*.';
+                if(string.indexOf(substring) !== -1)
+                {
+                    wildcard = true;
+                }
+            });
+            
+            var brand = '{$brand}';
+            
+            if(brand == 'digicert' || brand == 'geotrust' || brand == 'thawte' || brand == 'rapidssl')
+            {
+                if(wildcard == true)
+                {
+                    $('.revalidateTable select option[value="http"]').remove();
+                    $('.revalidateTable select option[value="https"]').remove();
+                }
+            }
+            else
+            {
+                $('.revalidateTable tbody tr').each(function() {
+                    var string = $(this).find('td:first-child').text();
+                    var substring = '*.';
+                    if(string.indexOf(substring) !== -1)
+                    {
+                        $(this).find('option[value="http"]').remove();
+                        $(this).find('option[value="https"]').remove();
+                    }
+                });
+            }
             var serviceUrl = 'clientarea.php?action=productdetails&id={$serviceid}&json=1',
                     revalidateBtn = $('#btnRevalidate'),
                     revalidateForm,
@@ -733,6 +781,15 @@
                 addSpiner(revalidateSubmitBtn);
                 disable(revalidateSubmitBtn);
                 var newMethods = {};
+                var newdomains = {};
+                
+                $('.revalidateTable tbody tr').each(function(key,value){
+                    var domaintemp = $(this).find('td:first-child').text();
+                    domaintemp = domaintemp.replace("*", "___");
+                    newdomains[domaintemp] = domaintemp;
+                });
+                
+                
                 revalidateInput.each(function(key,value){
                     var node = $('.revalidateTable>tbody').find('tr:eq('+key+')').find('td:eq(0)')[1];
                     if(typeof node !== 'undefined') {
@@ -750,6 +807,7 @@
                             newMethods[domain] = this.value;
                         }
                     }
+                    
                 });
                 if(jQuery.isEmptyObject(newMethods)) {
                     showDangerAlert('{$MGLANG->T('noValidationMethodSelected')}');
@@ -773,8 +831,10 @@
                 var data = {
                     revalidateModal: 'yes',
                     newDcvMethods: newMethods,
+                    newdomains: newdomains,
                     serviceId: {$serviceid},
                     userID: {$userid},
+                    brand: '{$brand}',
                     'mg-action': 'revalidate'
                 };
                 $.ajax({

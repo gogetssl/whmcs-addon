@@ -125,7 +125,8 @@ $_LANG['addonAA']['apiConfiguration']['messages']['api_connection_success'] = 'V
 $_LANG['addonAA']['productsConfiguration']['sslCenterProduct']    = 'SSLCenter-Produkt:';
 $_LANG['addonAA']['productsConfiguration']['productName']         = 'Produktname:';
 $_LANG['addonAA']['productsConfiguration']['customguide']         = 'Custom Guide:';
-$_LANG['addonAA']['productsConfiguration']['configurableOptions'] = 'Konfigurierbare Optionen:';
+$_LANG['addonAA']['productsConfiguration']['configurableOptions'] = 'Konfigurierbare Optionen SAN:';
+$_LANG['addonAA']['productsConfiguration']['configurableOptionsWildcard'] = 'Konfigurierbare Optionen Wildcard SAN:';
 $_LANG['addonAA']['productsConfiguration']['createConfOptions']   = 'Generieren';
 $_LANG['addonAA']['productsConfiguration']['editPrices']          = 'Preise ändern';
 $_LANG['addonAA']['productsConfiguration']['autoSetup']           = 'Automatische Einrichtung:';
@@ -136,6 +137,7 @@ $_LANG['addonAA']['productsConfiguration']['autoSetupOff']        = 'Dieses Prod
 $_LANG['addonAA']['productsConfiguration']['months']              = 'Maximale Monate:';
 $_LANG['addonAA']['productsConfiguration']['enableSans']          = 'SANs aktivieren:';
 $_LANG['addonAA']['productsConfiguration']['includedSans']        = 'Enthaltene SANs:';
+$_LANG['addonAA']['productsConfiguration']['includedSansWildcard']= 'Included Wildcard SANs:';
 $_LANG['addonAA']['productsConfiguration']['status']              = 'Status:';
 $_LANG['addonAA']['productsConfiguration']['setForManyProducts']  = 'Für mehrere Produkte einstellen';
 $_LANG['addonAA']['productsConfiguration']['statusEnabled']       = 'Status aktiviert:';
@@ -318,3 +320,6 @@ $_LANG['addonAA']['productsConfiguration']['save_all_products']       = 'Save al
 $_LANG['addonAA']['productsConfiguration']['products_saved']       = 'Products has been saved.';
 
 $_LANG['viewAll']		= 'View All';
+
+$_LANG['additionalSingleDomainInfo'] = 'This product has %s additional single domain SAN\'s included.';
+$_LANG['additionalSingleDomainWildcardInfo'] = 'This product has %s additional wildcard domain SAN\'s included.';

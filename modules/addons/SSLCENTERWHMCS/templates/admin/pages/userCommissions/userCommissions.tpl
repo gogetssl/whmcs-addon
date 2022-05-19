@@ -102,6 +102,52 @@
 
             <br />
         </div>
+            
+        
+            
+            <div class="col-lg-12 cronSynchronizationInfo" style="margin-top:50px;">
+           
+            <div class="col-lg-11 marginated">
+                <span class="text-danger bold">{$MGLANG->T('pleaseNote')}</span>
+                <span>To display additional SAN information.</span>    
+                <p>Open file "templates/$templatename/clientareaproductdetails.tpl"</p> 
+            </div>
+            
+            <div class="col-lg-11 marginated">   
+                <p>Add the code under this line of code</p> 
+                <textarea cols="20" style="min-width: 60%; resize: none; height: 95px;" disabled="">
+{literal}{if $configurableoptions}
+                        <div class="tab-pane fade{if !$domain && !$moduleclientarea} in active{/if} text-center" id="configoptions">
+                            <div class="alert alert-warning">{$txtincluded}</div>
+                            {foreach from=$configurableoptions item=configoption}{/literal}</textarea>
+            </div>
+
+<div class="col-lg-11 marginated">   
+                <p>Code to add</p> 
+                <textarea cols="20" style="min-width: 60%; resize: none; height: 65px;" disabled="">
+{literal}<div class="alert alert-warning">{$txtincluded}</div>{/literal}</textarea>
+            </div>
+
+<div class="col-lg-11 marginated">
+                
+                <p>Open file "/templates/orderforms/$templatename/configureproduct.tpl"</p> 
+            </div>
+<div class="col-lg-11 marginated">   
+                <p>Add the code above this line of code</p> 
+                <textarea cols="20" style="min-width: 60%; resize: none; height: 95px;" disabled="">
+{literal}{if $configurableoptions}{/literal}</textarea>
+            </div>
+
+<div class="col-lg-11 marginated">   
+                <p>Code to add</p> 
+                <textarea cols="20" style="min-width: 60%; resize: none; height: 65px;" disabled="">
+{literal}<div class="alert alert-warning">{$txtincluded}</div>{/literal}</textarea>
+            </div>
+          
+        </div>
+            
+            
+            
     </div>
 </div>
 <!--   Add User Commission Rule Modal -->

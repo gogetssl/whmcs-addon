@@ -52,7 +52,17 @@ class Products {
         if ($this->products !== null) {
             return $this->products;
         }
-        
+
+        $checkTable = Capsule::schema()->hasTable('mgfw_SSLCENTER_product_brand');
+        if($checkTable === false)
+        {
+            Capsule::schema()->create('mgfw_SSLCENTER_product_brand', function ($table) {
+                $table->increments('id');
+                $table->integer('pid');
+                $table->string('brand');
+                $table->text('data');
+            });
+        }
         $checkTable = Capsule::schema()->hasTable('mgfw_SSLCENTER_product_brand');
         if($checkTable)
         {
@@ -79,9 +89,19 @@ class Products {
         
         $apiProducts = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getProducts();
         $this->products = [];
+        Capsule::table('mgfw_SSLCENTER_product_brand')->truncate();
         foreach ($apiProducts['products'] as $apiProduct) {
+            
+            
+            Capsule::table('mgfw_SSLCENTER_product_brand')->insert([
+                'pid' => $apiProduct['id'],
+                'brand' => $apiProduct['brand'],
+                'data' => json_encode($apiProduct)
+            ]);
+            
             $p = new \MGModule\SSLCENTERWHMCS\eModels\sslcenter\Product();
             \MGModule\SSLCENTERWHMCS\eHelpers\Fill::fill($p, $apiProduct);
+            
             $this->products[$p->id] = $p;
         }
         

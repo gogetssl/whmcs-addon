@@ -13,6 +13,12 @@
     <input id="createConfOptionsFormName" type="hidden" name="productName" value="">
 </form>
 
+<form action="" method="post" class="form-horizontal margin-bottom-15" style="display: none;" id="createConfOptionsFormWildcard">
+    <input type="hidden" name="createConfOptionsWildcard" value="yes">
+    <input id="createConfOptionsFormIdWildcard" type="hidden" name="productId" value="">
+    <input id="createConfOptionsFormNameWildcard" type="hidden" name="productName" value="">
+</form>
+
 {if $products_count}
     <div class="panel panel-default">
         <div class="panel-body">
@@ -140,6 +146,20 @@
                                     </div>
                                 </div>
                             {/if}
+                            
+                            {if $product->apiConfig->isWildcardSanEnabled}    
+                                <div class="form-group">
+                                    <label class="control-label col-sm-2">{$MGLANG->T('configurableOptionsWildcard')}</label>
+                                    <div class="col-sm-10">
+                                        {if $product->confOptionWildcard}
+                                            <a href="#" onclick="manageconfigoptions('{$product->confOptionWildcard->id}');return false;" class="btn btn-success"/>{$MGLANG->T('editPrices')}</a>
+                                        {else}
+                                            <a class="btn btn-success mg-js-create-oprions-wildcard" data-id="{$product->id}" data-name="{$product->name}"/>{$MGLANG->T('createConfOptions')}</a>
+                                        {/if}
+                                    </div>
+                                </div>
+                            {/if}
+                            
                             <div class="form-group">
                                 <label class="control-label col-sm-2">{$MGLANG->T('autoSetup')}</label>
                                 <div class="col-sm-10">
@@ -175,6 +195,15 @@
                                     <label class="control-label col-sm-2">{$MGLANG->T('includedSans')}</label>
                                     <div class="col-sm-10">
                                         <input type="number" class="form-control" name="product[{$product->id}][configoption4]" value="{$product->configoption4}" {if !$product->apiConfig->isSanEnabled} disabled {/if}>
+                                    </div>
+                                </div>  
+                            {/if}
+                            
+                            {if $product->apiConfig->isWildcardSanEnabled}
+                                <div class="form-group">
+                                    <label class="control-label col-sm-2">{$MGLANG->T('includedSansWildcard')}</label>
+                                    <div class="col-sm-10">
+                                        <input type="number" class="form-control" name="product[{$product->id}][configoption8]" value="{$product->configoption8}" {if !$product->apiConfig->isWildcardSanEnabled} disabled {/if}>
                                     </div>
                                 </div>  
                             {/if}
@@ -441,6 +470,13 @@
                     $('#createConfOptionsFormId').val($(this).data('id'));
                     $('#createConfOptionsFormName').val($(this).data('name'));
                     $('#createConfOptionsForm').submit();
+                });
+
+
+                $('.mg-js-create-oprions-wildcard').on('click', function () {
+                    $('#createConfOptionsFormIdWildcard').val($(this).data('id'));
+                    $('#createConfOptionsFormNameWildcard').val($(this).data('name'));
+                    $('#createConfOptionsFormWildcard').submit();
                 });
 
                 jQuery('.buttons-container').on('click', '.disable-product', function () {

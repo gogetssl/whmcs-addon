@@ -11,8 +11,9 @@ class SSLStepTwoJS {
     private $domainsEmailApprovals = [];
     private $brand = '';
     private $disabledValidationMethods = array();
+    private $csrDecode = []; 
 
-    function __construct(&$params) {
+    function __construct(&$params, $csrdecode = []) {
         $this->p = &$params;
     }
 
@@ -114,15 +115,22 @@ class SSLStepTwoJS {
 
     private function SSLStepTwoJS() {
         
-        if(isset($_SESSION['decodeCSR']) && !empty($_SESSION['decodeCSR']))
+        if(!isset($_SESSION['csrDecode']) || empty($_SESSION['csrDecode']))
         {
-            $decodedCSR = $_SESSION['decodeCSR'];
-            unset($_SESSION['decodeCSR']);
+            $this->csrDecode   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR(trim(rtrim($_POST['csr'])));
         }
-        else
+        else 
         {
-            $decodedCSR   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR(trim(rtrim($_POST['csr'])));
+             $this->csrDecode = $_SESSION['csrDecode'];
+             unset($_SESSION['csrDecode']);
         }
+        
+        $decodedCSR = $this->csrDecode;
+        
+        Capsule::table('tblhosting')->where('id', $this->p['serviceid'])->update([
+            'domain' => $decodedCSR['csrResult']['CN']
+        ]);
+        
         $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceid']);
         $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($service->productID);
         
@@ -159,9 +167,25 @@ class SSLStepTwoJS {
             }
         }
         $mainDomain       = $decodedCSR['csrResult']['CN'];
+        
         $domains = $mainDomain . PHP_EOL . $_POST['fields']['sans_domains'];
+        
         $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));
-        $this->fetchApprovalEmailsForSansDomains($sansDomains);        
+        $wildcardDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains(strtolower($_POST['fields']['wildcard_san']));
+        
+        if(isset($_SESSION['approveremails']) && !empty($_SESSION['approveremails']))
+        {
+            $this->domainsEmailApprovals = $_SESSION['approveremails'];
+            unset($_SESSION['approveremails']);
+        }
+        else 
+        {
+            $this->fetchApprovalEmailsForSansDomains($sansDomains);
+        }
+        
+        //$this->fetchApprovalEmailsForSansDomains($sansDomains);       
+        $this->fetchApprovalEmailsForSansDomains($wildcardDomains);
+        
         if(\MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::isWHMCS73()) {
             if(isset($_POST['privateKey']) && $_POST['privateKey'] != null) {            
                 $privKey = decrypt($_POST['privateKey']);
@@ -172,6 +196,7 @@ class SSLStepTwoJS {
     }
 
     public function fetchApprovalEmailsForSansDomains($sansDomains) {
+        
         foreach ($sansDomains as $sansDomain) {
             
             $this->domainsEmailApprovals[$sansDomain] = [];

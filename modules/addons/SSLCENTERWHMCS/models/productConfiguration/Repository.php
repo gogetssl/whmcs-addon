@@ -142,6 +142,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository {
         $update[C::API_PRODUCT_MONTHS]    = $params[C::API_PRODUCT_MONTHS];
         $update[C::PRODUCT_ENABLE_SAN]    = $params[C::PRODUCT_ENABLE_SAN] ? $params[C::PRODUCT_ENABLE_SAN] : '';
         $update[C::PRODUCT_INCLUDED_SANS] = $params[C::PRODUCT_INCLUDED_SANS] ? $params[C::PRODUCT_INCLUDED_SANS] : '0';
+        $update[C::PRODUCT_INCLUDED_SANS_WILDCARD] = $params[C::PRODUCT_INCLUDED_SANS_WILDCARD] ? $params[C::PRODUCT_INCLUDED_SANS_WILDCARD] : '0';
         $update['paytype']                = $params['paytype'];
         $update['autosetup']              = $params['autosetup'];
         $update[C::PRICE_AUTO_DOWNLOAD]   = $params[C::PRICE_AUTO_DOWNLOAD] ? $params[C::PRICE_AUTO_DOWNLOAD] : '0';

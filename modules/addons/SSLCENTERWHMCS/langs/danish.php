@@ -120,7 +120,8 @@ $_LANG['addonAA']['apiConfiguration']['messages']['api_connection_success'] = 'F
 
 $_LANG['addonAA']['productsConfiguration']['sslCenterProduct']    = 'SSLCenter Produkt:';
 $_LANG['addonAA']['productsConfiguration']['productName']         = 'Produktnavn:';
-$_LANG['addonAA']['productsConfiguration']['configurableOptions'] = 'Konfigurerbare indstillinger:';
+$_LANG['addonAA']['productsConfiguration']['configurableOptions'] = 'Konfigurerbare indstillinger SAN:';
+$_LANG['addonAA']['productsConfiguration']['configurableOptionsWildcard'] = 'Konfigurerbare indstillinger Wildcard SAN:';
 $_LANG['addonAA']['productsConfiguration']['createConfOptions']   = 'Generer';
 $_LANG['addonAA']['productsConfiguration']['editPrices']          = 'Rediger priser';
 $_LANG['addonAA']['productsConfiguration']['autoSetup']           = 'Automatisk Opsætning:';
@@ -131,6 +132,7 @@ $_LANG['addonAA']['productsConfiguration']['autoSetupOff']        = 'Opsæt ikke
 $_LANG['addonAA']['productsConfiguration']['months']              = 'Maks. antal måneder:';
 $_LANG['addonAA']['productsConfiguration']['enableSans']          = 'Aktiver SANs:';
 $_LANG['addonAA']['productsConfiguration']['includedSans']        = 'Inkluderede SANs:';
+$_LANG['addonAA']['productsConfiguration']['includedSansWildcard']= 'Included Wildcard SANs:';
 $_LANG['addonAA']['productsConfiguration']['status']              = 'Status:';
 
 $_LANG['addonAA']['productsConfiguration']['statusEnable']  = 'Aktiver';
@@ -301,3 +303,6 @@ $_LANG['invalidCountryCode']            = 'Landekode er forkert';
 $_LANG['csrCodeGeneraterFailed']        = 'Kunne ikke generere CSR-kode';
 
 $_LANG['viewAll']		= 'Vis alle';
+
+$_LANG['additionalSingleDomainInfo'] = 'This product has %s additional single domain SAN\'s included.';
+$_LANG['additionalSingleDomainWildcardInfo'] = 'This product has %s additional wildcard domain SAN\'s included.';

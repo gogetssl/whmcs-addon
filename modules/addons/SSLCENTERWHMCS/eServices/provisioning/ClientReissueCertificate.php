@@ -115,10 +115,14 @@ class ClientReissueCertificate {
         $this->vars['serviceID'] = $this->p['serviceid'];
        
         $this->loadServerList(); 
-        $this->vars['sansLimit'] = $this->getSansLimit();       
+        $this->vars['sansLimit'] = $this->getSansLimit();  
+        $this->vars['sansLimitWildCard'] = $this->getSansLimitWildcard();
               
         $ssl = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+        $ssldata = $ssl->getByServiceId($this->p['serviceid']);
+        $this->vars['csrreissue'] = $ssldata->configdata->csr;
         $sandetails = (array)$ssl->getByServiceId($this->p['serviceid'])->getSanDomains(); 
+        $this->vars['sandetails'] = $sandetails;
         $this->vars['sans_domains'] = $sandetails['sans_domains'];
         
         return $this->build(self::STEP_ONE);
@@ -139,6 +143,7 @@ class ClientReissueCertificate {
     private function stepOneForm() {
         $this->validateWebServer();
         $this->validateSanDomains();
+        $this->validateSansDomainsWildcard();
         $decodeCSR = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->post['csr']);
         
         $_SESSION['decodeCSR'] = $decodeCSR;
@@ -159,6 +164,9 @@ class ClientReissueCertificate {
         $mainDomain                   = $decodeCSR['csrResult']['CN'];
         $domains                      = $mainDomain . PHP_EOL . $this->post['sans_domains'];
         $parseDomains                 = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));
+        $domainsWildcard              = $this->post['sans_domains_wildcard'];
+        $parseDomainsWildcard         = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domainsWildcard));
+        $parseDomains = array_merge($parseDomains, $parseDomainsWildcard);
         $SSLStepTwoJS                 = new SSLStepTwoJS($this->p);
         $this->vars['approvalEmails'] = json_encode($SSLStepTwoJS->fetchApprovalEmailsForSansDomains($parseDomains));
         $this->vars['brand'] = json_encode($this->getCertificateBrand());        
@@ -206,6 +214,18 @@ class ClientReissueCertificate {
             array_push($disabledValidationMethods, 'https');
         }
 
+        $brand = $productssl['product']['brand'];
+        if($brand == 'digicert' || $brand == 'geotrust' || $brand == 'thawte' || $brand == 'rapidssl')
+        {
+            foreach($SSLStepTwoJS->fetchApprovalEmailsForSansDomains($parseDomains) as $sandomain => $appreveEmails)
+            {
+                if (strpos($sandomain, '*.') !== false) {
+                    array_push($disabledValidationMethods, 'http');
+                    array_push($disabledValidationMethods, 'https');
+                }
+            }
+        }
+
         $this->vars['disabledValidationMethods'] = json_encode($disabledValidationMethods);
     }
     
@@ -230,11 +250,13 @@ class ClientReissueCertificate {
         {
             $decodedCSR   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->post['csr']);
         }
-        
-        
-        if ($this->getSansLimit() AND count($_POST['approveremails'])) {
+
+        if ($this->getSansLimit()) {
             $this->validateSanDomains();
             $sansDomains             = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($this->post['sans_domains']);
+            $sansDomainsWildcard = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($this->post['sans_domains_wildcard']);
+            $sansDomains = array_merge($sansDomains, $sansDomainsWildcard);
+            
             //if entered san is the same as main domain
             if(count($sansDomains) != count($_POST['approveremails'])) {
                 foreach($sansDomains as $key => $domain) {                    
@@ -244,7 +266,8 @@ class ClientReissueCertificate {
                 }
             }
             $data['dns_names']       = implode(',', $sansDomains);
-            $data['approver_emails'] = implode(',', $_POST['approveremails']);
+
+
             
             if(!empty($sanDcvMethods = $this->getSansDomainsValidationMethods())) {
                 $i = 0;
@@ -264,7 +287,7 @@ class ClientReissueCertificate {
         if($product->configuration()->text_name == '144')
         {
             $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($this->post['sans_domains']);
-            
+
             $data['dns_names'] = implode(',', $sansDomains);
             $data['approver_emails'] = strtolower($_POST['dcvmethodMainDomain']);
            
@@ -273,17 +296,47 @@ class ClientReissueCertificate {
                 $data['approver_emails'] .= ','.strtolower($method);
             }
         }
-    
-        //if brand is 'geotrust','thawte','rapidssl','symantec' do not send dcv method for sans        
-        if(in_array($brand, $brandsWithOnlyEmailValidation)) {
-            unset($data['approver_emails']);
+        
+        $productssl = false;
+        $checkTable = Capsule::schema()->hasTable('mgfw_SSLCENTER_product_brand');
+        if($checkTable)
+        {
+            if (Capsule::schema()->hasColumn('mgfw_SSLCENTER_product_brand', 'data'))
+            {
+                $productsslDB = Capsule::table('mgfw_SSLCENTER_product_brand')->where('pid', $product->configuration()->text_name)->first();
+                if(isset($productsslDB->data))
+                {
+                    $productssl['product'] = json_decode($productsslDB->data, true); 
+                }
+            }
         }
+        if(!$productssl)
+        {
+            $productssl = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->getProduct($product->configuration()->text_name);
+        }
+
+        $brand = $productssl['product']['brand'];
+        
+        if($brand == 'digicert' || $brand == 'geotrust' || $brand == 'thawte' || $brand == 'rapidssl')
+        {
+            
+            $sansDomainsMethod = [];
+            foreach($sansDomains as $sd)
+            {
+                $sansDomainsMethod[] =  strtolower($this->post['dcv_method']);
+            }
+            $data['approver_emails'] = implode(',', $sansDomainsMethod);
+        }
+        //if brand is 'geotrust','thawte','rapidssl','symantec' do not send dcv method for sans        
+//        if(in_array($brand, $brandsWithOnlyEmailValidation)) {
+//            unset($data['approver_emails']);
+//        }
+//        
         
         $ssl        = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
         $sslService = $ssl->getByServiceId($this->p['serviceid']);
         
         $orderStatus = array();
-        
         if(isset($sslService->configdata->total_domains) && !empty($sslService->configdata->total_domains))
         {
             $orderStatus['total_domains'] = $sslService->configdata->total_domains;
@@ -298,8 +351,117 @@ class ClientReissueCertificate {
             \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSslSan($this->sslService->remoteid, $count);
         }
         
-        \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->reIssueOrder($this->sslService->remoteid, $data);
-        
+        $reissueData = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->reIssueOrder($this->sslService->remoteid, $data);
+        $orderDetails = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($this->sslService->remoteid);
+
+        // dns manager
+        sleep(2);
+        $dnsmanagerfile = dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'includes'.DIRECTORY_SEPARATOR.'api'.DIRECTORY_SEPARATOR.'dnsmanager.php';
+        if(file_exists($dnsmanagerfile))
+        {
+            $zoneDomain = $decodedCSR['csrResult']['CN'];
+            $loaderDNS = dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR.'addons'.DIRECTORY_SEPARATOR.'DNSManager2'.DIRECTORY_SEPARATOR.'loader.php';
+            if(file_exists($loaderDNS)) {
+                require_once $loaderDNS;
+                $loader = new \MGModule\DNSManager2\loader();
+                \MGModule\DNSManager2\addon::I(true);
+                $helper = new \MGModule\DNSManager2\mgLibs\custom\helpers\DomainHelper($decodedCSR['csrResult']['CN']);
+                $zoneDomain = $helper->getDomainWithTLD();
+            }
+
+            $records = [];
+            if(isset($orderDetails['approver_method']['dns']['record']) && !empty($orderDetails['approver_method']['dns']['record']))
+            {
+                $dnsrecord = explode("IN   TXT", $orderDetails['approver_method']['dns']['record']);
+                $length = strlen(trim(rtrim($dnsrecord[1])));
+                $records[] = array(
+                    'name' => trim(rtrim($dnsrecord[0])),
+                    'type' => 'TXT',
+                    'ttl' => '14440',
+                    'data' => substr(trim(rtrim($dnsrecord[1])),1, $length-2)
+                );
+
+                $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
+                if(!isset($zone->id) || empty($zone->id))
+                {
+                    $postfields = array(
+                        'action' => 'dnsmanager',
+                        'dnsaction' => 'createZone',
+                        'zone_name' => $zoneDomain,
+                        'type' => '2',
+                        'relid' => $this->p['serviceid'],
+                        'zone_ip' => '',
+                        'userid' => $this->p['userid']
+                    );
+                    $createZoneResults = localAPI('dnsmanager' ,$postfields);
+                    logModuleCall('sslcenter [dns]', 'createZone', print_r($postfields, true), print_r($createZoneResults, true));
+                }
+
+                $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
+                if(isset($zone->id) && !empty($zone->id))
+                {
+                    $postfields =  array(
+                        'dnsaction' => 'updateZone',
+                        'zone_id' => $zone->id,
+                        'records' => $records);
+                    $createRecordCnameResults = localAPI('dnsmanager' ,$postfields);
+                    logModuleCall('sslcenter [dns]', 'updateZone', print_r($postfields, true), print_r($createRecordCnameResults, true));
+                }
+
+            }
+            if(isset($orderDetails['san']) && !empty($orderDetails['san']))
+            {
+                foreach($orderDetails['san'] as $sanrecord)
+                {
+                    $records = [];
+                    if(isset($sanrecord['validation']['dns']['record']) && !empty($sanrecord['validation']['dns']['record']))
+                    {
+                        if(file_exists($loaderDNS)) {
+                            $helper = new \MGModule\DNSManager2\mgLibs\custom\helpers\DomainHelper(str_replace('*.', '',$sanrecord['san_name']));
+                            $zoneDomain = $helper->getDomainWithTLD();
+                        }
+
+                        $dnsrecord = explode("IN   TXT", $sanrecord['validation']['dns']['record']);
+                        $length = strlen(trim(rtrim($dnsrecord[1])));
+                        $records[] = array(
+                            'name' => trim(rtrim($dnsrecord[0])),
+                            'type' => 'TXT',
+                            'ttl' => '14440',
+                            'data' => substr(trim(rtrim($dnsrecord[1])),1, $length-2)
+                        );
+
+                        $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
+                        if(!isset($zone->id) || empty($zone->id))
+                        {
+                            $postfields = array(
+                                'action' => 'dnsmanager',
+                                'dnsaction' => 'createZone',
+                                'zone_name' => $zoneDomain,
+                                'type' => '2',
+                                'relid' => $this->p['serviceid'],
+                                'zone_ip' => '',
+                                'userid' => $this->p['userid']
+                            );
+                            $createZoneResults = localAPI('dnsmanager' ,$postfields);
+                            logModuleCall('sslcenter [dns]', 'createZone', print_r($postfields, true), print_r($createZoneResults, true));
+                        }
+
+                        $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
+                        if(isset($zone->id) && !empty($zone->id))
+                        {
+                            $postfields =  array(
+                                'dnsaction' => 'updateZone',
+                                'zone_id' => $zone->id,
+                                'records' => $records);
+                            $createRecordCnameResults = localAPI('dnsmanager' ,$postfields);
+                            logModuleCall('sslcenter [dns]', 'updateZone', print_r($postfields, true), print_r($createRecordCnameResults, true));
+                        }
+
+                    }
+                }
+            }
+        }
+
         //save private key
         if(isset($_POST['privateKey']) && $_POST['privateKey'] != null) {            
                 $privKey = decrypt($_POST['privateKey']);
@@ -400,6 +562,33 @@ class ClientReissueCertificate {
         }
 
     }
+    
+    private function validateSansDomainsWildcard() {
+        $sansDomainsWildcard = $this->post['sans_domains_wildcard'];
+        $sansDomainsWildcard = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($sansDomainsWildcard);
+        
+        foreach($sansDomainsWildcard as $domain)
+        {
+            $check = substr($domain, 0,2);
+            if($check != '*.')
+            {
+                throw new Exception('SAN\'s Wildcard are incorrect');
+            }
+            $domaincheck = \MGModule\SSLCENTERWHMCS\eHelpers\Domains::validateDomain(substr($domain, 2));
+            if($domaincheck !== true)
+            {
+                throw new Exception('SAN\'s Wildcard are incorrect');
+            }
+        }
+   
+        $includedSans = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS_WILDCARD];
+        $boughtSans   = (int) $this->p['configoptions']['sans_wildcard_count'];
+        
+        $sansLimit = $includedSans + $boughtSans;
+        if (count($sansDomainsWildcard) > $sansLimit) {
+            throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('sanLimitExceededWildcard'));
+        }
+    }
 
     private function validateService() {
         $ssl              = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
@@ -462,6 +651,13 @@ class ClientReissueCertificate {
         }
         $includedSans = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS];
         $boughtSans   = (int) $this->p['configoptions'][ConfigOptions::OPTION_SANS_COUNT];
+        return $includedSans + $boughtSans;
+
+    }
+    
+    private function getSansLimitWildcard() {
+        $includedSans = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS_WILDCARD];
+        $boughtSans   = (int) $this->p['configoptions']['sans_wildcard_count'];
         return $includedSans + $boughtSans;
 
     }

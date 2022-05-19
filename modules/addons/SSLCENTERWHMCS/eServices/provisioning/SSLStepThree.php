@@ -203,12 +203,25 @@ class SSLStepThree {
         }
 
         $sanEnabledForWHMCSProduct = $this->p[ConfigOptions::PRODUCT_ENABLE_SAN] === 'on';
+
+        $san_domains = explode(PHP_EOL, $this->p['configdata']['fields']['sans_domains']);
+        $wildcard_domains = explode(PHP_EOL, $this->p['configdata']['fields']['wildcard_san']);
+        $all_san = array_merge($san_domains, $wildcard_domains);
+
+        $decodedCSR = [];
+        $decodedCSR['csrResult']['CN'] = $this->p['domain'];
         
-        $decodedCSR   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->p['csr']);
-        if ($sanEnabledForWHMCSProduct AND count($_POST['approveremails'])) {
-            
+        //$decodedCSR   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->p['csr']);
+        if ($sanEnabledForWHMCSProduct AND count($all_san)) {
+                 
             $sansDomains = $this->p['configdata']['fields']['sans_domains'];
             $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($sansDomains);
+            
+            $sansDomainsWildcard = $this->p['configdata']['fields']['wildcard_san'];
+            $sansDomainsWildcard = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($sansDomainsWildcard);
+            
+            $sansDomains = array_merge($sansDomains, $sansDomainsWildcard);
+            
             //if entered san is the same as main domain
             if(count($sansDomains) != count($_POST['approveremails'])) {
                 foreach($sansDomains as $key => $domain) {                    
@@ -218,7 +231,12 @@ class SSLStepThree {
                 }
             }
             $order['dns_names']       = implode(',', $sansDomains);
-            $order['approver_emails'] = implode(',', $_POST['approveremails']);
+            $approver_emails_method = [];
+            foreach ($sansDomains as $d)
+            {
+                $approver_emails_method[] = $order['dcv_method'];
+            }
+            $order['approver_emails'] = implode(',', $approver_emails_method);
 
             if(!empty($sanDcvMethods = $this->getSansDomainsValidationMethods())) {
                 $i = 0;
@@ -239,21 +257,28 @@ class SSLStepThree {
         {
             $sansDomains = $this->p['configdata']['fields']['sans_domains'];
             $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($sansDomains);
+
+            $sansDomainsWildcard = $this->p['configdata']['fields']['wildcard_san'];
+            $sansDomainsWildcard = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($sansDomainsWildcard);
+
+            $sansDomains = array_merge($sansDomains, $sansDomainsWildcard);
             
             $order['dns_names'] = implode(',', $sansDomains);
             $order['approver_emails'] = strtolower($_POST['dcvmethodMainDomain']);
-           
-            foreach ($_POST['dcvmethod'] as $method)
+
+            $approver_emails_method = [];
+            foreach ($sansDomains as $d)
             {
-                $order['approver_emails'] .= ','.strtolower($method);
+                $approver_emails_method[] = $order['dcv_method'];
             }
+            $order['approver_emails'] = implode(',', $approver_emails_method);
         }
-        
+
         //if brand is 'geotrust','thawte','rapidssl','symantec' do not send dcv method for sans
-        if(in_array($brand, $brandsWithOnlyEmailValidation)) {
-            unset($order['approver_emails']);
-        }
-        
+//        if(in_array($brand, $brandsWithOnlyEmailValidation)) {
+//            unset($order['approver_emails']);
+//        }
+
         $orderType = $this->p['fields']['order_type'];        
         switch ($orderType)
         {
@@ -268,6 +293,114 @@ class SSLStepThree {
         //update domain column in tblhostings
         $service = new Service($this->p['serviceid']);
         $service->save(array('domain' => $decodedCSR['csrResult']['CN']));
+
+        // dns manager
+        sleep(2);
+        $dnsmanagerfile = dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'includes'.DIRECTORY_SEPARATOR.'api'.DIRECTORY_SEPARATOR.'dnsmanager.php';
+        if(file_exists($dnsmanagerfile))
+        {
+            $zoneDomain = $decodedCSR['csrResult']['CN'];
+            $loaderDNS = dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR.'addons'.DIRECTORY_SEPARATOR.'DNSManager2'.DIRECTORY_SEPARATOR.'loader.php';
+            if(file_exists($loaderDNS)) {
+                require_once $loaderDNS;
+                $loader = new \MGModule\DNSManager2\loader();
+                \MGModule\DNSManager2\addon::I(true);
+                $helper = new \MGModule\DNSManager2\mgLibs\custom\helpers\DomainHelper($decodedCSR['csrResult']['CN']);
+                $zoneDomain = $helper->getDomainWithTLD();
+            }
+
+            $records = [];
+            if(isset($addedSSLOrder['approver_method']['dns']['record']) && !empty($addedSSLOrder['approver_method']['dns']['record']))
+            {
+                $dnsrecord = explode("IN   TXT", $addedSSLOrder['approver_method']['dns']['record']);
+                $length = strlen(trim(rtrim($dnsrecord[1])));
+                $records[] = array(
+                    'name' => trim(rtrim($dnsrecord[0])),
+                    'type' => 'TXT',
+                    'ttl' => '14440',
+                    'data' => substr(trim(rtrim($dnsrecord[1])),1, $length-2)
+                );
+
+                $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
+                if(!isset($zone->id) || empty($zone->id))
+                {
+                    $postfields = array(
+                        'action' => 'dnsmanager',
+                        'dnsaction' => 'createZone',
+                        'zone_name' => $zoneDomain,
+                        'type' => '2',
+                        'relid' => $this->p['serviceid'],
+                        'zone_ip' => '',
+                        'userid' => $this->p['userid']
+                    );
+                    $createZoneResults = localAPI('dnsmanager' ,$postfields);
+                    logModuleCall('sslcenter [dns]', 'createZone', print_r($postfields, true), print_r($createZoneResults, true));
+                }
+
+                $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
+                if(isset($zone->id) && !empty($zone->id))
+                {
+                    $postfields =  array(
+                        'dnsaction' => 'updateZone',
+                        'zone_id' => $zone->id,
+                        'records' => $records);
+                    $createRecordCnameResults = localAPI('dnsmanager' ,$postfields);
+                    logModuleCall('sslcenter [dns]', 'updateZone', print_r($postfields, true), print_r($createRecordCnameResults, true));
+                }
+
+            }
+            if(isset($addedSSLOrder['san']) && !empty($addedSSLOrder['san']))
+            {
+                foreach($addedSSLOrder['san'] as $sanrecord)
+                {
+                    $records = [];
+                    if(isset($sanrecord['validation']['dns']['record']) && !empty($sanrecord['validation']['dns']['record']))
+                    {
+                        if(file_exists($loaderDNS)) {
+                            $helper = new \MGModule\DNSManager2\mgLibs\custom\helpers\DomainHelper(str_replace('*.', '',$sanrecord['san_name']));
+                            $zoneDomain = $helper->getDomainWithTLD();
+                        }
+
+                        $dnsrecord = explode("IN   TXT", $sanrecord['validation']['dns']['record']);
+                        $length = strlen(trim(rtrim($dnsrecord[1])));
+                        $records[] = array(
+                            'name' => trim(rtrim($dnsrecord[0])),
+                            'type' => 'TXT',
+                            'ttl' => '14440',
+                            'data' => substr(trim(rtrim($dnsrecord[1])),1, $length-2)
+                        );
+
+                        $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
+                        if(!isset($zone->id) || empty($zone->id))
+                        {
+                            $postfields = array(
+                                'action' => 'dnsmanager',
+                                'dnsaction' => 'createZone',
+                                'zone_name' => $zoneDomain,
+                                'type' => '2',
+                                'relid' => $this->p['serviceid'],
+                                'zone_ip' => '',
+                                'userid' => $this->p['userid']
+                            );
+                            $createZoneResults = localAPI('dnsmanager' ,$postfields);
+                            logModuleCall('sslcenter [dns]', 'createZone', print_r($postfields, true), print_r($createZoneResults, true));
+                        }
+
+                        $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
+                        if(isset($zone->id) && !empty($zone->id))
+                        {
+                            $postfields =  array(
+                                'dnsaction' => 'updateZone',
+                                'zone_id' => $zone->id,
+                                'records' => $records);
+                            $createRecordCnameResults = localAPI('dnsmanager' ,$postfields);
+                            logModuleCall('sslcenter [dns]', 'updateZone', print_r($postfields, true), print_r($createRecordCnameResults, true));
+                        }
+
+                    }
+                }
+            }
+        }
         
         $orderDetails = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($addedSSLOrder['order_id']);
         

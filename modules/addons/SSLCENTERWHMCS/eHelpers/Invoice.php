@@ -9,6 +9,8 @@ namespace MGModule\SSLCENTERWHMCS\eHelpers;
 
 use \DateInterval;
 use \DateTime;
+use MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products;
+use MGModule\SSLCENTERWHMCS\eServices\provisioning\ConfigOptions as C;
 use \MGModule\SSLCENTERWHMCS\mgLibs\MySQL\Query;
 use \MGModule\SSLCENTERWHMCS\eServices\provisioning\ConfigOptions;
 use Illuminate\Database\Capsule\Manager as Capsule;
@@ -153,14 +155,22 @@ class Invoice
         $configoptions = array();
         $sanCountCODetails = $this->getSanCountConfigOptionServiceDetails($service);
         $boughtSans = 0;
-        if(!empty($sanCountCODetails))
+        if(!empty($sanCountCODetails['single']))
         {
-            $boughtSans = $sanCountCODetails['boughtSans'];
-            $sanCountConfigOptionID = $sanCountCODetails['configOptionID'];
-            $sanCountFrendlyName =  $sanCountCODetails['frendlyName'];
-            $configbillingcycle  = $sanCountCODetails['configBillingCycle'];
-            
-        }        
+            $boughtSans = $sanCountCODetails['single']['boughtSans'];
+            $sanCountConfigOptionID = $sanCountCODetails['single']['configOptionID'];
+            $sanCountFrendlyName =  $sanCountCODetails['single']['frendlyName'];
+            $configbillingcycle  = $sanCountCODetails['single']['configBillingCycle'];
+        }
+        $boughtSansWildcard = 0;
+        if(!empty($sanCountCODetails['wildcard']))
+        {
+            $boughtSansWildcard = $sanCountCODetails['wildcard']['boughtSans'];
+            $sanCountConfigOptionIDWildcard = $sanCountCODetails['wildcard']['configOptionID'];
+            $sanCountFrendlyNameWildcard =  $sanCountCODetails['wildcard']['frendlyName'];
+            $configbillingcycleWildcard  = $sanCountCODetails['wildcard']['configBillingCycle'];
+        }
+
         //get client currency id
         $clientCurrencyID = $this->getClientCurrencyID($service->userid);    
         if($service->billingcycle != 'One Time')
@@ -210,16 +220,25 @@ class Invoice
             'itemamount1' => (float)$itemamount + (float)$itemamount * (float)$commission,
             'itemtaxed1' => $product->tax
         );
-        
+
+        $invoiceItemNum = 2;
         if($boughtSans > 0)
         {            
             $qtyprice = get_query_val("tblpricing", strtolower($configbillingcycle), array( "type" => "configoptions", "currency" => $clientCurrencyID, "relid" => $sanCountConfigOptionID ));
-            $optionname .= formatCurrency($qtyprice);
-
+            $optionname = formatCurrency($qtyprice);
             $postData['itemdescription2'] = $sanCountFrendlyName . ': ' .  $boughtSans . ' x ' . $optionname;
             $postData['itemamount2'] = $qtyprice*$boughtSans;
             $postData['itemtaxed2'] = $product->tax;
-            
+            $invoiceItemNum++;
+        }
+
+        if($boughtSansWildcard > 0)
+        {
+            $qtyprice = get_query_val("tblpricing", strtolower($configbillingcycleWildcard), array( "type" => "configoptions", "currency" => $clientCurrencyID, "relid" => $sanCountConfigOptionIDWildcard ));
+            $optionname = formatCurrency($qtyprice);
+            $postData['itemdescription'.$invoiceItemNum] = $sanCountFrendlyNameWildcard . ': ' .  $boughtSansWildcard . ' x ' . $optionname;
+            $postData['itemamount'.$invoiceItemNum] = $qtyprice*$boughtSansWildcard;
+            $postData['itemtaxed'.$invoiceItemNum] = $product->tax;
         }
         
         $adminUserName = Admin::getAdminUserName();
@@ -245,7 +264,14 @@ class Invoice
                     ->where('invoiceid', '=', $invoiceId)
                     ->update(array('relid' => '0', 'type' => ''));
         }
-        
+        if($boughtSansWildcard > 0)
+        {
+            Capsule::table('tblinvoiceitems')
+                ->where('description', 'like', '%'.$sanCountFrendlyNameWildcard.'%')
+                ->where('invoiceid', '=', $invoiceId)
+                ->update(array('relid' => '0', 'type' => ''));
+        }
+
         Capsule::table('tblinvoices')->where('id', '=', $invoiceId)->update(array('status' => 'Payment Pending'));
         
         $invoiceData = Capsule::table('tblinvoices')->where('id', '=', $invoiceId)->first();
@@ -280,17 +306,24 @@ class Invoice
         $service = \WHMCS\Service\Service::find($invoiceInfo['service_id']);
         
         $configoptions = array();
+        $configoptionsWildcard = array();
         $sanCountCODetails = $this->getSanCountConfigOptionServiceDetails($service);
-        if(!empty($sanCountCODetails))
+        if(!empty($sanCountCODetails['single']))
         {
             $configoptions = array(
-                $sanCountCODetails['configID'] => array(
-                    'optionid' => $sanCountCODetails['configOptionID'],
-                    'qty'   => $sanCountCODetails['boughtSans']
+                $sanCountCODetails['single']['configID'] => array(
+                    'optionid' => $sanCountCODetails['single']['configOptionID'],
+                    'qty'   => $sanCountCODetails['single']['boughtSans']
                 )
             );
         }
-        
+        if(!empty($sanCountCODetails['wildcard']))
+        {
+            $configoptions[$sanCountCODetails['wildcard']['configID']] = array(
+                    'optionid' => $sanCountCODetails['wildcard']['configOptionID'],
+                    'qty'   => $sanCountCODetails['wildcard']['boughtSans']
+            );
+        }
 
         $orderInfo = $this->createOrder($invoice->userid, $invoice->paymentmethod, $invoiceInfo['product_id'], $service->domain, $this->getNextDueDate($service->nextduedate), $service->billingcycle , $configoptions);
                 
@@ -503,10 +536,35 @@ class Invoice
     
     private function getSanCountConfigOptionServiceDetails($service)
     {
+        $configoptionsResults = [];
         $product = \WHMCS\Product\Product::where('id', $service->packageid)->first();
-        
         $isSanEnabled = $product->{ConfigOptions::PRODUCT_ENABLE_SAN}=== 'on';
-        $boughtSans = 0;
+        $apiProduct = Products::getInstance()->getProduct($product->{C::API_PRODUCT_ID});
+
+        if(isset($apiProduct->wildcard_san_enabled) && $apiProduct->wildcard_san_enabled == '1')
+        {
+            $server = new \WHMCS\Module\Server();
+            if( !$server->loadByServiceID($service->id) )
+            {
+                \MGModule\SSLCENTERWHMCS\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Required Product Module '" . $server->getServiceModule() . "' Missing");
+            }
+            else
+            {
+                $serviceParams = $server->buildParams();
+                if (!empty($serviceParams)) {
+                    $CORepo = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\configOptions\Repository($service->id);
+
+                    $configoptionsResults['wildcard'] = array(
+                        'configOptionID' => $CORepo->getOptionID(ConfigOptions::OPTION_SANS_WILDCARD_COUNT),
+                        'configID'       => $CORepo->getConfigID(ConfigOptions::OPTION_SANS_WILDCARD_COUNT),
+                        'boughtSans'     => $serviceParams['configoptions'][ConfigOptions::OPTION_SANS_WILDCARD_COUNT],
+                        'frendlyName'    => $CORepo->getFrendlyName(ConfigOptions::OPTION_SANS_WILDCARD_COUNT),
+                        'configBillingCycle' => (in_array($service->billingcycle, ['One Time', 'Free Account'])) ? 'monthly' : $service->billingcycle
+                    );
+                }
+            }
+        }
+
         if($isSanEnabled)
         {            
             $server = new \WHMCS\Module\Server();
@@ -519,8 +577,8 @@ class Invoice
                 $serviceParams = $server->buildParams(); 
                 if (!empty($serviceParams)) {         
                     $CORepo = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\configOptions\Repository($service->id);
-                    
-                    return array(
+
+                    $configoptionsResults['single'] = array(
                         'configOptionID' => $CORepo->getOptionID(ConfigOptions::OPTION_SANS_COUNT),
                         'configID'       => $CORepo->getConfigID(ConfigOptions::OPTION_SANS_COUNT),
                         'boughtSans'     => $serviceParams['configoptions'][ConfigOptions::OPTION_SANS_COUNT],
@@ -530,8 +588,8 @@ class Invoice
                 }
             }            
         }
-        
-        return array();
+
+        return $configoptionsResults;
     }
     
     

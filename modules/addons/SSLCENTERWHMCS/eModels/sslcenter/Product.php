@@ -35,6 +35,10 @@ class Product {
         return $this->san_enabled === 1;
     }
     
+    public function isSanWildcardEnabled() {
+        return $this->wildcard_san_enabled === 1;
+    }
+    
     public function getPeriods() {
         $peroids = [];
         foreach ($this->prices['vendor'] as $peroid => $price) {

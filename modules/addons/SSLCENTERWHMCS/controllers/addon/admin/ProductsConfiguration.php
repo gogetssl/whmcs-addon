@@ -24,6 +24,11 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
                 main\eServices\ConfigurableOptionService::createForProduct($input['productId'], $input['productName']);
                 $vars['success'] = main\mgLibs\Lang::T('messages', 'configurable_generated');
             }
+            
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' AND isset($input['createConfOptionsWildcard'])) {
+                main\eServices\ConfigurableOptionService::createForProductWildcard($input['productId'], $input['productName']);
+                $vars['success'] = main\mgLibs\Lang::T('messages', 'configurable_generated');
+            }
 
             if ($_SERVER['REQUEST_METHOD'] === 'POST' AND isset($input['saveProduct'])) {  
                 
@@ -56,7 +61,7 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
                 $vars['success'] = main\mgLibs\Lang::T('messages', 'product_saved');
             }
             $productModel = new \MGModule\SSLCENTERWHMCS\models\productConfiguration\Repository();
-            $products = $productModel->getModuleProducts();
+            $products = $productModel->getModuleProducts(); 
             foreach ($products as $key => $product) {
                 try
                 {				
@@ -68,13 +73,15 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
                     continue;
                 }
                 
-                $apiConfig                  = (object) null;
-                $apiConfig->name            = $apiProduct->product;
-                $apiConfig->peroids         = $apiProduct->max_period;
-                $apiConfig->availablePeriods= $apiProduct->getPeriods();                
-                $apiConfig->isSanEnabled    = $apiProduct->isSanEnabled();
+                $apiConfig                          = (object) null;
+                $apiConfig->name                    = $apiProduct->product;
+                $apiConfig->peroids                 = $apiProduct->max_period;
+                $apiConfig->availablePeriods        = $apiProduct->getPeriods();                
+                $apiConfig->isSanEnabled            = $apiProduct->isSanEnabled();
+                $apiConfig->isWildcardSanEnabled    = $apiProduct->wildcard_san_enabled;
                 $products[$key]->apiConfig  = $apiConfig;
-                $products[$key]->confOption = main\eServices\ConfigurableOptionService::getForProduct($product->id);    
+                $products[$key]->confOption = main\eServices\ConfigurableOptionService::getForProduct($product->id);  
+                $products[$key]->confOptionWildcard = main\eServices\ConfigurableOptionService::getForProductWildcard($product->id);   
             }
             
             $vars['products'] = $products;
@@ -121,7 +128,7 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
                 break;
             
             }
-            
+                        
             foreach ($products as $product)
             {
                 if(isset($input['autosetup']) && $input['autosetup'] != 'donot')
@@ -139,6 +146,11 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
                 if(isset($input['configoption5']) && $input['configoption5'] == '1')
                 {
                     $productModel->updateProductParam($product->id, 'configoption5', $input['configoption5']);
+                }
+                
+                if(isset($input['configoption8']) && !empty($input['configoption8']))
+                {
+                    $productModel->updateProductParam($product->id, 'configoption8', $input['configoption8']);
                 }
                 
                 if(isset($input['custom_guide']) && !empty($input['custom_guide']))

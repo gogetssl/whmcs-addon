@@ -21,7 +21,7 @@ class home extends main\mgLibs\process\AbstractController {
             {
                 return true;
             }
-
+ 
             $serviceId  = $input['params']['serviceid'];
             $serviceBillingCycle = $input['params']['templatevars']['billingcycle'];
             $userid = $input['params']['userid'];
@@ -311,6 +311,26 @@ class home extends main\mgLibs\process\AbstractController {
                 print $certificateDetails['ca'];
                 exit;
             }
+            if($_GET['downloadpem'] == '1' && !empty($certificateDetails['crt']) && !empty($certificateDetails['ca']))
+            {
+                $pemfile = '';
+                
+                $sslRepo   = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+                $sslService = $sslRepo->getByServiceId($input['params']['serviceid']);
+                $privateKey = $sslService->getPrivateKey();
+
+                $pemfile .= decrypt($privateKey);
+                $pemfile .= $certificateDetails['crt']. "\n";
+                $pemfile .= $certificateDetails['ca'];
+                
+                header('Content-Type: application/octet-stream');
+                header('Content-Disposition: attachment; filename='.$filenameCa.'.pem');
+                header('Expires: 0');
+                header('Cache-Control: must-revalidate');
+                header('Pragma: public');
+                print $pemfile;
+                exit;
+            }
 
             $vars['actual_link'] = $CONFIG['SystemURL'].'/clientarea.php?action=productdetails&id='.$vars['serviceid'];
 
@@ -326,6 +346,10 @@ class home extends main\mgLibs\process\AbstractController {
 
             if (!empty($certificateDetails['ca'])) {
                 $vars['downloadca'] = $vars['actual_link'].'&downloadca=1';
+            }
+            
+            if (!empty($certificateDetails['crt']) && !empty($certificateDetails['ca'])) {
+                $vars['downloadpem'] = $vars['actual_link'].'&downloadpem=1';
             }
 
             if((isset($vars['approver_method']['http']) && !empty($vars['approver_method']['http'])) || (isset($vars['approver_method']['https']) && !empty($vars['approver_method']['https'])))
@@ -348,7 +372,7 @@ class home extends main\mgLibs\process\AbstractController {
         $vars['configoption24'] = $input['params']['configoption24'];
            
         $vars['approver_email'] = isset($sslService->configdata->approver_method->email) && !empty($sslService->configdata->approver_method->email) ? $sslService->configdata->approver_method->email : false;
-
+        
         return array(
             'tpl'  => 'home'
             , 'vars' => $vars
@@ -526,28 +550,105 @@ class home extends main\mgLibs\process\AbstractController {
         $ssl        = new main\eRepository\whmcs\service\SSL();
         $sslService = $ssl->getByServiceId($serviceId);
 
-        if(isset($input['newDcvMethods']))
+        $brand = $input['brand'];
+        
+        if($brand == 'digicert' || $brand == 'geotrust' || $brand == 'thawte' || $brand == 'rapidssl')
         {
-            $newDcvMethodArray = array();
-            foreach($input['newDcvMethods'] as $domain => $method)
+            if(isset($input['newDcvMethods']))
             {
-                if(strpos($domain, '___') !== FALSE)
+                $newDcvMethodArray = array();
+                foreach($input['newDcvMethods'] as $domain => $method)
                 {
-                    $domain = str_replace('___', '*', $domain);
+                    if(strpos($domain, '___') !== FALSE)
+                    {
+                        $domain = str_replace('___', '*', $domain);
+                    }
+                    $newDcvMethodArray[$domain] = $method;
                 }
-                $newDcvMethodArray[$domain] = $method;
+
+                $input['newDcvMethods']= $newDcvMethodArray;
+            }
+            
+            foreach ($input['newDcvMethods'] as $domain => $newMethod) {
+            
+                $newdomains = [];
+                $new_methods = [];
+
+                foreach ($input['newdomains'] as $newd)
+                {
+                    $newdomains[] = str_replace('___', '*', $newd);
+                    $new_methods[] = $newMethod;
+                }
+
+                $data = [
+                    'new_methods'      => implode(',', $new_methods),
+                    'domains'          => implode(',', $newdomains)
+                ];
+
+
+                try
+                {
+                    $response = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->changeDomainValidationMethod($sslService->remoteid, $data);
+                } catch (\Exception $ex) {
+                    if(strpos($ex->getMessage(), 'Function is locked for') !== false ) {
+                        if(strpos($domain, '___') !== FALSE)
+                        {
+                            $domain = str_replace('___', '*', $domain);
+                        }
+                       $message = substr($ex->getMessage(), 0, -1) . ' for the domain: ' . $domain . '.';
+                    } else {
+                        $message = $domain.': '.$ex->getMessage();
+                    }
+
+                    return array(
+                        'success' => 0,
+                        'msg'     => $message
+                    );
+                }
             }
 
-            $input['newDcvMethods']= $newDcvMethodArray;
+            $sslorder = (array)Capsule::table('tblsslorders')->where('serviceid', $serviceId)->first();
+
+            $sslorderconfigdata = json_decode($sslorder['configdata'], true);
+
+            $sslorderconfigdata['dcv_method'] = $data['new_method'];
+
+            if($data['new_method'] != 'email')
+            {
+                $sslorderconfigdata['approveremail'] = '';
+            }
+
+            Capsule::table('tblsslorders')->where('serviceid', $serviceId)->update(array(
+                'configdata' => json_encode($sslorderconfigdata)
+            ));
+
+            return array(
+                'success' => $response['success'],
+                'msg'     => $response['message']
+            );
         }
-        foreach ($input['newDcvMethods'] as $domain => $newMethod) {
+        else
+        {
+            $new_methods = [];
+            $newdomains = [];
+            
+            foreach($input['newDcvMethods'] as $method)
+            {
+                $new_methods[] = $method;
+            }
+            
+            foreach($input['newdomains'] as $newdomain)
+            {
+                $newdomains[] = str_replace('___', '*', $newdomain);
+            }
             $data = [
-                'new_method'      => $newMethod,
-                'domain'          => $domain
+                'new_methods'      => implode(',', $new_methods),
+                'domains'          => implode(',', $newdomains)
             ];
+            
             try
             {
-                $response = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->changeValidationMethod($sslService->remoteid, $data);
+                $response = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->changeDomainValidationMethod($sslService->remoteid, $data);
             } catch (\Exception $ex) {
                 if(strpos($ex->getMessage(), 'Function is locked for') !== false ) {
                     if(strpos($domain, '___') !== FALSE)
@@ -564,27 +665,30 @@ class home extends main\mgLibs\process\AbstractController {
                     'msg'     => $message
                 );
             }
+
+            $sslorder = (array)Capsule::table('tblsslorders')->where('serviceid', $serviceId)->first();
+
+            $sslorderconfigdata = json_decode($sslorder['configdata'], true);
+
+            $sslorderconfigdata['dcv_method'] = $data['new_method'];
+
+            if($data['new_method'] != 'email')
+            {
+                $sslorderconfigdata['approveremail'] = '';
+            }
+
+            Capsule::table('tblsslorders')->where('serviceid', $serviceId)->update(array(
+                'configdata' => json_encode($sslorderconfigdata)
+            ));
+
+            return array(
+                'success' => $response['success'],
+                'msg'     => $response['message']
+            );
         }
-
-        $sslorder = (array)Capsule::table('tblsslorders')->where('serviceid', $serviceId)->first();
-
-        $sslorderconfigdata = json_decode($sslorder['configdata'], true);
-
-        $sslorderconfigdata['dcv_method'] = $data['new_method'];
-
-        if($data['new_method'] != 'email')
-        {
-            $sslorderconfigdata['approveremail'] = '';
-        }
-
-        Capsule::table('tblsslorders')->where('serviceid', $serviceId)->update(array(
-            'configdata' => json_encode($sslorderconfigdata)
-        ));
-
-        return array(
-            'success' => $response['success'],
-            'msg'     => $response['message']
-        );
+        
+        
+  
     }
 
     public function getApprovalEmailsForDomainJSON($input, $vars = array()) {
