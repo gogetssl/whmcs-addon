@@ -312,15 +312,27 @@ class SSLStepThree {
             $records = [];
             if(isset($addedSSLOrder['approver_method']['dns']['record']) && !empty($addedSSLOrder['approver_method']['dns']['record']))
             {
-                $dnsrecord = explode("IN   TXT", $addedSSLOrder['approver_method']['dns']['record']);
-                $length = strlen(trim(rtrim($dnsrecord[1])));
-                $records[] = array(
-                    'name' => trim(rtrim($dnsrecord[0])),
-                    'type' => 'TXT',
-                    'ttl' => '14440',
-                    'data' => substr(trim(rtrim($dnsrecord[1])),1, $length-2)
-                );
-
+                if (strpos($addedSSLOrder['approver_method']['dns']['record'], 'CNAME') !== false) 
+                {
+                    $dnsrecord = explode("CNAME", $addedSSLOrder['approver_method']['dns']['record']);
+                    $records[] = array(
+                        'name' => trim(rtrim($dnsrecord[0])).'.',
+                        'type' => 'CNAME',
+                        'ttl' => '3600',
+                        'data' => trim(rtrim($dnsrecord[1]))
+                    );
+                }
+                else
+                {
+                    $dnsrecord = explode("IN   TXT", $addedSSLOrder['approver_method']['dns']['record']);
+                    $length = strlen(trim(rtrim($dnsrecord[1])));
+                    $records[] = array(
+                        'name' => trim(rtrim($dnsrecord[0])).'.',
+                        'type' => 'TXT',
+                        'ttl' => '14440',
+                        'data' => substr(trim(rtrim($dnsrecord[1])),1, $length-2)
+                    );
+                }
                 $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
                 if(!isset($zone->id) || empty($zone->id))
                 {
@@ -341,7 +353,7 @@ class SSLStepThree {
                 if(isset($zone->id) && !empty($zone->id))
                 {
                     $postfields =  array(
-                        'dnsaction' => 'updateZone',
+                        'dnsaction' => 'createRecords',
                         'zone_id' => $zone->id,
                         'records' => $records);
                     $createRecordCnameResults = localAPI('dnsmanager' ,$postfields);
@@ -361,15 +373,28 @@ class SSLStepThree {
                             $zoneDomain = $helper->getDomainWithTLD();
                         }
 
-                        $dnsrecord = explode("IN   TXT", $sanrecord['validation']['dns']['record']);
-                        $length = strlen(trim(rtrim($dnsrecord[1])));
-                        $records[] = array(
-                            'name' => trim(rtrim($dnsrecord[0])),
-                            'type' => 'TXT',
-                            'ttl' => '14440',
-                            'data' => substr(trim(rtrim($dnsrecord[1])),1, $length-2)
-                        );
-
+                        
+                        if (strpos($sanrecord['validation']['dns']['record'], 'CNAME') !== false) 
+                        {
+                            $dnsrecord = explode("CNAME", $sanrecord['validation']['dns']['record']);
+                            $records[] = array(
+                                'name' => trim(rtrim($dnsrecord[0])).'.',
+                                'type' => 'CNAME',
+                                'ttl' => '3600',
+                                'data' => trim(rtrim($dnsrecord[1]))
+                            );
+                        }
+                        else
+                        {
+                            $dnsrecord = explode("IN   TXT", $sanrecord['validation']['dns']['record']);
+                            $length = strlen(trim(rtrim($dnsrecord[1])));
+                            $records[] = array(
+                                'name' => trim(rtrim($dnsrecord[0])).'.',
+                                'type' => 'TXT',
+                                'ttl' => '14440',
+                                'data' => substr(trim(rtrim($dnsrecord[1])),1, $length-2)
+                            );
+                        }
                         $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
                         if(!isset($zone->id) || empty($zone->id))
                         {
@@ -390,7 +415,7 @@ class SSLStepThree {
                         if(isset($zone->id) && !empty($zone->id))
                         {
                             $postfields =  array(
-                                'dnsaction' => 'updateZone',
+                                'dnsaction' => 'createRecords',
                                 'zone_id' => $zone->id,
                                 'records' => $records);
                             $createRecordCnameResults = localAPI('dnsmanager' ,$postfields);
