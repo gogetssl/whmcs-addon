@@ -153,11 +153,21 @@ class SSLStepTwoJS {
             $productssl = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->getProduct($product->configuration()->text_name);
         }
         
+        $mainDomain = '';
+        if(isset($decodedCSR['csrResult']['CN']))
+        {
+            $mainDomain       = $decodedCSR['csrResult']['CN'];
+        }
+        if(isset($decodedCSR['csrResult']['dnsName(s)'][0]))
+        {
+            $mainDomain = $decodedCSR['csrResult']['dnsName(s)'][0];
+        }
+        
         if($product->configuration()->text_name != '144')
         {
             if($productssl['product']['wildcard_enabled'])
             {
-                if(strpos($decodedCSR['csrResult']['CN'], '*.') === false)
+                if(strpos($mainDomain, '*.') === false)
                 {
                     if(isset($decodedCSR['csrResult']['errorMessage']))
                         throw new Exception($decodedCSR['csrResult']['errorMessage']);
@@ -166,8 +176,7 @@ class SSLStepTwoJS {
                 }
             }
         }
-        $mainDomain       = $decodedCSR['csrResult']['CN'];
-        
+
         $domains = $mainDomain . PHP_EOL . $_POST['fields']['sans_domains'];
         
         $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));
