@@ -114,6 +114,12 @@ class SSLStepTwo {
         $_SESSION['csrDecode'] = $decodedCSR;
         $step2js = new SSLStepTwoJS($this->p);
         $mainDomain       = $decodedCSR['csrResult']['CN'];
+        
+        if(empty($mainDomain))
+        {
+            $mainDomain = $decodedCSR['csrResult']['dnsName(s)'][0];
+        }
+        
         $domains = $mainDomain . PHP_EOL . $_POST['fields']['sans_domains'];
         $sansDomains = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));        
         $approveremails = $step2js->fetchApprovalEmailsForSansDomains($sansDomains);
@@ -269,14 +275,15 @@ class SSLStepTwo {
         
         if($productssl['product']['wildcard_enabled'])
         {
-            if(strpos($decodeCSR['csrResult']['CN'], '*.') !== false)
+            if(strpos($decodedCSR['csrResult']['CN'], '*.') !== false || strpos($decodedCSR['csrResult']['dnsName(s)'][0], '*.') !== false)
             {
                 return true;
             }
             else
             {
-                if(isset($decodeCSR['csrResult']['errorMessage']))
-                    throw new Exception($decodeCSR['csrResult']['errorMessage']);
+                if(isset($decodedCSR['csrResult']['errorMessage']))
+                    throw new Exception($decodedCSR['csrResult']['errorMessage']);
+                
                 
                 throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('incorrectCSR'));
             }
