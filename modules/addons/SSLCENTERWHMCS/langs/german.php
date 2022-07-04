@@ -40,6 +40,8 @@ $_LANG['addonAA']['apiConfiguration']['cronCertificateDetailsUpdater']['pleaseNo
 $_LANG['addonAA']['apiConfiguration']['cronCertificateDetailsUpdater']['info']                                   = 'Um die Zertifikatdetails in WHMCS mit den Zertifikatdetails in der API zu synchronisieren, richten Sie die folgende Cron-Befehlszeile ein (einmal täglich empfohlen):';
 $_LANG['addonAA']['apiConfiguration']['cronCertificateDetailsUpdater']['commandLine']['cronFrequency']           = '0 0 * * *';
 //
+$_LANG['addonAA']['apiConfiguration']['item']['price_rate']['label']                                   = 'Rate for currency from SSLCENTER';
+$_LANG['addonAA']['apiConfiguration']['item']['rate']['label']                                         = 'Rate';
 $_LANG['addonAA']['apiConfiguration']['item']['header']                                                = 'API-Konfiguration';
 $_LANG['addonAA']['apiConfiguration']['item']['api_login']['label']                                    = 'Login';
 $_LANG['addonAA']['apiConfiguration']['item']['api_password']['label']                                 = 'Passwort';

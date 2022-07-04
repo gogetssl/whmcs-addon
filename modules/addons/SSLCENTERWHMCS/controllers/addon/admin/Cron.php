@@ -518,16 +518,24 @@ class Cron extends main\mgLibs\process\AbstractController
     }
     private function generateNewPricesBasedOnAPI($currentPrices, $apiPrices)
     {
+        $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+        $rate  = (float)$apiConf->rate;
+        
+        if(empty($rate))
+        {
+            $rate = 1;
+        }
+        
         foreach ($currentPrices as $price)
         {
             $currency = $price->currency;
 
-            $monthly      = (in_array($price->monthly, array('-1.00'))) ? $price->monthly : $this->generateNewPrice('12', $apiPrices, $currency);
-            $quarterly    = (in_array($price->quarterly, array('-1.00'))) ? $price->quarterly : $this->generateNewPrice('3', $apiPrices, $currency);
-            $semiannually = (in_array($price->semiannually, array('-1.00'))) ? $price->semiannually : $this->generateNewPrice('6', $apiPrices, $currency);
-            $annually     = (in_array($price->annually, array('-1.00'))) ? $price->annually : $this->generateNewPrice('12', $apiPrices, $currency);
-            $biennially   = (in_array($price->biennially, array('-1.00'))) ? $price->biennially : $this->generateNewPrice('24', $apiPrices, $currency);
-            $triennially  = (in_array($price->triennially, array('-1.00'))) ? $price->triennially : $this->generateNewPrice('36', $apiPrices, $currency);
+            $monthly      = (in_array($price->monthly, array('-1.00'))) ? $price->monthly : $rate*$this->generateNewPrice('12', $apiPrices, $currency);
+            $quarterly    = (in_array($price->quarterly, array('-1.00'))) ? $price->quarterly : $rate*$this->generateNewPrice('3', $apiPrices, $currency);
+            $semiannually = (in_array($price->semiannually, array('-1.00'))) ? $price->semiannually : $rate*$this->generateNewPrice('6', $apiPrices, $currency);
+            $annually     = (in_array($price->annually, array('-1.00'))) ? $price->annually : $rate*$this->generateNewPrice('12', $apiPrices, $currency);
+            $biennially   = (in_array($price->biennially, array('-1.00'))) ? $price->biennially : $rate*$this->generateNewPrice('24', $apiPrices, $currency);
+            $triennially  = (in_array($price->triennially, array('-1.00'))) ? $price->triennially : $rate*$this->generateNewPrice('36', $apiPrices, $currency);
 
             //save new pricing
             Capsule::table("tblpricing")
