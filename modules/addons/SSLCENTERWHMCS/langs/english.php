@@ -57,6 +57,8 @@ $_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['desc
 $_LANG['addonAA']['apiConfiguration']['item']['send_certificate_template']['label']                    = 'Send Certificate Email Template';
 $_LANG['addonAA']['apiConfiguration']['item']['send_certificate_template']['description']              = 'To send an SSL certificate through the chosen template, edit it and place the {$ssl_certyficate} field in it.';
 //
+$_LANG['addonAA']['apiConfiguration']['item']['price_rate']['label']                                   = 'Rate for currency from SSLCENTER';
+$_LANG['addonAA']['apiConfiguration']['item']['rate']['label']                                         = 'Rate';
 $_LANG['addonAA']['apiConfiguration']['item']['data_migration_legend']['label']                        = 'Data & Configuration Migration';
 $_LANG['addonAA']['apiConfiguration']['item']['data_migration']['content']                             = 'Migrate';
 $_LANG['addonAA']['apiConfiguration']['modal']['import']                                               = 'Migrate';

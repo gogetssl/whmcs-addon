@@ -32,6 +32,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                     [
                         'api_login'                              => $params['api_login'],
                         'api_password'                           => $params['api_password'],
+                        'rate'                                   => $params['rate'],
                         'use_admin_contact'                      => $params['use_admin_contact'],
                         'display_csr_generator'                  => $params['display_csr_generator'],
                         'tech_firstname'                         => $params['tech_firstname'],
@@ -78,6 +79,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                     [
                         'api_login'                              => $params['api_login'],
                         'api_password'                           => $params['api_password'],
+                        'rate'                                   => $params['rate'],
                         'use_admin_contact'                      => $params['use_admin_contact'],
                         'display_csr_generator'                  => $params['display_csr_generator'],
                         'tech_firstname'                         => $params['tech_firstname'],
@@ -151,6 +153,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 $table->integer('send_certificate_template')->nullable();
                 $table->boolean('display_ca_summary');
                 $table->string('sidebar_templates')->nullable();
+                $table->string('rate')->nullable();
                 $table->text('custom_guide')->nullable();
                 $table->boolean('disable_email_validation');
                 $table->boolean('email_whois');
@@ -265,6 +268,13 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 Capsule::schema()->table($this->tableName, function($table)
                 {
                     $table->string('sidebar_templates')->nullable();
+                });
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'rate'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->string('rate')->nullable();
                 });
             }
             if (!Capsule::schema()->hasColumn($this->tableName, 'custom_guide'))

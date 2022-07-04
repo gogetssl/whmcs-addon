@@ -3,6 +3,7 @@
 namespace MGModule\SSLCENTERWHMCS\controllers\addon\admin;
 
 use MGModule\SSLCENTERWHMCS as main;
+use WHMCS\Database\Capsule;
 
 /*
  * Base example
@@ -40,7 +41,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
                 $oldModuleServices[] = '<a target="_blank" href="clientsservices.php?id=' . $ssl->serviceid . '">#' . $ssl->serviceid . '</a>';                
             }
         }
-
+        
         $form = new main\mgLibs\forms\Creator('item');
 
         $field        = new main\mgLibs\forms\TextField();
@@ -58,7 +59,40 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $form->addField('button', 'testConnection', array(
             'value' => 'testConnection',
         ));
+        
+        $tblcurrencies = Capsule::table('tblcurrencies')->where('default', '1')->first();
+        $whmcsDefaultCurrency = $tblcurrencies->code;
+        $sslCenterCurrency = '';
+        
+        try{
+            
+            $api = new \MGModule\SSLCENTERWHMCS\mgLibs\SSLCenterApi();
+            $authKey = $api->auth($input['api_login'], $input['api_password']);
+            $details = $api->getAccountDetails();
+            $sslCenterCurrency = $details['currency'];
+            
+        } catch (\Exception $e) {
+            
+            $sslCenterCurrency = 'Not set';
+            
+        }
+        
+        $vars['whmcsCurrency'] = $whmcsDefaultCurrency;
+        $vars['sslcenterCurrency'] = $sslCenterCurrency;
 
+        $field       = new main\mgLibs\forms\LegendField();
+        $field->name = 'price_rate';
+        $form->addField($field);
+
+        $field           = new main\mgLibs\forms\TextField();
+        $field->readonly = false;
+        $field->name     = 'rate';
+        $field->required = false;
+        $field->enableDescription = true;
+        $field->value    = $input['rate'];
+        $field->error    = $this->getFieldError('rate');
+        $form->addField($field);
+        
         $field       = new main\mgLibs\forms\LegendField();
         $field->name = 'data_migration_legend';
         $form->addField($field);
