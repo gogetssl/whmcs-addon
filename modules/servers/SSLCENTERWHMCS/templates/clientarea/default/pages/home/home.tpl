@@ -566,7 +566,7 @@
                                             {$i = 1}
                                             {foreach $sans as $san}
                                                 <tr>
-                                                    {if $brand == 'digicert' || $brand == 'geotrust' || $brand == 'thawte' || $brand == 'rapidssl'} 
+                                                    {if $brand == 'digicert' || $brand == 'thawte' || $brand == 'rapidssl'}
                                                         <td>{$san.san_name}</td>
                                                         <td></td>
                                                         <td></td>

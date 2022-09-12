@@ -75,7 +75,7 @@ class Cron extends main\mgLibs\process\AbstractController
                     $newNextDueDate = $order['end_date'];
                 }
 
-                //set ssl certificate as terminated if expired  
+                //set ssl certificate as terminated if expired
                 if (strtotime($order['valid_till']) < strtotime(date('Y-m-d')))
                 {
                     $this->setSSLServiceAsTerminated($serviceID);
@@ -609,8 +609,11 @@ class Cron extends main\mgLibs\process\AbstractController
         {
             $createInvoiceDaysBefore = Capsule::table("tblconfiguration")->where('setting', 'CreateInvoiceDaysBefore')->first();
             $service->nextduedate = $date;
-            $service->nextinvoicedate = date('Y-m-d', strtotime("-{$createInvoiceDaysBefore->value} day", strtotime($date)));
+            $nextinvoicedate = date('Y-m-d', strtotime("-{$createInvoiceDaysBefore->value} day", strtotime($date)));
+            $service->nextinvoicedate = $nextinvoicedate;
             $service->save();
+
+            main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Service #$serviceID nextduedate set to ".$date." and nextinvoicedate to". $nextinvoicedate);
         }
     }
 
@@ -628,6 +631,8 @@ class Cron extends main\mgLibs\process\AbstractController
         {
             $service->status = 'terminated';
             $service->save();
+
+            main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Service #$serviceID set as Terminated");
         }
     }
 
