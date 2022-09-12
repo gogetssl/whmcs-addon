@@ -129,7 +129,7 @@
         $('#containerApprovalMethodEmail p').prev('div.alert').hide();
         $('#containerApprovalMethodEmail p').hide();
 
-        if(brand == 'digicert' || brand == 'geotrust' || brand == 'thawte' || brand == 'rapidssl')
+        if(brand == 'digicert' || brand == 'thawte' || brand == 'rapidssl')
         {
             $('select[name^="dcvmethod["]').remove();
             $('select[name^="approveremails"]').remove();

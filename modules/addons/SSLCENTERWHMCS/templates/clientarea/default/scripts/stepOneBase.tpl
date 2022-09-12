@@ -32,6 +32,14 @@
         } 
         if($('input[name="fields[org_regions]"]').length > 1) {
             $('input[name="fields[org_regions]"]')[1].remove();
-        } 
+        }
+
+        $('label[for="inputAdditionalField"]').each(function( index ) {
+            if($(this).text() == '')
+            {
+                $(this).parent('.row').parent('fieldset').remove();
+            }
+        });
+
     });
 </script>

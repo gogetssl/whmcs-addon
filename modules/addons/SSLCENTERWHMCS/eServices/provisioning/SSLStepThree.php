@@ -234,7 +234,14 @@ class SSLStepThree {
             $approver_emails_method = [];
             foreach ($sansDomains as $d)
             {
-                $approver_emails_method[] = $order['dcv_method'];
+                if($_POST['approval_method'] == 'email')
+                {
+                    $approver_emails_method[] = $_POST['approveremail'];
+                }
+                else
+                {
+                    $approver_emails_method[] = $order['dcv_method'];
+                }
             }
             $order['approver_emails'] = implode(',', $approver_emails_method);
 
