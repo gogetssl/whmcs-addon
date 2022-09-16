@@ -344,11 +344,13 @@ class ClientReissueCertificate {
         else
         {
             $orderStatus = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($this->sslService->remoteid);
-        }        
-        
+        }
+
         if (count($sansDomains) > $orderStatus['total_domains'] AND $orderStatus['total_domains'] >= 0) {
             $count = count($sansDomains) - $orderStatus['total_domains'];
-            \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSslSan($this->sslService->remoteid, $count);
+            $sandomaincount = count(explode(PHP_EOL,$this->post['sans_domains']));
+            $sandomainwildcardcount = count(explode(PHP_EOL,$this->post['sans_domains_wildcard']));
+            \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSslSan($this->sslService->remoteid, $count, $sandomaincount, $sandomainwildcardcount);
         }
         
         $reissueData = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->reIssueOrder($this->sslService->remoteid, $data);

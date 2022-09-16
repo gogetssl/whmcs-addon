@@ -92,7 +92,9 @@ class AdminReissueCertificate extends Ajax {
         $orderStatus = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
         if (count($sansDomains) > $orderStatus['total_domains'] AND $orderStatus['total_domains'] >= 0) {
             $count = count($sansDomains) - $orderStatus['total_domains'];
-            \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSslSan($sslService->remoteid, $count);
+            $sandomaincount = count(explode(PHP_EOL,$this->p['sanDomains']));
+            $sandomainwildcardcount = count(explode(PHP_EOL,$this->p['sanDomainsWildcard']));
+            \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSslSan($sslService->remoteid, $count, $sandomaincount, $sandomainwildcardcount);
         }
 
         $reissueData = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->reIssueOrder($sslService->remoteid, $data);
