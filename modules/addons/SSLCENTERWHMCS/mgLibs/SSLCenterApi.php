@@ -93,11 +93,23 @@ class SSLCenterApi {
     }
 
     public function addSslSan($orderId, $count, $single, $wildcard) {
-        if ($count) {
-            $postData ['order_id'] = $orderId;
-            $postData ['count'] = $count;
-            $postData ['single_san_count'] = $single;
-            $postData ['wildcard_san_count'] = $wildcard;
+
+        $postData['order_id'] = $orderId;
+        $postData['count'] = $count;
+        $postData['single_san_count'] = $single;
+        $postData['wildcard_san_count'] = $wildcard;
+
+        if(empty($postData['count']))
+        {
+            unset($postData['count']);
+        }
+        if(empty($postData['single_san_count']))
+        {
+            unset($postData['single_san_count']);
+        }
+        if(empty($postData['wildcard_san_count']))
+        {
+            unset($postData['wildcard_san_count']);
         }
 
         return $this->call('/orders/add_ssl_san_order/', $getData, $postData);
