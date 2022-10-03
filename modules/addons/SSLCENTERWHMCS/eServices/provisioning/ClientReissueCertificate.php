@@ -125,25 +125,22 @@ class ClientReissueCertificate {
         $this->vars['sandetails'] = $sandetails;
         $this->vars['sans_domains'] = $sandetails['sans_domains'];
 
-        if(isset($this->vars['sandetails']['sans_domains']) && !empty($this->vars['sandetails']['sans_domains']))
+        $sanSingle = [];
+        $sanWildcard = [];
+
+        $allSans = $ssldata->configdata->san_details;
+
+        foreach ($allSans as $san)
         {
-            $sanSingle = [];
-            $sanWildcard = [];
-
-            $allSans = explode(',' ,$this->vars['sandetails']['sans_domains']);
-
-            foreach ($allSans as $san)
-            {
-                if (strpos($san, '*.') !== false) {
-                    $sanWildcard[] = $san;
-                } else {
-                    $sanSingle[] = $san;
-                }
+            if (strpos($san->san_name, '*.') !== false) {
+                $sanWildcard[] = $san->san_name;
+            } else {
+                $sanSingle[] = $san->san_name;
             }
-
-            $sanSingle = implode(PHP_EOL, $sanSingle);
-            $sanWildcard = implode(PHP_EOL, $sanWildcard);
         }
+
+        $sanSingle = implode(PHP_EOL, $sanSingle);
+        $sanWildcard = implode(PHP_EOL, $sanWildcard);
 
         if(!isset($this->vars['sandetails']['wildcard_san']) || empty($this->vars['sandetails']['wildcard_san'])) {
             $this->vars['sandetails']['sans_domains'] = $sanSingle;
