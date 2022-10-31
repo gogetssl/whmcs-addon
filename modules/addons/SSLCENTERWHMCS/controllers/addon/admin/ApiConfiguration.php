@@ -229,6 +229,16 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->enableDescription = true;
         $form->addField($field);
 
+        $field                    = new main\mgLibs\forms\CheckboxField();
+        $field->name              = 'renewal_invoice_status_unpaid';
+        $field->options           = ['renewal_invoice_status_unpaid'];
+        $field->value             = $input['renewal_invoice_status_unpaid'] ? ['renewal_invoice_status_unpaid'] : [''];
+        $field->inline            = true;
+        $field->colWidth          = 3;
+        $field->continue          = true;
+        $field->enableDescription = true;
+        $form->addField($field);
+
         $field       = new main\mgLibs\forms\LegendField();
         $field->name = 'csr_generator_legend';
         $form->addField($field);
@@ -483,6 +493,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
                     'send_expiration_notification_reccuring',
                     'send_expiration_notification_one_time',
                     'automatic_processing_of_renewal_orders',
+                    'renewal_invoice_status_unpaid',
                     'display_ca_summary',
                     'disable_email_validation',
                     'email_whois',

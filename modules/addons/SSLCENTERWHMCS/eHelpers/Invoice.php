@@ -25,6 +25,7 @@ class Invoice
     protected static $adminUserName = null;
     
     const INVOICE_INFOS_TABLE_NAME = 'mgfw_SSLCENTER_invoices_info';
+    const INVOICE_PENDINGPAYMENT_TABLE_NAME = 'mgfw_SSLCENTER_invoices_pendingpayment';
     
     public static function createInfosTable() {
         
@@ -43,6 +44,18 @@ class Invoice
                         KEY `service_id` (`service_id`),
                         KEY `new_service_id` (`new_service_id`,`order_id`),
                         KEY `invoice_id` (`invoice_id`,`order_id`)
+                       ) ENGINE=InnoDB ');
+    }
+
+    public static function createPendingPaymentInvoice() {
+
+        Query::query('CREATE TABLE IF NOT EXISTS `' . self::INVOICE_PENDINGPAYMENT_TABLE_NAME . '` (
+                        `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+                        `user_id` int(10) unsigned NOT NULL,
+                        `invoice_id` int(10) unsigned NOT NULL,
+                        `created_at` datetime NOT NULL,
+                        `updated_at` datetime NOT NULL,
+                        PRIMARY KEY (`id`)
                        ) ENGINE=InnoDB ');
     }
     
@@ -145,7 +158,10 @@ class Invoice
     }
     
     public function createInvoice($service, $product, $returnInvoiceID = false) {
-        
+
+        $apiConfigRepo = new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository();
+        $input         = (array) $apiConfigRepo->get();
+
         $dateFormat = 'Y-m-d';
         
         $dateInvoice = date($dateFormat);
@@ -272,7 +288,9 @@ class Invoice
                 ->update(array('relid' => '0', 'type' => ''));
         }
 
-        Capsule::table('tblinvoices')->where('id', '=', $invoiceId)->update(array('status' => 'Payment Pending'));
+        if(!$input['renewal_invoice_status_unpaid']) {
+            Capsule::table('tblinvoices')->where('id', '=', $invoiceId)->update(array('status' => 'Payment Pending'));
+        }
         
         $invoiceData = Capsule::table('tblinvoices')->where('id', '=', $invoiceId)->first();
         

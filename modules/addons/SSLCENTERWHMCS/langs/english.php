@@ -88,8 +88,11 @@ $_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_one_
 $_LANG['addonAA']['apiConfiguration']['item']['renew_invoice_days_one_time']['description']            = 'Days before expiry';
 $_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_one_time']['description']  = 'Send expiration notifications';
 
+
 $_LANG['addonAA']['apiConfiguration']['item']['automatic_processing_of_renewal_orders']['label']                  = '';
 $_LANG['addonAA']['apiConfiguration']['item']['automatic_processing_of_renewal_orders']['description']            = 'Automatic processing of renewal orders';
+$_LANG['addonAA']['apiConfiguration']['item']['renewal_invoice_status_unpaid']['label']                  = '';
+$_LANG['addonAA']['apiConfiguration']['item']['renewal_invoice_status_unpaid']['description']            = 'Set the status of Unpaid for renewal invoices (default is payment pending)';
 $_LANG['addonAA']['apiConfiguration']['item']['sidebar_templates']['label']                  = 'List of pages with visible sidebar';
 $_LANG['addonAA']['apiConfiguration']['item']['sidebar_templates']['description']            = 'Enter a list of pages separated by a comma. If you leave the field sidebar empty, it will be visible on each page. (Example: clientareaproducts,clientareaproductdetails,clientareainvoices)';
 $_LANG['addonAA']['apiConfiguration']['item']['custom_guide']['label']                  = 'Custom Guide on Product Page';

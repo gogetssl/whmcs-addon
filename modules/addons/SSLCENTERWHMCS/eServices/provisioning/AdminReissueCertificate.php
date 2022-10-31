@@ -97,31 +97,29 @@ class AdminReissueCertificate extends Ajax {
         $newSanDomainSingleCount = count(explode(PHP_EOL,$this->p['sanDomains']));
         $newSanDomainWildcardCount = count(explode(PHP_EOL,$this->p['sanDomainsWildcard']));
 
-        if($newSanDomainSingleCount > $singleDomainsCount || $newSanDomainWildcardCount > $wildcardDomainsCount)
-        {
-            $singleToAdd = $newSanDomainSingleCount - $singleDomainsCount;
-            if($singleToAdd < 0)
-            {
-                $singleToAdd = 0;
-            }
-            $wildcardToAdd = $newSanDomainWildcardCount - $wildcardDomainsCount;
-            if($wildcardToAdd < 0)
-            {
-                $wildcardToAdd = 0;
-            }
-            $allToAdd = $singleToAdd + $wildcardToAdd;
+        if(!empty($this->p['sans_domains']) || !empty($this->p['sans_domains_wildcard'])) {
+            if ($newSanDomainSingleCount > $singleDomainsCount || $newSanDomainWildcardCount > $wildcardDomainsCount) {
+                $singleToAdd = $newSanDomainSingleCount - $singleDomainsCount;
+                if ($singleToAdd < 0) {
+                    $singleToAdd = 0;
+                }
+                $wildcardToAdd = $newSanDomainWildcardCount - $wildcardDomainsCount;
+                if ($wildcardToAdd < 0) {
+                    $wildcardToAdd = 0;
+                }
+                $allToAdd = $singleToAdd + $wildcardToAdd;
 
-            if($singleToAdd <= 0)
-            {
-                $allToAdd = 0;
-            }
+                if ($singleToAdd <= 0) {
+                    $allToAdd = 0;
+                }
 
-            \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSslSan(
-                $this->sslService->remoteid,
-                $allToAdd,
-                $singleToAdd,
-                $wildcardToAdd
-            );
+                \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSslSan(
+                    $this->sslService->remoteid,
+                    $allToAdd,
+                    $singleToAdd,
+                    $wildcardToAdd
+                );
+            }
         }
 
         $reissueData = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->reIssueOrder($sslService->remoteid, $data);

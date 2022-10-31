@@ -53,7 +53,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
      * Module version
      * @var string
      */
-    public $version = '2.7.7';
+    public $version = '2.7.9';
 
     /**
      * Module author
@@ -202,6 +202,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
         eServices\EmailTemplateService::createRenewalTemplate();
         eServices\EmailTemplateService::createReissueTemplate();
         eHelpers\Invoice::createInfosTable();
+        eHelpers\Invoice::createPendingPaymentInvoice();
     }
 
     /**
@@ -234,6 +235,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
         eServices\EmailTemplateService::updateRenewalTemplate();
         eServices\EmailTemplateService::updateReissueTemplate();
         eHelpers\Invoice::createInfosTable();
+        eHelpers\Invoice::createPendingPaymentInvoice();
         $apiConfigRepo       = new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository();
         $apiConfigRepo->updateApiConfigurationTable();
         $apiProductPriceRepo = (new \MGModule\SSLCENTERWHMCS\models\productPrice\Repository())->updateApiProductsPricesTable();        
