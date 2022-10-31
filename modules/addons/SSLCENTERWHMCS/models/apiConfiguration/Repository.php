@@ -52,6 +52,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
                         'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
                         'automatic_processing_of_renewal_orders' => $params['automatic_processing_of_renewal_orders'],
+                        'renewal_invoice_status_unpaid'          => $params['renewal_invoice_status_unpaid'],
                         'renew_new_order'                        => $params['renew_new_order'],
                         'visible_renew_button'                   => $params['visible_renew_button'],
                         'save_activity_logs'                     => $params['save_activity_logs'],
@@ -99,6 +100,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
                         'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
                         'automatic_processing_of_renewal_orders' => $params['automatic_processing_of_renewal_orders'],
+                        'renewal_invoice_status_unpaid'          => $params['renewal_invoice_status_unpaid'],
                         'renew_new_order'                        => $params['renew_new_order'],
                         'visible_renew_button'                   => $params['visible_renew_button'],
                         'save_activity_logs'                     => $params['save_activity_logs'],
@@ -131,6 +133,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 $table->boolean('send_expiration_notification_reccuring');
                 $table->boolean('send_expiration_notification_one_time');
                 $table->boolean('automatic_processing_of_renewal_orders');
+                $table->boolean('renewal_invoice_status_unpaid');
                 $table->boolean('renew_new_order');
                 $table->boolean('visible_renew_button');
                 $table->boolean('save_activity_logs');
@@ -198,6 +201,13 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 Capsule::schema()->table($this->tableName, function($table)
                 {
                     $table->boolean('automatic_processing_of_renewal_orders');
+                });
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'renewal_invoice_status_unpaid'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->boolean('renewal_invoice_status_unpaid');
                 });
             }
             if (!Capsule::schema()->hasColumn($this->tableName, 'renew_new_order'))

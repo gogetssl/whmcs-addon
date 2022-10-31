@@ -88,6 +88,8 @@ $_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_one_
 $_LANG['addonAA']['apiConfiguration']['item']['renew_invoice_days_one_time']['description']            = 'Tage vor Ablauf';
 $_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_one_time']['description']  = 'Ablaufbenachrichtigungen senden';
 
+$_LANG['addonAA']['apiConfiguration']['item']['renewal_invoice_status_unpaid']['label']                  = '';
+$_LANG['addonAA']['apiConfiguration']['item']['renewal_invoice_status_unpaid']['description']            = 'Set the status of Unpaid for renewal invoices (default is payment pending)';
 $_LANG['addonAA']['apiConfiguration']['item']['automatic_processing_of_renewal_orders']['label']                  = '';
 $_LANG['addonAA']['apiConfiguration']['item']['automatic_processing_of_renewal_orders']['description']            = 'Automatische Bearbeitung von Verlängerungsaufträgen';
 $_LANG['addonAA']['apiConfiguration']['item']['sidebar_templates']['label']                  = 'Liste der Seiten mit sichtbarer Seitenleiste';

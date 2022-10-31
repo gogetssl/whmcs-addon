@@ -57,66 +57,38 @@ add_hook("ClientAreaPage",1 ,function($vars) {
     }
 });
 
-add_hook('ClientAreaPage', 99999, function($params) { 
-    
-    if (strpos($_SERVER['SCRIPT_NAME'], 'viewinvoice.php') !== false && !empty($_GET['id']) && $_POST['applycredit'] == true) {
-        $invoice = Capsule::table('tblinvoices')->where('id', $_GET['id'])->first();
-        if(isset($invoice->status) && $invoice->status == 'Payment Pending')
+
+add_hook('ClientAreaPage', 1, function($params) {
+
+    if($params['templatefile'] != 'invoice-payment' && $params['filename'] != 'viewinvoice')
+    {
+        $checkInvoicePending = Capsule::table('mgfw_SSLCENTER_invoices_pendingpayment')->where('user_id', $_SESSION['uid'])->get();
+        foreach($checkInvoicePending as $invoiceToPending)
         {
-            $command = 'UpdateInvoice';
-            $postData = array(
-                'invoiceid' =>  $_GET['id'],
-                'status' => 'Unpaid',
-            );
-
-            localAPI($command, $postData);
-
-            $command = 'ApplyCredit';
-            $postData = array(
-                'invoiceid' => $_GET['id'],
-                'amount' => $_POST['creditamount'],
-            );
-            $results = localAPI($command, $postData);
-
-            if(isset($results['invoicepaid']) && $results['invoicepaid'] == 'true')
-            {
-                run_hook("InvoicePaid", array( "invoiceid" => $_GET['id'] ));
+            $checkUnpaid = Capsule::table('tblinvoices')->where('id', $invoiceToPending->invoice_id)->where('status', 'Unpaid')->first();
+            if(isset($checkUnpaid->id)) {
+                Capsule::table('tblinvoices')->where('id', $invoiceToPending->invoice_id)->update(['status' => 'Payment Pending']);
+                Capsule::table('mgfw_SSLCENTER_invoices_pendingpayment')->where('invoice_id', $invoiceToPending->invoice_id)->delete();
             }
-
-            redir('id='.$_GET['id'], 'viewinvoice.php');
         }
     }
-    
+
     if($params['filename'] == 'viewinvoice' && $params['status'] == 'Payment Pending')
     {
-        $invoice = new WHMCS\Invoice($params['invoiceid']);
-        $paymentbutton = $invoice->getPaymentLink();
-
-        $userID = $_SESSION['uid'];
-        $credits = Capsule::table('tblcredit')->where('clientid', $userID)->get();
-        
-        $invoiceDB = Capsule::table('tblinvoices')->where('id', $params['invoiceid'])->first();
-        
-        $amount = 0;
-        foreach($credits as $credit)
-        {
-            $amount = $amount + $credit->amount;
-        }
-        
-        $applyCredit = false;
-        if($amount > 0)
-        {
-            $applyCredit = true;
-        }
- 
-        return [
-            'totalcredit' => formatCurrency($amount),
-            'creditamount' => $invoiceDB->total,
-            'manualapplycredit' => $applyCredit,
-            'paymentbutton' => $paymentbutton,
-            'statuslocale' => 'Unpaid',
+        Capsule::table('tblinvoices')->where('id', $params['invoiceid'])->update([
             'status' => 'Unpaid'
-        ];
+        ]);
+
+        $check = Capsule::table('mgfw_SSLCENTER_invoices_pendingpayment')->where('user_id', $_SESSION['uid'])->where('invoice_id', $params['invoiceid'])->first();
+        if(!isset($check->id))
+        {
+            Capsule::table('mgfw_SSLCENTER_invoices_pendingpayment')->insert([
+                'user_id' => $_SESSION['uid'],
+                'invoice_id' => $params['invoiceid']
+            ]);
+        }
+
+        redir('id='.$params['invoiceid'], 'viewinvoice.php');
     }
 });
 
