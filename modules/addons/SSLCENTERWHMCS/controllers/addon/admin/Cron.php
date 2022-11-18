@@ -19,6 +19,7 @@ class Cron extends main\mgLibs\process\AbstractController
 
         //get all completed ssl orders
         $sslOrders = $this->getSSLOrders();
+
         foreach ($sslOrders as $sslService)
         {
             $serviceID = $sslService->serviceid;
@@ -154,11 +155,8 @@ class Cron extends main\mgLibs\process\AbstractController
         {
             $srv = Capsule::table('tblhosting')->where('id', $serviceid)->first();
 
-            if($srv->status == 'Completed')
-                continue;
             //get days left to expire from WHMCS
             $daysLeft         = $this->checkOrderExpireDate($srv->nextduedate);
-
             $daysReissue         = $this->checkReissueDate($srv->id);
 
             //if service is One Time and nextduedate is setted as 0000-00-00 get valid_till from SSLCenter API
@@ -442,6 +440,7 @@ class Cron extends main\mgLibs\process\AbstractController
                 if (!$product->{C::PRICE_AUTO_DOWNLOAD})
                     continue;
 
+
                 //load saved api price
                 $apiPrice = $productPrice->loadSavedPriceData($product->{C::API_PRODUCT_ID});
                 //generate new price
@@ -486,7 +485,7 @@ class Cron extends main\mgLibs\process\AbstractController
         ->join('tblproducts', 'tblhosting.packageid', '=', 'tblproducts.id')
         ->join('tblsslorders', 'tblsslorders.serviceid', '=', 'tblhosting.id')
         ->where('tblhosting.domainstatus', 'Active')
-        ->where('tblsslorders.status', 'Completed')
+        ->whereIn('tblsslorders.status', ['Completed', 'Configuration Submitted'])
         ->get(['tblsslorders.*']);
 
         main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Certificates (ssl status Completed) Data Updater started.");
@@ -715,7 +714,7 @@ class Cron extends main\mgLibs\process\AbstractController
             if(isset($configdata['end_date']) && !empty($configdata['end_date']))
             {
                 $now = strtotime(date('Y-m-d'));
-                $end_date = strtotime($certificateDetails['valid_till']);
+                $end_date = strtotime($configdata['valid_till']);
                 $datediff = $now - $end_date;
 
                 $nextReissue = abs(round($datediff / (60 * 60 * 24)));

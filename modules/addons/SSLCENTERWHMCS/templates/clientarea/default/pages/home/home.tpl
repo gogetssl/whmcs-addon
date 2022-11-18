@@ -34,14 +34,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                </tbody> 
+                </tbody>
             </table>
             <div class="well well-sm" style="margin-top:10px;">
-                <button class="btn btn-success btn-inverse icon-left" type="button"  data-toggle="modal" data-target="#mg-modal-add-new">               
+                <button class="btn btn-success btn-inverse icon-left" type="button"  data-toggle="modal" data-target="#mg-modal-add-new">
                     <i class="glyphicon glyphicon-plus"></i>
                     {$MGLANG->T('Add New')}
                 </button>
-            </div>    
+            </div>
             {*Modal mg-modal-new-entity*}
             <form data-toggle="validator" role="form" id="mg-form-add-new">
                 <div class="modal fade bs-example-modal-lg" id="mg-modal-add-new" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -117,7 +117,7 @@
                         </div>
                     </div>
                 </div>
-            </form>      
+            </form>
             {*Modal mg-modal-delete-account*}
             <div class="modal fade bs-example-modal-lg" id="mg-modal-delete-entity" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
@@ -156,8 +156,8 @@
                         </div>
                     </div>
                 </div>
-            </div>        
-            {*mg-modal-details*}  
+            </div>
+            {*mg-modal-details*}
             <div class="modal fade bs-example-modal-lg" id="mg-modal-details"  data-modal-load="note" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
@@ -221,7 +221,7 @@
                         </div>
                     </div>
                 </div>
-            </div> 
+            </div>
         </div>
     </div>
 </div>
@@ -290,7 +290,7 @@
                     }, false);
                 });
             });
-            
+
             //show password
             $("#mg-categories-content").on("click",".mg-show-password",function(e){
                 e.preventDefault();

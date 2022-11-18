@@ -18,8 +18,10 @@ class ScriptService {
 
     public static function getWebServerTypeSctipt($apiWebServersJSON) {
         $servertype = \MGModule\SSLCENTERWHMCS\eServices\FlashService::getFieldsMemory($_GET['cert'], 'servertype');
-        if(count($servertype)=== 0) {
-            $servertype = 0;
+        if($servertype != '-1') {
+            if (count($servertype) === 0) {
+                $servertype = 0;
+            }
         }
         if(!empty($_POST['servertype'])) {
             $servertype = $_POST['servertype'];

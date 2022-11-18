@@ -377,25 +377,25 @@ class Invoice
         {
             return false;
         }
-        
+
         $invoiceInfo = Capsule::table(self::INVOICE_INFOS_TABLE_NAME)->where('order_id', $newOrderId)->first();
         if(!isset($invoiceInfo->service_id) || empty($invoiceInfo->service_id))
         {
             return false;
         }
-        
+
         $serviceId = $invoiceInfo->service_id;
-        
+
         $sslOrderInfo = Capsule::table('tblsslorders')->where('serviceid', $serviceId)->first();
         if(!isset($sslOrderInfo->remoteid) || empty($sslOrderInfo->remoteid))
         {
             return false;
         }
-        
+
         $sslOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslOrderInfo->remoteid);
 
         $sslOrderResults = json_decode($sslOrderInfo->configdata, true);
-        
+
         $post_temp = array();
         $params_temp = array(
             'serviceID' => $serviceId,
@@ -408,20 +408,20 @@ class Invoice
             'commonName' => $sslOrderResults['domain'],
             'emailAddress' => isset($sslOrderResults['email']) && !empty($sslOrderResults['email']) ? $sslOrderResults['email'] : 'test@'.$sslOrderResults['domain']
         );
-        
+
         $GenerateSCR = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\GenerateCSR($post_temp, $params_temp);
-        $csrgen = $GenerateSCR->run();  
+        $csrgen = $GenerateSCR->run();
         $csrgenres = json_decode($csrgen, true);
-        
-        
-        
+
+
+
         $order               = [];
         $order['dcv_method'] = $sslOrder['dcv_method'];
         $order['product_id'] = $sslOrder['product_id'];
         $order['period']     = $sslOrder['validity_period'];
         $order['csr']        = $csrgenres['public_key'];
         $order['server_count']       = $sslOrder['server_count'];
-        
+
         if($sslOrder['dcv_method'] == 'email')
         {
             $order['approver_email'] = $sslOrder['approver_email'];
@@ -430,7 +430,7 @@ class Invoice
         {
             $order['approver_method'] = $sslOrder['approver_method'];
         }
-        
+
         $order['webserver_type']     = $sslOrder['webserver_type'];
         $order['admin_firstname']    = $sslOrder['admin_firstname'];
         $order['admin_lastname']     = $sslOrder['admin_lastname'];
@@ -444,7 +444,7 @@ class Invoice
         $order['admin_postalcode']   = $sslOrder['admin_postalcode'];
         $order['admin_region']       = $sslOrder['admin_region'];
 
-     
+
         $order['tech_firstname']    = $sslOrder['tech_firstname'];
         $order['tech_lastname']     = $sslOrder['tech_lastname'];
         $order['tech_organization'] = $sslOrder['tech_organization'];
@@ -457,7 +457,7 @@ class Invoice
         $order['tech_fax']          = $sslOrder['tech_fax'];
         $order['tech_postalcode']   = $sslOrder['tech_postalcode'];
         $order['tech_region']       = $sslOrder['tech_region'];
-        
+
         if(isset($sslOrder['org_name']) && !empty($sslOrder['org_name']))
         {
             $order['org_name'] = $sslOrder['org_name'];
@@ -474,34 +474,60 @@ class Invoice
         {
             $order['org_addressline1'] = $sslOrder['org_addressline1'];
         }
-        
+
         $order['org_city']         = $sslOrder['org_city'];
         $order['org_country']      = $sslOrder['org_country'];
         $order['org_fax']          = $sslOrder['org_fax'];
         $order['org_phone']        = $sslOrder['org_phone'];
         $order['org_postalcode']   = $sslOrder['org_postalcode'];
         $order['org_region']       = $sslOrder['org_region'];
-        
+
+
+        if(!isset($order['org_name']) || empty($order['org_name']))
+        {
+            $order['org_name'] = $sslOrder['admin_organization'];
+        }
+        if(!isset($order['org_division']) || empty($order['org_division']))
+        {
+            $order['org_division'] = $sslOrder['admin_title'];
+        }
+        if(!isset($order['org_addressline1']) || empty($order['org_addressline1']))
+        {
+            $order['org_addressline1'] = $sslOrder['admin_addressline1'];
+        }
+
 //        if(isset($sslOrder['domains']) && !empty($sslOrder['domains']))
 //        {
 //            $order['dns_names']       = $sslOrder['domains'];
 //        }
-        
+
         $sansmethod = array();
         $sansdomains = array();
-        
+
         foreach($sslOrder['san'] as $sansdetails)
         {
-            $sansmethod[] = $sansdetails['validation_method'];
+            if($sansdetails['validation_method'] == 'email')
+            {
+                $sansmethod[] = $sansdetails['validation']['email'];
+            }
+            else
+            {
+                $sansmethod[] = $sansdetails['validation_method'];
+            }
             $sansdomains[] = $sansdetails['san_name'];
         }
-        
+
         if(!empty($sansmethod) && !empty($sansdomains))
         {
             $order['dns_names'] = implode(',', $sansdomains);
             $order['approver_emails'] = implode(',', $sansmethod);
         }
         //$order['approver_emails'] = $sslOrder['approver_emails'];
+
+        if($sslOrder['dcv_method'] == 'email' && empty($order['approver_email']) && isset($sslOrder['approver_method']['email']) && !empty($sslOrder['approver_method']['email']))
+        {
+            $order['approver_email'] = $sslOrder['approver_method']['email'];
+        }
         
         $configdata = json_encode(array(
             'servertype' => $sslOrder['webserver_type'],
@@ -617,7 +643,7 @@ class Invoice
         $orginaldomain = $domain;
         
         if (strpos($domain, '*.') !== false) {
-            $domain = str_repeat('*.', '',$domain);
+            $domain = str_replace('*.', '',$domain);
         }
         
         $postData = array(
@@ -745,7 +771,7 @@ class Invoice
     }
     private static function checkIfAddedDomainInfoInInvoiceItemDescription($itemDescription, $productName)
     {
-        $itemDescription - str_replace($productName, '', $itemDescription);
+        $itemDescription = str_replace($productName, '', $itemDescription);
 
         $start  = strpos($itemDescription, ' - ');    
         if($start === false)

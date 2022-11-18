@@ -68,6 +68,7 @@ class Query{
         if(class_exists('\Illuminate\Database\Capsule\Manager') && \Illuminate\Database\Capsule\Manager::connection()->getPdo())
         {
             self::$usePDO = true;
+            self::$_instance = new self();
             self::$_instance->connection['default'] = \Illuminate\Database\Capsule\Manager::connection()->getPdo();
         }
         else
