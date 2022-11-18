@@ -43,14 +43,16 @@ function SSLCENTERWHMCS_SSLStepOne($params) {
 }
 
 function SSLCENTERWHMCS_SSLStepTwo($params) {
-    
     try{
     
         $SSLStepTwo = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\SSLStepTwo($params);
         if(isset($_POST['privateKey']) && $_POST['privateKey'] != null) {
             $SSLStepTwo->setPrivateKey($_POST['privateKey']);
-        }    
-        return $SSLStepTwo->run();
+        }
+
+        $step2 = $SSLStepTwo->run();
+        $step2['approveremails'] = $step2['approveremails2'];
+        return $step2;
         
     } catch (\Exception $e) {
         

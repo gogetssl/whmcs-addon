@@ -37,7 +37,7 @@ class ImportSSLOrder extends main\mgLibs\process\AbstractController
         }
 
         $clients          = array();
-        $clientRepisitory = (new\MGModule\SSLCENTERWHMCS\models\whmcs\clients\Clients());
+        $clientRepisitory = new \MGModule\SSLCENTERWHMCS\models\whmcs\clients\Clients();
         $clientRepisitory->sortBy('id', 'asc');
         foreach ($clientRepisitory->get() as $client)
         {

@@ -506,6 +506,11 @@
             disable(reissueSubmitBtn);
             addSpiner(reissueSubmitBtn);
 
+            data['approveremails'] = [];
+            $('input[name^="approveremail"]:checked').each(function( index ) {
+                data['approveremails'].push($(this).val());
+            });
+
             $.ajax({
                 type: "POST",
                 url: serviceUrl,

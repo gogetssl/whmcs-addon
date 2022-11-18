@@ -65,8 +65,8 @@ abstract class AbstractMainDriver{
     /**
      * Disable Contruct && Clone
      */
-    private final function __construct() {;}
-    private final function __clone() {;}
+    final function __construct() {;}
+    final function __clone() {;}
     
     /**
      * Get SingleTon Instance

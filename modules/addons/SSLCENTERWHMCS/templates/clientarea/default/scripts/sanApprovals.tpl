@@ -50,7 +50,7 @@
         var checkwildcard = false;
         
         function replaceRadioInputs(sanEmails) {
-            var template = $('input[value="loading..."]').closest('.row'),
+            var template = $('input[value="Array"]').closest('.row'),
                     selectEmailHtml = '',
                     fullHtml = '',
                     partHtml = '',
@@ -63,12 +63,12 @@
             
             //for template control
             if(template.find('.panel').length > 0) {
-                template = $('input[value="loading..."]').closest('.panel-body').find('div');
+                template = $('input[value="Array"]').closest('.panel-body').find('div');
             }
             
            
             template.hide();
-            $('input[value="loading..."]').remove();
+            $('input[value="Array"]').remove();
 
 
 

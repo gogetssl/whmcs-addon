@@ -150,7 +150,7 @@ class ConfigurableOptionService {
                 ->first();
     }
     
-    public function unassignFromProduct($productId, $name)
+    public static function unassignFromProduct($productId, $name)
     {
         $optionGroup   = [
             'name'        => 'SSLCenter - ' . $name,
@@ -174,7 +174,7 @@ class ConfigurableOptionService {
                 ->delete();
     }
     
-    public function assignToProduct($productId, $name)
+    public static function assignToProduct($productId, $name)
     {
         $optionGroup   = [
             'name'        => 'SSLCenter - ' . $name,

@@ -21,6 +21,8 @@ class home extends main\mgLibs\process\AbstractController {
             {
                 return true;
             }
+
+            $disabledValidationMethods = [];
  
             $serviceId  = $input['params']['serviceid'];
             $serviceBillingCycle = $input['params']['templatevars']['billingcycle'];
@@ -182,9 +184,7 @@ class home extends main\mgLibs\process\AbstractController {
                     if($diffDays < 30)
                         $vars['displayRenewButton'] = true;
 
-
-                    //get dsiabled validation methods
-                    $disabledValidationMethods = array();
+                    $disabledValidationMethods = [];
                     $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
                     
                     $product = new \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product($input['params']['pid']);

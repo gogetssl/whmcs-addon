@@ -221,15 +221,22 @@ class SSLStepThree {
             $sansDomainsWildcard = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($sansDomainsWildcard);
             
             $sansDomains = array_merge($sansDomains, $sansDomainsWildcard);
-            
+
+
+
             //if entered san is the same as main domain
-            if(count($sansDomains) != count($_POST['approveremails'])) {
-                foreach($sansDomains as $key => $domain) {                    
-                    if($decodedCSR['csrResult']['CN'] == $domain) {
-                        unset($sansDomains[$key]);   
-                    }                     
+            if(is_array($_POST['approveremails'])){
+
+                if(count($sansDomains) != count($_POST['approveremails'])) {
+                    foreach($sansDomains as $key => $domain) {
+                        if($decodedCSR['csrResult']['CN'] == $domain) {
+                            unset($sansDomains[$key]);
+                        }
+                    }
                 }
+
             }
+
             $order['dns_names']       = implode(',', $sansDomains);
             $approver_emails_method = [];
             foreach ($sansDomains as $d)

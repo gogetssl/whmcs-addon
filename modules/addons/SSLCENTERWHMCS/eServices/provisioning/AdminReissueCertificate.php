@@ -65,11 +65,22 @@ class AdminReissueCertificate extends Ajax {
         $sansDomains = [];
 
         $sanEnabledForWHMCSProduct = $this->serviceParams[ConfigOptions::PRODUCT_ENABLE_SAN] === 'on';
+
         if ($sanEnabledForWHMCSProduct AND count($_POST['approveremails'])) {
             $this->validateSanDomains();
             $sansDomains             = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($this->p['sanDomains']);
+            $sansDomainsWildCard     = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($this->p['sanDomainsWildcard']);
+
+            $sansDomains = array_merge($sansDomains, $sansDomainsWildCard);
+
+            $approverEmails = $this->p['approveremails'];
+
+            $data['approver_email'] = $approverEmails[0];
+            unset($approverEmails[0]);
+            $approverEmailsText = implode(',', $approverEmails);
+
             $data['dns_names']       = implode(',', $sansDomains);
-            $data['approver_emails'] = implode(',', $this->p['approveremails']);
+            $data['approver_emails'] = $approverEmailsText;
         }
 
         $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($this->p['serviceId']);
@@ -97,7 +108,7 @@ class AdminReissueCertificate extends Ajax {
         $newSanDomainSingleCount = count(explode(PHP_EOL,$this->p['sanDomains']));
         $newSanDomainWildcardCount = count(explode(PHP_EOL,$this->p['sanDomainsWildcard']));
 
-        if(!empty($this->p['sans_domains']) || !empty($this->p['sans_domains_wildcard'])) {
+        if(!empty($this->p['sanDomains']) || !empty($this->p['sanDomainsWildcard'])) {
             if ($newSanDomainSingleCount > $singleDomainsCount || $newSanDomainWildcardCount > $wildcardDomainsCount) {
                 $singleToAdd = $newSanDomainSingleCount - $singleDomainsCount;
                 if ($singleToAdd < 0) {
@@ -114,7 +125,7 @@ class AdminReissueCertificate extends Ajax {
                 }
 
                 \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSslSan(
-                    $this->sslService->remoteid,
+                    $sslService->remoteid,
                     $allToAdd,
                     $singleToAdd,
                     $wildcardToAdd

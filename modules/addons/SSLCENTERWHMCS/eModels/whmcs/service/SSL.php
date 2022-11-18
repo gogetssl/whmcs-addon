@@ -273,7 +273,7 @@ class SSL extends \Illuminate\Database\Eloquent\Model
     {
         return $this->getConfigdataKey('ssl_status');
     }
-    public function getWhere($where, $gogetssl = false)
+    public static function getWhere($where, $gogetssl = false)
     {
         $query = Capsule::table('tblsslorders');
 
