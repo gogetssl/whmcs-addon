@@ -96,14 +96,14 @@ add_hook('ClientAreaHeadOutput', 1, function($params)
 {
     if($params['clientareaaction'] == 'services')
     {
-        $services = Capsule::table('tblhosting')
+          $services = Capsule::table('tblhosting')
                 ->select(['tblhosting.id'])
-                ->join('tblproducts', 'tblproducts.id', 'tblhosting.packageid')
-                ->join('tblsslorders', 'tblsslorders.serviceid', 'tblhosting.id')
+                ->join('tblproducts', 'tblproducts.id','=', 'tblhosting.packageid')
+                ->join('tblsslorders', 'tblsslorders.serviceid','=', 'tblhosting.id')
                 ->where('tblhosting.userid', $_SESSION['uid'])
                 ->where('tblsslorders.status', 'Awaiting Configuration')
                 ->where('tblproducts.servertype', 'SSLCENTERWHMCS')
-                ->get();
+               ->get();
         
         $awaitingServicesSSLCENTER = [];
         foreach($services as $service)
