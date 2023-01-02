@@ -2,7 +2,6 @@
 
 use \MGModule\SSLCENTERWHMCS as main;
 use WHMCS\Database\Capsule as DB;
-use Exception;
 
 if(!defined('DS'))define('DS',DIRECTORY_SEPARATOR);
 
