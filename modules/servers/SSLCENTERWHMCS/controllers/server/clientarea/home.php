@@ -454,49 +454,102 @@ class home extends main\mgLibs\process\AbstractController {
         $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
         $sendCertyficateTermplate = $apiConf->send_certificate_template;
 
+        $pathAttachemts = false;
+        $checkSettings = Capsule::schema()->hasTable('tblfileassetsettings');
+        if($checkSettings !== false) {
+            $filesetting = Capsule::table('tblfileassetsettings')->where('asset_type', 'email_attachments')->first();
+            if(isset($filesetting->storageconfiguration_id) && !empty($filesetting->storageconfiguration_id))
+            {
+                $checkStorage = Capsule::schema()->hasTable('tblstorageconfigurations');
+                if($checkStorage !== false) {
+
+                    $storage = Capsule::table('tblstorageconfigurations')->where('id', $filesetting->storageconfiguration_id)->first();
+                    if(isset($storage->settings) && !empty($storage->settings))
+                    {
+                        $storageData = json_decode($storage->settings, true);
+                        if(isset($storageData['local_path']) && !empty($storageData['local_path']))
+                        {
+                            $pathAttachemts = $storageData['local_path'];
+                        }
+                    }
+                }
+            }
+        }
 
         $attachments = array();
-
         if(!empty($orderStatus['ca_code'])) {
+            if($pathAttachemts === false) {
+                $tmp_ca_code = tempnam("/tmp", "FOO");
+                $handle = fopen($tmp_ca_code, "w");
+                fwrite($handle, $orderStatus['ca_code']);
+                fclose($handle);
 
-            $tmp_ca_code = tempnam("/tmp", "FOO");
+                $attachments[] = array(
+                    'displayname' => 'ca_code.ca',
+                    'path' => $tmp_ca_code
+                );
+            }
+            else
+            {
+                $filetemp = $pathAttachemts.DIRECTORY_SEPARATOR.$input['params']['serviceid'].$input['params']['accountid'].'_ca_code.ca';
+                file_exists($filetemp) or touch($filetemp);
+                file_put_contents($filetemp, $orderStatus['csr_code']);
 
-            $handle = fopen($tmp_ca_code, "w");
-            fwrite($handle, $orderStatus['ca_code']);
-            fclose($handle);
-            $attachments[] = array(
-                'displayname' => 'ca_code.ca',
-                'path' => $tmp_ca_code
-            );
-
+                $attachments[] = array(
+                    'displayname' => $input['params']['serviceid'].$input['params']['accountid'].'_ca_code.ca',
+                    'filename' => $input['params']['serviceid'].$input['params']['accountid'].'_ca_code.ca'
+                );
+            }
         }
 
         if(!empty($orderStatus['crt_code'])) {
+            if($pathAttachemts === false) {
+                $tmp_crt_code = tempnam("/tmp", "FOO");
+                $handle = fopen($tmp_crt_code, "w");
+                fwrite($handle, $orderStatus['crt_code']);
+                fclose($handle);
 
-            $tmp_crt_code = tempnam("/tmp", "FOO");
+                $attachments[] = array(
+                    'displayname' => 'crt_code.crt',
+                    'path' => $tmp_crt_code
+                );
+            }
+            else
+            {
+                $filetemp = $pathAttachemts.DIRECTORY_SEPARATOR.$input['params']['serviceid'].$input['params']['accountid'].'_crt_code.crt';
+                file_exists($filetemp) or touch($filetemp);
+                file_put_contents($filetemp, $orderStatus['csr_code']);
 
-            $handle = fopen($tmp_crt_code, "w");
-            fwrite($handle, $orderStatus['crt_code']);
-            fclose($handle);
-            $attachments[] = array(
-                'displayname' => 'crt_code.crt',
-                'path' => $tmp_crt_code
-            );
-
+                $attachments[] = array(
+                    'displayname' => $input['params']['serviceid'].$input['params']['accountid'].'_crt_code.crt',
+                    'filename' => $input['params']['serviceid'].$input['params']['accountid'].'_crt_code.crt'
+                );
+            }
         }
 
         if(!empty($orderStatus['csr_code'])) {
+            if($pathAttachemts === false) {
+                $tmp_csr_code = tempnam("/tmp", "FOO");
+                $handle = fopen($tmp_csr_code, "w");
+                fwrite($handle, $orderStatus['csr_code']);
+                fclose($handle);
 
-            $tmp_csr_code = tempnam("/tmp", "FOO");
+                $attachments[] = array(
+                    'displayname' => 'csr_code.csr',
+                    'path' => $tmp_csr_code
+                );
+            }
+            else
+            {
+                $filetemp = $pathAttachemts.DIRECTORY_SEPARATOR.$input['params']['serviceid'].$input['params']['accountid'].'_csr_code.csr';
+                file_exists($filetemp) or touch($filetemp);
+                file_put_contents($filetemp, $orderStatus['csr_code']);
 
-            $handle = fopen($tmp_csr_code, "w");
-            fwrite($handle, $orderStatus['csr_code']);
-            fclose($handle);
-            $attachments[] = array(
-                'displayname' => 'csr_code.csr',
-                'path' => $tmp_csr_code
-            );
-
+                $attachments[] = array(
+                    'displayname' => $input['params']['serviceid'].$input['params']['accountid'].'_csr_code.csr',
+                    'filename' => $input['params']['serviceid'].$input['params']['accountid'].'_csr_code.csr'
+                );
+            }
         }
 
         if($sendCertyficateTermplate == NULL)
@@ -505,7 +558,7 @@ class home extends main\mgLibs\process\AbstractController {
                 'domain' => $orderStatus['domain'],
                 'ssl_certyficate' => nl2br($orderStatus['ca_code']),
                 'crt_code' => nl2br($orderStatus['crt_code']),
-            ], "", $attachments);
+            ], false, $attachments);
         }
         else
         {
@@ -514,7 +567,7 @@ class home extends main\mgLibs\process\AbstractController {
                 'domain' => $orderStatus['domain'],
                 'ssl_certyficate' => nl2br($orderStatus['ca_code']),
                 'crt_code' => nl2br($orderStatus['crt_code']),
-            ], "", $attachments);
+            ], false, $attachments);
         }
 
         if(!empty($orderStatus['ca_code'])) {

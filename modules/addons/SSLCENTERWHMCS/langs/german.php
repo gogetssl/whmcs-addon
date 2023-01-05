@@ -30,7 +30,7 @@ $_LANG['addonAA']['apiConfiguration']['cronRenewal']['commandLine']['cronFrequen
 //customers send certificate
 $_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['pleaseNote']                             = 'Bitte beachten:';
 $_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['info']                                   = 'Um ein Zertifikat dem Kunden zu senden, wenn die SSL-Bestellung in den aktiven Status wechselt, richten Sie bitte folgende Cron-Befehlszeile ein (alle 3 Stunden empfohlen).:';
-$_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['commandLine']['cronFrequency']           = '0 3 * * *';
+$_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['commandLine']['cronFrequency']           = '0 */3 * * *';
 //customers send certificate
 $_LANG['addonAA']['apiConfiguration']['cronPriceUpdater']['pleaseNote']                             = 'Bitte beachten:';
 $_LANG['addonAA']['apiConfiguration']['cronPriceUpdater']['info']                                   = 'Um die WHMCS-Produktpreise mit den API-Produktpreisen zu synchronisieren, richten Sie bitte folgende Cron-Befehlszeile ein (alle 3 Tage empfohlen):';

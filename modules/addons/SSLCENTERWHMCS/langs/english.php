@@ -30,7 +30,7 @@ $_LANG['addonAA']['apiConfiguration']['cronRenewal']['commandLine']['cronFrequen
 //customers send certificate
 $_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['pleaseNote']                             = 'Please Note:';
 $_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['info']                                   = 'In order to send a certificate to the client when the SSL order changes to active status, set the following command line cron (every 3 hours suggested):';
-$_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['commandLine']['cronFrequency']           = '0 3 * * *';
+$_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['commandLine']['cronFrequency']           = '0 */3 * * *';
 //customers send certificate
 $_LANG['addonAA']['apiConfiguration']['cronPriceUpdater']['pleaseNote']                             = 'Please Note:';
 $_LANG['addonAA']['apiConfiguration']['cronPriceUpdater']['info']                                   = 'In order to synchronize the WHMCS product prices with the API product prices, set the following command line cron (every 3rd day suggested):';
