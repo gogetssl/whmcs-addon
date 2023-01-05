@@ -30,7 +30,7 @@ $_LANG['addonAA']['apiConfiguration']['cronRenewal']['commandLine']['cronFrequen
 //customers send certificate
 $_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['pleaseNote']                             = 'Bemærk:';
 $_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['info']                                   = 'For at kunne sende et certifikat til kunden, når ordren for SSL ændres til aktiv status skal du opsætte følgende cron job (hver 3. time anbefalet):';
-$_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['commandLine']['cronFrequency']           = '0 3 * * *';
+$_LANG['addonAA']['apiConfiguration']['cronSendCertificate']['commandLine']['cronFrequency']           = '0 */3 * * *';
 //customers send certificate
 $_LANG['addonAA']['apiConfiguration']['cronPriceUpdater']['pleaseNote']                             = 'Bemærk:';
 $_LANG['addonAA']['apiConfiguration']['cronPriceUpdater']['info']                                   = 'For at kunne synkronisere produktpriserne i WHMCS med produktpriserne fra API\'en skal du opsætte følgende cron job (hver 3. dag anbefalet):';
