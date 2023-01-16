@@ -226,10 +226,9 @@
             <tr id="additionalActionsTr">
                 <td class="text-left">{$MGLANG->T('Actions')}</td>
                 <td id="additionalActionsTd" class="text-left">
-                    <button type="button" id="btnRenew" class="btn btn-default" style="margin:2px">{$MGLANG->T('renew')}</button>
                     {if $visible_renew_button}
                     {if $displayRenewButton}
-
+                        <button type="button" id="btnRenew" class="btn btn-default" style="margin:2px">{$MGLANG->T('renew')}</button>
                     {/if}
                     {/if}
                     {if $dcv_method == 'email'}
@@ -262,9 +261,8 @@
                         <button type="button" id="getPrivateKey" class="btn btn-default" style="margin:2px">{$MGLANG->T('getPrivateKeyBtn')}</button>
                         {/if}
                         {if $activationStatus == 'unpaid'}
-
+                            <button type="button" id="recheckDetails" class="btn btn-default" style="margin:2px">{$MGLANG->T('recheckCertificateDetails')}</button>
                         {/if}
-                        <button type="button" id="recheckDetails" class="btn btn-default" style="margin:2px">{$MGLANG->T('recheckCertificateDetails')}</button>
                     {/if}
                 </td>
             </tr>
