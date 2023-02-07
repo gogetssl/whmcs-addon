@@ -575,7 +575,7 @@ class Cron extends main\mgLibs\process\AbstractController
                 $price = $apiPrice->price;
             }
 
-            if ($curr->code == 'USD')
+            if ($curr->default == '1')
             {
                 $newPrice = $price;
             }
