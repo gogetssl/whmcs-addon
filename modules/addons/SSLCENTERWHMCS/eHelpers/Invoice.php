@@ -583,9 +583,10 @@ class Invoice
         $configoptionsResults = [];
         $product = \WHMCS\Product\Product::where('id', $service->packageid)->first();
         $isSanEnabled = $product->{ConfigOptions::PRODUCT_ENABLE_SAN}=== 'on';
+        $isSanEnabledWildcard = $product->{ConfigOptions::PRODUCT_ENABLE_SAN_WILDCARD}=== 'on';
         $apiProduct = Products::getInstance()->getProduct($product->{C::API_PRODUCT_ID});
 
-        if(isset($apiProduct->wildcard_san_enabled) && $apiProduct->wildcard_san_enabled == '1')
+        if($isSanEnabledWildcard)
         {
             $server = new \WHMCS\Module\Server();
             if( !$server->loadByServiceID($service->id) )

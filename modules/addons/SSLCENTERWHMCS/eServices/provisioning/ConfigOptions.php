@@ -20,6 +20,7 @@ class ConfigOptions
     const API_PRODUCT_ID                 = 'configoption1';
     const API_PRODUCT_MONTHS             = 'configoption2';
     const PRODUCT_ENABLE_SAN             = 'configoption3';
+    const PRODUCT_ENABLE_SAN_WILDCARD    = 'configoption13';
     const PRODUCT_INCLUDED_SANS          = 'configoption4';
     const PRICE_AUTO_DOWNLOAD            = 'configoption5';
     const COMMISSION                     = 'configoption6';

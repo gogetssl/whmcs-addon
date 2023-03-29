@@ -725,6 +725,10 @@ class ClientReissueCertificate {
     }
 
     private function getSansLimitWildcard() {
+        $sanEnabledForWHMCSProduct = $this->p[ConfigOptions::PRODUCT_ENABLE_SAN_WILDCARD] === 'on';
+        if (!$sanEnabledForWHMCSProduct) {
+            return 0;
+        }
         $includedSans = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS_WILDCARD];
         $boughtSans   = (int) $this->p['configoptions']['sans_wildcard_count'];
         return $includedSans + $boughtSans;
