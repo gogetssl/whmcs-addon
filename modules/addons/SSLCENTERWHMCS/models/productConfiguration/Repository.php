@@ -141,6 +141,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository {
         $update['name']                   = $params['name'];
         $update[C::API_PRODUCT_MONTHS]    = $params[C::API_PRODUCT_MONTHS];
         $update[C::PRODUCT_ENABLE_SAN]    = $params[C::PRODUCT_ENABLE_SAN] ? $params[C::PRODUCT_ENABLE_SAN] : '';
+        $update[C::PRODUCT_ENABLE_SAN_WILDCARD]    = $params[C::PRODUCT_ENABLE_SAN_WILDCARD] ? $params[C::PRODUCT_ENABLE_SAN_WILDCARD] : '';
         $update[C::PRODUCT_INCLUDED_SANS] = $params[C::PRODUCT_INCLUDED_SANS] ? $params[C::PRODUCT_INCLUDED_SANS] : '0';
         $update[C::PRODUCT_INCLUDED_SANS_WILDCARD] = $params[C::PRODUCT_INCLUDED_SANS_WILDCARD] ? $params[C::PRODUCT_INCLUDED_SANS_WILDCARD] : '0';
         $update['paytype']                = $params['paytype'];
@@ -155,6 +156,16 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository {
         else
         {
             main\eServices\ConfigurableOptionService::assignToProduct($productId, $update['name']);
+        }
+
+        if($update[C::PRODUCT_ENABLE_SAN_WILDCARD] !== 'on') {
+            $group = main\eServices\ConfigurableOptionService::getForProductWildcard($productId);
+            main\eServices\ConfigurableOptionService::unassignFromProductWildcard($productId, $group->groupid);
+        }
+        else
+        {
+            $group = main\eServices\ConfigurableOptionService::getForProductWildcard($productId);
+            main\eServices\ConfigurableOptionService::assignToProductWildcard($productId, $update['name'], $group->groupid);
         }
         
         if(isset($params['custom_guide']) && !empty($params['custom_guide']))

@@ -141,6 +141,7 @@ $_LANG['addonAA']['productsConfiguration']['autoSetupOn']         = 'Automatical
 $_LANG['addonAA']['productsConfiguration']['autoSetupOff']        = 'Do not automatically setup this product';
 $_LANG['addonAA']['productsConfiguration']['months']              = 'Max Months:';
 $_LANG['addonAA']['productsConfiguration']['enableSans']          = 'Enable SANs:';
+$_LANG['addonAA']['productsConfiguration']['enableSansWildcard']  = 'Enable Wildcard SANs:';
 $_LANG['addonAA']['productsConfiguration']['includedSans']        = 'Included Single SANs:';
 $_LANG['addonAA']['productsConfiguration']['includedSansWildcard']= 'Included Wildcard SANs:';
 $_LANG['addonAA']['productsConfiguration']['status']              = 'Status:';

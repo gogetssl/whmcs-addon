@@ -20,7 +20,7 @@ class EmailTemplateService {
         $newTemplate->type    = 'product';
         $newTemplate->name    = self::RENEWAL_TEMPLATE_ID;
         $newTemplate->subject = 'SSL Certificate - Renew';
-        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your current SSL certificate #{$serviceid} expires within next 30-days. Please login to the client area and click "Renew" button to start the renewal process.</p><p>{$signature}</p>';
+        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your current SSL certificate #{$service_id} expires within next 30-days. Please login to the client area and click "Renew" button to start the renewal process.</p><p>{$signature}</p>';
         $newTemplate->attachments  = '';
         $newTemplate->fromname  = '';
         $newTemplate->fromemail  = '';
@@ -49,7 +49,7 @@ class EmailTemplateService {
         }
         
         $template          =  \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::RENEWAL_TEMPLATE_ID)->first(); 
-        $template->message = '<p>Dear {$client_name},</p><p>Your current SSL certificate #{$serviceid} expires within next 30-days. Please login to the client area and click "Renew" button to start the renewal process.</p><p>{$signature}</p>';
+        $template->message = '<p>Dear {$client_name},</p><p>Your current SSL certificate #{$service_id} expires within next 30-days. Please login to the client area and click "Renew" button to start the renewal process.</p><p>{$signature}</p>';
         $template->save();
     }
     public static function deleteRenewalTemplate() {
@@ -205,7 +205,7 @@ class EmailTemplateService {
         $newTemplate->type    = 'product';
         $newTemplate->name    = self::REISSUE_TEMPLATE_ID;
         $newTemplate->subject = 'SSL Certificate - Reissue';
-        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your current SSL certificate #{$serviceid} expires within next 30-days. You are using an SSL subscription and no other payments are required. However, you need to reissue your SSL certificate to receive new files for the next period.</p><p>{$signature}</p>';
+        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your current SSL certificate #{$service_id} expires within next 30-days. You are using an SSL subscription and no other payments are required. However, you need to reissue your SSL certificate to receive new files for the next period.</p><p>{$signature}</p>';
         $newTemplate->attachments  = '';
         $newTemplate->fromname  = '';
         $newTemplate->fromemail  = '';
@@ -235,7 +235,7 @@ class EmailTemplateService {
         
         $template          =  \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::REISSUE_TEMPLATE_ID)->first(); 
         $template->subject = 'SSL Certificate - Reissue';
-        $template->message = '<p>Dear {$client_name},</p><p>Your current SSL certificate #{$serviceid} expires within next 30-days. You are using an SSL subscription and no other payments are required. However, you need to reissue your SSL certificate to receive new files for the next period.</p><p>{$signature}</p>';
+        $template->message = '<p>Dear {$client_name},</p><p>Your current SSL certificate #{$service_id} expires within next 30-days. You are using an SSL subscription and no other payments are required. However, you need to reissue your SSL certificate to receive new files for the next period.</p><p>{$signature}</p>';
         $template->save();
     }
     

@@ -135,6 +135,7 @@ $_LANG['addonAA']['productsConfiguration']['autoSetupOn']         = 'Opsæt prod
 $_LANG['addonAA']['productsConfiguration']['autoSetupOff']        = 'Opsæt ikke dette produkt automatisk';
 $_LANG['addonAA']['productsConfiguration']['months']              = 'Maks. antal måneder:';
 $_LANG['addonAA']['productsConfiguration']['enableSans']          = 'Aktiver SANs:';
+$_LANG['addonAA']['productsConfiguration']['enableSansWildcard']  = 'Aktiver Wildcard SANs:';
 $_LANG['addonAA']['productsConfiguration']['includedSans']        = 'Inkluderede SANs:';
 $_LANG['addonAA']['productsConfiguration']['includedSansWildcard']= 'Included Wildcard SANs:';
 $_LANG['addonAA']['productsConfiguration']['status']              = 'Status:';

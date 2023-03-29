@@ -45,6 +45,7 @@ class SSLStepOne {
         $apiWebServersJSON         = json_encode($apiWebServers);
         $fillVarsJSON              = json_encode(\MGModule\SSLCENTERWHMCS\eServices\FlashService::getFieldsMemory($_GET['cert']));
         $sanEnabledForWHMCSProduct = $this->p[ConfigOptions::PRODUCT_ENABLE_SAN] === 'on';
+        $sanWildcardEnabledForWHMCSProduct = $this->p[ConfigOptions::PRODUCT_ENABLE_SAN_WILDCARD] === 'on';
 
         $includedSans = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS];
         $includedSansWildcard = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS_WILDCARD];
@@ -64,8 +65,8 @@ class SSLStepOne {
         } 
         //$fields['additionalfields'][\MGModule\SSLCENTERWHMCS\eRepository\sslcenter\OrderType::getTitle()] = \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\OrderType::getFields();
         
-        if ($sansLimit > 0) {
-            $fields['additionalfields'][\MGModule\SSLCENTERWHMCS\eRepository\sslcenter\San::getTitle()] = \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\San::getFields($sansLimit, $this->p['configoptions']['sans_wildcard_count']+$includedSansWildcard);
+        if ($sansLimit > 0 || $sanWildcardEnabledForWHMCSProduct == 'on') {
+            $fields['additionalfields'][\MGModule\SSLCENTERWHMCS\eRepository\sslcenter\San::getTitle()] = \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\San::getFields($sansLimit, $this->p['configoptions']['sans_wildcard_count']+$includedSansWildcard, $this->p);
         }
         if ($apiProduct->isOrganizationRequired()) {
             $fields['additionalfields'][\MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Organization::getTitle()] = \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Organization::getFields();

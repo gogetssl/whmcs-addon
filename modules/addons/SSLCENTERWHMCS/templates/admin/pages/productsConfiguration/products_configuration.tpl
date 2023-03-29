@@ -201,6 +201,12 @@
                             
                             {if $product->apiConfig->isWildcardSanEnabled}
                                 <div class="form-group">
+                                    <label class="control-label col-sm-2">{$MGLANG->T('enableSansWildcard')}</label>
+                                    <div class="col-sm-10">
+                                        <input type="checkbox" class="" name="product[{$product->id}][configoption13]" value="on" style="margin-top: 10px;" {if $product->configoption13 === 'on'} checked {/if}{if !$product->apiConfig->isWildcardSanEnabled} disabled {/if}>
+                                    </div>
+                                </div>
+                                <div class="form-group">
                                     <label class="control-label col-sm-2">{$MGLANG->T('includedSansWildcard')}</label>
                                     <div class="col-sm-10">
                                         <input type="number" class="form-control" name="product[{$product->id}][configoption8]" value="{$product->configoption8}" {if !$product->apiConfig->isWildcardSanEnabled} disabled {/if}>
