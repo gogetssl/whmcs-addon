@@ -62,6 +62,7 @@ add_hook('ClientAreaPage', 1, function($params) {
 
     if($params['templatefile'] != 'invoice-payment' && $params['filename'] != 'viewinvoice')
     {
+        \MGModule\SSLCENTERWHMCS\eHelpers\Invoice::createPendingPaymentInvoice();
         $checkInvoicePending = Capsule::table('mgfw_SSLCENTER_invoices_pendingpayment')->where('user_id', $_SESSION['uid'])->get();
         foreach($checkInvoicePending as $invoiceToPending)
         {
@@ -79,6 +80,7 @@ add_hook('ClientAreaPage', 1, function($params) {
             'status' => 'Unpaid'
         ]);
 
+        \MGModule\SSLCENTERWHMCS\eHelpers\Invoice::createPendingPaymentInvoice();
         $check = Capsule::table('mgfw_SSLCENTER_invoices_pendingpayment')->where('user_id', $_SESSION['uid'])->where('invoice_id', $params['invoiceid'])->first();
         if(!isset($check->id))
         {
