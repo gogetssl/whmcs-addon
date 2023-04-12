@@ -133,8 +133,9 @@ class Renew {
 
         // dns manager
         sleep(2);
+        $checkTable = Capsule::schema()->hasTable('dns_manager2_zone');
         $dnsmanagerfile = dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'includes'.DIRECTORY_SEPARATOR.'api'.DIRECTORY_SEPARATOR.'dnsmanager.php';
-        if(file_exists($dnsmanagerfile))
+        if(file_exists($dnsmanagerfile) && $checkTable !== false)
         {
             $zoneDomain = $service->domain;
             $loaderDNS = dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR.'addons'.DIRECTORY_SEPARATOR.'DNSManager2'.DIRECTORY_SEPARATOR.'loader.php';
@@ -308,7 +309,10 @@ class Renew {
         }
         
         $p = &$this->sslService->configdata;
-        $f = &$p->fields;
+        $f = new \stdClass();
+        if(isset($p->fields)) {
+            $f = &$p->fields;
+        }
 
         if(!isset($p->firstname) || empty($p->firstname))
         {
@@ -426,7 +430,7 @@ class Renew {
         $order['tech_postalcode']   = ($useAdminContact) ? $p->postcode : $apiConf->tech_postalcode;
         $order['tech_region']       = ($useAdminContact) ? $p->state : $apiConf->tech_region;
  
-        if ($this->apiProduct->isOrganizationRequired()) {
+        if ($this->apiProduct->isOrganizationRequired() && isset($f->org_name)) {
             $order['org_name']         = $f->org_name;
             $order['org_division']     = $f->org_division;
             $order['org_duns']         = $f->org_duns;
