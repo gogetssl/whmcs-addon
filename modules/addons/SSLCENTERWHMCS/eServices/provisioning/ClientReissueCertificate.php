@@ -398,7 +398,8 @@ class ClientReissueCertificate {
         // dns manager
         sleep(2);
         $dnsmanagerfile = dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'includes'.DIRECTORY_SEPARATOR.'api'.DIRECTORY_SEPARATOR.'dnsmanager.php';
-        if(file_exists($dnsmanagerfile))
+        $checkTable = Capsule::schema()->hasTable('dns_manager2_zone');
+        if(file_exists($dnsmanagerfile) && $checkTable !== false)
         {
             $zoneDomain = $decodedCSR['csrResult']['CN'];
             $loaderDNS = dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR.'addons'.DIRECTORY_SEPARATOR.'DNSManager2'.DIRECTORY_SEPARATOR.'loader.php';
