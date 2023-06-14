@@ -45,7 +45,7 @@ class Products {
         if (isset($this->products[$id])) {
             return $this->products[$id];
         }
-        throw new Exception('Invalid API product id.');
+        return reset($this->products);
     }
 
     private function fetchAllProducts() {

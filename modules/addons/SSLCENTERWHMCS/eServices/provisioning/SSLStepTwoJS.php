@@ -158,7 +158,7 @@ class SSLStepTwoJS {
         {
             $mainDomain       = $decodedCSR['csrResult']['CN'];
         }
-        if(isset($decodedCSR['csrResult']['dnsName(s)'][0]))
+        if(isset($decodedCSR['csrResult']['dnsName(s)'][0]) && strpos($decodedCSR['csrResult']['dnsName(s)'][0], '*.') !== false)
         {
             $mainDomain = $decodedCSR['csrResult']['dnsName(s)'][0];
         }
