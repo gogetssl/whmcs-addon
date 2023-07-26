@@ -389,6 +389,7 @@ class Renew {
         $apiRepo       = new \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products();
         $apiProduct    = $apiRepo->getProduct($this->p[ConfigOptions::API_PRODUCT_ID]);
         $brand = $apiProduct->brand;
+        $orgRequired = $apiProduct->org_required;
         
         if($brand == 'geotrust' || $brand == 'rapidssl' || $brand == 'digicert' || $brand == 'thawte')
         {
@@ -429,8 +430,8 @@ class Renew {
         $order['tech_fax']          = ($useAdminContact) ? '' : $apiConf->tech_fax;
         $order['tech_postalcode']   = ($useAdminContact) ? $p->postcode : $apiConf->tech_postalcode;
         $order['tech_region']       = ($useAdminContact) ? $p->state : $apiConf->tech_region;
- 
-        if ($this->apiProduct->isOrganizationRequired() && isset($f->org_name)) {
+
+        if ($orgRequired && isset($f->org_name)) {
             $order['org_name']         = $f->org_name;
             $order['org_division']     = $f->org_division;
             $order['org_duns']         = $f->org_duns;
@@ -448,6 +449,18 @@ class Renew {
             $order['org_phone']        = $f->org_phone;
             $order['org_postalcode']   = $f->org_postalcode;
             $order['org_region']       = $f->org_regions;
+        }
+        elseif ($orgRequired) {
+            $order['org_name']         = $p->orgname;
+//            $order['org_division']     = $f->org_division;
+//            $order['org_duns']         = $f->org_duns;
+            $order['org_addressline1'] = $p->address1;
+            $order['org_city']         = $p->city;
+            $order['org_country']      = \MGModule\SSLCENTERWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountryCodeByName($p->country);
+            $order['org_fax']          = $apiConf->tech_fax;
+            $order['org_phone']        = $p->phonenumber;
+            $order['org_postalcode']   = $p->postcode;
+            $order['org_region']       = $p->state;
         }
         
         if(!empty($p->san_details)) {

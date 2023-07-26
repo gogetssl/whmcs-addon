@@ -2,6 +2,7 @@
 
 namespace MGModule\SSLCENTERWHMCS\mgLibs;
 
+use MGModule\SSLCENTERWHMCS\Configuration;
 use WHMCS\Database\Capsule;
 /**
  * Use any way you want. Free for all
@@ -295,7 +296,7 @@ class SSLCenterApi {
     }
     
     protected function call($uri, $getData = array(), $postData = array(), $forcePost = false, $isFile = false) {
-        
+
         $this->lastRequest = [
             'uri' => $uri,
             'post' => $postData,
@@ -304,7 +305,7 @@ class SSLCenterApi {
         if($uri !== '/auth/') {
             $getData['auth_key'] = $this->key;
         }
-        
+
         if($uri !== '/auth/' AND !$this->key) {
             throw new SSLCenterException('Authorization key is required');
         }
@@ -327,10 +328,22 @@ class SSLCenterApi {
             curl_setopt($c, CURLOPT_POSTFIELDS, $queryData);
         }
 
+        $configuration = new Configuration();
+
+        $headers = [];
+        $headers[] = 'user_agent: whmcs/'.$configuration->version;
+
+        curl_setopt($c, CURLOPT_HTTPHEADER, $headers);
+
         curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
 
-        $result = curl_exec($c);
+        curl_setopt($c, CURLINFO_HEADER_OUT,true);
+        curl_setopt($c, CURLOPT_HEADER,true);
+
+        $data = curl_exec($c);
+        $info = curl_getinfo($c);
+        $result = substr($data, $info['header_size']);
 
         if (DEBUG == 'TRUE') {
             echo "\n\n";
@@ -347,43 +360,36 @@ class SSLCenterApi {
             print_r(json_decode($result, true));
             echo "\n\n";
         }
-        
-        $info = curl_getinfo($c);
-        
-        logModuleCall(
-            'SSLCENTERWHMCS',
-            'Time: '.$info['total_time'].' '.$uri,
-            $this->lastRequest,
-            $result
-        );
+
+        logModuleCall('SSLCENTERWHMCS','Time: '.$info['total_time'].' '.$uri, $info['request_header'].$queryData, $data);
 
         if ($result === false) {
             throw new SSLCenterException(curl_error($c));
         }
-        
+
         $status = curl_getinfo($c, CURLINFO_HTTP_CODE);
-        
+
         if($status == '403')
         {
             Capsule::table('tblconfiguration')->where('setting', 'sslcenter_authkey')->delete();
         }
-        
+
         curl_close($c);
         $this->lastStatus = $status;
         $this->lastResponse = json_decode($result, true);
-        
+
         if(is_null($this->lastResponse)) {
             throw new SSLCenterApiException('Invalid Response from API');
         }
-       
+
         if($this->lastResponse['error'] === true AND $this->apiExceptions AND $this->exceptionType === 'SSLCenterException') {
             throw new SSLCenterException($this->lastResponse['description']);
         }
-        
+
         if($this->lastResponse['error'] === true AND $this->apiExceptions AND $this->exceptionType === 'SSLCenterApiException') {
             throw new SSLCenterApiException($this->lastResponse['description']);
         }
-        
+
         return $this->lastResponse;
     }
 
