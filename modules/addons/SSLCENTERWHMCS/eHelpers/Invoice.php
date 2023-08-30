@@ -58,14 +58,18 @@ class Invoice
                         PRIMARY KEY (`id`)
                        ) ENGINE=InnoDB ');
     }
-    
+
     public function checkInvoiceAlreadyCreated($serviceIDs) {
-        $services = Query::select(['service_id', 'id'], self::INVOICE_INFOS_TABLE_NAME, ['service_id' => $serviceIDs ])->fetchAll();
-        
+        $services = Query::select(['service_id', 'id', 'invoice_id'], self::INVOICE_INFOS_TABLE_NAME, ['service_id' => $serviceIDs ])->fetchAll();
+
         $result = [];
         foreach ($services as $srvinfo) {
-            $result[$srvinfo['service_id']] = $srvinfo;
+            $invoice = Capsule::table('tblinvoices')->where('id', $srvinfo['invoice_id'])->where('status', 'Paid')->first();
+            if(!isset($invoice->id)) {
+                $result[$srvinfo['service_id']] = $srvinfo;
+            }
         }
+
         return $result;
     }
     
