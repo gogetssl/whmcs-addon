@@ -11,7 +11,7 @@
         <form method="POST" action="{$smarty.server.REQUEST_URI}" class="form-horizontal">
             <input type="hidden" name="stepOneForm" value="tak">
             <input type="hidden" name="reissueServiceID" value="{$serviceID}" />
-            <input class="form-control" name="privateKey" value="{$smarty.post.privateKey}" type="hidden">
+            <input class="form-control" name="privateKey" value="{if $smarty.post.privateKey}{$smarty.post.privateKey}{else}{$privKey}{/if}" type="hidden">
             <div class="form-group">
                 <label class="col-sm-2 control-label">{$MGLANG->T('reissueOneWebServer')}</label>
                 <div class="col-sm-10">

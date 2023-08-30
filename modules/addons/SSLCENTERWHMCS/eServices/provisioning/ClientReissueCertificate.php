@@ -128,6 +128,12 @@ class ClientReissueCertificate {
         $sanSingle = [];
         $sanWildcard = [];
 
+        $this->vars['privKey'] = '';
+        if(isset($ssldata->configdata->private_key) && !empty($ssldata->configdata->private_key))
+        {
+            $this->vars['privKey'] = decrypt($ssldata->configdata->private_key);
+        }
+
         $allSans = $ssldata->configdata->san_details;
 
         foreach ($allSans as $san)
