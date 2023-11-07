@@ -111,7 +111,7 @@ class ClientReissueCertificate {
             $countriesForGenerateCsrForm = array_merge(array($defaultCsrGeneratorCountry => $elementValue), $countriesForGenerateCsrForm);
         }
 
-        $this->vars['generateCsrIntegrationCode'] =   ($displayCsrGenerator) ? \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getGenerateCsrModalScript(json_encode(array()), $countriesForGenerateCsrForm) : '';
+        $this->vars['generateCsrIntegrationCode'] =   ($displayCsrGenerator) ? \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getGenerateCsrModalScript($this->p['serviceid'], json_encode(array()), $countriesForGenerateCsrForm) : '';
         $this->vars['serviceID'] = $this->p['serviceid'];
 
         $this->loadServerList();
@@ -131,7 +131,7 @@ class ClientReissueCertificate {
         $this->vars['privKey'] = '';
         if(isset($ssldata->configdata->private_key) && !empty($ssldata->configdata->private_key))
         {
-            $this->vars['privKey'] = decrypt($ssldata->configdata->private_key);
+            $this->vars['privKey'] = $ssldata->configdata->private_key;
         }
 
         $allSans = $ssldata->configdata->san_details;

@@ -48,6 +48,7 @@ $_LANG['addonAA']['apiConfiguration']['item']['api_password']['label']          
 $_LANG['addonAA']['apiConfiguration']['item']['tech_legend']['label']                                  = 'Technischer Kontakt';
 $_LANG['addonAA']['apiConfiguration']['item']['csr_generator_legend']['label']                         = 'CSR-Generator';
 $_LANG['addonAA']['apiConfiguration']['item']['display_csr_generator']['label']                        = 'Verwendung des CSR-Generators zulassen';
+$_LANG['addonAA']['apiConfiguration']['item']['profile_data_csr']['label']                             = 'Use Profile Data for CSR';
 $_LANG['addonAA']['apiConfiguration']['item']['default_csr_generator_country']['description']          = 'Die Standardauswahl';
 $_LANG['addonAA']['apiConfiguration']['item']['display_ca_summary']['label']                           = 'Auftragsübersicht anzeigen';
 $_LANG['addonAA']['apiConfiguration']['item']['client_area_summary_orders']['label']                   = 'Zusammenfassung der Kundenbereichsbestellungen';

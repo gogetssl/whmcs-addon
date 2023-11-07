@@ -266,6 +266,15 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->error             = $this->getFieldError('default_csr_generator_country');
         $form->addField($field);
 
+        $field           = new main\mgLibs\forms\CheckboxField();
+        $field->name     = 'profile_data_csr';
+        $field->options  = ['profileDataCsr'];
+        $field->value    = $input['profile_data_csr'] ? ['profileDataCsr'] : [''];
+        $form->addField($field);
+        $field->inline   = true;
+        $field->colWidth = 2;
+        $field->continue = true;
+
         $field       = new main\mgLibs\forms\LegendField();
         $field->name = 'send_certificate_template';
         $form->addField($field);
@@ -488,6 +497,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
                 $checkFieldsArray = array(
                     'use_admin_contact',
                     'display_csr_generator',
+                    'profile_data_csr',
                     'auto_renew_invoice_one_time',
                     'auto_renew_invoice_reccuring',
                     'send_expiration_notification_reccuring',
