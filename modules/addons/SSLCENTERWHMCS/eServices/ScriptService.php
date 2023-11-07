@@ -41,11 +41,35 @@ class ScriptService {
                     'orderTypes'        => json_encode($orderTypes)
         ]);
     }
-    public static function getGenerateCsrModalScript($fillVarsJSON, $countriesForGenerateCsrForm, $vars = array()) {
+    public static function getGenerateCsrModalScript($serviceId, $fillVarsJSON, $countriesForGenerateCsrForm, $vars = array()) {
+
+        $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+        $profile_data_csr = $apiConf->profile_data_csr;
+
+        $csrWithData = false;
+        $csrData = [];
+        if($profile_data_csr)
+        {
+            $service = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service($serviceId);
+            $client =  new \MGModule\SSLCENTERWHMCS\models\whmcs\clients\Client($service->clientID);
+
+            $csrData['country'] = $client->getCountry();
+            $csrData['state'] = $client->getState();
+            $csrData['locality'] = $client->getCity();
+            $csrData['organization'] = $client->companyname;
+            $csrData['org_unit'] = 'IT';
+            $csrData['common_name'] = $service->domain;
+            $csrData['email'] = $client->email;
+
+            $csrWithData = true;
+        }
+
         return TemplateService::buildTemplate(self::GENERATE_CSR_MODAL, [
                     'fillVars' => addslashes($fillVarsJSON),
                     'countries'=> json_encode($countriesForGenerateCsrForm),
-                    'vars' => $vars
+                    'vars' => $vars,
+                    'csrWithData' => $csrWithData,
+                    'csrData' => $csrData
         ]);
     }    
     public static function getAutoFillPrivateKeyField($privateKey) {

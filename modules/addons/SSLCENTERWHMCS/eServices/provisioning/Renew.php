@@ -316,52 +316,52 @@ class Renew {
 
         if(!isset($p->firstname) || empty($p->firstname))
         {
-            $p->firstname = $this->p['model']->client->firstname;
+            $p->firstname = $this->p['clientsdetails']['firstname'];
         }
-        
+
         if(!isset($p->lastname) || empty($p->lastname))
         {
-            $p->lastname = $this->p['model']->client->lastname;
+            $p->lastname = $$this->p['clientsdetails']['lastname'];
         }
-        
+
         if(!isset($p->orgname) || empty($p->orgname))
         {
-            $p->orgname = $this->p['model']->client->companyname;
+            $p->orgname = $this->p['clientsdetails']['companyname'];
         }
-        
+
         if(!isset($p->address1) || empty($p->address1))
         {
-            $p->address1 = $this->p['model']->client->address1;
+            $p->address1 = $this->p['clientsdetails']['address1'];
         }
-        
+
         if(!isset($p->phonenumber) || empty($p->phonenumber))
         {
-            $p->phonenumber = $this->p['model']->client->phonenumber;
+            $p->phonenumber = $this->p['clientsdetails']['phonenumber'];
         }
-        
+
         if(!isset($p->email) || empty($p->email))
         {
-            $p->email = $this->p['model']->client->email;
+            $p->email = $this->p['clientsdetails']['email'];
         }
-        
+
         if(!isset($p->city) || empty($p->city))
         {
-            $p->city = $this->p['model']->client->city;
+            $p->city = $this->p['clientsdetails']['city'];
         }
-        
+
         if(!isset($p->country) || empty($p->country))
         {
-            $p->country = $this->p['model']->client->country;
+            $p->country = $this->p['clientsdetails']['country'];
         }
-        
+
         if(!isset($p->postcode) || empty($p->postcode))
         {
-            $p->postcode = $this->p['model']->client->postcode;
+            $p->postcode = $this->p['clientsdetails']['postcode'];
         }
-        
+
         if(!isset($p->state) || empty($p->state))
         {
-            $p->state = $this->p['model']->client->state;
+            $p->state = $this->p['clientsdetails']['state'];
         }
 
         $order                   = [];

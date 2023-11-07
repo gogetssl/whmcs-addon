@@ -49,27 +49,27 @@
                                                   </div>\n\
                                                   <div class="form-group">\n\
                                                     <label class="control-label" for="ST">'+'{$MGLANG->T('stateLabel')}'+'</label>\n\
-                                                    <input class="form-control generateCsrInput"  id="stateOrProvinceName" placeholder="'+'{$MGLANG->T('statePlaceholder')}'+'" name="ST" required="" type="text">\n\
+                                                    <input class="form-control generateCsrInput"  id="stateOrProvinceName" placeholder="'+'{$MGLANG->T('statePlaceholder')}'+'" value="{$csrData['state']}" name="ST" required="" type="text">\n\
                                                   </div>\n\
                                                   <div class="form-group">\n\
                                                     <label class="control-label" for="L">'+'{$MGLANG->T('localityLabel')}'+'</label>\n\
-                                                    <input class="form-control generateCsrInput" id="localityName" placeholder="'+'{$MGLANG->T('localityPlaceholder')}'+'" name="L" required="" type="text">\n\
+                                                    <input class="form-control generateCsrInput" id="localityName" placeholder="'+'{$MGLANG->T('localityPlaceholder')}'+'" name="L" value="{$csrData['locality']}" required="" type="text">\n\
                                                   </div>\n\
                                                   <div class="form-group">\n\
                                                     <label class="control-label" for="O">'+'{$MGLANG->T('organizationLabel')}'+'</label>\n\
-                                                    <input class="form-control generateCsrInput" id="organizationName" placeholder="'+'{$MGLANG->T('organizationPlaceholder')}'+'" name="O" required="" type="text">\n\
+                                                    <input class="form-control generateCsrInput" id="organizationName" placeholder="'+'{$MGLANG->T('organizationPlaceholder')}'+'" name="O" required="" value="{$csrData['organization']}" type="text">\n\
                                                   </div>\n\
                                                   <div class="form-group">\n\
                                                     <label class="control-label" for="OU">'+'{$MGLANG->T('organizationanUnitLabel')}'+'</label>\n\
-                                                    <input class="form-control generateCsrInput" id="organizationalUnitName" placeholder="'+'{$MGLANG->T('organizationanUnitPlaceholder')}'+'" name="OU" required="" type="text">\n\
+                                                    <input class="form-control generateCsrInput" id="organizationalUnitName" placeholder="'+'{$MGLANG->T('organizationanUnitPlaceholder')}'+'" name="OU" value="{$csrData['org_unit']}" required="" type="text">\n\
                                                   </div>\n\
                                                   <div class="form-group">\n\
                                                     <label class="control-label" for="CN">'+'{$MGLANG->T('commonNameLabel')}'+'</label>\n\
-                                                    <input class="form-control generateCsrInput" autocomplete="off" id="commonName" placeholder="'+'{if $vars.wildcard}{$MGLANG->T('commonNamePlaceholderWildCard')}{else}{$MGLANG->T('commonNamePlaceholder')}{/if}'+'" name="CN" required="" type="text">\n\
+                                                    <input class="form-control generateCsrInput" autocomplete="off" id="commonName" placeholder="'+'{if $vars.wildcard}{$MGLANG->T('commonNamePlaceholderWildCard')}{else}{$MGLANG->T('commonNamePlaceholder')}{/if}'+'" name="CN" value="{$csrData['common_name']}" required="" type="text">\n\
                                                   </div>\n\
                                                   <div class="form-group">\n\
                                                     <label class="control-label" for="EA">'+'{$MGLANG->T('emailAddressLabel')}'+'</label>\n\
-                                                    <input class="form-control generateCsrInput" id="emailAddress" placeholder="'+'{$MGLANG->T('emailAddressPlaceholder')}'+'" name="EA" required="" type="text">\n\
+                                                    <input class="form-control generateCsrInput" id="emailAddress" placeholder="'+'{$MGLANG->T('emailAddressPlaceholder')}'+'" name="EA" value="{$csrData['email']}" required="" type="text">\n\
                                                   </div>\n\
                                               </div>\n\
                                             <div class="col-md-1"></div>\n\
@@ -87,7 +87,9 @@
                             </div\n\
                        </div>');  
         
-   
+
+        $("#countryName option[value=\"{$csrData['country']}\"]").attr('selected','');
+
         $('#modalgenerateCsrSubmit').prop('disabled',true);                
         $.urlParam = function(name){
             var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
