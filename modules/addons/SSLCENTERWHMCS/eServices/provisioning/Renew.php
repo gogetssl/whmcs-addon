@@ -473,7 +473,15 @@ class Renew {
                 if($san->validation_method == 'email')
                 {
                     $dns_names[] = $san->san_name;
-                    $approver_emails[] = $san->validation->email;
+
+                    if($san->validation->email == 'email')
+                    {
+                        $approver_emails[] = $order['approver_email'];
+                    }
+                    else
+                    {
+                        $approver_emails[] = $san->validation->email;
+                    }
                 }
                 else
                 {
