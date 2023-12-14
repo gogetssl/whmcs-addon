@@ -69,6 +69,7 @@ class home extends main\mgLibs\process\AbstractController {
 
             $url = \MGModule\SSLCENTERWHMCS\eRepository\whmcs\config\Config::getInstance()->getConfigureSSLUrl($sslService->id, $serviceId);
 
+            $vars['privateKey'] = '';
             $privateKey = $sslService->getPrivateKey();
             if($privateKey) {
                 $vars['privateKey'] = $privateKey;
@@ -319,7 +320,16 @@ class home extends main\mgLibs\process\AbstractController {
                 $sslService = $sslRepo->getByServiceId($input['params']['serviceid']);
                 $privateKey = $sslService->getPrivateKey();
 
-                $pemfile .= decrypt($privateKey);
+                if(!empty($privateKey))
+                {
+                    if (strpos($privateKey, '-----BEGIN PRIVATE KEY-----') !== false) {
+                        $pemfile .= $privateKey;
+                    }
+                    else {
+                        $pemfile .= decrypt($privateKey);
+                    }
+                }
+
                 $pemfile .= $certificateDetails['crt']. "\n";
                 $pemfile .= $certificateDetails['ca'];
                 
@@ -789,9 +799,13 @@ class home extends main\mgLibs\process\AbstractController {
         $privateKey = $sslService->getPrivateKey();
 
         if($privateKey = $sslService->getPrivateKey()) {
+            if (strpos($privateKey, '-----BEGIN PRIVATE KEY-----') === false) {
+                $privateKey =  decrypt($privateKey);
+            }
+
             $result = array(
                 'success'     => 1,
-                'privateKey'  => decrypt($privateKey)
+                'privateKey'  => $privateKey
             );
         } else {
             $result = array(
