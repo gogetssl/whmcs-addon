@@ -33,14 +33,21 @@ class Renew {
         {
             if(isset($apiConf->automatic_processing_of_renewal_orders) && $apiConf->automatic_processing_of_renewal_orders == '1')
             {
+                $resellerRenew = '';
                 try {
                     $this->checkRenew($this->p['serviceid']);
-                    $this->renewCertificate();
-                    $this->updateOneTime();
+                    $resellerRenew = $this->renewCertificate();
+                    if($resellerRenew != 'beforeConfiguration')
+                    {
+                        $this->updateOneTime();
+                    }
                 } catch (Exception $ex) {
                     return $ex->getMessage();
                 }
-                $this->addRenew($this->p['serviceid']);
+                if($resellerRenew != 'beforeConfiguration')
+                {
+                    $this->addRenew($this->p['serviceid']);
+                }
                 return 'success';
             }
             else
@@ -127,6 +134,11 @@ class Renew {
     private function renewCertificate() {
         $this->loadSslService();
         $this->loadApiProduct();
+
+        if(!isset($this->sslService->configdata) || empty($this->sslService->configdata))
+        {
+            return 'beforeConfiguration';
+        }
      
         $addSSLRenewOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLRenewOrder($this->getOrderParams()); 
         $service = Capsule::table('tblhosting')->where('id', $this->p['serviceid'])->first();
@@ -373,7 +385,16 @@ class Renew {
         
         if($p->dcv_method == 'email')
         {
-            $order['approver_email'] = $p->approveremail; // Required . amount of servers, for Unlimited pass “-1”
+            if(isset($p->approveremail->email) && !empty($p->approveremail->email))
+            {
+                $order['approver_email'] = $p->approveremail->email;
+            }
+            else
+            {
+                $order['approver_email'] = $p->approveremail;
+            }
+
+             // Required . amount of servers, for Unlimited pass “-1”
             if(empty($order['approver_email']) && isset($p->approver_method->email))
             {
                 $order['approver_email'] = $p->approver_method->email;
