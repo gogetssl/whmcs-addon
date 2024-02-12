@@ -28,6 +28,7 @@ You are highly welcome to send us requests for new features, suggestions, issues
 - Full integration, no invite links;
 - Multiple year support, up to 3 years;
 - One-time and Recurring payments
+- cPanel AutoSSL installation plugin
 - SAN/UCC/MDC support;
 - LEI codes for OV/EV orders
 - Online CSR Generator
