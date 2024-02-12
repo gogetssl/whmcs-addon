@@ -44,6 +44,9 @@ You are highly welcome to send us requests for new features, suggestions, issues
 
 ### Sub-Reseller network
 We support ["Products Reseller For WHMCS"](https://www.modulesgarden.com/products/whmcs/products-reseller#features) module from Modules Garden allowing to have own Sub-Resellers using WHMCS to expand your network. Please review [documentation](https://github.com/gogetssl/whmcs-addon/wiki/Sub-Resellers-module) for more details
+
+### cPanel AutoSSL Installation 
+Starting at v2.9.0, we provide ["cPanel AutoSSL installation"](https://github.com/gogetssl/whmcs-addon/wiki/cPanel-AutoSSL), allowing to validate and install SSL certificates automatically. 
 ***
 
 ### License
