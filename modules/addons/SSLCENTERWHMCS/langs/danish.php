@@ -312,3 +312,53 @@ $_LANG['viewAll']		= 'Vis alle';
 
 $_LANG['additionalSingleDomainInfo'] = 'This product has %s additional single domain SAN\'s included.';
 $_LANG['additionalSingleDomainWildcardInfo'] = 'This product has %s additional wildcard domain SAN\'s included.';
+
+$_LANG['addonAA']['userCommissions']['modal']['noClientAvaialblePlaceholder'] = 'No Client Avaialble Placeholder';
+$_LANG['addonAA']['userCommissions']['modal']['noProductAvaialblePlaceholder'] = 'No Product Avaialble Placeholder';
+$_LANG['addonAA']['userCommissions']['modal']['editCommissionRule'] = 'Edit Commission Rule';
+$_LANG['addonAA']['pagesLabels']['label']['logs'] = 'Logs';
+
+$_LANG['addonAA']['logs']['title'] = 'Logs';
+$_LANG['addonAA']['logs']['table']['id'] = 'Id';
+$_LANG['addonAA']['logs']['table']['client'] = 'Client';
+$_LANG['addonAA']['logs']['table']['service'] = 'Service';
+$_LANG['addonAA']['logs']['table']['type'] = 'Type';
+$_LANG['addonAA']['logs']['table']['msg'] = 'Msg';
+$_LANG['addonAA']['logs']['table']['date'] = 'Date';
+$_LANG['addonAA']['logs']['table']['actions'] = 'Actions';
+$_LANG['addonAA']['logs']['deleteItem'] = 'Delete Log';
+$_LANG['addonAA']['pagesLabels']['label']['orders'] = 'Orders';
+$_LANG['addonAA']['logs']['modal']['removeLog'] = 'Remove Log';
+$_LANG['addonAA']['logs']['modal']['removeLogInfo'] = 'Are you sure remove this log?';
+$_LANG['addonAA']['logs']['modal']['remove'] = 'Remove';
+$_LANG['addonAA']['logs']['modal']['close'] = 'Close';
+$_LANG['addonAA']['logs']['messages']['logIDNotProvided'] = 'Log ID Not Provided';
+$_LANG['addonAA']['logs']['button']['clear_logs'] = 'Clear logs';
+$_LANG['addonAA']['logs']['modal']['clearLogs'] = 'Clear Logs';
+$_LANG['addonAA']['logs']['modal']['clearLogsInfo'] = 'Are you sure you want to clear all logs?';
+$_LANG['addonAA']['logs']['modal']['Clear'] = 'Clear';
+$_LANG['addonAA']['logs']['messages']['clearSuccess'] = 'All logs have been cleared';
+$_LANG['addonAA']['logs']['messages']['removeSuccess'] = 'The log has been successfully deleted';
+$_LANG['Reissue Certificate'] = 'Reissue Certificate';
+$_LANG['serverCA']['home']['Configuration Submitted'] = 'Configuration Submitted';
+$_LANG['serverCA']['home']['anErrorOccurred'] = 'An Error Occurred';
+
+$_LANG['addonAA']['orders']['title'] = 'Orders';
+$_LANG['addonAA']['orders']['table']['id'] = 'Id';
+$_LANG['addonAA']['orders']['table']['client'] = 'Client';
+$_LANG['addonAA']['orders']['table']['service'] = 'Service';
+$_LANG['addonAA']['orders']['table']['order'] = 'SSL Order';
+$_LANG['addonAA']['orders']['table']['verification_method'] = 'Verification method';
+$_LANG['addonAA']['orders']['table']['status'] = 'Status';
+$_LANG['addonAA']['orders']['table']['date'] = 'Date';
+$_LANG['addonAA']['orders']['table']['actions'] = 'Actions';
+
+$_LANG['Choose a domain'] = 'Choose a domain';
+
+$_LANG['addonAA']['apiConfiguration']['cronCertificateInstaller']['pleaseNote'] = 'Please Note:';
+$_LANG['addonAA']['apiConfiguration']['cronCertificateInstaller']['info'] = 'In order to install certificate in cPanel, set the following command line cron (once a day suggested):';
+$_LANG['addonAA']['apiConfiguration']['cronCertificateInstaller']['commandLine']['cronFrequency'] = '0 0 * * *';
+
+$_LANG['addonAA']['orders']['table']['set as verified'] = 'Set as verified';
+$_LANG['addonAA']['orders']['table']['set as installed'] = 'Set as installed';
+$_LANG['addonAA']['orders']['messages']['Success'] = 'Success';

@@ -28,7 +28,7 @@ class San {
 
         $fields                 = [];
 
-        if($sanEnabledForWHMCSProduct == 'on') {
+        if($sanEnabledForWHMCSProduct == 'on' && $limit > 0) {
             $fields['sans_domains'] = [
                 'FriendlyName' => \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('sansFreindlyName') . sprintf(' (%s)', $limit),
                 'Type' => 'textarea',
@@ -38,7 +38,7 @@ class San {
 
             ];
         }
-        if($sanWildcardEnabledForWHMCSProduct == 'on') {
+        if($sanWildcardEnabledForWHMCSProduct == 'on' && $limitwildcard > 0) {
             $fields['wildcard_san'] = [
                 'FriendlyName' => \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('wildcardSansFreindlyName') . sprintf(' (%s)', $limitwildcard),
                 'Type' => 'textarea',

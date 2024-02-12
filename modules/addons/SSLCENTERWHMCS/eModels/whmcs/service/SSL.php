@@ -51,6 +51,11 @@ class SSL extends \Illuminate\Database\Eloquent\Model
         $this->configdata = $c;
     }
 
+    public function getRemoteId()
+    {
+        return $this->remoteid;
+    }
+
     public function getConfigdataKey($key)
     {
         $c = (array) $this->configdata;

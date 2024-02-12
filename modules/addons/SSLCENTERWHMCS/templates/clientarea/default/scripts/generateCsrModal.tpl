@@ -298,7 +298,7 @@
                         var tempkey = data.public_key;
                         var newkey = tempkey.substring(0, tempkey.length - 1);
                         
-                        generateCsrBtn.before('<textarea name="csr" id="inputCsr" rows="7" class="form-control">'+newkey+'</textarea>');
+                        generateCsrBtn.before('<textarea name="csr" id="inputCsr" rows="7" readonly class="form-control">'+newkey+'</textarea>');
                         $('input[name="privateKey"]').remove();
                         $('textarea[name="csr"]').closest('.form-group').after('<input class="form-control" type="hidden" name="privateKey" value="'+data.private_key+'" />');
                         closeModal(generateCsrModal);

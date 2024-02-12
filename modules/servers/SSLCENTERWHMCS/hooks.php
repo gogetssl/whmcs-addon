@@ -383,3 +383,18 @@ $(function(){
 JS;
 }
 });
+
+add_hook('ClientAreaHeadOutput', 1, function($vars) {
+
+    if($vars['template'] == 'twenty-one' && $vars['module'] == 'SSLCENTERWHMCS') {
+
+        return <<<HTML
+<script type="text/javascript">
+$(document).ready(function (){
+    $('.modal-header.panel-heading').css({'display':'block'});
+});
+</script>
+HTML;
+
+    }
+});

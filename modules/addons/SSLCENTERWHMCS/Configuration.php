@@ -2,8 +2,19 @@
 
 namespace MGModule\SSLCENTERWHMCS;
 
-use MGModule\SSLCENTERWHMCS as main;
-use Illuminate\Database\Capsule\Manager as Capsule;
+use MGModule\SSLCENTERWHMCS\mgLibs\process\AbstractConfiguration;
+use MGModule\SSLCENTERWHMCS\controllers\addon\admin\Cron;
+use MGModule\SSLCENTERWHMCS\eProviders\ApiProvider;
+use MGModule\SSLCENTERWHMCS\eModels\whmcs\service\SSL;
+use MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository as APIConfigurationRepo;
+use MGModule\SSLCENTERWHMCS\models\productPrice\Repository as ProductPriceRepo;
+use MGModule\SSLCENTERWHMCS\models\userCommission\Repository as UserCommissionRepo;
+use MGModule\SSLCENTERWHMCS\main\models\whmcs\service\Repository as ServiceRepo;
+use MGModule\SSLCENTERWHMCS\models\logs\Repository as LogsRepo;
+use MGModule\SSLCENTERWHMCS\models\orders\Repository as OrdersRepo;
+use MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService;
+use MGModule\SSLCENTERWHMCS\eHelpers\Invoice as InvoiceHelper;
+use MGModule\SSLCENTERWHMCS\eHelpers\Whmcs as LogsHelper;
 
 /**
  * Module Configuration
@@ -11,7 +22,7 @@ use Illuminate\Database\Capsule\Manager as Capsule;
  * @author Michal Czech <michael@modulesgarden.com>
  * @SuppressWarnings("unused")
  */
-class Configuration extends main\mgLibs\process\AbstractConfiguration
+class Configuration extends AbstractConfiguration
 {
     /**
      * Enable or disable debug mode in your module.
@@ -53,7 +64,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
      * Module version
      * @var string
      */
-    public $version = '2.8.18';
+    public $version = '2.9.0';
 
     /**
      * Module author
@@ -66,22 +77,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
      * @var type 
      */
     public $tablePrefix   = 'mgfw_';
-    public $modelRegister = array(
-        'models\testGroup\testItem\TestItem'
-        , 'models\testGroup\simpleItem\SimpleItem'
-        , 'models\categories\Category'
-        , 'models\accessDetails\AccessDetail'
-    );
-
-    function __construct()
-    {
-        /*
-          models\whmcs\product\configOptions\Repository::setConfiguration(array(
-
-          ));
-
-          $product = new models\whmcs\product\product($id); */
-    }
+    public $modelRegister = [];
 
     /**
      * Addon module visible in module
@@ -89,28 +85,15 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
      */
     function getAddonMenu()
     {
-        return array(
-            'apiConfiguration'      => array
-                (
-                'icon' => 'fa fa-key',
-            ),
-            'productsCreator'       => array
-                (
-                'icon' => 'fa fa-magic',
-            ),
-            'productsConfiguration' => array
-                (
-                'icon' => 'fa fa-edit',
-            ),
-            'importSSLOrder'        => array
-                (
-                'icon' => 'fa fa-download',
-            ),
-            'userCommissions'        => array
-                (
-                'icon' => 'fa fa-user-plus',
-            ),
-        );
+        return [
+            'apiConfiguration' => ['icon' => 'fa fa-key'],
+            'productsCreator' => ['icon' => 'fa fa-magic'],
+            'productsConfiguration' => ['icon' => 'fa fa-edit'],
+            'importSSLOrder' => ['icon' => 'fa fa-download'],
+            'userCommissions' => ['icon' => 'fa fa-user-plus'],
+            'orders' => ['icon' => 'fa fa-shopping-cart'],
+            'logs' => ['icon' => 'fa fa-list']
+        ];
     }
 
     /**
@@ -119,23 +102,9 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
      */
     function getClienMenu()
     {
-        return array(
-            'Orders' => array(
-                'icon' => 'glyphicon glyphicon-home'
-            ),
-                /* 'shared'     => array
-                  (
-                  'icon' => 'fa fa-key'
-                  ),
-                  'product'    => array
-                  (
-                  'icon' => 'fa fa-key'
-                  ),
-                  'categories' => array
-                  (
-                  'icon' => 'glyphicon glyphicon-th-list'
-                  ) */
-        );
+        return [
+            'Orders' => ['icon' => 'glyphicon glyphicon-home']
+        ];
     }
 
     /**
@@ -144,11 +113,9 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
      */
     function getServerMenu()
     {
-        return array(
-            'configuration' => array(
-                'icon' => 'glyphicon glyphicon-cog'
-            )
-        );
+        return [
+            'configuration' => ['icon' => 'glyphicon glyphicon-cog']
+        ];
     }
 
     /**
@@ -163,16 +130,7 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
      */
     public function getServerWHMCSConfig()
     {
-        return array(
-            'text_name'
-            , 'text_name2'
-            , 'checkbox_name'
-            , 'onoff'
-            , 'pass'
-            , 'some_option'
-            , 'some_option2'
-            , 'radio_field'
-        );
+        return ['text_name','text_name2','checkbox_name','onoff','pass','some_option','some_option2','radio_field'];
     }
 
     /**
@@ -192,17 +150,18 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
      */
     function activate()
     {
-        $apiConfigRepo       = new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository();
-        $apiConfigRepo->createApiConfigurationTable();
-        $apiProductPriceRepo = (new \MGModule\SSLCENTERWHMCS\models\productPrice\Repository())->createApiProductsPricesTable();
-        $userCommissionRepo = (new \MGModule\SSLCENTERWHMCS\models\userCommission\Repository())->createUserCommissionTable();
-        eServices\EmailTemplateService::createConfigurationTemplate();
-        eServices\EmailTemplateService::createCertyficateTemplate();
-        eServices\EmailTemplateService::createExpireNotificationTemplate();
-        eServices\EmailTemplateService::createRenewalTemplate();
-        eServices\EmailTemplateService::createReissueTemplate();
-        eHelpers\Invoice::createInfosTable();
-        eHelpers\Invoice::createPendingPaymentInvoice();
+        (new APIConfigurationRepo())->createApiConfigurationTable();
+        (new ProductPriceRepo())->createApiProductsPricesTable();
+        (new UserCommissionRepo())->createUserCommissionTable();
+        (new LogsRepo())->createLogsTable();
+        (new OrdersRepo())->createOrdersTable();
+        EmailTemplateService::createConfigurationTemplate();
+        EmailTemplateService::createCertyficateTemplate();
+        EmailTemplateService::createExpireNotificationTemplate();
+        EmailTemplateService::createRenewalTemplate();
+        EmailTemplateService::createReissueTemplate();
+        InvoiceHelper::createInfosTable();
+        InvoiceHelper::createPendingPaymentInvoice();
     }
 
     /**
@@ -211,15 +170,16 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
      */
     function deactivate()
     {
-        $apiConfigRepo       = new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository();
-        $apiConfigRepo->dropApiConfigurationTable();
-        $apiProductPriceRepo = (new \MGModule\SSLCENTERWHMCS\models\productPrice\Repository())->dropApiProductsPricesTable();
-        $userCommissionRepo = (new \MGModule\SSLCENTERWHMCS\models\userCommission\Repository())->dropUserCommissionTable();
-        eServices\EmailTemplateService::deleteConfigurationTemplate();
-        eServices\EmailTemplateService::deleteCertyficateTemplate();
-        eServices\EmailTemplateService::deleteExpireNotificationTemplate();
-        eServices\EmailTemplateService::deleteRenewalTemplate();
-        eServices\EmailTemplateService::deleteReissueTemplate();
+        (new APIConfigurationRepo())->dropApiConfigurationTable();
+        (new ProductPriceRepo())->dropApiProductsPricesTable();
+        (new UserCommissionRepo())->dropUserCommissionTable();
+        (new LogsRepo())->dropLogsTable();
+        (new OrdersRepo())->dropOrdersTable();
+        EmailTemplateService::deleteConfigurationTemplate();
+        EmailTemplateService::deleteCertyficateTemplate();
+        EmailTemplateService::deleteExpireNotificationTemplate();
+        EmailTemplateService::deleteRenewalTemplate();
+        EmailTemplateService::deleteReissueTemplate();
     }
 
     /**
@@ -230,58 +190,65 @@ class Configuration extends main\mgLibs\process\AbstractConfiguration
     {
         $version = $vars['version'];
 
-        eServices\EmailTemplateService::createExpireNotificationTemplate();
-        eServices\EmailTemplateService::updateConfigurationTemplate();
-        eServices\EmailTemplateService::updateRenewalTemplate();
-        eServices\EmailTemplateService::updateReissueTemplate();
-        eHelpers\Invoice::createInfosTable();
-        eHelpers\Invoice::createPendingPaymentInvoice();
-        $apiConfigRepo       = new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository();
-        $apiConfigRepo->updateApiConfigurationTable();
-        $apiProductPriceRepo = (new \MGModule\SSLCENTERWHMCS\models\productPrice\Repository())->updateApiProductsPricesTable();        
-        $userCommissionRepo = (new \MGModule\SSLCENTERWHMCS\models\userCommission\Repository())->updateUserCommissionTable();
+        EmailTemplateService::createExpireNotificationTemplate();
+        EmailTemplateService::updateConfigurationTemplate();
+        EmailTemplateService::updateRenewalTemplate();
+        EmailTemplateService::updateReissueTemplate();
+        InvoiceHelper::createInfosTable();
+        InvoiceHelper::createPendingPaymentInvoice();
+        (new APIConfigurationRepo())->updateApiConfigurationTable();
+        (new ProductPriceRepo())->updateApiProductsPricesTable();
+        (new UserCommissionRepo())->updateUserCommissionTable();
+        (new LogsRepo())->updateLogsTable();
+        (new OrdersRepo())->updateOrdersTable();
 
-        //set serrtificates as sent for old ssl orders
         if (version_compare($version, '1.0.32', '<='))
         {
-            $services   = new main\models\whmcs\service\Repository();
+            $services   = new ServiceRepo();
             $services->onlyStatus(['Active']);
-            eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS Upgrade Start.');
-            $serviceIDs = array();
+
+            LogsHelper::savelogActivitySSLCenter('SSLCENTER WHMCS Upgrade Start.');
+
+            $serviceIDs = [];
             foreach ($services->get() as $service)
             {
                 $product = $service->product();
-                //check if product is SSLCENTER
                 if ($product->serverType != 'SSLCENTERWHMCS')
                 {
                     continue;
                 }
 
-                $SSLOrder = new main\eModels\whmcs\service\SSL();
-                $ssl      = $SSLOrder->getWhere(array('serviceid' => $service->id, 'userid' => $service->clientID))->first();
+                $SSLOrder = new SSL();
+                $ssl      = $SSLOrder->getWhere([
+                    'serviceid' => $service->id,
+                    'userid' => $service->clientID
+                ])->first();
 
                 if ($ssl == NULL || $ssl->remoteid == '')
                 {
                     continue;
                 }
-                $apiOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($ssl->remoteid);
+
+                $apiOrder = ApiProvider::getInstance()->getApi()->getOrderStatus($ssl->remoteid);
                 if ($apiOrder['status'] !== 'active' || empty($apiOrder['ca_code']))
                 {
                     continue;
                 }
-                if ((new main\controllers\addon\admin\Cron())->checkIfCertificateSent($service->id))
+
+                if ((new Cron())->checkIfCertificateSent($service->id))
                     continue;
 
-                (new main\controllers\addon\admin\Cron())->setSSLCertificateAsSent($service->id);
+                (new Cron())->setSSLCertificateAsSent($service->id);
 
                 array_push($serviceIDs, $service->id);
             }
+
             if (!empty($serviceIDs))
             {
-                eHelpers\Whmcs::savelogActivitySSLCenter('SSL certificates associated with services with identifiers: ' . implode(', ', $serviceIDs) . ' have been marked as sent.');
+                LogsHelper::savelogActivitySSLCenter('SSL certificates associated with services with identifiers: ' . implode(', ', $serviceIDs) . ' have been marked as sent.');
             }
 
-            eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS Upgrade Completed.');
+            LogsHelper::savelogActivitySSLCenter('SSLCENTER WHMCS Upgrade Completed.');
         }
     }
 }

@@ -479,6 +479,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $vars['cronCommandLine4'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'certificateSender.php';
         $vars['cronCommandLine5'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'APIPriceUpdater.php';
         $vars['cronCommandLine6'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'certificateDetailsUpdater.php';
+        $vars['cronCommandLine7'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'installCertificates.php';
         
         return array
             (

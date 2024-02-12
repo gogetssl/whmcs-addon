@@ -1,6 +1,72 @@
 <div id="divhideme" style="display: none"></div>
 <script type="text/javascript">
     $(document).ready(function () {
+
+        $('#inputCsr').attr('readonly','');
+
+        {if $domains}
+
+            if(!$('.primary-content .card-body .alert-danger').length) {
+
+                let contentPage = $('#inputOrderType').parent('div.form-group').parent('div');
+
+                $(contentPage).hide();
+                $(contentPage).parent('div').next("div").hide();
+                $(contentPage).parent("div").append('<div class="card-body select-cpanel-server">' +
+                    '<h2>{$MGLANG->T('Choose a domain')}</h2>' +
+                    '<select id="step-type-data">' +
+                    '<option value="custom">{$MGLANG->T('Custom domain')}</option>' +
+                    '<optgroup label="cPanel">' +
+                    '</optgroup>' +
+                    '</select>' +
+                    '<div style="margin-top: 20px;" class="form-group"><button id="goto_next_step" class="btn btn-primary" type="button">{$MGLANG->T('Go to next step')}</button></div>' +
+                    '</div>');
+
+                {foreach $domains as $domain}
+                    $('#step-type-data optgroup').append('<option value="{$domain}">{$domain}</option>');
+                {/foreach}
+
+                $('body').on('click', '#goto_next_step', function () {
+                    let typeStep = $('#step-type-data').val();
+                    if (typeStep == 'custom') {
+                        $('.select-cpanel-server').hide();
+                        $('.select-cpanel-server').prev('div').show();
+                        $('.select-cpanel-server').prev('div').parent('div').next('div').show();
+                    } else {
+                        $.ajax({
+                            url: "index.php?m=SSLCENTERWHMCS&mg-page=Home&mg-action=generateCSR&json=1",
+                            type: "post",
+                            data: {
+                                domain: typeStep,
+                                country: $('select[name="C"]').val(),
+                                state: $('input[name="ST"]').val(),
+                                locality: $('input[name="L"]').val(),
+                                organization: $('input[name="O"]').val(),
+                                organizationUnit: $('input[name="OU"]').val(),
+                                email: $('input[name="EA"]').val()
+                            },
+                            success: function (response) {
+                                let results = JSON.parse(response);
+                                $('#inputCsr').val(results.public_key);
+                                $('#inputCsr').parent('div').append('<input class="form-control" type="hidden" name="privateKey" value="' + results.private_key + '">');
+                                $('#inputCsr').parent('div').hide();
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                console.log(textStatus, errorThrown);
+                            }
+                        });
+
+
+                        $('.select-cpanel-server').hide();
+                        $('.select-cpanel-server').prev('div').show();
+                        $('.select-cpanel-server').prev('div').parent('div').next('div').show();
+                    }
+                });
+            } else {
+                $('#inputCsr').parent('div').hide();
+            }
+        {/if}
+
         var brand = JSON.parse('{$brand}');
         $('textarea[name="csr"]').closest('.form-group').after('<input class="form-control" type="hidden" name="sslbrand" value="' + brand + '" />');
 
