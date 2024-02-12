@@ -1,4 +1,4 @@
-![alt text](https://gogetssl.com/images/logo-horizontal-270x81_powered.svg "Logo Title Text 1")
+![logo-horizontal-270x81_powered](https://github.com/gogetssl/whmcs-addon/assets/36668842/e48a2918-bb30-46bb-9f56-19e040ea5fea)
 # SSLCENTER WHMCS SSL Addon
 Free of charge SSL Addon for WHMCS to automate SSL certificate sales/distribution of via GoGetSSL.com platform
 
