@@ -3,6 +3,7 @@
 namespace MGModule\SSLCENTERWHMCS\eServices\provisioning;
 
 use Exception;
+use MGModule\SSLCENTERWHMCS\eModels\cpanelservices\Service;
 
 class SSLStepOne {
 
@@ -91,8 +92,11 @@ class SSLStepOne {
         {
             $wildCard = true;
         }
-        
-        $stepOneBaseScript    = \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getStepOneBaseScript($apiProduct->brand);
+
+        $cPanelService = new Service();
+        $domains = $cPanelService->getDomainByUser($this->p['userid']);
+
+        $stepOneBaseScript    = \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getStepOneBaseScript($apiProduct->brand, $domains);
         $orderTypeScript    = \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getOrderTypeScript($orderTypes, $fillVarsJSON);
         $webServerTypeSctipt  = \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getWebServerTypeSctipt($apiWebServersJSON);
         $autoFillFieldsScript = \MGModule\SSLCENTERWHMCS\eServices\ScriptService::getAutoFillFieldsScript($fillVarsJSON);        
@@ -109,7 +113,12 @@ class SSLStepOne {
         $fields['additionalfields']['<br />']['<br />'] = [
             'Description' => $stepOneBaseScript . $webServerTypeSctipt . $orderTypeScript . $autoFillFieldsScript . $generateCsrModalScript .$autoFillPrivateKeyField . $autoFillOrderTypeField,
         ];
-        
+
+        if(empty($fields['additionalfields']['SANs']))
+        {
+            unset($fields['additionalfields']['SANs']);
+        }
+
         return $fields;
 
     }

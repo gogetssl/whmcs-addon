@@ -4,6 +4,10 @@ namespace MGModule\SSLCENTERWHMCS\controllers\server\clientarea;
 
 use MGModule\SSLCENTERWHMCS as main;
 use WHMCS\Database\Capsule;
+use MGModule\SSLCENTERWHMCS\eModels\cpanelservices\Service;
+use MGModule\SSLCENTERWHMCS\eHelpers\Cpanel;
+use MGModule\SSLCENTERWHMCS\models\orders\Repository as OrderRepo;
+use MGModule\SSLCENTERWHMCS\models\logs\Repository as LogsRepo;
 
 /**
  * Description of home
@@ -79,6 +83,19 @@ class home extends main\mgLibs\process\AbstractController {
             if ($sslService->status !== 'Awaiting Configuration') {
                 try {
                     $certificateDetails = (array)$sslService->configdata;
+
+                    if(isset($certificateDetails['crt']) && !empty($certificateDetails['crt']))
+                    {
+                        $sslOrderRepo = new OrderRepo();
+                        $checkOrderSSL = $sslOrderRepo->checkOrdersInstallation($serviceId);
+
+                        $service = new Service();
+                        $serviceCpanel = $service->getServiceByDomain($input['params']['userid'], $input['params']['domain']);
+                        if($serviceCpanel !== false && $checkOrderSSL === true)
+                        {
+                            $vars['btnInstallCrt'] = true;
+                        }
+                    }
 
                     if(!empty($certificateDetails['partner_order_id'])) {
                         $vars['partner_order_id'] = $certificateDetails['partner_order_id'];
@@ -799,6 +816,7 @@ class home extends main\mgLibs\process\AbstractController {
         $privateKey = $sslService->getPrivateKey();
 
         if($privateKey = $sslService->getPrivateKey()) {
+
             if (strpos($privateKey, '-----BEGIN PRIVATE KEY-----') === false) {
                 $privateKey =  decrypt($privateKey);
             }
@@ -815,6 +833,37 @@ class home extends main\mgLibs\process\AbstractController {
         }
 
         return $result;
+    }
+
+    function installCertificateJSON($input, $vars = array()) {
+
+        $logsRepo = new LogsRepo();
+        $orderRepo = new OrderRepo();
+        $sslRepo   = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+        $sslService = $sslRepo->getByServiceId($input['params']['serviceid']);
+
+        $details = (array)$sslService->configdata;
+        $cert = $details['crt'];
+        $cabundle = $details['ca'];
+        $key = decrypt($details['private_key']);
+
+        try {
+
+            $service = new Service();
+            $serviceCpanel = $service->getServiceByDomain($sslService->userid, $details['domain']);
+            if($serviceCpanel !== false) {
+                $cpanel = new Cpanel();
+                $cpanel->setService($serviceCpanel);
+                $cpanel->installSSL($serviceCpanel->user, $details['domain'], $cert, $key, $cabundle);
+                $logsRepo->addLog($sslService->userid, $sslService->serviceid, 'success', 'The certificate for the ' . $details['domain'] . ' domain has been installed correctly.');
+                $orderRepo->updateStatus($sslService->serviceid, 'Success');
+            }
+
+        } catch (\Exception $e) {
+            $logsRepo->addLog($sslService->userid, $sslService->serviceid, 'error', '['.$details['domain'].'] Error: '.$e->getMessage());
+            return ['success' => 0, 'message' => $e->getMessage()];
+        }
+        return ['success' => 1, 'message' => main\mgLibs\Lang::getInstance()->T('The certificate has been installed correctly')];
     }
 
     function revalidateNewJSON($input, $vars = array()) {

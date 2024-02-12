@@ -242,6 +242,11 @@
                         <button type="button" id="btnRevalidateNew" class="btn btn-default" style="margin:2px">{$MGLANG->T('revalidate')}</button>
                     {/if}
                     {/if}
+
+                    {if $btnInstallCrt}
+                        <button type="button" id="installCertificate" class="btn btn-default" style="margin:2px">{$MGLANG->T('installCertificateBtn')}</button>
+                    {/if}
+
                     {if $configurationStatus != 'Awaiting Configuration'}
                         {if $dcv_method == 'email' && !$sans}
                             <button type="button" id="btnChange_Approver_Email" class="btn btn-default" style="margin:2px">{$MGLANG->T('changeValidationEmail')}</button>
@@ -1212,6 +1217,24 @@
                         }
                     }, false);
                 });
+
+                jQuery('#installCertificate').on("click",function(){
+
+                    $('#installCertificate').append(' <i class="fa fa-spinner fa-spin"></i>');
+                    JSONParser.request('installCertificate',{json: 1,id: serviceid}, function (data) {
+                        if (data.success == true) {
+                            $('#MGAlerts>div').css('display', 'none');
+                            $('#installCertificate').find('.fa-spinner').remove();
+                            $('#MGAlerts>div[data-prototype="success"]').show();
+                            $('#MGAlerts>div[data-prototype="success"] strong').html(data.message);
+                        } else if (data.success == false) {
+                            $('#installCertificate').find('.fa-spinner').remove();
+                            $('#MGAlerts>div[data-prototype="error"]').show();
+                            $('#MGAlerts>div[data-prototype="error"] strong').html(data.message);
+                        }
+                    }, false);
+                });
+
 
                 jQuery('#btnRevalidateNew').on("click",function(){
 

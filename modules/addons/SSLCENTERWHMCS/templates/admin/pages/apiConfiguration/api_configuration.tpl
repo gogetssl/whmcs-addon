@@ -73,6 +73,14 @@ Proin malesuada eros in risus accumsan euismod. Vivamus lacinia pellentesque nun
                     </div> 
                     <br />
                     <input type="text" class="form-control" value="{$MGLANG->T('cronCertificateDetailsUpdater', 'commandLine', 'cronFrequency')} {$cronCommandLine6}" readonly="">
+                    <br />
+                    <div class="col-lg-11 marginated">
+                        <span class="text-danger bold">{$MGLANG->T('cronCertificateInstaller','pleaseNote')}</span>
+                        <span>{$MGLANG->T('cronCertificateInstaller', 'info')}</span>
+                    </div>
+                    <br />
+                    <input type="text" class="form-control" value="{$MGLANG->T('cronCertificateInstaller', 'commandLine', 'cronFrequency')} {$cronCommandLine7}" readonly="">
+
                 </div>
             </div>
         </form>

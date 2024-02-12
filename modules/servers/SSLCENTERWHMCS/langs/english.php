@@ -212,3 +212,15 @@ $_LANG['addonCA']['customBackToServiceButtonLang'] = '« Back to Service Details
 
 $_LANG['additionalSingleDomainInfo'] = 'This product has %s additional single domain SAN\'s included.';
 $_LANG['additionalSingleDomainWildcardInfo'] = 'This product has %s additional wildcard domain SAN\'s included.';
+
+$_LANG['Reissue Certificate'] = 'Reissue Certificate';
+$_LANG['serverCA']['home']['Configuration Submitted'] = 'Configuration Submitted';
+$_LANG['serverCA']['home']['anErrorOccurred'] = 'An Error Occurred';
+$_LANG['serverCA']['Reissue Certificate'] = 'Reissue Certificate';
+
+$_LANG['Choose a domain'] = 'Choose a domain';
+$_LANG['Custom domain'] = 'Custom domain';
+$_LANG['Go to next step'] = 'Go to next step';
+$_LANG['serverCA']['home']['The certificate has been installed correctly'] = 'The certificate has been installed correctly.';
+
+$_LANG['serverCA']['home']['installCertificateBtn'] = 'Install Certificate';

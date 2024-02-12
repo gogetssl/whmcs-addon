@@ -6,6 +6,8 @@ use Exception;
 use \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service as Service;
 use \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product as Product;
 use WHMCS\Database\Capsule;
+use MGModule\SSLCENTERWHMCS\models\orders\Repository as OrderRepo;
+use MGModule\SSLCENTERWHMCS\models\logs\Repository as LogsRepo;
 
 class SSLStepThree {
 
@@ -443,25 +445,12 @@ class SSLStepThree {
         }
         
         $orderDetails = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($addedSSLOrder['order_id']);
-        
         if($this->p[ConfigOptions::MONTH_ONE_TIME] && !empty($this->p[ConfigOptions::MONTH_ONE_TIME]))
         {
             $service = new Service($this->p['serviceid']);
             $service->save(array('termination_date' => $orderDetails['valid_till']));
         }
-        
-        // logModuleCall(
-        //     'SSLCENTERWHMCS',
-        //     'CREATE',
-        //     $order,
-        //     $addedSSLOrder
-        // );
-        // logModuleCall(
-        //     'SSLCENTERWHMCS',
-        //     'CREATE',
-        //     $order,
-        //     $orderDetails
-        // );
+
         $this->sslConfig->setRemoteId($addedSSLOrder['order_id']); 
         $this->sslConfig->setApproverEmails($order['approver_emails']);
        
@@ -483,9 +472,191 @@ class SSLStepThree {
         $this->invoiceGenerator->markPreviousOrderAsCompleted($this->p['serviceid']);
         
         \MGModule\SSLCENTERWHMCS\eServices\FlashService::set('SSLCENTER_WHMCS_SERVICE_TO_ACTIVE', $this->p['serviceid']);
-        
         \MGModule\SSLCENTERWHMCS\eHelpers\Invoice::insertDomainInfoIntoInvoiceItemDescription($this->p['serviceid'], $decodedCSR['csrResult']['CN']);
-    }   
+
+        $sslOrder = Capsule::table('tblsslorders')->where('serviceid', $this->p['serviceid'])->first();
+        $orderRepo = new OrderRepo();
+        $orderRepo->addOrder(
+            $this->p['userid'],
+            $this->p['serviceid'],
+            $sslOrder->id,
+            $orderDetails['dcv_method'],
+            'Pending Verification',
+            $addedSSLOrder
+        );
+
+        $logs = new LogsRepo();
+        $logs-> addLog($this->p['userid'], $this->p['serviceid'], 'success', 'The order has been placed.');
+
+        $order = Capsule::table('SSLCENTER_orders')->where('service_id', $this->p['serviceid'])->first();
+        $sslOrder = Capsule::table('tblsslorders')->where('id', $order->ssl_order_id)->first();
+        $service = Capsule::table('tblhosting')->where('id', $this->p['serviceid'])->first();
+        $orderDetails = json_decode($order->data, true);
+
+
+        $revalidate = false;
+
+        foreach ($orderDetails['approver_method'] as $method => $data)
+        {
+            try {
+
+                $cPanelService = new \MGModule\SSLCENTERWHMCS\eModels\cpanelservices\Service();
+                $cpanelDetails = $cPanelService->getServiceByDomain($service->userid, $service->domain);
+                $cpanel = new \MGModule\SSLCENTERWHMCS\eHelpers\Cpanel();
+
+                if ($cpanelDetails === false) continue;
+
+                if ($method == 'http' || $method == 'https') {
+                    $cpanel->setService($cpanelDetails);
+                    $directory = $cpanel->getRootDirectory($cpanelDetails->user, $service->domain);
+                    $content = $data['content'];
+
+                    $cpanel->addDirectory($cpanelDetails->user, [
+                        [
+                            'dir' => $directory,
+                            'name' => '.well-known',
+                        ],
+                        [
+                            'dir' => $directory . '/.well-known',
+                            'name' => 'pki-validation',
+                        ]
+                    ]);
+
+                    $cpanel->saveFile($cpanelDetails->user, $data['filename'], $directory . '/.well-known/pki-validation/', $content);
+                    $logs-> addLog($this->p['userid'], $this->p['serviceid'], 'success', 'The '.$service->domain.' domain has been verified using the file method.');
+                    $revalidate = true;
+                }
+
+                if ($method == 'dns') {
+
+                    if (strpos($data['record'], 'CNAME') !== false) {
+                        $cpanel->setService($cpanelDetails);
+                        $records = explode('CNAME', $data['record']);
+                        $record = new \stdClass();
+                        $record->domain = $service->domain;
+                        $record->name = trim($records[0]).'.';
+                        $record->cname = trim($records[1]);
+                        $record->type = 'CNAME';
+                        $cpanel->addRecord($cpanelDetails->user, $record);
+                        $logs->addLog($this->p['userid'], $this->p['serviceid'], 'success', 'The ' . $service->domain . ' domain has been verified using the dns method.');
+                        $revalidate = true;
+                    }
+
+                    if (strpos($data['record'], 'IN   TXT') !== false) {
+                        $cpanel->setService($cpanelDetails);
+                        $records = explode('IN   TXT', $data['record']);
+                        $record = new \stdClass();
+                        $record->domain = $service->domain;
+                        $record->name = trim($records[0]);
+                        $record->type = 'TXT';
+                        $record->ttl = "14400";
+                        $record->txtdata = str_replace('"','', trim($records[1]));
+                        $cpanel->addRecord($cpanelDetails->user, $record);
+                        $logs->addLog($this->p['userid'], $this->p['serviceid'], 'success', 'The ' . $service->domain . ' domain has been verified using the dns method.');
+                        $revalidate = true;
+                    }
+
+                }
+
+            } catch (\Exception $e) {
+                $logs-> addLog($this->p['userid'], $this->p['serviceid'], 'error', '['.$service->domain.'] Error:'.$e->getMessage());
+                continue;
+            }
+        }
+
+        if(isset($orderDetails['san']) && !empty($orderDetails['san']))
+        {
+            foreach ($orderDetails['san'] as $san)
+            {
+                try {
+
+                    $cPanelService = new \MGModule\SSLCENTERWHMCS\eModels\cpanelservices\Service();
+                    $cpanelDetails = $cPanelService->getServiceByDomain($service->userid, $san['san_name']);
+
+                    if($cpanelDetails === false) continue;
+
+                    $cpanel = new \MGModule\SSLCENTERWHMCS\eHelpers\Cpanel();
+                    $cpanel->setService($cpanelDetails);
+
+                    if($san['validation_method'] == 'http' || $san['validation_method'] == 'https')
+                    {
+                        $directory = $cpanel->getRootDirectory($cpanelDetails->user, $san['san_name']);
+                        $content = $san['validation'][$san['validation_method']]['content'];
+
+                        $cpanel->addDirectory($cpanelDetails->user, [
+                            [
+                                'dir' => $directory,
+                                'name' => '.well-known',
+                            ],
+                            [
+                                'dir' => $directory . '/.well-known',
+                                'name' => 'pki-validation',
+                            ]
+                        ]);
+
+                        $cpanel->saveFile($cpanelDetails->user, $san['validation'][$san['validation_method']]['filename'], $directory.'/.well-known/pki-validation/', $content);
+                        $logs-> addLog($this->p['userid'], $this->p['serviceid'], 'success', 'The '.$san['san_name'].' domain has been verified using the file method.');
+                        $revalidate = true;
+                    }
+
+                    if($san['validation_method'] == 'dns')
+                    {
+
+                        if (strpos($san['validation'][$san['validation_method']]['record'], 'CNAME') !== false) {
+                            $records = explode('CNAME', $san['validation'][$san['validation_method']]['record']);
+                            $record = new \stdClass();
+                            $record->domain = $san['san_name'];
+                            $record->name = trim($records[0]).'.';
+                            $record->cname = trim($records[1]);
+                            $record->type = 'CNAME';
+                            $cpanel->addRecord($cpanelDetails->user, $record);
+                            $logs->addLog($this->p['userid'], $this->p['serviceid'], 'success', 'The ' . $san['san_name'] . ' domain has been verified using the dns method.');
+                            $revalidate = true;
+                        }
+
+                        if (strpos($san['validation'][$san['validation_method']]['record'], 'IN   TXT') !== false) {
+                            $records = explode('IN   TXT', $san['validation'][$san['validation_method']]['record']);
+                            $record = new \stdClass();
+                            $record->domain = $san['san_name'];
+                            $record->name = trim($records[0]);
+                            $record->type = 'TXT';
+                            $record->ttl = "14400";
+                            $record->txtdata = str_replace('"','', trim($records[1]));
+                            $cpanel->addRecord($cpanelDetails->user, $record);
+                            $logs->addLog($this->p['userid'], $this->p['serviceid'], 'success', 'The ' . $san['san_name'] . ' domain has been verified using the dns method.');
+                            $revalidate = true;
+                        }
+
+                    }
+
+                } catch (\Exception $e) {
+
+                    $logs-> addLog($this->p['userid'], $this->p['serviceid'], 'error', '['.$san['san_name'].'] Error:'.$e->getMessage());
+                    continue;
+                }
+            }
+        }
+
+        if($revalidate === true) {
+            try {
+
+                $dataAPI = [
+                    'domain' => $service->domain
+                ];
+                $response = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->revalidate($sslOrder->remoteid, $dataAPI);
+
+                $logs->addLog($this->p['userid'], $this->p['serviceid'], 'info', '[' . $service->domain . '] Revalidate,');
+
+                if (isset($response['success']) && !empty($response['success'])) {
+                    $orderRepo->updateStatus($this->p['serviceid'], 'Pending Installation');
+                    $logs->addLog($this->p['userid'], $this->p['serviceid'], 'success', '[' . $service->domain . '] Revalidate Succces.');
+                }
+
+            } catch (\Exception $e) {
+                $logs->addLog($this->p['userid'], $this->p['serviceid'], 'error', '[' . $service->domain . '] Error:' . $e->getMessage());
+            }
+        }
+}
         
     private function getSansDomainsValidationMethods() {  
         $data = [];

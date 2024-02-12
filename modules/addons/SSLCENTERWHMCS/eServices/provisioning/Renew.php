@@ -139,7 +139,7 @@ class Renew {
         {
             return 'beforeConfiguration';
         }
-     
+        
         $addSSLRenewOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLRenewOrder($this->getOrderParams()); 
         $service = Capsule::table('tblhosting')->where('id', $this->p['serviceid'])->first();
 
@@ -385,16 +385,7 @@ class Renew {
         
         if($p->dcv_method == 'email')
         {
-            if(isset($p->approveremail->email) && !empty($p->approveremail->email))
-            {
-                $order['approver_email'] = $p->approveremail->email;
-            }
-            else
-            {
-                $order['approver_email'] = $p->approveremail;
-            }
-
-             // Required . amount of servers, for Unlimited pass “-1”
+            $order['approver_email'] = $p->approveremail; // Required . amount of servers, for Unlimited pass “-1”
             if(empty($order['approver_email']) && isset($p->approver_method->email))
             {
                 $order['approver_email'] = $p->approver_method->email;
@@ -494,15 +485,7 @@ class Renew {
                 if($san->validation_method == 'email')
                 {
                     $dns_names[] = $san->san_name;
-
-                    if($san->validation->email == 'email')
-                    {
-                        $approver_emails[] = $order['approver_email'];
-                    }
-                    else
-                    {
-                        $approver_emails[] = $san->validation->email;
-                    }
+                    $approver_emails[] = $san->validation->email;
                 }
                 else
                 {

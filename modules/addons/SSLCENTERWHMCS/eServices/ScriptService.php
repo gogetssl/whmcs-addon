@@ -32,8 +32,8 @@ class ScriptService {
         ]);
     }
     
-    public static function getStepOneBaseScript($brand) {
-        return TemplateService::buildTemplate(self::STEP_ONE_BASE, ['brand' => json_encode($brand)]);
+    public static function getStepOneBaseScript($brand, $domains = []) {
+        return TemplateService::buildTemplate(self::STEP_ONE_BASE, ['brand' => json_encode($brand), 'domains' => $domains]);
     }
     public static function getOrderTypeScript($orderTypes, $fillVarsJSON) {
         return TemplateService::buildTemplate(self::ORDER_TYPE,[
