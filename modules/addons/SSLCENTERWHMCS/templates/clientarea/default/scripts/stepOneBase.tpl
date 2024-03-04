@@ -4,6 +4,22 @@
 
         $('#inputCsr').attr('readonly','');
 
+
+        $('<div><input style="width: 15px;height: 15px;float: left;" type="checkbox" id="csrReadOnly" /><label for="csrReadOnly" style="font-size: 13px;float: left;margin-top: -20px;margin-left: 20px;">{$MGLANG->T('csrReadOnly')}</label></div>').insertBefore("#inputCsr");
+
+
+        $('body').on('change','#csrReadOnly',function (){
+            if(this.checked)
+            {
+                $('#inputCsr').removeAttr('readonly');
+            }
+            else
+            {
+                $('#inputCsr').attr('readonly','');
+            }
+        });
+
+
         {if $domains}
 
             if(!$('.primary-content .card-body .alert-danger').length) {

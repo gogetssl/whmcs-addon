@@ -9,7 +9,7 @@ use MGModule\SSLCENTERWHMCS\eModels\whmcs\service\SSL;
 use MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository as APIConfigurationRepo;
 use MGModule\SSLCENTERWHMCS\models\productPrice\Repository as ProductPriceRepo;
 use MGModule\SSLCENTERWHMCS\models\userCommission\Repository as UserCommissionRepo;
-use MGModule\SSLCENTERWHMCS\main\models\whmcs\service\Repository as ServiceRepo;
+use MGModule\SSLCENTERWHMCS\models\whmcs\service\Repository as ServiceRepo;
 use MGModule\SSLCENTERWHMCS\models\logs\Repository as LogsRepo;
 use MGModule\SSLCENTERWHMCS\models\orders\Repository as OrdersRepo;
 use MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService;
@@ -64,7 +64,7 @@ class Configuration extends AbstractConfiguration
      * Module version
      * @var string
      */
-    public $version = '2.9.0';
+    public $version = '2.9.1';
 
     /**
      * Module author
