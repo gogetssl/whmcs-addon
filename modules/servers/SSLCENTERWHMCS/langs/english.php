@@ -224,3 +224,5 @@ $_LANG['Go to next step'] = 'Go to next step';
 $_LANG['serverCA']['home']['The certificate has been installed correctly'] = 'The certificate has been installed correctly.';
 
 $_LANG['serverCA']['home']['installCertificateBtn'] = 'Install Certificate';
+
+$_LANG['csrReadOnly'] = 'Tick to enter your CSR, remember that if you want to use automatic certificate installation you must use the button to generate CSR.';
