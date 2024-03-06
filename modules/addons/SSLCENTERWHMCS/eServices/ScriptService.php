@@ -33,7 +33,9 @@ class ScriptService {
     }
     
     public static function getStepOneBaseScript($brand, $domains = []) {
-        return TemplateService::buildTemplate(self::STEP_ONE_BASE, ['brand' => json_encode($brand), 'domains' => $domains]);
+        $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+        $auto_install_cpanel = $apiConf->auto_install_cpanel;
+        return TemplateService::buildTemplate(self::STEP_ONE_BASE, ['brand' => json_encode($brand), 'domains' => $domains, 'auto_install_cpanel' => $auto_install_cpanel]);
     }
     public static function getOrderTypeScript($orderTypes, $fillVarsJSON) {
         return TemplateService::buildTemplate(self::ORDER_TYPE,[
