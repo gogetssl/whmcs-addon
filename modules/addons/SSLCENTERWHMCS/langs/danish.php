@@ -49,6 +49,7 @@ $_LANG['addonAA']['apiConfiguration']['item']['tech_legend']['label']           
 $_LANG['addonAA']['apiConfiguration']['item']['csr_generator_legend']['label']                         = 'CSR Generator';
 $_LANG['addonAA']['apiConfiguration']['item']['display_csr_generator']['label']                        = 'Tillad brugen af CSR Generator';
 $_LANG['addonAA']['apiConfiguration']['item']['profile_data_csr']['label']                             = 'Use Profile Data for CSR';
+$_LANG['addonAA']['apiConfiguration']['item']['auto_install_cpanel']['']['autoInstallCpanel']          = 'Tick this box if you want to use automatic certificate installation in cPanel';
 $_LANG['addonAA']['apiConfiguration']['item']['default_csr_generator_country']['description']          = 'Standardvalget';
 $_LANG['addonAA']['apiConfiguration']['item']['display_ca_summary']['label']                           = 'Vis Ordreoversigt';
 $_LANG['addonAA']['apiConfiguration']['item']['client_area_summary_orders']['label']                   = 'Klientområde Ordreoversigt';

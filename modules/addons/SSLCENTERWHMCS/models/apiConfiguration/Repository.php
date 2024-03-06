@@ -36,6 +36,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'use_admin_contact'                      => $params['use_admin_contact'],
                         'display_csr_generator'                  => $params['display_csr_generator'],
                         'profile_data_csr'                       => $params['profile_data_csr'],
+                        'auto_install_cpanel'                    => $params['auto_install_cpanel'],
                         'tech_firstname'                         => $params['tech_firstname'],
                         'tech_lastname'                          => $params['tech_lastname'],
                         'tech_organization'                      => $params['tech_organization'],
@@ -85,6 +86,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'use_admin_contact'                      => $params['use_admin_contact'],
                         'display_csr_generator'                  => $params['display_csr_generator'],
                         'profile_data_csr'                       => $params['profile_data_csr'],
+                        'auto_install_cpanel'                    => $params['auto_install_cpanel'],
                         'tech_firstname'                         => $params['tech_firstname'],
                         'tech_lastname'                          => $params['tech_lastname'],
                         'tech_organization'                      => $params['tech_organization'],
@@ -131,6 +133,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 $table->boolean('use_admin_contact');
                 $table->boolean('display_csr_generator');
                 $table->boolean('profile_data_csr');
+                $table->boolean('auto_install_cpanel');
                 $table->boolean('auto_renew_invoice_one_time');
                 $table->boolean('auto_renew_invoice_reccuring');
                 $table->boolean('send_expiration_notification_reccuring');
@@ -316,6 +319,13 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 Capsule::schema()->table($this->tableName, function($table)
                 {
                     $table->boolean('profile_data_csr');
+                });
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'auto_install_cpanel'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->boolean('auto_install_cpanel');
                 });
             }
             /* 'renew_invoice_days_reccuring'          

@@ -275,6 +275,15 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->colWidth = 2;
         $field->continue = true;
 
+        $field           = new main\mgLibs\forms\CheckboxField();
+        $field->name     = 'auto_install_cpanel';
+        $field->options  = ['autoInstallCpanel'];
+        $field->value    = $input['auto_install_cpanel'] ? ['autoInstallCpanel'] : [''];
+        $form->addField($field);
+        $field->inline   = true;
+        $field->colWidth = 2;
+        $field->continue = true;
+
         $field       = new main\mgLibs\forms\LegendField();
         $field->name = 'send_certificate_template';
         $form->addField($field);
@@ -499,6 +508,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
                     'use_admin_contact',
                     'display_csr_generator',
                     'profile_data_csr',
+                    'auto_install_cpanel',
                     'auto_renew_invoice_one_time',
                     'auto_renew_invoice_reccuring',
                     'send_expiration_notification_reccuring',
