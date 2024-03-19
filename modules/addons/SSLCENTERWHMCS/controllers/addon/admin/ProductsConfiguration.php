@@ -152,6 +152,11 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
                 {
                     $productModel->updateProductParam($product->id, 'configoption8', $input['configoption8']);
                 }
+
+                if(isset($input['issued_ssl_message']) && !empty($input['issued_ssl_message']))
+                {
+                    $productModel->updateProductParam($product->id, 'configoption23', $input['issued_ssl_message']);
+                }
                 
                 if(isset($input['custom_guide']) && !empty($input['custom_guide']))
                 {

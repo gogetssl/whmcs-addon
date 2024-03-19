@@ -68,7 +68,12 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
             C::PRODUCT_ENABLE_SAN => $input[C::PRODUCT_ENABLE_SAN] ? $input[C::PRODUCT_ENABLE_SAN] : '',
             C::PRODUCT_INCLUDED_SANS => $input[C::PRODUCT_INCLUDED_SANS] ? $input[C::PRODUCT_INCLUDED_SANS] : 0,
         ];
-        
+
+        if(isset($input['issued_ssl_message']) && !empty($input['issued_ssl_message']))
+        {
+            $productData['configoption23'] = $input['issued_ssl_message'];
+        }
+
         if(isset($input['custom_guide']) && !empty($input['custom_guide']))
         {
             $productData['configoption24'] = $input['custom_guide'];

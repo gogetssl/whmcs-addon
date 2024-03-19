@@ -31,6 +31,13 @@
                     <input type="text" class="form-control" name="name" value="" required/>
                 </div>
             </div>
+
+            <div class="form-group">
+                <label class="control-label col-sm-2">{$MGLANG->T('issued_ssl_message')}</label>
+                <div class="col-sm-10">
+                    <textarea class="form-control" name="issued_ssl_message"></textarea>
+                </div>
+            </div>
                 
             <div class="form-group">
                 <label class="control-label col-sm-2">{$MGLANG->T('customguide')}</label>

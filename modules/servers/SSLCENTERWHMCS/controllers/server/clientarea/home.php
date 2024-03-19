@@ -396,6 +396,7 @@ class home extends main\mgLibs\process\AbstractController {
             $vars['error'] = $ex->getMessage();
         }
 
+        $vars['configoption23'] = $input['params']['configoption23'];
         $vars['configoption24'] = $input['params']['configoption24'];
            
         $vars['approver_email'] = isset($sslService->configdata->approver_method->email) && !empty($sslService->configdata->approver_method->email) ? $sslService->configdata->approver_method->email : false;
