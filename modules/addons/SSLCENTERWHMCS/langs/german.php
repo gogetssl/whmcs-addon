@@ -130,7 +130,7 @@ $_LANG['addonAA']['apiConfiguration']['messages']['api_connection_success'] = 'V
 
 $_LANG['addonAA']['productsConfiguration']['sslCenterProduct']    = 'SSLCenter-Produkt:';
 $_LANG['addonAA']['productsConfiguration']['productName']         = 'Produktname:';
-$_LANG['addonAA']['productsConfiguration']['customguide']         = 'Custom Guide:';
+$_LANG['addonAA']['productsConfiguration']['customguide']         = 'Processing SSL message:';
 $_LANG['addonAA']['productsConfiguration']['configurableOptions'] = 'Konfigurierbare Optionen SAN:';
 $_LANG['addonAA']['productsConfiguration']['configurableOptionsWildcard'] = 'Konfigurierbare Optionen Wildcard SAN:';
 $_LANG['addonAA']['productsConfiguration']['createConfOptions']   = 'Generieren';
@@ -186,7 +186,7 @@ $_LANG['addonAA']['productsConfiguration']['messages'][''] = '';
 $_LANG['addonAA']['productsCreator']['singleProductCreator'] = 'Einzelprodukt-Ersteller';
 $_LANG['addonAA']['productsCreator']['sslCenterProduct']     = 'SSLCenter-Produkt:';
 $_LANG['addonAA']['productsCreator']['productName']          = 'Produktname:';
-$_LANG['addonAA']['productsCreator']['customguide']          = 'Custom Guide:';
+$_LANG['addonAA']['productsCreator']['customguide']          = 'Processing SSL message:';
 $_LANG['addonAA']['productsCreator']['productGroup']         = 'Produktgruppe:';
 $_LANG['addonAA']['productsCreator']['autoSetup']            = 'Automatische Einrichtung:';
 $_LANG['addonAA']['productsCreator']['autoSetupOrder']       = 'Das Produkt automatisch einrichten, sobald eine Bestellung aufgegeben wird';

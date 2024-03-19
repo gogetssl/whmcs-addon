@@ -34,7 +34,14 @@
                 
                 <div style="padding:0 15px;">
                     <h2 style="margin-bottom:50px">{$MGLANG->T('setForManyProducts')}</h2>
-                    
+
+                    <div class="form-group">
+                        <label class="control-label col-sm-2">{$MGLANG->T('issued_ssl_message')}</label>
+                        <div class="col-sm-10" style="padding:0;">
+                            <textarea class="form-control mg-product-commission" name="issued_ssl_message"></textarea>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                             <label class="control-label col-sm-2">{$MGLANG->T('customguide')}</label>
                             <div class="col-sm-10" style="padding:0;"> 
@@ -124,6 +131,13 @@
                                 <label class="control-label col-sm-2">{$MGLANG->T('productName')}</label>
                                 <div class="col-sm-10">
                                     <input type="text" class="form-control" name="product[{$product->id}][name]" value="{$product->name}">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">{$MGLANG->T('issued_ssl_message')}</label>
+                                <div class="col-sm-10">
+                                    <textarea class="form-control" name="product[{$product->id}][issued_ssl_message]">{$product->configoption23}</textarea>
                                 </div>
                             </div>
                                 

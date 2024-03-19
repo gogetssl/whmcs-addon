@@ -168,6 +168,11 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository {
             main\eServices\ConfigurableOptionService::assignToProductWildcard($productId, $update['name'], $group->groupid);
         }
         
+        if(isset($params['issued_ssl_message']) && !empty($params['issued_ssl_message']))
+        {
+            $update['configoption23'] = $params['issued_ssl_message'];
+        }
+
         if(isset($params['custom_guide']) && !empty($params['custom_guide']))
         {
             $update['configoption24'] = $params['custom_guide'];

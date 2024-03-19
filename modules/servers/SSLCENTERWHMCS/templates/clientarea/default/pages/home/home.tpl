@@ -36,14 +36,24 @@
             <col style="width: 80%"/>
         </colgroup>
         <tbody>
+            {if $activationStatus === 'active'}
+                {if $configoption23}
+                    <tr>
+                        <td class="text-left">{$MGLANG->T('issued_ssl_message')}</td>
+                        <td class="text-left">{$configoption23|nl2br}</td>
+                    </tr>
+                {/if}
+            {/if}
             {if $activationStatus === 'processing' && $custom_guide} 
             <tr>
                 <td class="text-left">{$MGLANG->T('custom_guide')}</td>
-                {if $configoption24}
-                    <td class="text-left">{$configoption24|nl2br}</td>
-                {else}
-                    <td class="text-left">{$custom_guide|nl2br}</td>
-                {/if}
+                <td class="text-left">{$custom_guide|nl2br}</td>
+            </tr>
+            {/if}
+            {if $activationStatus === 'processing' && $configoption24}
+            <tr>
+                <td class="text-left">{$MGLANG->T('custom_guide')}</td>
+                <td class="text-left">{$configoption24|nl2br}</td>
             </tr>
             {/if}
             <tr>
