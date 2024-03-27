@@ -542,7 +542,7 @@
                                         <tr>
                                             <th>{$MGLANG->T('revalidateModalDomainLabel')}</th>
                                             <th style="width:35%;">{$MGLANG->T('revalidateModalMethodLabel')}</th>
-                                            <th> {if 'email'|in_array:$disabledValidationMethods} {else}{$MGLANG->T('revalidateModalEmailLabel')}{/if}</th>
+                                            <th> {if $disabledValidationMethods|is_array && 'email'|in_array:$disabledValidationMethods} {else}{$MGLANG->T('revalidateModalEmailLabel')}{/if}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -552,16 +552,16 @@
                                                 <div class="form-group">
                                                     <select style="width:70%;" type="text" name="newDcvMethod_0" class="form-control modalRevalidateInput" >
                                                         <option value="" selected>{$MGLANG->T('pleaseChooseOne')}</option>
-                                                        {if !'email'|in_array:$disabledValidationMethods}
+                                                        {if $disabledValidationMethods|is_array && !'email'|in_array:$disabledValidationMethods}
                                                             <option value="email">{$MGLANG->T('revalidateModalMethodEmail')}</option>
                                                         {/if}
-                                                        {if !'http'|in_array:$disabledValidationMethods}
+                                                        {if $disabledValidationMethods|is_array && !'http'|in_array:$disabledValidationMethods}
                                                             <option value="http">{$MGLANG->T('revalidateModalMethodHttp')}</option>
                                                         {/if}
-                                                        {if !'https'|in_array:$disabledValidationMethods}
+                                                        {if $disabledValidationMethods|is_array && !'https'|in_array:$disabledValidationMethods}
                                                             <option value="https">{$MGLANG->T('revalidateModalMethodHttps')}</option>
                                                         {/if}
-                                                        {if !'dns'|in_array:$disabledValidationMethods}
+                                                        {if $disabledValidationMethods|is_array && !'dns'|in_array:$disabledValidationMethods}
                                                         <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>
                                                         {/if}
                                                         
@@ -590,16 +590,16 @@
                                                             <div class="form-group">
                                                                 <select style="width:70%;" type="text" name="newDcvMethod_{$i}" class="form-control modalRevalidateInput">
                                                                     <option value="" selected>{$MGLANG->T('pleaseChooseOne')}</option>
-                                                                    {if !'email'|in_array:$disabledValidationMethods}
+                                                                    {if $disabledValidationMethods|is_array && !'email'|in_array:$disabledValidationMethods}
                                                                         <option value="email">{$MGLANG->T('revalidateModalMethodEmail')}</option>
                                                                     {/if}
-                                                                    {if !'http'|in_array:$disabledValidationMethods}
+                                                                    {if $disabledValidationMethods|is_array && !'http'|in_array:$disabledValidationMethods}
                                                                         <option value="http">{$MGLANG->T('revalidateModalMethodHttp')}</option>
                                                                     {/if}
-                                                                    {if !'https'|in_array:$disabledValidationMethods}
+                                                                    {if $disabledValidationMethods|is_array && !'https'|in_array:$disabledValidationMethods}
                                                                         <option value="https">{$MGLANG->T('revalidateModalMethodHttps')}</option>
                                                                     {/if}
-                                                                    {if !'dns'|in_array:$disabledValidationMethods}
+                                                                    {if $disabledValidationMethods|is_array && !'dns'|in_array:$disabledValidationMethods}
                                                                         <option value="dns">{$MGLANG->T('revalidateModalMethodDns')}</option>
                                                                     {/if}
                                                                 </select>

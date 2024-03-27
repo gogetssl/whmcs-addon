@@ -331,7 +331,7 @@ class SSLCenterApi {
         $configuration = new Configuration();
 
         $headers = [];
-        $headers[] = 'user_agent: whmcs/'.$configuration->version;
+        $headers[] = 'User-Agent: whmcs/'.$configuration->version;
 
         curl_setopt($c, CURLOPT_HTTPHEADER, $headers);
 

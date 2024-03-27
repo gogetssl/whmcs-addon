@@ -13,7 +13,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
 {
 
     /**
-     * This is default page. 
+     * This is default page.
      * @param type $input
      * @param type $vars
      * @return type
@@ -26,6 +26,8 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
             $apiConfigRepo = new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository();
             $input         = (array) $apiConfigRepo->get();
 
+            $input['tech_phone'] = '+'.$input['tech_phone'];
+
             $productsRepo = new main\models\whmcs\product\Products();
             $productsRepo->onlyModule(main\eHelpers\Migration::MODULE_NAME);
 
@@ -35,13 +37,13 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
             }
             $SSLOrders = new main\eRepository\whmcs\service\SSL();
             $orders    = $SSLOrders->getBy(array('module' => main\eHelpers\Migration::MODULE_NAME));
-            
+
             foreach ($orders as $ssl)
             {
-                $oldModuleServices[] = '<a target="_blank" href="clientsservices.php?id=' . $ssl->serviceid . '">#' . $ssl->serviceid . '</a>';                
+                $oldModuleServices[] = '<a target="_blank" href="clientsservices.php?id=' . $ssl->serviceid . '">#' . $ssl->serviceid . '</a>';
             }
         }
-        
+
         $form = new main\mgLibs\forms\Creator('item');
 
         $field        = new main\mgLibs\forms\TextField();
@@ -59,24 +61,24 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $form->addField('button', 'testConnection', array(
             'value' => 'testConnection',
         ));
-        
+
         $tblcurrencies = Capsule::table('tblcurrencies')->where('default', '1')->first();
         $whmcsDefaultCurrency = $tblcurrencies->code;
         $sslCenterCurrency = '';
-        
+
         try{
-            
+
             $api = new \MGModule\SSLCENTERWHMCS\mgLibs\SSLCenterApi();
             $authKey = $api->auth($input['api_login'], $input['api_password']);
             $details = $api->getAccountDetails();
             $sslCenterCurrency = $details['currency'];
-            
+
         } catch (\Exception $e) {
-            
+
             $sslCenterCurrency = 'Not set';
-            
+
         }
-        
+
         $vars['whmcsCurrency'] = $whmcsDefaultCurrency;
         $vars['sslcenterCurrency'] = $sslCenterCurrency;
 
@@ -92,7 +94,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->value    = $input['rate'];
         $field->error    = $this->getFieldError('rate');
         $form->addField($field);
-        
+
         $field       = new main\mgLibs\forms\LegendField();
         $field->name = 'data_migration_legend';
         $form->addField($field);
@@ -111,11 +113,11 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->name = 'data_migration';
 
         $form->addField($field);
-        
+
         $field       = new main\mgLibs\forms\LegendField();
         $field->name = 'logs_settings_legend';
         $form->addField($field);
-        
+
         $field                    = new main\mgLibs\forms\CheckboxField();
         $field->name              = 'save_activity_logs';
         $field->options           = ['save_activity_logs'];
@@ -129,7 +131,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field       = new main\mgLibs\forms\LegendField();
         $field->name = 'renewal_settings_legend';
         $form->addField($field);
-        
+
         $field                    = new main\mgLibs\forms\CheckboxField();
         $field->name              = 'visible_renew_button';
         $field->options           = ['visible_renew_button'];
@@ -139,7 +141,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->continue          = false;
         $field->enableDescription = true;
         $form->addField($field);
-        
+
         $field                    = new main\mgLibs\forms\CheckboxField();
         $field->name              = 'renew_new_order';
         $field->options           = ['renew_new_order'];
@@ -173,7 +175,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->options           = array('30' => '30', '21' => '21', '14' => '14', '7' => '7', '3' => '3', '1' => '1', '0' => '0');
         $field->error             = $this->getFieldError('renew_invoice_days_reccuring');
         $form->addField($field);
-        
+
         $field                    = new main\mgLibs\forms\CheckboxField();
         $field->name              = 'send_expiration_notification_reccuring';
         $field->options           = ['send_expiration_notification_reccuring'];
@@ -218,7 +220,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->continue          = false;
         $field->enableDescription = true;
         $form->addField($field);
-        
+
         $field                    = new main\mgLibs\forms\CheckboxField();
         $field->name              = 'automatic_processing_of_renewal_orders';
         $field->options           = ['automatic_processing_of_renewal_orders'];
@@ -287,7 +289,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field       = new main\mgLibs\forms\LegendField();
         $field->name = 'send_certificate_template';
         $form->addField($field);
-        
+
         $field           = new main\mgLibs\forms\TextareaField();
         $field->readonly = false;
         $field->name     = 'custom_guide';
@@ -324,7 +326,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->continue          = false;
         $field->enableDescription = false;
         $form->addField($field);
-        
+
         $field           = new main\mgLibs\forms\TextField();
         $field->readonly = false;
         $field->name     = 'sidebar_templates';
@@ -361,7 +363,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->continue          = false;
         $field->enableDescription = false;
         $form->addField($field);
-        
+
         $field                    = new main\mgLibs\forms\CheckboxField();
         $field->name              = 'email_whois';
         $field->options           = ['email_whois'];
@@ -489,7 +491,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $vars['cronCommandLine5'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'APIPriceUpdater.php';
         $vars['cronCommandLine6'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'certificateDetailsUpdater.php';
         $vars['cronCommandLine9'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'installCertificates.php';
-        
+
         return array
             (
             //You have to create tpl file  /modules/addons/SSLCENTERWHMCS/templates/admin/pages/example1/example.1tpl
@@ -546,8 +548,15 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
                     $input['default_csr_generator_country'] = NULL;
                 }
 
+                if(!empty($input['tech_phone']))
+                {
+                    $input['tech_phone'] = $input['country-calling-code-tech_phone'].' '.$input['tech_phone'];
+                }
+
                 $apiConfigRepo = new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository();
                 $apiConfigRepo->setConfiguration($input);
+
+                redir('module=SSLCENTERWHMCS','addonmodules.php');
             }
             catch (\Exception $ex)
             {
@@ -603,7 +612,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
     }
 
     /**
-     * This is custom page. 
+     * This is custom page.
      * @param type $input
      * @param type $vars
      * @return type

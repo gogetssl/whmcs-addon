@@ -105,8 +105,23 @@ class AdminReissueCertificate extends Ajax {
         $singleDomainsCount = $orderStatus['single_san_count'];
         $wildcardDomainsCount = $orderStatus['wildcard_san_count'];
 
-        $newSanDomainSingleCount = count(explode(PHP_EOL,$this->p['sanDomains']));
-        $newSanDomainWildcardCount = count(explode(PHP_EOL,$this->p['sanDomainsWildcard']));
+        if(empty($this->p['sanDomains']))
+        {
+            $newSanDomainSingleCount = 0;
+        }
+        else
+        {
+            $newSanDomainSingleCount = count(explode(PHP_EOL,$this->p['sanDomains']));
+        }
+
+        if(empty($this->p['sanDomainsWildcard']))
+        {
+            $newSanDomainWildcardCount = 0;
+        }
+        else
+        {
+            $newSanDomainWildcardCount = count(explode(PHP_EOL,$this->p['sanDomainsWildcard']));
+        }
 
         if(!empty($this->p['sanDomains']) || !empty($this->p['sanDomainsWildcard'])) {
             if ($newSanDomainSingleCount > $singleDomainsCount || $newSanDomainWildcardCount > $wildcardDomainsCount) {
