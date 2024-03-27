@@ -369,9 +369,23 @@ class ClientReissueCertificate {
         $singleDomainsCount = $orderStatus['single_san_count'];
         $wildcardDomainsCount = $orderStatus['wildcard_san_count'];
 
-        $newSanDomainSingleCount = count(explode(PHP_EOL,$this->post['sans_domains']));
-        $newSanDomainWildcardCount = count(explode(PHP_EOL,$this->post['sans_domains_wildcard']));
+        if(empty($this->post['sans_domains']))
+        {
+            $newSanDomainSingleCount = 0;
+        }
+        else
+        {
+            $newSanDomainSingleCount = count(explode(PHP_EOL,$this->post['sans_domains']));
+        }
 
+        if(empty($this->post['sans_domains_wildcard']))
+        {
+            $newSanDomainWildcardCount = 0;
+        }
+        else
+        {
+            $newSanDomainWildcardCount = count(explode(PHP_EOL,$this->post['sans_domains_wildcard']));
+        }
 
         if(!empty($this->post['sans_domains']) || !empty($this->post['sans_domains_wildcard'])) {
             if ($newSanDomainSingleCount > $singleDomainsCount || $newSanDomainWildcardCount > $wildcardDomainsCount) {

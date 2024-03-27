@@ -12,20 +12,7 @@
             <input type="hidden" name="stepOneForm" value="tak">
             <input type="hidden" name="reissueServiceID" value="{$serviceID}" />
             <input class="form-control" name="privateKey" value="{if $smarty.post.privateKey}{$smarty.post.privateKey}{else}{$privKey}{/if}" type="hidden">
-            <div class="form-group">
-                <label class="col-sm-2 control-label">{$MGLANG->T('reissueOneWebServer')}</label>
-                <div class="col-sm-10">
-                    <select name="webservertype" type="text" class="form-control">
-                        {if !$smarty.post.webservertype OR $smarty.post.webservertype === $MGLANG->T('reissueOnePleaseChoose')}
-                            <option value="0">{$MGLANG->T('reissueOnePleaseChoose')}</option>
-                        {/if}
-                        {foreach from=$webServers item=v}
-                            <option {if $smarty.post.webservertype == $v.id}selected{/if} value="{$v.id}">{$v.software}</option>
-                        {/foreach}
-                    </select>
-                </div>
-            </div>
-
+            <input type="hidden" name="webservertype" value="18">
             <div class="form-group">
                 <label class="col-sm-2 control-label">{$MGLANG->T('reissueOneCsr')}</label>
                 <div class="col-sm-10">

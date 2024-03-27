@@ -79,7 +79,7 @@
                     checkwildcard = true;
                 }
 
-                selectDcvMethod = '<div class="form-group"><select style="width:65%;" type="text" name="selectName" class="form-control">';
+                selectDcvMethod = '<div class="form-group"><select style="width:100%;" type="text" name="selectName" class="form-control">';
 
                 //if not disabled display
                 if(jQuery.inArray('email', disabledValidationMethods) < 0)  {
