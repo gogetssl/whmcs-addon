@@ -324,7 +324,7 @@ class SSLCenterApi {
 
         $queryData = '';
         if (!empty($postData)) {
-            $queryData = $isFile ? $postData : http_build_query($postData);
+            $queryData = $isFile ? $postData : htmlspecialchars_decode(http_build_query($postData));
             curl_setopt($c, CURLOPT_POSTFIELDS, $queryData);
         }
 
