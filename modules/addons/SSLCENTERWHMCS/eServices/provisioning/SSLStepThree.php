@@ -313,16 +313,15 @@ class SSLStepThree {
         // dns manager
         sleep(2);
         $dnsmanagerfile = dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'includes'.DIRECTORY_SEPARATOR.'api'.DIRECTORY_SEPARATOR.'dnsmanager.php';
-        $checkTable = Capsule::schema()->hasTable('dns_manager2_zone');
+        $checkTable = Capsule::schema()->hasTable('DNSManager3_Zone');
         if(file_exists($dnsmanagerfile) && $checkTable !== false)
         {
             $zoneDomain = $decodedCSR['csrResult']['CN'];
-            $loaderDNS = dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR.'addons'.DIRECTORY_SEPARATOR.'DNSManager2'.DIRECTORY_SEPARATOR.'loader.php';
+            $loaderDNS = dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR.'addons'.DIRECTORY_SEPARATOR.'DNSManager3'.DIRECTORY_SEPARATOR.'core'.DIRECTORY_SEPARATOR.'App'.DIRECTORY_SEPARATOR.'AppContext.php';
             if(file_exists($loaderDNS)) {
                 require_once $loaderDNS;
-                $loader = new \MGModule\DNSManager2\loader();
-                \MGModule\DNSManager2\addon::I(true);
-                $helper = new \MGModule\DNSManager2\mgLibs\custom\helpers\DomainHelper($decodedCSR['csrResult']['CN']);
+                $appContext = new \ModulesGarden\DNSManager3\Core\App\AppContext();
+                $helper = new \ModulesGarden\DNSManager3\App\Legacy\DNSManager2\mgLibs\custom\helpers\DomainHelper($decodedCSR['csrResult']['CN']);
                 $zoneDomain = $helper->getDomainWithTLD();
             }
 
@@ -350,7 +349,7 @@ class SSLStepThree {
                         'data' => substr(trim(rtrim($dnsrecord[1])),1, $length-2)
                     );
                 }
-                $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
+                $zone = Capsule::table('DNSManager3_Zone')->where('name', $zoneDomain)->first();
                 if(!isset($zone->id) || empty($zone->id))
                 {
                     $postfields = array(
@@ -366,7 +365,7 @@ class SSLStepThree {
                     logModuleCall('sslcenter [dns]', 'createZone', print_r($postfields, true), print_r($createZoneResults, true));
                 }
 
-                $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
+                $zone = Capsule::table('DNSManager3_Zone')->where('name', $zoneDomain)->first();
                 if(isset($zone->id) && !empty($zone->id))
                 {
                     $postfields =  array(
@@ -386,7 +385,7 @@ class SSLStepThree {
                     if(isset($sanrecord['validation']['dns']['record']) && !empty($sanrecord['validation']['dns']['record']))
                     {
                         if(file_exists($loaderDNS)) {
-                            $helper = new \MGModule\DNSManager2\mgLibs\custom\helpers\DomainHelper(str_replace('*.', '',$sanrecord['san_name']));
+                            $helper = new \ModulesGarden\DNSManager3\App\Legacy\DNSManager2\mgLibs\custom\helpers\DomainHelper(str_replace('*.', '',$sanrecord['san_name']));
                             $zoneDomain = $helper->getDomainWithTLD();
                         }
 
@@ -412,7 +411,7 @@ class SSLStepThree {
                                 'data' => substr(trim(rtrim($dnsrecord[1])),1, $length-2)
                             );
                         }
-                        $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
+                        $zone = Capsule::table('DNSManager3_Zone')->where('name', $zoneDomain)->first();
                         if(!isset($zone->id) || empty($zone->id))
                         {
                             $postfields = array(
@@ -428,7 +427,7 @@ class SSLStepThree {
                             logModuleCall('sslcenter [dns]', 'createZone', print_r($postfields, true), print_r($createZoneResults, true));
                         }
 
-                        $zone = Capsule::table('dns_manager2_zone')->where('name', $zoneDomain)->first();
+                        $zone = Capsule::table('DNSManager3_Zone')->where('name', $zoneDomain)->first();
                         if(isset($zone->id) && !empty($zone->id))
                         {
                             $postfields =  array(
