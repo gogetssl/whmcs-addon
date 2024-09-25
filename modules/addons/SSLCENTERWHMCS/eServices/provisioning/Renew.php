@@ -58,6 +58,16 @@ class Renew {
                     'completiondate' => '0000-00-00 00:00:00',
                     'status' => 'Awaiting Configuration'
                 ));
+
+                // send email SSLCenter - Configuration Required
+                $repo       = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+                $sslModel = $repo->getByServiceId($this->p['serviceid']);
+
+                sendMessage(\MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::CONFIGURATION_TEMPLATE_ID, $this->p['serviceid'], [
+                    'ssl_configuration_link' => \MGModule\SSLCENTERWHMCS\eRepository\whmcs\config\Config::getInstance()->getConfigureSSLLink($sslModel->id, $sslModel->serviceid ),
+                    'ssl_configuration_url'  => \MGModule\SSLCENTERWHMCS\eRepository\whmcs\config\Config::getInstance()->getConfigureSSLUrl($sslModel->id, $sslModel->serviceid ),
+                ]);
+
                 return 'success';
             }
         }
