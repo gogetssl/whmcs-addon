@@ -12,6 +12,7 @@ use MGModule\SSLCENTERWHMCS\models\userCommission\Repository as UserCommissionRe
 use MGModule\SSLCENTERWHMCS\models\whmcs\service\Repository as ServiceRepo;
 use MGModule\SSLCENTERWHMCS\models\logs\Repository as LogsRepo;
 use MGModule\SSLCENTERWHMCS\models\orders\Repository as OrdersRepo;
+use MGModule\SSLCENTERWHMCS\models\actions\Repository as ActionsRepo;
 use MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService;
 use MGModule\SSLCENTERWHMCS\eHelpers\Invoice as InvoiceHelper;
 use MGModule\SSLCENTERWHMCS\eHelpers\Whmcs as LogsHelper;
@@ -64,7 +65,7 @@ class Configuration extends AbstractConfiguration
      * Module version
      * @var string
      */
-    public $version = '2.9.5';
+    public $version = '2.11.0';
 
     /**
      * Module author
@@ -155,6 +156,7 @@ class Configuration extends AbstractConfiguration
         (new UserCommissionRepo())->createUserCommissionTable();
         (new LogsRepo())->createLogsTable();
         (new OrdersRepo())->createOrdersTable();
+        (new ActionsRepo())->createActionsTable();
         EmailTemplateService::createConfigurationTemplate();
         EmailTemplateService::createCertyficateTemplate();
         EmailTemplateService::createExpireNotificationTemplate();
@@ -175,6 +177,7 @@ class Configuration extends AbstractConfiguration
         (new UserCommissionRepo())->dropUserCommissionTable();
         (new LogsRepo())->dropLogsTable();
         (new OrdersRepo())->dropOrdersTable();
+        (new ActionsRepo())->dropActionsTable();
         EmailTemplateService::deleteConfigurationTemplate();
         EmailTemplateService::deleteCertyficateTemplate();
         EmailTemplateService::deleteExpireNotificationTemplate();
@@ -201,6 +204,7 @@ class Configuration extends AbstractConfiguration
         (new UserCommissionRepo())->updateUserCommissionTable();
         (new LogsRepo())->updateLogsTable();
         (new OrdersRepo())->updateOrdersTable();
+        (new ActionsRepo())->updateActionsTable();
 
         if (version_compare($version, '1.0.32', '<='))
         {
