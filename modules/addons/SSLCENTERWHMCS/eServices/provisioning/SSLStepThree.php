@@ -3,6 +3,7 @@
 namespace MGModule\SSLCENTERWHMCS\eServices\provisioning;
 
 use Exception;
+use MGModule\SSLCENTERWHMCS\models\actions\Repository as ActionsRepository;
 use \MGModule\SSLCENTERWHMCS\models\whmcs\service\Service as Service;
 use \MGModule\SSLCENTERWHMCS\models\whmcs\product\Product as Product;
 use WHMCS\Database\Capsule;
@@ -42,11 +43,25 @@ class SSLStepThree {
 
     public function run() {
         try {
-            \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::decodeSanAprroverEmailsAndMethods($_POST);      
-            $this->setMainDomainDcvMethod($_POST); 
-            $this->setSansDomainsDcvMethod($_POST);    
-            $this->SSLStepThree();
-        } catch (Exception $ex) {            
+
+            $actionsRepo = new ActionsRepository();
+
+            if($actionsRepo->checkStepThree($this->p['serviceid']) !== true) {
+
+                $actionsRepo->addAction($this->p['userid'], $this->p['serviceid'], 'step_three', 'processing');
+                \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::decodeSanAprroverEmailsAndMethods($_POST);
+                $this->setMainDomainDcvMethod($_POST);
+                $this->setSansDomainsDcvMethod($_POST);
+                $this->SSLStepThree();
+
+            }
+
+            $actionsRepo->updateStatusStepThree($this->p['serviceid'], 'success');
+
+        } catch (Exception $ex) {
+
+            $actionsRepo->updateStatusStepThree($this->p['serviceid'], 'error');
+
             $this->redirectToStepOne($ex->getMessage());
         }
     }
