@@ -123,7 +123,7 @@ class Repository extends MainRepository {
                 $table->integer('ssl_order_id');
                 $table->string('verification_method');
                 $table->string('status');
-                $table->json('data');
+                $table->text('data');
                 $table->datetime('date');
             });
         }
@@ -142,7 +142,7 @@ class Repository extends MainRepository {
                 $table->integer('ssl_order_id');
                 $table->string('verification_method');
                 $table->string('status');
-                $table->json('data');
+                $table->text('data');
                 $table->datetime('date');
             });
         }
