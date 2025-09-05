@@ -65,7 +65,7 @@ class Configuration extends AbstractConfiguration
      * Module version
      * @var string
      */
-    public $version = '2.11.2';
+    public $version = '2.11.4';
 
     /**
      * Module author

@@ -146,7 +146,7 @@ add_hook('ClientAreaPageUpgrade', 1, function($vars)
                 $newPrice = floatval($priceWithPercentage) / floatval($percentage);
                 $subtotal += number_format($newPrice, 2);
 
-                if( $GLOBALS["qualifies"] && 0 < $newPrice && (!count($promodata['configoptions']) || in_array($configid, $promodata['configoptions'])) ) 
+                if(is_array($promodata) && $GLOBALS["qualifies"] && 0 < $newPrice && (!count($promodata['configoptions']) || in_array($configid, $promodata['configoptions'])) )
                 {
                     $itemdiscount = ($promodata["discounttype"] == "Percentage" ? round($newPrice * ($promodata["value"] / 100), 2) : ($newPrice < $promodata["value"] ? $newPrice : $promodata["value"]));
                     $discount += $itemdiscount;
@@ -292,7 +292,7 @@ add_hook('InvoiceCreationPreEmail', 1, function($vars)
 
                     foreach ($newPrices as $configid => $price )
                     {
-                        if (in_array($configid, $promodata['configoptions']))
+                        if (is_array($promodata) && in_array($configid, $promodata['configoptions']))
                         {
                             $itemdiscount += ($promodata["discounttype"] == "Percentage" ? round($price * ($promodata["value"] / 100), 2) : ($price < $promodata["value"] ? $newPrice : $promodata["value"]));
                         }
