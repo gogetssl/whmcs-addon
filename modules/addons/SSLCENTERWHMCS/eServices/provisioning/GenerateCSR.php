@@ -84,10 +84,8 @@ class GenerateCSR
             if($saveToDatabase)
                 $this->savePrivateKeyToDatabase($serviceid, $pKeyOut);
 
-            $csr = openssl_csr_new($dn, $privKey);
-
-            if (!$csr)
-            {
+            $csr = openssl_csr_new($dn, $privKey, ['digest_alg' => 'sha256']);
+            if (!is_resource($csr)) {
                 throw new Exception('csrCodeGeneraterFailed');
             }
 
