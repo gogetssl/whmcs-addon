@@ -29,7 +29,7 @@ class Home extends AbstractController {
 
         $privKey = openssl_pkey_new(["private_key_bits" => 2048,"private_key_type" => OPENSSL_KEYTYPE_RSA]);
         openssl_pkey_export($privKey, $pKeyOut);
-        $csr = openssl_csr_new($dn, $privKey);
+        $csr = openssl_csr_new($dn, $privKey, ['digest_alg' => 'sha256']);
         openssl_csr_export($csr, $csrOut);
 
         echo json_encode(
