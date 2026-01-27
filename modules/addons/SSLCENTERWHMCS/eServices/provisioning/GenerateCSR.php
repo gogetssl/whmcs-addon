@@ -67,7 +67,7 @@ class GenerateCSR
             "private_key_bits" => 2048,
             "private_key_type" => OPENSSL_KEYTYPE_RSA,
         ));
-        
+
         if ($privKey)
         {
             $serviceid = $this->params['serviceid'];
@@ -80,16 +80,23 @@ class GenerateCSR
             if(isset($this->post['doNotSaveToDatabase']) && $this->post['doNotSaveToDatabase'])
                 $saveToDatabase = false;
 
-            openssl_pkey_export($privKey, $pKeyOut);
+
+            if (!openssl_pkey_export($privKey, $pKeyOut)) {
+                throw new Exception('csrCodeGeneraterFailed');
+            }
+
             if($saveToDatabase)
                 $this->savePrivateKeyToDatabase($serviceid, $pKeyOut);
 
             $csr = openssl_csr_new($dn, $privKey, ['digest_alg' => 'sha256']);
-            if (!is_resource($csr)) {
+
+            if ($csr === false) {
                 throw new Exception('csrCodeGeneraterFailed');
             }
 
-            openssl_csr_export($csr, $csrOut);
+            if (!openssl_csr_export($csr, $csrOut)) {
+                throw new Exception('csrCodeGeneraterFailed');
+            }
         }
         else
         {
