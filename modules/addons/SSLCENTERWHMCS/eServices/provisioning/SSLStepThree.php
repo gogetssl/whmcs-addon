@@ -507,6 +507,12 @@ class SSLStepThree {
         $service = Capsule::table('tblhosting')->where('id', $this->p['serviceid'])->first();
         $orderDetails = json_decode($order->data, true);
 
+        run_hook('SSLCenter_StepThree', [
+            'serviceid' => $this->p['serviceid'],
+            'userid' => $this->p['userid'],
+            'api_ssl_order' => $addedSSLOrder,
+            'order_details' => $orderDetails
+        ]);
 
         $revalidate = false;
 
@@ -670,7 +676,7 @@ class SSLStepThree {
                 $logs->addLog($this->p['userid'], $this->p['serviceid'], 'error', '[' . $service->domain . '] Error:' . $e->getMessage());
             }
         }
-}
+    }
         
     private function getSansDomainsValidationMethods() {  
         $data = [];

@@ -76,21 +76,32 @@ add_hook('ClientAreaPage', 1, function($params) {
 
     if($params['filename'] == 'viewinvoice' && $params['status'] == 'Payment Pending')
     {
-        Capsule::table('tblinvoices')->where('id', $params['invoiceid'])->update([
-            'status' => 'Unpaid'
-        ]);
+        $hasSSLCenterProduct = Capsule::table('tblinvoiceitems')
+            ->join('tblhosting', 'tblinvoiceitems.relid', '=', 'tblhosting.id')
+            ->join('tblproducts', 'tblhosting.packageid', '=', 'tblproducts.id')
+            ->where('tblinvoiceitems.invoiceid', $params['invoiceid'])
+            ->where('tblinvoiceitems.type', 'Hosting')
+            ->where('tblproducts.servertype', 'SSLCENTERWHMCS')
+            ->exists();
 
-        \MGModule\SSLCENTERWHMCS\eHelpers\Invoice::createPendingPaymentInvoice();
-        $check = Capsule::table('mgfw_SSLCENTER_invoices_pendingpayment')->where('user_id', $_SESSION['uid'])->where('invoice_id', $params['invoiceid'])->first();
-        if(!isset($check->id))
+        if($hasSSLCenterProduct)
         {
-            Capsule::table('mgfw_SSLCENTER_invoices_pendingpayment')->insert([
-                'user_id' => $_SESSION['uid'],
-                'invoice_id' => $params['invoiceid']
+            Capsule::table('tblinvoices')->where('id', $params['invoiceid'])->update([
+                'status' => 'Unpaid'
             ]);
-        }
 
-        redir('id='.$params['invoiceid'], 'viewinvoice.php');
+            \MGModule\SSLCENTERWHMCS\eHelpers\Invoice::createPendingPaymentInvoice();
+            $check = Capsule::table('mgfw_SSLCENTER_invoices_pendingpayment')->where('user_id', $_SESSION['uid'])->where('invoice_id', $params['invoiceid'])->first();
+            if(!isset($check->id))
+            {
+                Capsule::table('mgfw_SSLCENTER_invoices_pendingpayment')->insert([
+                    'user_id' => $_SESSION['uid'],
+                    'invoice_id' => $params['invoiceid']
+                ]);
+            }
+
+            redir('id='.$params['invoiceid'], 'viewinvoice.php');
+        }
     }
 });
 
