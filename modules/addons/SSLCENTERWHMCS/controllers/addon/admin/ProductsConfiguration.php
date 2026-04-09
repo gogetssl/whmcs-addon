@@ -21,12 +21,14 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
         try {
 
             if ($_SERVER['REQUEST_METHOD'] === 'POST' AND isset($input['createConfOptions'])) {
-                main\eServices\ConfigurableOptionService::createForProduct($input['productId'], $input['productName']);
+                $apiProduct = $this->getApiProductForWhmcsProduct($input['productId']);
+                main\eServices\ConfigurableOptionService::createForProduct($input['productId'], $input['productName'], $apiProduct);
                 $vars['success'] = main\mgLibs\Lang::T('messages', 'configurable_generated');
             }
             
             if ($_SERVER['REQUEST_METHOD'] === 'POST' AND isset($input['createConfOptionsWildcard'])) {
-                main\eServices\ConfigurableOptionService::createForProductWildcard($input['productId'], $input['productName']);
+                $apiProduct = $this->getApiProductForWhmcsProduct($input['productId']);
+                main\eServices\ConfigurableOptionService::createForProductWildcard($input['productId'], $input['productName'], $apiProduct);
                 $vars['success'] = main\mgLibs\Lang::T('messages', 'configurable_generated');
             }
 
@@ -79,6 +81,7 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
                 $apiConfig->availablePeriods        = $apiProduct->getPeriods();                
                 $apiConfig->isSanEnabled            = $apiProduct->isSanEnabled();
                 $apiConfig->isWildcardSanEnabled    = $apiProduct->wildcard_san_enabled;
+                $apiConfig->isAcme                  = \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeProductId((int) $product->{C::API_PRODUCT_ID});
                 $products[$key]->apiConfig  = $apiConfig;
                 $products[$key]->confOption = main\eServices\ConfigurableOptionService::getForProduct($product->id);  
                 $products[$key]->confOptionWildcard = main\eServices\ConfigurableOptionService::getForProductWildcard($product->id);   
@@ -146,6 +149,9 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
                 if(isset($input['configoption5']) && $input['configoption5'] == '1')
                 {
                     $productModel->updateProductParam($product->id, 'configoption5', $input['configoption5']);
+                    if (\MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeProductId((int) $product->configoption1)) {
+                        $this->applyApiPricingForWhmcsProduct($product->id, $product->configoption1);
+                    }
                 }
                 
                 if(isset($input['configoption8']) && !empty($input['configoption8']))
@@ -167,15 +173,268 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
             return true;
         }
         
+        $productsForApiPricingSync = [];
         foreach ($input['product'] as $key => $value) {
             $productModel->updateProducDetails($key, $value);
+            if (
+                !empty($value[C::API_PRODUCT_ID]) &&
+                \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeProductId((int) $value[C::API_PRODUCT_ID])
+            ) {
+                $productModel->updateProductParam($key, 'paytype', 'onetime');
+                $productModel->updateProductParam($key, C::API_PRODUCT_MONTHS, 12);
+            }
+            if (
+                !empty($value[C::PRICE_AUTO_DOWNLOAD]) &&
+                (string) $value[C::PRICE_AUTO_DOWNLOAD] === '1' &&
+                !empty($value[C::API_PRODUCT_ID]) &&
+                \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeProductId((int) $value[C::API_PRODUCT_ID])
+            ) {
+                $productsForApiPricingSync[(int) $key] = isset($value[C::API_PRODUCT_ID]) ? (int) $value[C::API_PRODUCT_ID] : null;
+            }
         }
 
         foreach ($input['currency'] as $key => $value) {
             $productModel->updateProductPricing($key, $value);
         }
+
+        foreach ($productsForApiPricingSync as $productId => $apiProductId) {
+            $this->applyApiPricingForWhmcsProduct($productId, $apiProductId);
+        }
         
         return true;
+    }
+
+    private function getApiProductForWhmcsProduct($productId)
+    {
+        $product = \Illuminate\Database\Capsule\Manager::table('tblproducts')
+            ->select(C::API_PRODUCT_ID)
+            ->where('id', (int) $productId)
+            ->first();
+
+        if (!$product || empty($product->{C::API_PRODUCT_ID})) {
+            return null;
+        }
+
+        return main\eRepository\sslcenter\Products::getInstance()->getProduct((int) $product->{C::API_PRODUCT_ID});
+    }
+
+    private function applyApiPricingForWhmcsProduct($productId, $apiProductId = null)
+    {
+        $productModel = new \MGModule\SSLCENTERWHMCS\models\productConfiguration\Repository();
+        $productPricing = $productModel->getProductPricing($productId);
+        if (!$productPricing || count($productPricing) === 0) {
+            return;
+        }
+
+        $apiProduct = null;
+        if (!empty($apiProductId)) {
+            $apiProduct = main\eRepository\sslcenter\Products::getInstance()->getProduct((int) $apiProductId);
+        } else {
+            $apiProduct = $this->getApiProductForWhmcsProduct($productId);
+        }
+
+        if ($apiProduct === null) {
+            return;
+        }
+
+        $isAcme = \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeProductId((int) $this->readValue($apiProduct, ['id']));
+        if ($isAcme) {
+            $apiProduct = $this->getAcmePricingApiProduct((int) $this->readValue($apiProduct, ['id']), $apiProduct);
+        }
+
+        $pricingByCurrency = $this->buildProductPricingByCurrency($apiProduct, $productModel->getAllCurrencies());
+        foreach ($productPricing as $pricing) {
+            if (!isset($pricingByCurrency[$pricing->currency])) {
+                continue;
+            }
+            $productModel->updateProductPricing($pricing->pricing_id, $pricingByCurrency[$pricing->currency]);
+        }
+    }
+
+    private function buildProductPricingByCurrency($apiProduct, $currencies)
+    {
+        $termPrices = $this->extractBasePricesByTerm($apiProduct);
+        $annual = isset($termPrices[12]) ? $termPrices[12] : 0.00;
+        $globalRate = $this->getGlobalRate();
+        $pricingByCurrency = [];
+        $isAcme = \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeProductId((int) $this->readValue($apiProduct, ['id']));
+
+        foreach ($currencies as $currency) {
+            $currencyRate = ($currency->default == '1') ? 1 : (float) $currency->rate;
+            if ($currencyRate <= 0) {
+                $currencyRate = 1;
+            }
+
+            if ($isAcme) {
+                $value = number_format((float) $annual * $currencyRate * $globalRate, 2, '.', '');
+                $pricingByCurrency[$currency->id] = [
+                    'monthly'      => $value,
+                    'quarterly'    => '-1.00',
+                    'semiannually' => '-1.00',
+                    'annually'     => '-1.00',
+                    'biennially'   => '-1.00',
+                    'triennially'  => '-1.00',
+                ];
+                continue;
+            }
+
+            $pricing = [];
+            $periodMap = [
+                'monthly'      => 12,
+                'quarterly'    => 3,
+                'semiannually' => 6,
+                'annually'     => 12,
+                'biennially'   => 24,
+                'triennially'  => 36,
+            ];
+
+            foreach ($periodMap as $cycle => $term) {
+                $basePrice = isset($termPrices[$term]) ? $termPrices[$term] : $annual;
+                $value = (float) $basePrice * $currencyRate * $globalRate;
+                $pricing[$cycle] = number_format($value, 2, '.', '');
+            }
+
+            $pricingByCurrency[$currency->id] = $pricing;
+        }
+
+        return $pricingByCurrency;
+    }
+
+    private function extractBasePricesByTerm($apiProduct)
+    {
+        $prices = $this->toArray($this->readValue($apiProduct, ['prices']));
+        if (empty($prices)) {
+            return [];
+        }
+
+        $results = [];
+        foreach ($prices as $entry) {
+            $term = (int) $this->readValue($entry, ['term', 'period']);
+            if ($term <= 0) {
+                continue;
+            }
+
+            $baseNode = $this->readValue($entry, ['base']);
+            $price = $this->resolveBasePriceFromNode($baseNode);
+            if ($price === null) {
+                $price = $this->readMonetaryValue($entry, ['price', 'selling', 'retail']);
+            }
+
+            if ($price !== null) {
+                $results[$term] = $price;
+            }
+        }
+
+        if (empty($results)) {
+            foreach ($prices as $term => $price) {
+                if (!is_numeric($term) || !is_numeric($price)) {
+                    continue;
+                }
+                $termInt = (int) $term;
+                if ($termInt <= 0) {
+                    continue;
+                }
+                $results[$termInt] = (float) $price;
+            }
+        }
+
+        return $results;
+    }
+
+    private function getAcmePricingApiProduct($apiProductId, $fallbackApiProduct)
+    {
+        try {
+            $apiResponse = main\eProviders\ApiProvider::getInstance()->getApi()->getProductPrice((int) $apiProductId);
+            $response = $this->toArray($apiResponse);
+            $prices = $this->toArray($this->readValue($response, ['prices']));
+            if (empty($prices)) {
+                $productNode = $this->toArray($this->readValue($response, ['product']));
+                $prices = $this->toArray($this->readValue($productNode, ['prices']));
+            }
+            if (empty($prices)) {
+                return $fallbackApiProduct;
+            }
+
+            $merged = $this->toArray($fallbackApiProduct);
+            $merged['id'] = (int) $apiProductId;
+            $merged['prices'] = $prices;
+
+            return $merged;
+        } catch (\Exception $e) {
+            return $fallbackApiProduct;
+        }
+    }
+
+    private function resolveBasePriceFromNode($baseNode)
+    {
+        if (is_numeric($baseNode)) {
+            return (float) $baseNode;
+        }
+
+        $baseArray = $this->toArray($baseNode);
+        if (empty($baseArray)) {
+            return null;
+        }
+
+        foreach (['single', 'wildcard'] as $type) {
+            $node = $this->readValue($baseArray, [$type]);
+            $price = $this->readMonetaryValue($node, ['selling', 'retail', 'price']);
+            if ($price !== null) {
+                return $price;
+            }
+        }
+
+        return $this->readMonetaryValue($baseArray, ['selling', 'retail', 'price']);
+    }
+
+    private function readMonetaryValue($node, array $keys)
+    {
+        foreach ($keys as $key) {
+            $value = $this->readValue($node, [$key]);
+            if (is_numeric($value)) {
+                return (float) $value;
+            }
+        }
+
+        if (is_numeric($node)) {
+            return (float) $node;
+        }
+
+        return null;
+    }
+
+    private function readValue($source, array $keys)
+    {
+        foreach ($keys as $key) {
+            if (is_array($source) && array_key_exists($key, $source)) {
+                return $source[$key];
+            }
+            if (is_object($source) && isset($source->{$key})) {
+                return $source->{$key};
+            }
+        }
+
+        return null;
+    }
+
+    private function toArray($value)
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (is_object($value)) {
+            return (array) $value;
+        }
+
+        return [];
+    }
+
+    private function getGlobalRate()
+    {
+        $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+        $rate = isset($apiConf->rate) ? (float) $apiConf->rate : 1;
+        return ($rate > 0) ? $rate : 1;
     }
 
     public function enableProductJSON($input, $vars = array()) {

@@ -11,6 +11,10 @@ class EmailTemplateService {
     const SEND_CERTIFICATE_TEMPLATE_ID = 'SSLCenter - Send Certificate';
     const RENEWAL_TEMPLATE_ID = 'SSLCenter - Renewal';
     const REISSUE_TEMPLATE_ID = 'SSLCenter - Reissue';
+    const SUBSCRIPTION_TEMPLATE_ID = 'SSLCenter - ACME Subscription Configuration';
+    const SUBSCRIPTION_EXPIRATION_TEMPLATE_ID = 'SSLCenter - ACME Subscription Expiration';
+    const SUBSCRIPTION_RENEWAL_TEMPLATE_ID = 'SSLCenter - ACME Subscription Renewal';
+    const SUBSCRIPTION_RENEWAL_NOTICE_TEMPLATE_ID = 'SSLCenter – Subscription renewal';
 
     public static function createRenewalTemplate() {
         if(!is_null(self::getTemplate(self::RENEWAL_TEMPLATE_ID))) {
@@ -53,7 +57,7 @@ class EmailTemplateService {
         $template->save();
     }
     public static function deleteRenewalTemplate() {
-        $template = self::getTemplate(self::CONFIGURATION_TEMPLATE_ID);
+        $template = self::getTemplate(self::RENEWAL_TEMPLATE_ID);
         if(is_null($template)) {
             return 'Template not exist, nothing to do here';
         }
@@ -241,6 +245,166 @@ class EmailTemplateService {
     
     public static function deleteReissueTemplate() {
         $template = self::getTemplate(self::REISSUE_TEMPLATE_ID);
+        if(is_null($template)) {
+            return 'Template not exist, nothing to do here';
+        }
+        $template->delete();
+    }
+
+    public static function createSubscriptionTemplate()
+    {
+        if(!is_null(self::getTemplate(self::SUBSCRIPTION_TEMPLATE_ID))) {
+            return 'Template exist, nothing to do here';
+        }
+
+        $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
+        $newTemplate->type    = 'product';
+        $newTemplate->name    = self::SUBSCRIPTION_TEMPLATE_ID;
+        $newTemplate->subject = 'ACME Subscription - configuration required';
+        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your ACME subscription service #{$service_id} is ready for configuration in client area. Configuration can be done at the URL below.</p><p>{$ssl_configuration_link}</p><p>Please add your domains and create subscription.</p><p>{$signature}</p>';
+        $newTemplate->attachments  = '';
+        $newTemplate->fromname  = '';
+        $newTemplate->fromemail  = '';
+        $newTemplate->disabled  = '0';
+        $newTemplate->custom  = 1;
+        $newTemplate->language = '';
+        $newTemplate->copyto = '';
+
+        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
+        if(!empty($query))
+        {
+            $newTemplate->blind_copy_to = '';
+        }
+
+        $newTemplate->plaintext = '0';
+        $newTemplate->created_at = date('Y-m-d H:i:s');
+        $newTemplate->updated_at = date('Y-m-d H:i:s');
+        $newTemplate->save();
+    }
+
+    public static function deleteSubscriptionTemplate()
+    {
+        $template = self::getTemplate(self::SUBSCRIPTION_TEMPLATE_ID);
+        if(is_null($template)) {
+            return 'Template not exist, nothing to do here';
+        }
+        $template->delete();
+    }
+
+    public static function createSubscriptionExpirationTemplate()
+    {
+        if(!is_null(self::getTemplate(self::SUBSCRIPTION_EXPIRATION_TEMPLATE_ID))) {
+            return 'Template exist, nothing to do here';
+        }
+
+        $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
+        $newTemplate->type    = 'product';
+        $newTemplate->name    = self::SUBSCRIPTION_EXPIRATION_TEMPLATE_ID;
+        $newTemplate->subject = 'ACME Subscription Expiration - {$service_domain}';
+        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your ACME subscription service #{$service_id} expires in {$expireDaysLeft} days.</p><p>{$signature}</p>';
+        $newTemplate->attachments  = '';
+        $newTemplate->fromname  = '';
+        $newTemplate->fromemail  = '';
+        $newTemplate->disabled  = '0';
+        $newTemplate->custom  = 1;
+        $newTemplate->language = '';
+        $newTemplate->copyto = '';
+
+        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
+        if(!empty($query))
+        {
+            $newTemplate->blind_copy_to = '';
+        }
+
+        $newTemplate->plaintext = '0';
+        $newTemplate->created_at = date('Y-m-d H:i:s');
+        $newTemplate->updated_at = date('Y-m-d H:i:s');
+        $newTemplate->save();
+    }
+
+    public static function deleteSubscriptionExpirationTemplate()
+    {
+        $template = self::getTemplate(self::SUBSCRIPTION_EXPIRATION_TEMPLATE_ID);
+        if(is_null($template)) {
+            return 'Template not exist, nothing to do here';
+        }
+        $template->delete();
+    }
+
+    public static function createSubscriptionRenewalTemplate()
+    {
+        if(!is_null(self::getTemplate(self::SUBSCRIPTION_RENEWAL_TEMPLATE_ID))) {
+            return 'Template exist, nothing to do here';
+        }
+
+        $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
+        $newTemplate->type    = 'product';
+        $newTemplate->name    = self::SUBSCRIPTION_RENEWAL_TEMPLATE_ID;
+        $newTemplate->subject = 'ACME Subscription Renewal';
+        $newTemplate->message = '<p>Dear {$client_name},</p><p>A renewal invoice was generated for your ACME subscription service #{$service_id}. Please pay invoice to avoid automatic subscription cancellation.</p><p>{$signature}</p>';
+        $newTemplate->attachments  = '';
+        $newTemplate->fromname  = '';
+        $newTemplate->fromemail  = '';
+        $newTemplate->disabled  = '0';
+        $newTemplate->custom  = 1;
+        $newTemplate->language = '';
+        $newTemplate->copyto = '';
+
+        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
+        if(!empty($query))
+        {
+            $newTemplate->blind_copy_to = '';
+        }
+
+        $newTemplate->plaintext = '0';
+        $newTemplate->created_at = date('Y-m-d H:i:s');
+        $newTemplate->updated_at = date('Y-m-d H:i:s');
+        $newTemplate->save();
+    }
+
+    public static function deleteSubscriptionRenewalTemplate()
+    {
+        $template = self::getTemplate(self::SUBSCRIPTION_RENEWAL_TEMPLATE_ID);
+        if(is_null($template)) {
+            return 'Template not exist, nothing to do here';
+        }
+        $template->delete();
+    }
+
+    public static function createSubscriptionRenewalNoticeTemplate()
+    {
+        if(!is_null(self::getTemplate(self::SUBSCRIPTION_RENEWAL_NOTICE_TEMPLATE_ID))) {
+            return 'Template exist, nothing to do here';
+        }
+
+        $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
+        $newTemplate->type    = 'product';
+        $newTemplate->name    = self::SUBSCRIPTION_RENEWAL_NOTICE_TEMPLATE_ID;
+        $newTemplate->subject = 'Subscription renewal';
+        $newTemplate->message = '<p>Dear {$client_name},</p><p>We would like to inform that your subscription service #{$service_id} is going to be renewed in {$expireDaysLeft} days.</p><p>{$signature}</p>';
+        $newTemplate->attachments  = '';
+        $newTemplate->fromname  = '';
+        $newTemplate->fromemail  = '';
+        $newTemplate->disabled  = '0';
+        $newTemplate->custom  = 1;
+        $newTemplate->language = '';
+        $newTemplate->copyto = '';
+
+        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
+        if(!empty($query))
+        {
+            $newTemplate->blind_copy_to = '';
+        }
+
+        $newTemplate->plaintext = '0';
+        $newTemplate->created_at = date('Y-m-d H:i:s');
+        $newTemplate->updated_at = date('Y-m-d H:i:s');
+        $newTemplate->save();
+    }
+
+    public static function deleteSubscriptionRenewalNoticeTemplate()
+    {
+        $template = self::getTemplate(self::SUBSCRIPTION_RENEWAL_NOTICE_TEMPLATE_ID);
         if(is_null($template)) {
             return 'Template not exist, nothing to do here';
         }

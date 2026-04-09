@@ -148,6 +148,12 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository {
         $update['autosetup']              = $params['autosetup'];
         $update[C::PRICE_AUTO_DOWNLOAD]   = $params[C::PRICE_AUTO_DOWNLOAD] ? $params[C::PRICE_AUTO_DOWNLOAD] : '0';
         $update[C::COMMISSION]            = $params[C::COMMISSION] ? $params[C::COMMISSION] / 100 : '0';
+
+        if (\MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeProductId($params[C::API_PRODUCT_ID]))
+        {
+            $update['paytype']             = 'onetime';
+            $update[C::API_PRODUCT_MONTHS] = 12;
+        }
         
         //if san disabled unassign sans config options
         if($update[C::PRODUCT_ENABLE_SAN] !== 'on') {
@@ -160,12 +166,18 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository {
 
         if($update[C::PRODUCT_ENABLE_SAN_WILDCARD] !== 'on') {
             $group = main\eServices\ConfigurableOptionService::getForProductWildcard($productId);
-            main\eServices\ConfigurableOptionService::unassignFromProductWildcard($productId, $group->groupid);
+            if ($group && isset($group->groupid)) {
+                main\eServices\ConfigurableOptionService::unassignFromProductWildcard($productId, $group->groupid);
+            }
         }
         else
         {
             $group = main\eServices\ConfigurableOptionService::getForProductWildcard($productId);
-            main\eServices\ConfigurableOptionService::assignToProductWildcard($productId, $update['name'], $group->groupid);
+            if ($group && isset($group->groupid)) {
+                main\eServices\ConfigurableOptionService::assignToProductWildcard($productId, $update['name'], $group->groupid);
+            } else {
+                main\eServices\ConfigurableOptionService::createForProductWildcard($productId, $update['name']);
+            }
         }
         
         if(isset($params['issued_ssl_message']) && !empty($params['issued_ssl_message']))
@@ -182,6 +194,23 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository {
     }
 
     public function updateProductPricing($pricingId, $data) {
+        $pricing = Capsule::table('tblpricing')->where('id', (int) $pricingId)->first();
+        if ($pricing)
+        {
+            $product = Capsule::table('tblproducts')->select(['configoption1'])->where('id', (int) $pricing->relid)->first();
+            if (isset($product->configoption1) && \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeProductId($product->configoption1))
+            {
+                if ((!isset($data['monthly']) || $data['monthly'] === '') && isset($data['annually']) && is_numeric($data['annually'])) {
+                    $data['monthly'] = $data['annually'];
+                }
+                $data['quarterly']    = '-1.00';
+                $data['semiannually'] = '-1.00';
+                $data['annually']     = '-1.00';
+                $data['biennially']   = '-1.00';
+                $data['triennially']  = '-1.00';
+            }
+        }
+
         return Capsule::table('tblpricing')->where('id', $pricingId)
                         ->update($data);
     }

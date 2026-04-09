@@ -244,11 +244,14 @@
                             <div class="form-group">
                                 <label class="control-label col-sm-2">{$MGLANG->T('paymentType')}</label>
                                 <div class="col-sm-10">
-                                    <select name="product[{$product->id}][paytype]" class="form-control mg-js-pricing-select" data-id="{$product->id}">
+                                    <select name="product[{$product->id}][paytype]" class="form-control mg-js-pricing-select" data-id="{$product->id}" {if $product->apiConfig->isAcme}disabled{/if}>
                                         <option {if $product->paytype == 'free'}selected{/if} value="free">{$MGLANG->T('paymentTypeFree')}</option>
                                         <option {if $product->paytype == 'recurring'}selected{/if} value="recurring">{$MGLANG->T('paymentTypeRecurring')}</option>
                                         <option {if $product->paytype == 'onetime'}selected{/if} value="onetime">{$MGLANG->T('paymentTypeOneTime')}</option>
                                     </select>
+                                    {if $product->apiConfig->isAcme}
+                                        <input type="hidden" name="product[{$product->id}][paytype]" value="onetime">
+                                    {/if}
                                 </div>
                             </div>    
                             <div class="form-group">
@@ -277,7 +280,7 @@
                                                 <tr style="text-align:center;font-weight:bold">
                                                     <td></td>
                                                     <td></td>
-                                                    <td class="prod-pricing-monthly-onetime">{$MGLANG->T('pricingMonthly')}</td>
+                                                    <td class="prod-pricing-monthly-onetime">{if $product->apiConfig->isAcme}{$MGLANG->T('pricingAnnually')}{else}{$MGLANG->T('pricingMonthly')}{/if}</td>
                                                     {if in_array('3',$product->apiConfig->availablePeriods)}<td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingQuarterly')}</td>{/if}
                                                     {if in_array('6',$product->apiConfig->availablePeriods)}<td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingSemiAnnually')}</td>{/if}
                                                     {if in_array('12',$product->apiConfig->availablePeriods)}<td style="display: table-cell;" class="prod-pricing-recurring">{$MGLANG->T('pricingAnnually')}</td>{/if}

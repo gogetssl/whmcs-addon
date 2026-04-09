@@ -165,17 +165,10 @@ Proin malesuada eros in risus accumsan euismod. Vivamus lacinia pellentesque nun
             });
             jQuery('button[name="testConnection"]').click(function () {
                 var login = $('#item_default_api_login').val(),
+                        partnerCode = $('#item_default_api_partner_code').val(),
                         password = $('#item_default_api_password').val();
 
-                JSONParser.request('testConnection', {api_login: login, api_password: password}, function (data) {
-                    if (data.success == true) {
-                        $('#MGAlerts>div[data-prototype="success"]').show();
-                        $('#MGAlerts>div[data-prototype="success"] strong').html(data.message);
-                    } else if (data.success == false) {
-                        $('#MGAlerts>div[data-prototype="error"]').show();
-                        $('#MGAlerts>div[data-prototype="error"] strong').html(data.message);
-                    }
-                }, false);
+                JSONParser.request('testConnection', {api_login: login, api_partner_code: partnerCode, api_password: password}, function () {}, false);
             });
             $('input[name^="auto_renew_invoice"], input[name^="display_csr_generator[]"]').on('click', function () {
                 //$('input[name="use_admin_contact[]"]').prop('checked', true);                

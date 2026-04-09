@@ -20,6 +20,7 @@ define('DEBUG', 'FALSE');
 class SSLCenterApi {
 
     protected $apiUrl = 'https://my.gogetssl.com/api';
+    protected $apiV2Url = 'https://my.gogetssl.com/api/v2';
     protected $key;
     protected $lastStatus;
     protected $lastResponse;
@@ -249,6 +250,102 @@ class SSLCenterApi {
         return $this->call('/orders/add_ssl_renew_order/', $getData, $data);
     }
 
+    public function createAcmeSubscription($data)
+    {
+        if (isset($data['product_id']) && !isset($data['product']))
+        {
+            $data['product'] = ['id' => (int) $data['product_id']];
+            unset($data['product_id']);
+        }
+
+        if (isset($data['domains']))
+        {
+            $data['domains'] = $this->normalizeDomains($data['domains']);
+        }
+
+        $createResponse = $this->normalizeAcmeCreateResponse(
+            $this->callV2('/certificates/acme', 'POST', $data)
+        );
+
+        $orderId = isset($createResponse['order_id']) ? (int) $createResponse['order_id'] : 0;
+        if ($orderId <= 0 && isset($createResponse['id']))
+        {
+            $orderId = (int) $createResponse['id'];
+        }
+
+        if ($orderId > 0)
+        {
+            $detailsResponse = $this->normalizeAcmeCreateResponse(
+                $this->getCertificateDetails('acme', $orderId)
+            );
+
+            if (is_array($detailsResponse))
+            {
+                return array_replace($createResponse, $detailsResponse);
+            }
+        }
+
+        return $createResponse;
+    }
+
+    public function getAcmeSubscriptionStatus($orderId)
+    {
+        return $this->callV2('/certificates/acme/' . (int) $orderId, 'GET');
+    }
+
+    public function getCertificateDetails($category, $orderId)
+    {
+        return $this->callV2('/certificates/' . rawurlencode((string) $category) . '/' . (int) $orderId, 'GET');
+    }
+
+    public function addAcmeDomains($orderId, $data)
+    {
+        if (isset($data['domains']))
+        {
+            $data = $this->normalizeDomains($data['domains']);
+        }
+        else if (!is_array($data))
+        {
+            $data = $this->normalizeDomains($data);
+        }
+
+        return $this->callV2('/certificates/acme/' . (int) $orderId . '/domains', 'POST', $data);
+    }
+
+    public function removeAcmeDomain($orderId, $acmeID, $data)
+    {
+        $domainId = null;
+        $response = $this->getCertificateDetails('acme', $orderId);
+
+        foreach($response['items'][0]['domains'] as $remoteDomainData)
+        {
+            if($remoteDomainData['name'] == $data['domain'])
+            {
+                $domainId = $remoteDomainData['id'];
+                break;
+            }
+        }
+
+        if (empty($domainId))
+        {
+            throw new SSLCenterApiException('Unable to resolve ACME domain ID.');
+        }
+
+        return $this->callV2('/certificates/acme/' . (int) $acmeID . '/domains/' . rawurlencode((string) $domainId), 'DELETE');
+    }
+
+    public function cancelCertificate($orderId, $reason = '')
+    {
+        $payload = ['reason' => !empty($reason) ? $reason : 'Cancelled by API client'];
+
+        return $this->callV2('/certificates/' . (int) $orderId . '/cancel', 'POST', $payload);
+    }
+
+    public function disableSubscriptionAutoRenewal($orderId)
+    {
+        return $this->callV2('/certificates/acme/' . (int) $orderId . '/subscription', 'DELETE');
+    }
+
     public function reIssueOrder($orderId, $data) {
         return $this->call('/orders/ssl/reissue/' . (int) $orderId, $getData, $data);
     }
@@ -294,11 +391,240 @@ class SSLCenterApi {
     public function generateCSR($data) {
         return $this->call('/tools/csr/generate/', $getData, $data);
     }
-    
-    protected function call($uri, $getData = array(), $postData = array(), $forcePost = false, $isFile = false) {
+
+    protected function normalizeDomains($domains)
+    {
+        if (is_array($domains))
+        {
+            return array_values(array_filter(array_map('trim', $domains)));
+        }
+
+        return array_values(array_filter(array_map('trim', preg_split('/[\s,;]+/', (string) $domains))));
+    }
+
+    protected function findAcmeDomainId($status, $domainName)
+    {
+        if (!is_array($status))
+        {
+            return null;
+        }
+
+        $target = strtolower(trim((string) $domainName));
+        $items = isset($status['items']) && is_array($status['items']) ? $status['items'] : array();
+
+        foreach ($items as $item)
+        {
+            if (empty($item['domains']) || !is_array($item['domains']))
+            {
+                continue;
+            }
+
+            foreach ($item['domains'] as $domain)
+            {
+                if (!is_array($domain) || !isset($domain['name']))
+                {
+                    continue;
+                }
+
+                if (strtolower(trim((string) $domain['name'])) === $target && !empty($domain['id']))
+                {
+                    return $domain['id'];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    protected function normalizeAcmeCreateResponse($response)
+    {
+        if (!is_array($response))
+        {
+            return $response;
+        }
+
+        if (isset($response['order']['id']) && !isset($response['order_id']))
+        {
+            $response['order_id'] = (int) $response['order']['id'];
+            $response['id'] = (int) $response['order']['id'];
+        }
+
+        if (isset($response['order']['status']) && !isset($response['status']))
+        {
+            $response['status'] = $response['order']['status'];
+        }
+
+        if (!empty($response['items']) && is_array($response['items']) && isset($response['items'][0]) && is_array($response['items'][0]))
+        {
+            $item = $response['items'][0];
+
+            if (!empty($item['account']) && is_array($item['account']))
+            {
+                $response['acme_account_id'] = isset($item['account']['id']) ? (string) $item['account']['id'] : '';
+                $response['eab_kid'] = isset($item['account']['eab_mac_id']) ? (string) $item['account']['eab_mac_id'] : '';
+                $response['eab_hmac_key'] = isset($item['account']['eab_mac_key']) ? (string) $item['account']['eab_mac_key'] : '';
+                $response['server_url'] = isset($item['account']['server_url']) ? (string) $item['account']['server_url'] : '';
+            }
+
+            if (!empty($item['subscription']) && is_array($item['subscription']))
+            {
+                $response['begin_date'] = isset($item['subscription']['begin']) ? $item['subscription']['begin'] : null;
+                $response['end_date'] = isset($item['subscription']['end']) ? $item['subscription']['end'] : null;
+                $response['renewal_date'] = isset($item['subscription']['next_renewal']) ? $item['subscription']['next_renewal'] : null;
+            }
+        }
+
+        return $response;
+    }
+
+    protected function getV2AuthorizationHeader()
+    {
+        return $this->buildV2AuthorizationHeader();
+    }
+
+    public function testConnectionV1($user, $pass)
+    {
+        return $this->call('/auth/', array(), array(
+            'user' => $user,
+            'pass' => $pass
+        ));
+    }
+
+    public function testConnectionV2($partnerCode = null, $password = null)
+    {
+        return $this->callV2('/products', 'GET', null, $partnerCode, $password);
+    }
+
+    protected function buildV2AuthorizationHeader($partnerCode = null, $password = null)
+    {
+        if (!empty($partnerCode) && !empty($password))
+        {
+            return 'Authorization: GGS ' . $partnerCode . ':' . $password;
+        }
+
+        $apiConfigRepo = new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository();
+        $apiData = $apiConfigRepo->get();
+
+        $partnerCode = !empty($apiData->api_partner_code) ? trim((string) $apiData->api_partner_code) : null;
+        $password = $apiData->api_password;
+
+        if (!empty($partnerCode))
+        {
+            if (empty($password))
+            {
+                throw new SSLCenterException('api_configuration_empty');
+            }
+
+            return 'Authorization: GGS ' . $partnerCode . ':' . $password;
+        }
+
+        if (empty($this->key))
+        {
+            throw new SSLCenterException('Authorization key is required');
+        }
+
+        return 'Authorization: GGS ' . $this->key;
+    }
+
+    protected function callV2($uri, $method = 'GET', $payload = null, $partnerCode = null, $password = null)
+    {
+        $method = strtoupper($method);
+        $url = rtrim($this->apiV2Url, '/') . '/' . ltrim($uri, '/');
 
         $this->lastRequest = [
             'uri' => $uri,
+            'method' => $method,
+            'post' => $payload,
+            'api_version' => 'v2',
+        ];
+
+        $headers = [
+            $this->buildV2AuthorizationHeader($partnerCode, $password),
+            'Accept: application/json',
+        ];
+
+        $configuration = new Configuration();
+        $headers[] = 'User-Agent: whmcs/' . $configuration->version;
+
+        $queryData = '';
+        if (!is_null($payload))
+        {
+            $queryData = json_encode($payload);
+            if ($queryData === false)
+            {
+                throw new SSLCenterApiException('Invalid JSON payload for API V2 request');
+            }
+
+            $headers[] = 'Content-Type: application/json';
+            $headers[] = 'Content-Length: ' . strlen($queryData);
+        }
+
+        $c = curl_init($url);
+        if ($method === 'POST')
+        {
+            curl_setopt($c, CURLOPT_POST, true);
+        }
+        else if ($method !== 'GET')
+        {
+            curl_setopt($c, CURLOPT_CUSTOMREQUEST, $method);
+        }
+
+        if ($queryData !== '')
+        {
+            curl_setopt($c, CURLOPT_POSTFIELDS, $queryData);
+        }
+
+        curl_setopt($c, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($c, CURLINFO_HEADER_OUT, true);
+        curl_setopt($c, CURLOPT_HEADER, true);
+
+        $data = curl_exec($c);
+        $info = curl_getinfo($c);
+        $result = substr($data, $info['header_size']);
+        $status = (int) curl_getinfo($c, CURLINFO_HTTP_CODE);
+
+        logModuleCall('SSLCENTERWHMCS', 'Time: '.$info['total_time'].' '.$uri.' [v2]', $info['request_header'].$queryData, $data);
+
+        if ($result === false)
+        {
+            $error = curl_error($c);
+            curl_close($c);
+            throw new SSLCenterException($error);
+        }
+
+        curl_close($c);
+        $this->lastStatus = $status;
+
+        if ($status === 204 || trim((string) $result) === '')
+        {
+            $this->lastResponse = ['error' => false, 'status' => $status];
+            return $this->lastResponse;
+        }
+
+        $this->lastResponse = json_decode($result, true);
+        if (!is_array($this->lastResponse))
+        {
+            throw new SSLCenterApiException('Invalid Response from API V2');
+        }
+
+        if ($status >= 400)
+        {
+            $message = !empty($this->lastResponse['message']) ? $this->lastResponse['message'] : 'API V2 request failed';
+            throw new SSLCenterApiException($message);
+        }
+
+        return $this->lastResponse;
+    }
+
+    protected function call($uri, $getData = array(), $postData = array(), $forcePost = false, $isFile = false, $httpMethod = null) {
+
+        $post = !empty($postData) || $forcePost ? true : false;
+        $method = strtoupper($httpMethod ? $httpMethod : ($post ? 'POST' : 'GET'));
+        $this->lastRequest = [
+            'uri' => $uri,
+            'method' => $method,
             'post' => $postData,
         ];
 
@@ -316,10 +642,11 @@ class SSLCenterApi {
             }
         }
 
-        $post = !empty($postData) || $forcePost ? true : false;
         $c = curl_init($url);
-        if ($post) {
+        if ($method === 'POST') {
             curl_setopt($c, CURLOPT_POST, true);
+        } else if ($method !== 'GET') {
+            curl_setopt($c, CURLOPT_CUSTOMREQUEST, $method);
         }
 
         $queryData = '';

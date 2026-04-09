@@ -216,10 +216,11 @@ add_hook('InvoicePaid', 1, function($vars)
     
     $invoiceInfo = $invoiceGenerator->getInvoiceCreatedInfo($vars['invoiceid']);
     if (!empty($invoiceInfo)) {
+        $isAcmeSubscription = \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeByServiceId($invoiceInfo['service_id']);
         $command = 'SendEmail';
         $postData = array(
             'id'          => $invoiceInfo['service_id'],
-            'messagename' => \MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::RENEWAL_TEMPLATE_ID
+            'messagename' => $isAcmeSubscription ? \MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::SUBSCRIPTION_RENEWAL_TEMPLATE_ID : \MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::RENEWAL_TEMPLATE_ID
         );
         $adminUserName = \MGModule\SSLCENTERWHMCS\eHelpers\Admin::getAdminUserName();
         $results = localAPI($command, $postData, $adminUserName);
@@ -233,7 +234,7 @@ add_hook('InvoicePaid', 1, function($vars)
     $apiConf           = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
     if(isset($apiConf->renew_new_order) && $apiConf->renew_new_order == '1')
     {
-        if (!empty($invoiceInfo)) {
+        if (!empty($invoiceInfo) && !\MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeByServiceId($invoiceInfo['service_id'])) {
             modulecallfunction("Renew", $invoiceInfo['service_id']);
         }
         return true;

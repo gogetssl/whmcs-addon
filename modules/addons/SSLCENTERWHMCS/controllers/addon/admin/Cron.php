@@ -109,9 +109,12 @@ class Cron extends main\mgLibs\process\AbstractController
         //get saved amount days to generate invoice (one time & reccuring)
         $renew_invoice_days_one_time  = $apiConf->renew_invoice_days_one_time;
         $renew_invoice_days_reccuring = $apiConf->renew_invoice_days_reccuring;
+        $auto_renew_invoice_subscription = (bool) $apiConf->auto_renew_invoice_subscription;
+        $renew_invoice_days_subscription = $apiConf->renew_invoice_days_subscription;
 
         $send_expiration_notification_reccuring = (bool) $apiConf->send_expiration_notification_reccuring;
         $send_expiration_notification_one_time  = (bool) $apiConf->send_expiration_notification_one_time;
+        $send_expiration_notification_subscription  = (bool) $apiConf->send_expiration_notification_subscription;
 
         $this->sslRepo = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
 
@@ -145,8 +148,19 @@ class Cron extends main\mgLibs\process\AbstractController
             $services = [];
         }
 
+        $acmeSubscriptionServices = Capsule::table('SSLCENTER_acme_subscriptions')
+            ->whereIn('status', ['active', 'pending'])
+            ->pluck('service_id')
+            ->toArray();
+
+        if (!empty($acmeSubscriptionServices))
+        {
+            $synchServicesId = array_values(array_unique(array_merge($synchServicesId, $acmeSubscriptionServices)));
+        }
+
         $emailSendsCount = 0;
         $emailSendsCountReissue = 0;
+        $invoicesCreatedCount = 0;
 
         $packageLists = [];
         $serviceIDs   = [];
@@ -154,6 +168,18 @@ class Cron extends main\mgLibs\process\AbstractController
         foreach ($synchServicesId as $serviceid)
         {
             $srv = Capsule::table('tblhosting')->where('id', $serviceid)->first();
+            if (!$srv || $serviceid != 18)
+            {
+                continue;
+            }
+
+            $isAcmeSubscription = \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeByServiceId($srv->id);
+            $acmeSubscriptionData = null;
+
+            if ($isAcmeSubscription)
+            {
+                $acmeSubscriptionData = (new \MGModule\SSLCENTERWHMCS\models\acmeSubscription\Repository())->getByServiceId($srv->id);
+            }
 
             //get days left to expire from WHMCS
             $daysLeft         = $this->checkOrderExpireDate($srv->nextduedate);
@@ -164,18 +190,14 @@ class Cron extends main\mgLibs\process\AbstractController
             if ($srv->billingcycle == 'One Time')
             {
                 $sslOrder = Capsule::table('tblsslorders')->where('serviceid', $srv->id)->first();
-
-                if(isset($sslOrder->remoteid) && !empty($sslOrder->remoteid)) {
-
+                if(isset($sslOrder->remoteid) && !empty($sslOrder->remoteid) && !$isAcmeSubscription) {
                     $order    = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslOrder->remoteid);
                     $daysLeft = $this->checkOrderExpireDate($order['valid_till']);
-
                 }
             }
 
             $product = Capsule::table('tblproducts')->where('id', $srv->packageid)->first();
-
-            if($srv->domainstatus == 'Active' && $daysReissue == '30' && $product->configoption2 > 12)
+            if($srv->domainstatus == 'Active' && $daysReissue == '30' && $product->configoption2 > 12 && !$isAcmeSubscription)
             {
                 // send email
                 $emailSendsCountReissue += $this->sendReissueNotfiyEmail($srv->id);
@@ -185,19 +207,59 @@ class Cron extends main\mgLibs\process\AbstractController
             //$daysLeft = 90;
             if ($daysLeft >= 0)
             {
-                if ($srv->billingcycle == 'One Time' && $send_expiration_notification_one_time || $srv->billingcycle != 'One Time' && $send_expiration_notification_reccuring)
+                if (!$isAcmeSubscription && $srv->billingcycle == 'One Time' && $send_expiration_notification_one_time || $srv->billingcycle != 'One Time' && $send_expiration_notification_reccuring)
+                {
                     $emailSendsCount += $this->sendExpireNotfiyEmail($srv->id, $daysLeft);
+                }
+            }
+
+            if ($isAcmeSubscription)
+            {
+                $expiryDate = !empty($acmeSubscriptionData->renewal_date) ? $acmeSubscriptionData->renewal_date : $acmeSubscriptionData->period_end;
+                if (!empty($expiryDate))
+                {
+                    $daysLeft = $this->checkOrderExpireDateExact($expiryDate);
+                }
+
+
             }
 
             $savedRenewDays = $renew_invoice_days_reccuring;
-            if ($srv->billingcycle == 'One Time')
+            if ($isAcmeSubscription)
+            {
+                $savedRenewDays = $renew_invoice_days_subscription;
+            }
+            elseif ($srv->billingcycle == 'One Time')
             {
                 $savedRenewDays = $renew_invoice_days_one_time;
             }
+
             //if it is proper amount of days before expiry, we create invoice
             if ($daysLeft == (int) $savedRenewDays)
             {
-                if ($srv->billingcycle == 'One Time' && $auto_renew_invoice_one_time || $srv->billingcycle != 'One Time' && $auto_renew_invoice_reccuring)
+                if ($isAcmeSubscription)
+                {
+                    if ($auto_renew_invoice_subscription && isset($acmeSubscriptionData->auto_renew) && (int) $acmeSubscriptionData->auto_renew === 1)
+                    {
+                        $nextInvoiceDate = $this->getAcmeNextInvoiceDate($acmeSubscriptionData->renewal_date, $savedRenewDays);
+
+                        if ($nextInvoiceDate !== null && $nextInvoiceDate <= date('Y-m-d'))
+                        {
+                            $invoicesCreatedCount += $this->createAcmeSubscriptionRenewalInvoice($srv, $product, $acmeSubscriptionData, $savedRenewDays);
+                        }
+
+                        if ($send_expiration_notification_subscription)
+                        {
+                            $emailSendsCount += $this->sendExpireNotfiyEmail(
+                                $srv->id,
+                                $daysLeft,
+                                main\eServices\EmailTemplateService::SUBSCRIPTION_EXPIRATION_TEMPLATE_ID
+                            );
+                        }
+
+                    }
+                }
+                elseif ($srv->billingcycle == 'One Time' && $auto_renew_invoice_one_time || $srv->billingcycle != 'One Time' && $auto_renew_invoice_reccuring)
                 {
                     $packageLists[$srv->packageid][] = $srv;
                     $serviceIDs[]                    = $srv->id;
@@ -207,7 +269,7 @@ class Cron extends main\mgLibs\process\AbstractController
 
         if(!$renew_new_order)
         {
-            $invoicesCreatedCount = $this->createAutoInvoice($packageLists, $serviceIDs);
+            $invoicesCreatedCount += $this->createAutoInvoice($packageLists, $serviceIDs);
 
             $invoices = Capsule::table('tblinvoices')->where('status', 'Payment Pending')->get();
             foreach($invoices as $invoice)
@@ -233,6 +295,8 @@ class Cron extends main\mgLibs\process\AbstractController
             }
         }
 
+
+
         echo 'Notifier completed.' . PHP_EOL;
         echo '<br />Number of emails send (expire): ' . $emailSendsCount . PHP_EOL;
         echo '<br />Number of emails send (reissue): ' . $emailSendsCountReissue . PHP_EOL;
@@ -243,6 +307,9 @@ class Cron extends main\mgLibs\process\AbstractController
         {
             echo '<br />Number of invoiced created: ' . $invoicesCreatedCount . PHP_EOL;
         }
+
+        $this->cancelOverdueAcmeSubscriptions();
+        $this->cancelExpiredStoppedAutoRenewAcmeSubscriptions();
 
         main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Notifier completed. Number of emails send: " . $emailSendsCount);
 
@@ -317,6 +384,15 @@ class Cron extends main\mgLibs\process\AbstractController
         echo '<br />The number of messages sent: ' . $emailSendsCount . PHP_EOL;
 
         main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Certificate Sender completed. The number of messages sent: " . $emailSendsCount);
+        return array();
+    }
+
+    public function monitorAcmeSubscriptionsCRON($input, $vars = array())
+    {
+        echo 'ACME subscriptions monitor started.' . PHP_EOL;
+        $this->cancelOverdueAcmeSubscriptions();
+        $this->cancelExpiredStoppedAutoRenewAcmeSubscriptions();
+        echo 'ACME subscriptions monitor completed.' . PHP_EOL;
         return array();
     }
 
@@ -430,6 +506,8 @@ class Cron extends main\mgLibs\process\AbstractController
                 $productPrice->saveToDatabase();
             }
 
+            $apiProductsById = $this->getApiProductsForCron();
+
             $productModel = new \MGModule\SSLCENTERWHMCS\models\productConfiguration\Repository();
             //get sslcenter all products
             $products     = $productModel->getModuleProducts();
@@ -440,11 +518,22 @@ class Cron extends main\mgLibs\process\AbstractController
                 if (!$product->{C::PRICE_AUTO_DOWNLOAD})
                     continue;
 
+                $apiProduct = isset($apiProductsById[(int) $product->{C::API_PRODUCT_ID}]) ? $apiProductsById[(int) $product->{C::API_PRODUCT_ID}] : null;
+                $isAcmeProduct = \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeProductId((int) $product->{C::API_PRODUCT_ID});
 
-                //load saved api price
-                $apiPrice = $productPrice->loadSavedPriceData($product->{C::API_PRODUCT_ID});
-                //generate new price
-                $this->generateNewPricesBasedOnAPI($product->pricing, $apiPrice);
+                if ($apiProduct !== null && $isAcmeProduct)
+                {
+                    $this->generateNewPricesFromApiProduct($product->pricing, $apiProduct);
+                    $this->syncProductDataFromApi((int) $product->id, $apiProduct);
+                    $this->syncSanConfigurableOptionsFromApi((int) $product->id, C::OPTION_SANS_COUNT, $apiProduct, 'single');
+                    $this->syncSanConfigurableOptionsFromApi((int) $product->id, C::OPTION_SANS_WILDCARD_COUNT, $apiProduct, 'wildcard');
+                }
+                else
+                {
+                    //legacy fallback
+                    $apiPrice = $productPrice->loadSavedPriceData($product->{C::API_PRODUCT_ID});
+                    $this->generateNewPricesBasedOnAPI($product->pricing, $apiPrice);
+                }
             }
         }
         catch (\Exception $e)
@@ -456,6 +545,375 @@ class Cron extends main\mgLibs\process\AbstractController
         echo 'Products Price Updater completed.' . PHP_EOL;
         main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Products Price Updater completed.");
         return array();
+    }
+
+    private function getApiProductsForCron()
+    {
+        $response = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getProducts();
+        $products = isset($response['products']) && is_array($response['products']) ? $response['products'] : [];
+        $result = [];
+
+        foreach ($products as $product)
+        {
+            if (!isset($product['id']))
+            {
+                continue;
+            }
+            $result[(int) $product['id']] = $product;
+        }
+
+        return $result;
+    }
+
+    private function generateNewPricesFromApiProduct($currentPrices, $apiProduct)
+    {
+        $termPrices = $this->extractBasePricesByTerm($apiProduct);
+        if (empty($termPrices))
+        {
+            return;
+        }
+
+        $annual = isset($termPrices[12]) ? (float) $termPrices[12] : 0.00;
+        $rate = $this->getGlobalRate();
+        $currencies = (new \MGModule\SSLCENTERWHMCS\models\productConfiguration\Repository())->getAllCurrencies();
+
+        foreach ($currentPrices as $price)
+        {
+            $currencyRate = $this->getCurrencyRateById($currencies, (int) $price->currency);
+            $periodMap = [
+                'monthly'      => 12,
+                'quarterly'    => 3,
+                'semiannually' => 6,
+                'annually'     => 12,
+                'biennially'   => 24,
+                'triennially'  => 36,
+            ];
+
+            $update = [];
+            foreach ($periodMap as $cycle => $term)
+            {
+                if ($price->{$cycle} === '-1.00')
+                {
+                    $update[$cycle] = '-1.00';
+                    continue;
+                }
+
+                $base = isset($termPrices[$term]) ? (float) $termPrices[$term] : $annual;
+                $update[$cycle] = number_format($base * $currencyRate * $rate, 2, '.', '');
+            }
+
+            Capsule::table("tblpricing")
+                ->where("id", "=", $price->pricing_id)
+                ->where("type", "=", 'product')
+                ->where("relid", "=", $price->relid)
+                ->update($update);
+        }
+    }
+
+    private function syncProductDataFromApi($productId, array $apiProduct)
+    {
+        $san = $this->toArray($this->readValue($apiProduct, ['san']));
+        $included = $this->toArray($this->readValue($san, ['included']));
+
+        $update = [
+            C::PRODUCT_INCLUDED_SANS => $this->toInt($this->readValue($included, ['single']), 0),
+            C::PRODUCT_INCLUDED_SANS_WILDCARD => $this->toInt($this->readValue($included, ['wildcard']), 0),
+            C::PRODUCT_ENABLE_SAN => $this->toBool($this->readValue($san, ['single_allowed'])) ? 'on' : '',
+            C::PRODUCT_ENABLE_SAN_WILDCARD => $this->toBool($this->readValue($san, ['wildcard_allowed'])) ? 'on' : '',
+        ];
+
+        $description = $this->readValue($apiProduct, ['description']);
+        if (is_string($description))
+        {
+            $update['description'] = $description;
+        }
+
+        if (\MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeProductId((int) $this->readValue($apiProduct, ['id'])))
+        {
+            $update['paytype']             = 'onetime';
+            $update[C::API_PRODUCT_MONTHS] = 12;
+            $update['configoptionsupgrade'] = 1;
+        }
+
+        Capsule::table('tblproducts')->where('id', (int) $productId)->update($update);
+    }
+
+    private function syncSanConfigurableOptionsFromApi($productId, $optionTypeName, array $apiProduct, $sanType)
+    {
+        $like = $optionTypeName . '%';
+        $option = Capsule::table('tblproductconfiggroups')
+            ->select(['tblproductconfigoptions.id'])
+            ->join('tblproductconfigoptions', 'tblproductconfigoptions.gid', '=', 'tblproductconfiggroups.id')
+            ->where('tblproductconfiggroups.description', '=', 'Auto generated by module - SSLCenter #' . (int) $productId)
+            ->where('tblproductconfigoptions.optionname', 'LIKE', $like)
+            ->first();
+
+        if (!$option || !isset($option->id))
+        {
+            return;
+        }
+
+        $san = $this->toArray($this->readValue($apiProduct, ['san']));
+        $min = $this->toInt($this->readValue($san, ['min']), 0);
+        $max = $this->toInt($this->readValue($san, ['max']), 10);
+        if ($min < 0) {
+            $min = 0;
+        }
+        if ($max < $min) {
+            $max = $min;
+        }
+
+        Capsule::table('tblproductconfigoptions')
+            ->where('id', (int) $option->id)
+            ->update([
+                'qtyminimum' => $min,
+                'qtymaximum' => $max,
+            ]);
+
+        $subOptionIds = Capsule::table('tblproductconfigoptionssub')
+            ->where('configid', (int) $option->id)
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($subOptionIds))
+        {
+            return;
+        }
+
+        $pricingByCurrency = $this->buildSanPricingByCurrency($apiProduct, $sanType);
+        foreach ($subOptionIds as $subOptionId)
+        {
+            $pricingRows = Capsule::table('tblpricing')
+                ->where('type', 'configoptions')
+                ->where('relid', (int) $subOptionId)
+                ->get();
+
+            foreach ($pricingRows as $pricingRow)
+            {
+                if (!isset($pricingByCurrency[(int) $pricingRow->currency]))
+                {
+                    continue;
+                }
+
+                Capsule::table('tblpricing')
+                    ->where('id', (int) $pricingRow->id)
+                    ->update($pricingByCurrency[(int) $pricingRow->currency]);
+            }
+        }
+    }
+
+    private function buildSanPricingByCurrency(array $apiProduct, $sanType)
+    {
+        $termPrices = $this->extractSanPricesByTerm($apiProduct, $sanType);
+        $annual = isset($termPrices[12]) ? (float) $termPrices[12] : 0.00;
+        $rate = $this->getGlobalRate();
+        $currencies = (new \MGModule\SSLCENTERWHMCS\models\productConfiguration\Repository())->getAllCurrencies();
+        $pricingByCurrency = [];
+
+        foreach ($currencies as $currency)
+        {
+            $currencyRate = ($currency->default == '1') ? 1 : (float) $currency->rate;
+            if ($currencyRate <= 0)
+            {
+                $currencyRate = 1;
+            }
+
+            $periodMap = [
+                'monthly'      => 12,
+                'quarterly'    => 3,
+                'semiannually' => 6,
+                'annually'     => 12,
+                'biennially'   => 24,
+                'triennially'  => 36,
+            ];
+
+            $pricing = [];
+            foreach ($periodMap as $cycle => $term)
+            {
+                $base = isset($termPrices[$term]) ? (float) $termPrices[$term] : $annual;
+                $pricing[$cycle] = number_format($base * $currencyRate * $rate, 2, '.', '');
+            }
+
+            $pricingByCurrency[(int) $currency->id] = $pricing;
+        }
+
+        return $pricingByCurrency;
+    }
+
+    private function extractBasePricesByTerm(array $apiProduct)
+    {
+        $prices = $this->toArray($this->readValue($apiProduct, ['prices']));
+        $result = [];
+
+        foreach ($prices as $entry)
+        {
+            $term = (int) $this->readValue($entry, ['term', 'period']);
+            if ($term <= 0)
+            {
+                continue;
+            }
+
+            $baseNode = $this->readValue($entry, ['base']);
+            $price = $this->resolveBasePriceFromNode($baseNode);
+            if ($price === null)
+            {
+                $price = $this->readMonetaryValue($entry, ['price', 'selling', 'retail']);
+            }
+
+            if ($price !== null)
+            {
+                $result[$term] = (float) $price;
+            }
+        }
+
+        return $result;
+    }
+
+    private function extractSanPricesByTerm(array $apiProduct, $sanType)
+    {
+        $prices = $this->toArray($this->readValue($apiProduct, ['prices']));
+        $result = [];
+
+        foreach ($prices as $entry)
+        {
+            $term = (int) $this->readValue($entry, ['term', 'period']);
+            if ($term <= 0)
+            {
+                continue;
+            }
+
+            $sanNode = $this->toArray($this->readValue($entry, ['san']));
+            $typeNode = $this->toArray($this->readValue($sanNode, [$sanType]));
+            $price = $this->readMonetaryValue($typeNode, ['selling', 'retail', 'price']);
+
+            if ($price !== null)
+            {
+                $result[$term] = (float) $price;
+            }
+        }
+
+        return $result;
+    }
+
+    private function resolveBasePriceFromNode($baseNode)
+    {
+        if (is_numeric($baseNode))
+        {
+            return (float) $baseNode;
+        }
+
+        $baseArray = $this->toArray($baseNode);
+        if (empty($baseArray))
+        {
+            return null;
+        }
+
+        foreach (['single', 'wildcard'] as $type)
+        {
+            $node = $this->readValue($baseArray, [$type]);
+            $price = $this->readMonetaryValue($node, ['selling', 'retail', 'price']);
+            if ($price !== null)
+            {
+                return $price;
+            }
+        }
+
+        return $this->readMonetaryValue($baseArray, ['selling', 'retail', 'price']);
+    }
+
+    private function readMonetaryValue($node, array $keys)
+    {
+        foreach ($keys as $key)
+        {
+            $value = $this->readValue($node, [$key]);
+            if (is_numeric($value))
+            {
+                return (float) $value;
+            }
+        }
+
+        if (is_numeric($node))
+        {
+            return (float) $node;
+        }
+
+        return null;
+    }
+
+    private function readValue($source, array $keys)
+    {
+        foreach ($keys as $key)
+        {
+            if (is_array($source) && array_key_exists($key, $source))
+            {
+                return $source[$key];
+            }
+
+            if (is_object($source) && isset($source->{$key}))
+            {
+                return $source->{$key};
+            }
+        }
+
+        return null;
+    }
+
+    private function toArray($value)
+    {
+        if (is_array($value))
+        {
+            return $value;
+        }
+
+        if (is_object($value))
+        {
+            return (array) $value;
+        }
+
+        return [];
+    }
+
+    private function toInt($value, $default = 0)
+    {
+        return is_numeric($value) ? (int) $value : (int) $default;
+    }
+
+    private function toBool($value)
+    {
+        if (is_bool($value))
+        {
+            return $value;
+        }
+
+        if (is_numeric($value))
+        {
+            return ((int) $value) === 1;
+        }
+
+        return in_array(strtolower((string) $value), ['1', 'true', 'yes', 'on'], true);
+    }
+
+    private function getGlobalRate()
+    {
+        $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+        $rate = isset($apiConf->rate) ? (float) $apiConf->rate : 1;
+        return ($rate > 0) ? $rate : 1;
+    }
+
+    private function getCurrencyRateById($currencies, $currencyId)
+    {
+        foreach ($currencies as $currency)
+        {
+            if ((int) $currency->id !== (int) $currencyId)
+            {
+                continue;
+            }
+
+            $rate = ($currency->default == '1') ? 1 : (float) $currency->rate;
+            return ($rate > 0) ? $rate : 1;
+        }
+
+        return 1;
     }
     private function checkOrdersStatus($sslorders, $processingOnly = false)
     {
@@ -511,11 +969,88 @@ class Cron extends main\mgLibs\process\AbstractController
         main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Certificates (ssl status Processing) Data Updater started.");
 
         $this->checkOrdersStatus($sslorders, true);
+        $updatedPendingAcme = $this->refreshPendingAcmeSubscriptions();
 
         echo '<br/ >';
+        echo 'Pending ACME subscriptions refreshed: ' . $updatedPendingAcme . PHP_EOL;
         echo 'Certificates (ssl status Processing) Data Updater completed.' . PHP_EOL;
+        main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Pending ACME subscriptions refreshed: " . $updatedPendingAcme);
         main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Certificates (ssl status Processing) Data Updater completed.");
         return array();
+    }
+
+    private function refreshPendingAcmeSubscriptions()
+    {
+        $updated = 0;
+        $subRepo = new \MGModule\SSLCENTERWHMCS\models\acmeSubscription\Repository();
+        $sslRepo = new main\eRepository\whmcs\service\SSL();
+        $pendingSubs = Capsule::table('SSLCENTER_acme_subscriptions')
+            ->whereIn('status', ['pending', 'Pending'])
+            ->whereNotNull('api_order_id')
+            ->where('api_order_id', '>', 0)
+            ->get();
+
+        foreach ($pendingSubs as $subscription)
+        {
+            try
+            {
+                $details = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getCertificateDetails('acme', (int) $subscription->api_order_id);
+            }
+            catch (\Exception $e)
+            {
+                continue;
+            }
+
+            $orderStatus = isset($details['order']['status']) ? $details['order']['status'] : (isset($details['status']) ? $details['status'] : $subscription->status);
+            $items = isset($details['items']) && is_array($details['items']) ? $details['items'] : array();
+            $firstItem = isset($items[0]) && is_array($items[0]) ? $items[0] : array();
+            $acmeId = isset($firstItem['id']) ? (int) $firstItem['id'] : (isset($subscription->acme_id) ? (int) $subscription->acme_id : 0);
+            $account = isset($firstItem['account']) && is_array($firstItem['account']) ? $firstItem['account'] : array();
+            $subscriptionData = isset($firstItem['subscription']) && is_array($firstItem['subscription']) ? $firstItem['subscription'] : array();
+
+            $periodStart = isset($subscriptionData['begin']) ? $subscriptionData['begin'] : $subscription->period_start;
+            $periodEnd = isset($subscriptionData['end']) ? $subscriptionData['end'] : $subscription->period_end;
+            $renewalDate = isset($subscriptionData['next_renewal']) ? $subscriptionData['next_renewal'] : $subscription->renewal_date;
+            $autoRenew = isset($subscriptionData['next_renewal']) ? 1 : (int) $subscription->auto_renew;
+
+            $subRepo->upsertByServiceId((int) $subscription->service_id, [
+                'status'          => $orderStatus,
+                'acme_id'         => $acmeId > 0 ? $acmeId : null,
+                'acme_account_id' => isset($account['id']) ? (string) $account['id'] : (string) $subscription->acme_account_id,
+                'eab_kid'         => isset($account['eab_mac_id']) ? (string) $account['eab_mac_id'] : (string) $subscription->eab_kid,
+                'eab_hmac_key'    => isset($account['eab_mac_key']) ? (string) $account['eab_mac_key'] : (string) $subscription->eab_hmac_key,
+                'server_url'      => isset($account['server_url']) ? (string) $account['server_url'] : (string) $subscription->server_url,
+                'period_start'    => $periodStart,
+                'period_end'      => $periodEnd,
+                'renewal_date'    => $renewalDate,
+                'auto_renew'      => $autoRenew,
+            ]);
+
+            $sslService = $sslRepo->getByServiceId((int) $subscription->service_id);
+            if ($sslService)
+            {
+                $sslService->remoteid = (int) $subscription->api_order_id;
+                $sslService->status = 'Completed';
+                $sslService->setConfigdataKey('ssl_status', $orderStatus);
+                if (!empty($periodStart))
+                {
+                    $sslService->setConfigdataKey('begin_date', $periodStart);
+                }
+                if (!empty($periodEnd))
+                {
+                    $sslService->setConfigdataKey('end_date', $periodEnd);
+                }
+                if (!empty($renewalDate))
+                {
+                    $sslService->setConfigdataKey('renewal_date', $renewalDate);
+                }
+                $sslService->save();
+            }
+
+            $updated++;
+        }
+
+        return $updated;
     }
     private function generateNewPricesBasedOnAPI($currentPrices, $apiPrices)
     {
@@ -726,7 +1261,7 @@ class Cron extends main\mgLibs\process\AbstractController
 
     public function checkOrderExpireDate($expireDate)
     {
-        $expireDaysNotify = array_flip(array('90', '60', '30', '15', '10', '7', '3', '1', '0'));
+        $expireDaysNotify = array_flip(array('90', '60', '30', '21', '15', '14', '10', '7', '3', '1', '0'));
 
         if (stripos($expireDate, ':') === false)
         {
@@ -745,13 +1280,121 @@ class Cron extends main\mgLibs\process\AbstractController
         return isset($expireDaysNotify[$diff->days]) ? $diff->days : -1;
     }
 
-    public function sendExpireNotfiyEmail($serviceId, $daysLeft)
+    private function checkOrderExpireDateExact($expireDate)
+    {
+        if (stripos($expireDate, ':') === false)
+        {
+            $expireDate .= ' 23:59:59';
+        }
+
+        $expire = new \DateTime($expireDate);
+        $today  = new \DateTime();
+
+        $diff = $expire->diff($today, false);
+        if ($diff->invert == 0)
+        {
+            return -1;
+        }
+
+        return (int) $diff->days;
+    }
+
+    private function getAcmeNextInvoiceDate($renewalDate, $daysBefore)
+    {
+        if (empty($renewalDate) || !is_numeric($daysBefore))
+        {
+            return null;
+        }
+
+        $renewalTimestamp = strtotime((string) $renewalDate);
+        if ($renewalTimestamp === false)
+        {
+            return null;
+        }
+
+        return date('Y-m-d', strtotime('-' . (int) $daysBefore . ' days', $renewalTimestamp));
+    }
+
+    private function createAcmeSubscriptionRenewalInvoice($service, $product, $subscriptionData, $savedRenewDays)
+    {
+        if ($this->hasOpenAcmeSubscriptionRenewalInvoice((int) $service->id))
+        {
+            return 0;
+        }
+
+        $amount = isset($service->firstpaymentamount) ? (float) $service->firstpaymentamount : 0.00;
+        $dateInvoice = date('Y-m-d');
+        $dueDate = new \DateTime($dateInvoice);
+        if (is_numeric($savedRenewDays))
+        {
+            $dueDate->add(new \DateInterval('P' . max(0, (int) $savedRenewDays) . 'D'));
+        }
+        $periodStart = !empty($subscriptionData->renewal_date)
+            ? date('Y-m-d', strtotime((string) $subscriptionData->renewal_date))
+            : $dateInvoice;
+
+        $periodEndDate = new \DateTime($periodStart);
+        $periodEndDate->add(new \DateInterval('P12M'));
+        $periodEndDate->sub(new \DateInterval('P1D'));
+
+        $description = $product->name
+            . ($service->domain ? ' - ' . $service->domain : '')
+            . ' (1 Year) - ACME Subscription Renewal';
+
+        $postData = [
+            'userid' => $service->userid,
+            'sendinvoice' => true,
+            'date' => $dateInvoice,
+            'duedate' => $dueDate->format('Y-m-d'),
+            'itemdescription1' => $description,
+            'itemamount1' => $amount,
+            'itemtaxed1' => isset($product->tax) ? $product->tax : 0,
+        ];
+
+        $results = localAPI('CreateInvoice', $postData);
+
+        if (!isset($results['result']) || $results['result'] !== 'success' || empty($results['invoiceid']))
+        {
+            main\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS: Failed to create ACME subscription renewal invoice for service #' . (int) $service->id . '.');
+            return 0;
+        }
+
+        $invoiceId = (int) $results['invoiceid'];
+
+        Capsule::table('tblinvoiceitems')
+            ->where('invoiceid', '=', $invoiceId)
+            ->update([
+                'type' => 'Hosting',
+                'relid' => $service->id,
+            ]);
+
+        main\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS: ACME subscription renewal invoice #' . $invoiceId . ' created for service #' . (int) $service->id . '.');
+
+        return 1;
+    }
+
+    private function hasOpenAcmeSubscriptionRenewalInvoice($serviceId)
+    {
+        return Capsule::table('tblinvoiceitems')
+            ->join('tblinvoices', 'tblinvoices.id', '=', 'tblinvoiceitems.invoiceid')
+            ->where('tblinvoiceitems.type', 'Hosting')
+            ->where('tblinvoiceitems.relid', (int) $serviceId)
+            ->where('tblinvoiceitems.description', 'LIKE', '%ACME Subscription Renewal')
+            ->whereNotIn('tblinvoices.status', ['Paid', 'Cancelled', 'Refunded'])
+            ->exists();
+    }
+
+    public function sendExpireNotfiyEmail($serviceId, $daysLeft, $templateName = null)
     {
         $command = 'SendEmail';
+        if ($templateName === null)
+        {
+            $templateName = main\eServices\EmailTemplateService::EXPIRATION_TEMPLATE_ID;
+        }
 
         $postData = array(
             'id'          => $serviceId,
-            'messagename' => main\eServices\EmailTemplateService::EXPIRATION_TEMPLATE_ID,
+            'messagename' => $templateName,
             'customvars'  => base64_encode(serialize(array("expireDaysLeft" => $daysLeft))),
         );
 
@@ -765,6 +1408,100 @@ class Cron extends main\mgLibs\process\AbstractController
             main\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS Notifier: Error while sending customer notifications (service ' . $serviceId . '): ' . $results['message'], 0);
         }
         return $resultSuccess;
+    }
+
+    private function cancelOverdueAcmeSubscriptions()
+    {
+        $today = date('Y-m-d');
+
+        $overdueItems = Capsule::table('tblinvoiceitems')
+            ->select(['tblinvoiceitems.relid as service_id', 'tblinvoices.id as invoice_id', 'tblinvoices.duedate'])
+            ->join('tblinvoices', 'tblinvoices.id', '=', 'tblinvoiceitems.invoiceid')
+            ->join('tblhosting', 'tblhosting.id', '=', 'tblinvoiceitems.relid')
+            ->join('tblproducts', 'tblproducts.id', '=', 'tblhosting.packageid')
+            ->whereIn('tblproducts.configoption1', \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::getProductIds())
+            ->whereIn('tblinvoices.status', ['Unpaid', 'Payment Pending'])
+            ->where('tblinvoiceitems.description', 'LIKE', '%ACME Subscription Renewal')
+            ->where('tblinvoices.duedate', '<', $today)
+            ->get();
+
+        $subRepo = new \MGModule\SSLCENTERWHMCS\models\acmeSubscription\Repository();
+
+        foreach ($overdueItems as $row)
+        {
+            $subscription = $subRepo->getByServiceId($row->service_id);
+            if (!$subscription || (int) $subscription->api_order_id <= 0)
+            {
+                continue;
+            }
+            if (in_array($subscription->status, ['cancelled', 'terminated'], true))
+            {
+                continue;
+            }
+
+            try
+            {
+                \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->cancelCertificate((int) $subscription->api_order_id, 'Overdue renewal invoice');
+            }
+            catch (\Exception $e)
+            {
+            }
+
+            $subRepo->upsertByServiceId($row->service_id, [
+                'status'       => 'cancelled',
+                'cancelled_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            Capsule::table('tblhosting')->where('id', $row->service_id)->update([
+                'domainstatus' => 'Terminated'
+            ]);
+        }
+    }
+
+    private function cancelExpiredStoppedAutoRenewAcmeSubscriptions()
+    {
+        $today = date('Y-m-d');
+        $subRepo = new \MGModule\SSLCENTERWHMCS\models\acmeSubscription\Repository();
+
+        $subscriptions = Capsule::table('SSLCENTER_acme_subscriptions')
+            ->join('tblhosting', 'tblhosting.id', '=', 'SSLCENTER_acme_subscriptions.service_id')
+            ->join('tblproducts', 'tblproducts.id', '=', 'tblhosting.packageid')
+            ->whereIn('tblproducts.configoption1', \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::getProductIds())
+            ->where('SSLCENTER_acme_subscriptions.auto_renew', '=', 0)
+            ->whereNotIn('SSLCENTER_acme_subscriptions.status', ['cancelled', 'terminated'])
+            ->where(function($query) use ($today) {
+                $query->whereNotNull('SSLCENTER_acme_subscriptions.renewal_date')
+                    ->where('SSLCENTER_acme_subscriptions.renewal_date', '<=', $today)
+                    ->orWhere(function($q) use ($today) {
+                        $q->whereNull('SSLCENTER_acme_subscriptions.renewal_date')
+                            ->whereNotNull('SSLCENTER_acme_subscriptions.period_end')
+                            ->where('SSLCENTER_acme_subscriptions.period_end', '<=', $today);
+                    });
+            })
+            ->get(['SSLCENTER_acme_subscriptions.*']);
+
+        foreach ($subscriptions as $subscription)
+        {
+            if ((int) $subscription->api_order_id > 0)
+            {
+                try
+                {
+                    \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->cancelCertificate((int) $subscription->api_order_id, 'Auto-renew disabled and subscription expired');
+                }
+                catch (\Exception $e)
+                {
+                }
+            }
+
+            $subRepo->upsertByServiceId((int) $subscription->service_id, [
+                'status'       => 'cancelled',
+                'cancelled_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            Capsule::table('tblhosting')->where('id', (int) $subscription->service_id)->update([
+                'domainstatus' => 'Cancelled'
+            ]);
+        }
     }
 
     public function sendReissueNotfiyEmail($serviceId)

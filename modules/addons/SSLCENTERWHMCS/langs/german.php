@@ -44,6 +44,7 @@ $_LANG['addonAA']['apiConfiguration']['item']['price_rate']['label']            
 $_LANG['addonAA']['apiConfiguration']['item']['rate']['label']                                         = 'Rate';
 $_LANG['addonAA']['apiConfiguration']['item']['header']                                                = 'API-Konfiguration';
 $_LANG['addonAA']['apiConfiguration']['item']['api_login']['label']                                    = 'Login';
+$_LANG['addonAA']['apiConfiguration']['item']['api_partner_code']['label']                             = 'API Partner Code';
 $_LANG['addonAA']['apiConfiguration']['item']['api_password']['label']                                 = 'Passwort';
 $_LANG['addonAA']['apiConfiguration']['item']['tech_legend']['label']                                  = 'Technischer Kontakt';
 $_LANG['addonAA']['apiConfiguration']['item']['csr_generator_legend']['label']                         = 'CSR-Generator';
@@ -77,7 +78,8 @@ $_LANG['addonAA']['apiConfiguration']['modal']['dataMigrationInfoAction'][1]    
 $_LANG['addonAA']['apiConfiguration']['modal']['dataMigrationInfoAction'][2]                           = 'Aktualisierung bestehender Dienste (Änderung des zugewiesenen Moduls)';
 $_LANG['addonAA']['apiConfiguration']['messages']['data_migration_success']                            = 'Daten und Konfiguration wurden erfolgreich importiert. Die Seite wird nach 5 Sekunden automatisch neu geladen.';
 //
-$_LANG['addonAA']['apiConfiguration']['item']['renewal_settings_legend']['label']                      = 'Verlängerungseinstellungen';
+$_LANG['addonAA']['apiConfiguration']['item']['renewal_settings_standard_legend']['label']             = 'Verlängerungseinstellungen (Standard billing)';
+$_LANG['addonAA']['apiConfiguration']['item']['renewal_settings_subscription_legend']['label']         = 'Verlängerungseinstellungen (Subscription billing)';
 $_LANG['addonAA']['apiConfiguration']['item']['logs_settings_legend']['label']                      = 'Protokolleinstellungen';
 $_LANG['addonAA']['apiConfiguration']['item']['auto_renew_invoice_reccuring']['label']                 = 'Wiederkehrende Bestellungen';
 $_LANG['addonAA']['apiConfiguration']['item']['auto_renew_invoice_reccuring']['description']           = 'Automatisch eine Verlängerungsrechnung erstellen';
@@ -89,6 +91,11 @@ $_LANG['addonAA']['apiConfiguration']['item']['auto_renew_invoice_one_time']['de
 $_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_one_time']['label']        = '';
 $_LANG['addonAA']['apiConfiguration']['item']['renew_invoice_days_one_time']['description']            = 'Tage vor Ablauf';
 $_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_one_time']['description']  = 'Ablaufbenachrichtigungen senden';
+$_LANG['addonAA']['apiConfiguration']['item']['auto_renew_invoice_subscription']['label']               = 'Subscription Orders';
+$_LANG['addonAA']['apiConfiguration']['item']['auto_renew_invoice_subscription']['description']         = 'Automatisch eine Verlängerungsrechnung erstellen';
+$_LANG['addonAA']['apiConfiguration']['item']['renew_invoice_days_subscription']['description']         = 'Tage vor Ablauf';
+$_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_subscription']['label']     = '';
+$_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_subscription']['description']= 'Ablaufbenachrichtigungen senden';
 
 $_LANG['addonAA']['apiConfiguration']['item']['renewal_invoice_status_unpaid']['label']                  = '';
 $_LANG['addonAA']['apiConfiguration']['item']['renewal_invoice_status_unpaid']['description']            = 'Set the status of Unpaid for renewal invoices (default is payment pending)';

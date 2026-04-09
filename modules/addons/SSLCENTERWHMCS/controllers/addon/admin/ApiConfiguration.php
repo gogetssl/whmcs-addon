@@ -52,6 +52,12 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->error = $this->getFieldError('api_login');
         $form->addField($field);
 
+//        $field        = new main\mgLibs\forms\TextField();
+//        $field->name  = 'api_partner_code';
+//        $field->value = $input['api_partner_code'];
+//        $field->error = $this->getFieldError('api_partner_code');
+//        $form->addField($field);
+
         $field        = new main\mgLibs\forms\PasswordField();
         $field->name  = 'api_password';
         $field->value = $input['api_password'];
@@ -95,24 +101,24 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->error    = $this->getFieldError('rate');
         $form->addField($field);
 
-        $field       = new main\mgLibs\forms\LegendField();
-        $field->name = 'data_migration_legend';
-        $form->addField($field);
-
-        $field         = new main\mgLibs\forms\InfoField();
-        $field->values = [
-            (count($oldModuleProducts) || count($oldModuleServices)) ? main\mgLibs\Lang::T('migrationOldModuleDataExixts') : '',
-            (count($oldModuleProducts)) ? main\mgLibs\Lang::T('migrationProductIDs') . implode(', ', $oldModuleProducts) : '',
-            (count($oldModuleServices)) ? main\mgLibs\Lang::T('migrationServiceIDs') . implode(', ', $oldModuleServices) : '',
-            main\mgLibs\Lang::T('migrationPerformMigration')
-        ];
-        $field->h      = 'h5';
-        $form->addField($field);
-
-        $field       = new main\mgLibs\forms\ButtonField();
-        $field->name = 'data_migration';
-
-        $form->addField($field);
+//        $field       = new main\mgLibs\forms\LegendField();
+//        $field->name = 'data_migration_legend';
+//        $form->addField($field);
+//
+//        $field         = new main\mgLibs\forms\InfoField();
+//        $field->values = [
+//            (count($oldModuleProducts) || count($oldModuleServices)) ? main\mgLibs\Lang::T('migrationOldModuleDataExixts') : '',
+//            (count($oldModuleProducts)) ? main\mgLibs\Lang::T('migrationProductIDs') . implode(', ', $oldModuleProducts) : '',
+//            (count($oldModuleServices)) ? main\mgLibs\Lang::T('migrationServiceIDs') . implode(', ', $oldModuleServices) : '',
+//            main\mgLibs\Lang::T('migrationPerformMigration')
+//        ];
+//        $field->h      = 'h5';
+//        $form->addField($field);
+//
+//        $field       = new main\mgLibs\forms\ButtonField();
+//        $field->name = 'data_migration';
+//
+//        $form->addField($field);
 
         $field       = new main\mgLibs\forms\LegendField();
         $field->name = 'logs_settings_legend';
@@ -129,7 +135,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $form->addField($field);
 
         $field       = new main\mgLibs\forms\LegendField();
-        $field->name = 'renewal_settings_legend';
+        $field->name = 'renewal_settings_standard_legend';
         $form->addField($field);
 
         $field                    = new main\mgLibs\forms\CheckboxField();
@@ -238,6 +244,44 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->inline            = true;
         $field->colWidth          = 3;
         $field->continue          = true;
+        $field->enableDescription = true;
+        $form->addField($field);
+
+        $field       = new main\mgLibs\forms\LegendField();
+        $field->name = 'renewal_settings_subscription_legend';
+        $form->addField($field);
+
+        $field                    = new main\mgLibs\forms\CheckboxField();
+        $field->name              = 'auto_renew_invoice_subscription';
+        $field->options           = ['auto_renew_invoice_subscription'];
+        $field->value             = $input['auto_renew_invoice_subscription'] ? ['auto_renew_invoice_subscription'] : [''];
+        $field->inline            = true;
+        $field->colWidth          = 3;
+        $field->continue          = true;
+        $field->enableDescription = true;
+        $form->addField($field);
+
+        $field                    = new main\mgLibs\forms\SelectField();
+        $field->disabled          = $input['auto_renew_invoice_subscription'] ? false : true;
+        $field->name              = 'renew_invoice_days_subscription';
+        $field->required          = true;
+        $field->value             = $input['renew_invoice_days_subscription'];
+        $field->translateOptions  = false;
+        $field->inline            = true;
+        $field->colWidth          = 2;
+        $field->continue          = false;
+        $field->enableDescription = true;
+        $field->options           = array('30' => '30', '21' => '21', '14' => '14', '10' => '10', '7' => '7', '3' => '3', '0' => '0');
+        $field->error             = $this->getFieldError('renew_invoice_days_subscription');
+        $form->addField($field);
+
+        $field                    = new main\mgLibs\forms\CheckboxField();
+        $field->name              = 'send_expiration_notification_subscription';
+        $field->options           = ['send_expiration_notification_subscription'];
+        $field->value             = $input['send_expiration_notification_subscription'] ? ['send_expiration_notification_subscription'] : [''];
+        $field->inline            = true;
+        $field->colWidth          = 5;
+        $field->continue          = false;
         $field->enableDescription = true;
         $form->addField($field);
 
@@ -515,6 +559,8 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
                     'auto_renew_invoice_reccuring',
                     'send_expiration_notification_reccuring',
                     'send_expiration_notification_one_time',
+                    'auto_renew_invoice_subscription',
+                    'send_expiration_notification_subscription',
                     'automatic_processing_of_renewal_orders',
                     'renewal_invoice_status_unpaid',
                     'display_ca_summary',
@@ -543,6 +589,10 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
                 {
                     $input['renew_invoice_days_one_time'] = NULL;
                 }
+                if (!$input['auto_renew_invoice_subscription'])
+                {
+                    $input['renew_invoice_days_subscription'] = NULL;
+                }
                 if (!$input['display_csr_generator'])
                 {
                     $input['default_csr_generator_country'] = NULL;
@@ -555,6 +605,11 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
 
                 $apiConfigRepo = new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository();
                 $apiConfigRepo->setConfiguration($input);
+
+                // Invalidate cached auth key so next API call re-authenticates with new credentials
+                \WHMCS\Database\Capsule::table('tblconfiguration')
+                    ->where('setting', 'sslcenter_authkey')
+                    ->delete();
 
                 redir('module=SSLCENTERWHMCS','addonmodules.php');
             }
@@ -569,13 +624,47 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
 
     public function testConnectionJSON($input = [], $vars = [])
     {
+        $login    = !empty($input['api_login']) ? $input['api_login'] : '';
+        $password = !empty($input['api_password']) ? $input['api_password'] : '';
+        $partnerCode = !empty($input['api_partner_code']) ? $input['api_partner_code'] : $login;
 
-        $api = new \MGModule\SSLCENTERWHMCS\mgLibs\SSLCenterApi();
+        $v1Error = null;
+        $v2Error = null;
 
-        $authKey = $api->auth($input['api_login'], $input['api_password']);
+        // Try V1 API directly (bypass key cache)
+        try
+        {
+            $api = new \MGModule\SSLCENTERWHMCS\mgLibs\SSLCenterApi();
+            $response = $api->testConnectionV1($login, $password);
+            if (!empty($response['key']))
+            {
+                return [
+                    'success' => main\mgLibs\Lang::T('messages', 'api_connection_success')
+                ];
+            }
+            $v1Error = 'Invalid V1 credentials';
+        }
+        catch (\Exception $e)
+        {
+            $v1Error = $e->getMessage();
+        }
+
+        // Try V2 API with form credentials directly
+        try
+        {
+            $api2 = new \MGModule\SSLCENTERWHMCS\mgLibs\SSLCenterApi();
+            $api2->testConnectionV2($partnerCode, $password);
+            return [
+                'success' => main\mgLibs\Lang::T('messages', 'api_connection_success')
+            ];
+        }
+        catch (\Exception $e)
+        {
+            $v2Error = $e->getMessage();
+        }
 
         return [
-            'success' => main\mgLibs\Lang::T('messages', 'api_connection_success')
+            'error' => $v1Error ?: $v2Error
         ];
     }
 

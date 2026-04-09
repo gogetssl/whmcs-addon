@@ -27,7 +27,7 @@ class GenerateCSR
             return json_encode(
                     [
                         'success' => 0,
-                        'msg'     => main\mgLibs\Lang::getInstance()->T($ex->getMessage()),
+                        'msg'     => main\mgLibs\Lang::absoluteT($ex->getMessage()),
                     ]
             );
         }
@@ -106,7 +106,7 @@ class GenerateCSR
         return json_encode(
                 [
                     'success'     => 1,
-                    'msg'         => main\mgLibs\Lang::getInstance()->T('csrCodeGeneraterdSuccessfully'),
+                    'msg'         => main\mgLibs\Lang::absoluteT('csrCodeGeneraterdSuccessfully'),
                     'public_key'  => $csrOut,
                     'private_key' => encrypt($pKeyOut)
                 ]

@@ -206,7 +206,11 @@ function SSLCENTERWHMCS_ClientArea(array $params) {
     return \MGModule\SSLCENTERWHMCS\Server::getHTMLClientAreaPage($params, $_REQUEST);
 }
 
-function SSLCENTERWHMCS_ClientAreaCustomButtonArray() {
+function SSLCENTERWHMCS_ClientAreaCustomButtonArray($params = []) {
+    if (\MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeByServiceParams((array) $params)) {
+        return [];
+    }
+
     $lang = \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance();
     return [
         $lang->T('Reissue Certificate') => 'ClientAreaCustomReissueCertificate'

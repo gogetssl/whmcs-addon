@@ -13,6 +13,8 @@ use MGModule\SSLCENTERWHMCS\models\whmcs\service\Repository as ServiceRepo;
 use MGModule\SSLCENTERWHMCS\models\logs\Repository as LogsRepo;
 use MGModule\SSLCENTERWHMCS\models\orders\Repository as OrdersRepo;
 use MGModule\SSLCENTERWHMCS\models\actions\Repository as ActionsRepo;
+use MGModule\SSLCENTERWHMCS\models\acmeSubscription\Repository as AcmeSubscriptionRepo;
+use MGModule\SSLCENTERWHMCS\models\acmeSubscriptionDomain\Repository as AcmeSubscriptionDomainRepo;
 use MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService;
 use MGModule\SSLCENTERWHMCS\eHelpers\Invoice as InvoiceHelper;
 use MGModule\SSLCENTERWHMCS\eHelpers\Whmcs as LogsHelper;
@@ -65,7 +67,7 @@ class Configuration extends AbstractConfiguration
      * Module version
      * @var string
      */
-    public $version = '2.12.1';
+    public $version = '3.0.0';
 
     /**
      * Module author
@@ -157,11 +159,17 @@ class Configuration extends AbstractConfiguration
         (new LogsRepo())->createLogsTable();
         (new OrdersRepo())->createOrdersTable();
         (new ActionsRepo())->createActionsTable();
+        (new AcmeSubscriptionRepo())->createTable();
+        (new AcmeSubscriptionDomainRepo())->createTable();
         EmailTemplateService::createConfigurationTemplate();
         EmailTemplateService::createCertyficateTemplate();
         EmailTemplateService::createExpireNotificationTemplate();
         EmailTemplateService::createRenewalTemplate();
         EmailTemplateService::createReissueTemplate();
+        EmailTemplateService::createSubscriptionTemplate();
+        EmailTemplateService::createSubscriptionExpirationTemplate();
+        EmailTemplateService::createSubscriptionRenewalTemplate();
+        EmailTemplateService::deleteSubscriptionRenewalNoticeTemplate();
         InvoiceHelper::createInfosTable();
         InvoiceHelper::createPendingPaymentInvoice();
     }
@@ -178,11 +186,17 @@ class Configuration extends AbstractConfiguration
         (new LogsRepo())->dropLogsTable();
         (new OrdersRepo())->dropOrdersTable();
         (new ActionsRepo())->dropActionsTable();
+        (new AcmeSubscriptionRepo())->dropTable();
+        (new AcmeSubscriptionDomainRepo())->dropTable();
         EmailTemplateService::deleteConfigurationTemplate();
         EmailTemplateService::deleteCertyficateTemplate();
         EmailTemplateService::deleteExpireNotificationTemplate();
         EmailTemplateService::deleteRenewalTemplate();
         EmailTemplateService::deleteReissueTemplate();
+        EmailTemplateService::deleteSubscriptionTemplate();
+        EmailTemplateService::deleteSubscriptionExpirationTemplate();
+        EmailTemplateService::deleteSubscriptionRenewalTemplate();
+        EmailTemplateService::deleteSubscriptionRenewalNoticeTemplate();
     }
 
     /**
@@ -205,6 +219,12 @@ class Configuration extends AbstractConfiguration
         (new LogsRepo())->updateLogsTable();
         (new OrdersRepo())->updateOrdersTable();
         (new ActionsRepo())->updateActionsTable();
+        (new AcmeSubscriptionRepo())->updateTable();
+        (new AcmeSubscriptionDomainRepo())->updateTable();
+        EmailTemplateService::createSubscriptionTemplate();
+        EmailTemplateService::createSubscriptionExpirationTemplate();
+        EmailTemplateService::createSubscriptionRenewalTemplate();
+        EmailTemplateService::deleteSubscriptionRenewalNoticeTemplate();
 
         if (version_compare($version, '1.0.32', '<='))
         {

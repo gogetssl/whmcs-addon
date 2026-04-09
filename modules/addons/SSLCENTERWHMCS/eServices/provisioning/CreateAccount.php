@@ -24,6 +24,8 @@ class CreateAccount {
     }
 
     public function CreateAccount() {
+        $isAcmeSubscriptionProduct = \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeByServiceParams($this->p);
+
         $repo       = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
         $serviceSSL = $repo->getByServiceId($this->p['serviceid']);
 
@@ -40,6 +42,18 @@ class CreateAccount {
         $sslModel->completiondate = '';
         $sslModel->status         = 'Awaiting Configuration';        
         $sslModel->save();
+
+        if ($isAcmeSubscriptionProduct)
+        {
+            (new \MGModule\SSLCENTERWHMCS\models\acmeSubscription\Repository())->upsertByServiceId($this->p['serviceid'], [
+                'client_id' => $this->p['clientsdetails']['userid'],
+                'status'    => 'pending',
+                'auto_renew'=> 1,
+            ]);
+
+            sendMessage(\MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::SUBSCRIPTION_TEMPLATE_ID, $this->p['serviceid'], []);
+            return;
+        }
 
         sendMessage(\MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::CONFIGURATION_TEMPLATE_ID, $this->p['serviceid'], [
             'ssl_configuration_link' => \MGModule\SSLCENTERWHMCS\eRepository\whmcs\config\Config::getInstance()->getConfigureSSLLink($sslModel->id, $sslModel->serviceid ),

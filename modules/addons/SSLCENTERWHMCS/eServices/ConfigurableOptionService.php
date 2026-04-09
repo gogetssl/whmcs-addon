@@ -6,11 +6,22 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class ConfigurableOptionService {
 
-    public static function createForProductWildcard($productId, $name) {
+    public static function createForProductWildcard($productId, $name, $apiProduct = null) {
 
         if(!is_null(self::getForProductWildcard($productId))) {
             return;
         }
+
+        if ($apiProduct === null) {
+            $apiProduct = self::getApiProductForWhmcsProduct($productId);
+        }
+
+        $isAcme = self::isAcmeApiProduct($apiProduct);
+        if ($isAcme && !self::isSanTypeEnabled($apiProduct, 'wildcard')) {
+            return;
+        }
+        $sanConfig = $isAcme ? self::extractSanConfig($apiProduct) : ['min' => 0, 'max' => 10];
+        $wildcardPricingByCurrency = $isAcme ? self::buildSanPricingByCurrency($apiProduct, 'wildcard') : [];
         
         $optionGroup   = [
             'name'        => 'SSLCenter - ' . $name,
@@ -28,8 +39,8 @@ class ConfigurableOptionService {
             'gid'        => $optionGroupId,
             'optionname' => provisioning\ConfigOptions::OPTION_SANS_WILDCARD_COUNT . "|Additional Wildcard SAN's",
             'optiontype' => 4,
-            'qtyminimum' => 0,
-            'qtymaximum' => 10,
+            'qtyminimum' => $sanConfig['min'],
+            'qtymaximum' => $sanConfig['max'],
             'order'      => 0,
             'hidden'     => 0,
         ];
@@ -43,9 +54,9 @@ class ConfigurableOptionService {
         ];
         $optionSubId = Capsule::table('tblproductconfigoptionssub')->insertGetId($optionsSub);
 
-        $optionSubPrice = [
+        $optionSubPriceTemplate = [
             'type'         => 'configoptions',
-            'currency'     => 'xxxx',
+            'currency'     => 0,
             'relid'        => $optionSubId,
             'msetupfee'    => '0.00',
             'qsetupfee'    => '0.00',
@@ -53,27 +64,35 @@ class ConfigurableOptionService {
             'asetupfee'    => '0.00',
             'bsetupfee'    => '0.00',
             'tsetupfee'    => '0.00',
-            'monthly'      => '0.00',
-            'quarterly'    => '0.00',
-            'semiannually' => '0.00',
-            'annually'     => '0.00',
-            'biennially'   => '0.00',
-            'triennially'  => '0.00',
         ];
         
         $productModel = new \MGModule\SSLCENTERWHMCS\models\productConfiguration\Repository();
         foreach ($productModel->getAllCurrencies() as $currency) {
+            $optionSubPrice = $optionSubPriceTemplate;
             $optionSubPrice['currency'] = $currency->id;
-            $optionSubId                = Capsule::table('tblpricing')->insertGetId($optionSubPrice);
+            $pricingForCurrency = isset($wildcardPricingByCurrency[$currency->id]) ? $wildcardPricingByCurrency[$currency->id] : self::getDefaultPricingCycles();
+            $optionSubPrice = array_merge($optionSubPrice, $pricingForCurrency);
+            Capsule::table('tblpricing')->insertGetId($optionSubPrice);
         }
 
     }
     
-    public static function createForProduct($productId, $name) {
+    public static function createForProduct($productId, $name, $apiProduct = null) {
 
         if(!is_null(self::getForProduct($productId))) {
             return;
         }
+
+        if ($apiProduct === null) {
+            $apiProduct = self::getApiProductForWhmcsProduct($productId);
+        }
+
+        $isAcme = self::isAcmeApiProduct($apiProduct);
+        if ($isAcme && !self::isSanTypeEnabled($apiProduct, 'single')) {
+            return;
+        }
+        $sanConfig = $isAcme ? self::extractSanConfig($apiProduct) : ['min' => 0, 'max' => 10];
+        $singlePricingByCurrency = $isAcme ? self::buildSanPricingByCurrency($apiProduct, 'single') : [];
         
         $optionGroup   = [
             'name'        => 'SSLCenter - ' . $name,
@@ -91,8 +110,8 @@ class ConfigurableOptionService {
             'gid'        => $optionGroupId,
             'optionname' => provisioning\ConfigOptions::OPTION_SANS_COUNT . "|Additional Single domain SAN's",
             'optiontype' => 4,
-            'qtyminimum' => 0,
-            'qtymaximum' => 10,
+            'qtyminimum' => $sanConfig['min'],
+            'qtymaximum' => $sanConfig['max'],
             'order'      => 0,
             'hidden'     => 0,
         ];
@@ -106,9 +125,9 @@ class ConfigurableOptionService {
         ];
         $optionSubId = Capsule::table('tblproductconfigoptionssub')->insertGetId($optionsSub);
 
-        $optionSubPrice = [
+        $optionSubPriceTemplate = [
             'type'         => 'configoptions',
-            'currency'     => 'xxxx',
+            'currency'     => 0,
             'relid'        => $optionSubId,
             'msetupfee'    => '0.00',
             'qsetupfee'    => '0.00',
@@ -116,18 +135,15 @@ class ConfigurableOptionService {
             'asetupfee'    => '0.00',
             'bsetupfee'    => '0.00',
             'tsetupfee'    => '0.00',
-            'monthly'      => '0.00',
-            'quarterly'    => '0.00',
-            'semiannually' => '0.00',
-            'annually'     => '0.00',
-            'biennially'   => '0.00',
-            'triennially'  => '0.00',
         ];
         
         $productModel = new \MGModule\SSLCENTERWHMCS\models\productConfiguration\Repository();
         foreach ($productModel->getAllCurrencies() as $currency) {
+            $optionSubPrice = $optionSubPriceTemplate;
             $optionSubPrice['currency'] = $currency->id;
-            $optionSubId                = Capsule::table('tblpricing')->insertGetId($optionSubPrice);
+            $pricingForCurrency = isset($singlePricingByCurrency[$currency->id]) ? $singlePricingByCurrency[$currency->id] : self::getDefaultPricingCycles();
+            $optionSubPrice = array_merge($optionSubPrice, $pricingForCurrency);
+            Capsule::table('tblpricing')->insertGetId($optionSubPrice);
         }
 
     }
@@ -236,7 +252,7 @@ class ConfigurableOptionService {
 
         if($optionGroupResult === NULL)
         {
-            self::createForProduct ($productId, $name);
+            self::createForProductWildcard ($productId, $name);
             $optionGroupResult = self::getForProductWildcard($productId);
         }
 
@@ -254,5 +270,229 @@ class ConfigurableOptionService {
             Capsule::table('tblproductconfiglinks')->insert($optionLink);
         }
 
+    }
+
+    private static function getApiProductForWhmcsProduct($productId)
+    {
+        $product = Capsule::table('tblproducts')->select('configoption1')->where('id', (int) $productId)->first();
+        if (!$product || empty($product->configoption1)) {
+            return null;
+        }
+
+        return \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products::getInstance()->getProduct((int) $product->configoption1);
+    }
+
+    private static function isAcmeApiProduct($apiProduct)
+    {
+        $apiProductId = (int) self::readValue($apiProduct, ['id']);
+        if ($apiProductId <= 0) {
+            return false;
+        }
+
+        return \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeProductId($apiProductId);
+    }
+
+    private static function extractSanConfig($apiProduct)
+    {
+        $sanMax = self::toInt(self::readValue($apiProduct, ['san_max']), 0);
+        if ($sanMax <= 0) {
+            $san = self::toArray(self::readValue($apiProduct, ['san']));
+            $sanMax = self::toInt(self::readValue($san, ['max']), 0);
+        }
+
+        $min = 0;
+        $max = $sanMax;
+
+        if ($max < $min) {
+            $max = $min;
+        }
+        return [
+            'min' => $min,
+            'max' => $max
+        ];
+    }
+
+    private static function buildSanPricingByCurrency($apiProduct, $sanType)
+    {
+        $termPrices = self::extractSanPricesByTerm($apiProduct, $sanType);
+        $annual = isset($termPrices[12]) ? $termPrices[12] : 0.00;
+        $defaultCycles = self::getDefaultPricingCycles();
+        $currencies = (new \MGModule\SSLCENTERWHMCS\models\productConfiguration\Repository())->getAllCurrencies();
+        $globalRate = self::getGlobalRate();
+        $pricingByCurrency = [];
+
+        foreach ($currencies as $currency) {
+            $currencyRate = ($currency->default == '1') ? 1 : (float) $currency->rate;
+            if ($currencyRate <= 0) {
+                $currencyRate = 1;
+            }
+
+            $pricing = $defaultCycles;
+            $basePrice = isset($termPrices[12]) ? $termPrices[12] : $annual;
+            $monthlyValue = number_format((float) $basePrice * $currencyRate * $globalRate, 2, '.', '');
+            $pricing['monthly'] = $monthlyValue;
+
+            $pricingByCurrency[$currency->id] = $pricing;
+        }
+
+        return $pricingByCurrency;
+    }
+
+    private static function extractSanPricesByTerm($apiProduct, $sanType)
+    {
+        $prices = self::toArray(self::readValue($apiProduct, ['prices']));
+        if (empty($prices)) {
+            return [];
+        }
+
+        $results = [];
+        foreach ($prices as $entry) {
+            $term = (int) self::readValue($entry, ['term', 'period']);
+            if ($term <= 0) {
+                continue;
+            }
+
+            $sanNode = self::toArray(self::readValue($entry, ['san']));
+            $typeNode = self::toArray(self::readValue($sanNode, [$sanType]));
+            $price = self::readMonetaryValue($typeNode, ['selling', 'retail', 'price']);
+            if ($price !== null) {
+                $results[$term] = $price;
+            }
+        }
+
+        if (!empty($results)) {
+            return $results;
+        }
+
+        $sanPrices = [];
+        if ($sanType === 'single') {
+            $vendor = self::toArray(self::readValue($prices, ['vendor']));
+            $sanPrices = self::extractTermPriceMap(self::toArray(self::readValue($vendor, ['single_san'])));
+            if (empty($sanPrices)) {
+                $sanPrices = self::extractTermPriceMap(self::toArray(self::readValue($prices, ['single_san'])));
+            }
+            if (empty($sanPrices)) {
+                $sanPrices = self::extractTermPriceMap(self::toArray(self::readValue($prices, ['san'])));
+            }
+        } elseif ($sanType === 'wildcard') {
+            $vendor = self::toArray(self::readValue($prices, ['vendor']));
+            $sanPrices = self::extractTermPriceMap(self::toArray(self::readValue($vendor, ['wildcard_san'])));
+            if (empty($sanPrices)) {
+                $sanPrices = self::extractTermPriceMap(self::toArray(self::readValue($prices, ['wildcard_san'])));
+            }
+        }
+
+        if (!empty($sanPrices)) {
+            return $sanPrices;
+        }
+
+        return $results;
+    }
+
+    private static function extractTermPriceMap(array $node)
+    {
+        $result = [];
+        foreach ($node as $term => $value) {
+            if (!is_numeric($term) || !is_numeric($value)) {
+                continue;
+            }
+
+            $termInt = (int) $term;
+            if ($termInt <= 0) {
+                continue;
+            }
+
+            $result[$termInt] = (float) $value;
+        }
+
+        return $result;
+    }
+
+    private static function isSanTypeEnabled($apiProduct, $sanType)
+    {
+        if ($sanType === 'wildcard') {
+            return self::toBool(self::readValue($apiProduct, ['wildcard_san_enabled']));
+        }
+
+        return self::toBool(self::readValue($apiProduct, ['san_enabled']));
+    }
+
+    private static function readMonetaryValue($node, array $keys)
+    {
+        foreach ($keys as $key) {
+            $value = self::readValue($node, [$key]);
+            if (is_numeric($value)) {
+                return (float) $value;
+            }
+        }
+
+        if (is_numeric($node)) {
+            return (float) $node;
+        }
+
+        return null;
+    }
+
+    private static function readValue($source, array $keys)
+    {
+        foreach ($keys as $key) {
+            if (is_array($source) && array_key_exists($key, $source)) {
+                return $source[$key];
+            }
+            if (is_object($source) && isset($source->{$key})) {
+                return $source->{$key};
+            }
+        }
+
+        return null;
+    }
+
+    private static function toArray($value)
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (is_object($value)) {
+            return (array) $value;
+        }
+
+        return [];
+    }
+
+    private static function toInt($value, $default = 0)
+    {
+        return is_numeric($value) ? (int) $value : (int) $default;
+    }
+
+    private static function toBool($value)
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+        if (is_numeric($value)) {
+            return ((int) $value) === 1;
+        }
+
+        return in_array(strtolower((string) $value), ['1', 'true', 'yes', 'on'], true);
+    }
+
+    private static function getGlobalRate()
+    {
+        $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+        $rate = isset($apiConf->rate) ? (float) $apiConf->rate : 1;
+        return ($rate > 0) ? $rate : 1;
+    }
+
+    private static function getDefaultPricingCycles()
+    {
+        return [
+            'monthly'      => '0.00',
+            'quarterly'    => '0.00',
+            'semiannually' => '0.00',
+            'annually'     => '0.00',
+            'biennially'   => '0.00',
+            'triennially'  => '0.00',
+        ];
     }
 }

@@ -49,10 +49,10 @@ class ApiProvider {
      * @throws Exception
      */
     private function initApi() {
-        new \MGModule\SSLCENTERWHMCS\mgLibs\SSLCenterApi(); // need fix and remove that line xD
         $apiData = $this->getCredencials();
-        $this->api = new \MGModule\SSLCENTERWHMCS\mgLibs\SSLCenterApi();
-        $this->api->auth($apiData->api_login, $apiData->api_password);
+        $api = new \MGModule\SSLCENTERWHMCS\mgLibs\SSLCenterApi();
+        $api->auth($apiData->api_login, $apiData->api_password);
+        $this->api = $api;
     }
     
     private function getCredencials() {

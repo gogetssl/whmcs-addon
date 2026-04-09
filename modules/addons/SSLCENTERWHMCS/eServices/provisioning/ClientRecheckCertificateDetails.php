@@ -24,7 +24,7 @@ class ClientRecheckCertificateDetails extends Ajax
             return json_encode(
                 [
                     'success' => 0,
-                    'msg'     => main\mgLibs\Lang::getInstance()->T($ex->getMessage()),
+                    'msg'     => main\mgLibs\Lang::absoluteT($ex->getMessage()),
                 ]
             );
         }

@@ -44,6 +44,7 @@ $_LANG['addonAA']['apiConfiguration']['item']['price_rate']['label']            
 $_LANG['addonAA']['apiConfiguration']['item']['rate']['label']                                         = 'Rate';
 $_LANG['addonAA']['apiConfiguration']['item']['header']                                                = 'API Konfiguration';
 $_LANG['addonAA']['apiConfiguration']['item']['api_login']['label']                                    = 'Login';
+$_LANG['addonAA']['apiConfiguration']['item']['api_partner_code']['label']                             = 'API Partner Code';
 $_LANG['addonAA']['apiConfiguration']['item']['api_password']['label']                                 = 'Adgangskode';
 $_LANG['addonAA']['apiConfiguration']['item']['tech_legend']['label']                                  = 'Teknisk Kontakt';
 $_LANG['addonAA']['apiConfiguration']['item']['csr_generator_legend']['label']                         = 'CSR Generator';
@@ -77,7 +78,8 @@ $_LANG['addonAA']['apiConfiguration']['modal']['dataMigrationInfoAction'][1]    
 $_LANG['addonAA']['apiConfiguration']['modal']['dataMigrationInfoAction'][2]                           = 'opdatering af eksisterende services (ændring af tilknyttet modul)';
 $_LANG['addonAA']['apiConfiguration']['messages']['data_migration_success']                            = 'Importering af Data og Konfiguration er blevet importeret. Denne side genindlæser automatisk om 5 sekunder.';
 //
-$_LANG['addonAA']['apiConfiguration']['item']['renewal_settings_legend']['label']                      = 'Fornyelsesindstillinger';
+$_LANG['addonAA']['apiConfiguration']['item']['renewal_settings_standard_legend']['label']             = 'Fornyelsesindstillinger (Standard billing)';
+$_LANG['addonAA']['apiConfiguration']['item']['renewal_settings_subscription_legend']['label']         = 'Fornyelsesindstillinger (Subscription billing)';
 $_LANG['addonAA']['apiConfiguration']['item']['logs_settings_legend']['label']                      = 'Logindstillinger';
 $_LANG['addonAA']['apiConfiguration']['item']['auto_renew_invoice_reccuring']['label']                 = 'Gentagende Ordrer';
 $_LANG['addonAA']['apiConfiguration']['item']['auto_renew_invoice_reccuring']['description']           = 'Opret automatisk faktura for fornyelse';
@@ -89,6 +91,11 @@ $_LANG['addonAA']['apiConfiguration']['item']['auto_renew_invoice_one_time']['de
 $_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_one_time']['label']        = '';
 $_LANG['addonAA']['apiConfiguration']['item']['renew_invoice_days_one_time']['description']            = 'dage før udløb';
 $_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_one_time']['description']  = 'Send notifikation om udløb';
+$_LANG['addonAA']['apiConfiguration']['item']['auto_renew_invoice_subscription']['label']               = 'Subscription Orders';
+$_LANG['addonAA']['apiConfiguration']['item']['auto_renew_invoice_subscription']['description']         = 'Opret automatisk faktura for fornyelse';
+$_LANG['addonAA']['apiConfiguration']['item']['renew_invoice_days_subscription']['description']         = 'dage før udløb';
+$_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_subscription']['label']     = '';
+$_LANG['addonAA']['apiConfiguration']['item']['send_expiration_notification_subscription']['description']= 'Send notifikation om udløb';
 
 $_LANG['addonAA']['apiConfiguration']['item']['renewal_invoice_status_unpaid']['label']                  = '';
 $_LANG['addonAA']['apiConfiguration']['item']['renewal_invoice_status_unpaid']['description']            = 'Set the status of Unpaid for renewal invoices (default is payment pending)';

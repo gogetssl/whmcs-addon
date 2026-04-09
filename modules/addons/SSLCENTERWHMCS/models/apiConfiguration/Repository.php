@@ -20,6 +20,11 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
 
     public function setConfiguration($params)
     {
+        if (!isset($params['api_partner_code']))
+        {
+            $params['api_partner_code'] = null;
+        }
+
         if (is_null($this->get()))
         {
             
@@ -31,6 +36,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
             Capsule::table($this->tableName)->insert(
                     [
                         'api_login'                              => $params['api_login'],
+                        'api_partner_code'                       => $params['api_partner_code'],
                         'api_password'                           => $params['api_password'],
                         'rate'                                   => $params['rate'],
                         'use_admin_contact'                      => $params['use_admin_contact'],
@@ -53,6 +59,8 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'auto_renew_invoice_reccuring'           => $params['auto_renew_invoice_reccuring'],
                         'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
                         'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
+                        'auto_renew_invoice_subscription'        => $params['auto_renew_invoice_subscription'],
+                        'send_expiration_notification_subscription' => $params['send_expiration_notification_subscription'],
                         'automatic_processing_of_renewal_orders' => $params['automatic_processing_of_renewal_orders'],
                         'renewal_invoice_status_unpaid'          => $params['renewal_invoice_status_unpaid'],
                         'renew_new_order'                        => $params['renew_new_order'],
@@ -60,6 +68,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'save_activity_logs'                     => $params['save_activity_logs'],
                         'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
                         'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
+                        'renew_invoice_days_subscription'        => $params['renew_invoice_days_subscription'],
                         'default_csr_generator_country'          => $params['default_csr_generator_country'],
                         'summary_expires_soon_days'              => $params['summary_expires_soon_days'],
                         'send_certificate_template'              => $params['send_certificate_template'],
@@ -81,6 +90,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
             Capsule::table($this->tableName)->update(
                     [
                         'api_login'                              => $params['api_login'],
+                        'api_partner_code'                       => $params['api_partner_code'],
                         'api_password'                           => $params['api_password'],
                         'rate'                                   => $params['rate'],
                         'use_admin_contact'                      => $params['use_admin_contact'],
@@ -103,6 +113,8 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'auto_renew_invoice_reccuring'           => $params['auto_renew_invoice_reccuring'],
                         'send_expiration_notification_reccuring' => $params['send_expiration_notification_reccuring'],
                         'send_expiration_notification_one_time'  => $params['send_expiration_notification_one_time'],
+                        'auto_renew_invoice_subscription'        => $params['auto_renew_invoice_subscription'],
+                        'send_expiration_notification_subscription' => $params['send_expiration_notification_subscription'],
                         'automatic_processing_of_renewal_orders' => $params['automatic_processing_of_renewal_orders'],
                         'renewal_invoice_status_unpaid'          => $params['renewal_invoice_status_unpaid'],
                         'renew_new_order'                        => $params['renew_new_order'],
@@ -110,6 +122,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'save_activity_logs'                     => $params['save_activity_logs'],
                         'renew_invoice_days_reccuring'           => $params['renew_invoice_days_reccuring'],
                         'renew_invoice_days_one_time'            => $params['renew_invoice_days_one_time'],
+                        'renew_invoice_days_subscription'        => $params['renew_invoice_days_subscription'],
                         'default_csr_generator_country'          => $params['default_csr_generator_country'],
                         'summary_expires_soon_days'              => $params['summary_expires_soon_days'],
                         'send_certificate_template'              => $params['send_certificate_template'],
@@ -129,6 +142,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
             Capsule::schema()->create($this->tableName, function($table)
             {
                 $table->string('api_login');
+                $table->string('api_partner_code')->nullable();
                 $table->string('api_password');
                 $table->boolean('use_admin_contact');
                 $table->boolean('display_csr_generator');
@@ -138,6 +152,8 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 $table->boolean('auto_renew_invoice_reccuring');
                 $table->boolean('send_expiration_notification_reccuring');
                 $table->boolean('send_expiration_notification_one_time');
+                $table->boolean('auto_renew_invoice_subscription')->default(0);
+                $table->boolean('send_expiration_notification_subscription')->default(0);
                 $table->boolean('automatic_processing_of_renewal_orders');
                 $table->boolean('renewal_invoice_status_unpaid');
                 $table->boolean('renew_new_order');
@@ -157,6 +173,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 $table->string('tech_region');
                 $table->string('renew_invoice_days_reccuring')->nullable();
                 $table->string('renew_invoice_days_one_time')->nullable();
+                $table->string('renew_invoice_days_subscription')->nullable();
                 $table->string('default_csr_generator_country')->nullable();
                 $table->string('summary_expires_soon_days')->nullable();
                 $table->integer('send_certificate_template')->nullable();
@@ -179,6 +196,13 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 Capsule::schema()->table($this->tableName, function($table)
                 {
                     $table->boolean('auto_renew_invoice_one_time');
+                });
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'api_partner_code'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->string('api_partner_code')->nullable();
                 });
             }
             if (!Capsule::schema()->hasColumn($this->tableName, 'auto_renew_invoice_reccuring'))
@@ -249,6 +273,27 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 Capsule::schema()->table($this->tableName, function($table)
                 {
                     $table->string('renew_invoice_days_one_time')->nullable();
+                });
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'auto_renew_invoice_subscription'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->boolean('auto_renew_invoice_subscription')->default(0);
+                });
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'send_expiration_notification_subscription'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->boolean('send_expiration_notification_subscription')->default(0);
+                });
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'renew_invoice_days_subscription'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->string('renew_invoice_days_subscription')->nullable();
                 });
             }
             if (!Capsule::schema()->hasColumn($this->tableName, 'default_csr_generator_country'))

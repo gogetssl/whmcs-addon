@@ -1,6 +1,6 @@
 <div class="mg-module">
     <div id="mg-wrapper" class="module-container">
-        <div class="row" id="MGAlerts">
+        <div class="row" id="MGAlerts" style="display: block; text-align: left;">
             {if $error}
                 <div class="alert alert-danger">
                     <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
