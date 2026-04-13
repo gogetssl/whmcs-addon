@@ -864,6 +864,99 @@ class home extends main\mgLibs\process\AbstractController {
         ];
     }
 
+    public function upgradeConfigOptionsJSON($input, $vars = array())
+    {
+        $serviceId    = (int) $input['id'];
+        $newSingle    = isset($input['new_sans_count']) ? (int) $input['new_sans_count'] : -1;
+        $newWildcard  = isset($input['new_sans_wildcard_count']) ? (int) $input['new_sans_wildcard_count'] : -1;
+
+        if ($newSingle < 0 && $newWildcard < 0)
+        {
+            throw new \Exception(main\mgLibs\Lang::absoluteT('acmeUpgradeNoValueProvided'));
+        }
+
+        // Block upgrade if any unpaid invoice exists for this service
+        $unpaidInvoice = Capsule::table('tblinvoices')
+            ->join('tblinvoiceitems', 'tblinvoiceitems.invoiceid', '=', 'tblinvoices.id')
+            ->where('tblinvoiceitems.type', 'Hosting')
+            ->where('tblinvoiceitems.relid', $serviceId)
+            ->whereIn('tblinvoices.status', ['Unpaid', 'Overdue'])
+            ->first();
+
+        if ($unpaidInvoice)
+        {
+            throw new \Exception(main\mgLibs\Lang::absoluteT('acmeUpgradeUnpaidInvoiceExists'));
+        }
+
+        $domainRepo   = new \MGModule\SSLCENTERWHMCS\models\acmeSubscriptionDomain\Repository();
+        $activeCounts = $this->getActiveAcmeDomainsCount($serviceId, $domainRepo->tableName);
+
+        $CORepo = new \MGModule\SSLCENTERWHMCS\models\whmcs\service\configOptions\Repository($serviceId);
+
+        $configOptionsPayload = [];
+
+        if ($newSingle >= 0)
+        {
+            if ($newSingle < $activeCounts['single'])
+            {
+                throw new \Exception(sprintf(
+                    main\mgLibs\Lang::absoluteT('acmeDowngradeNotEnoughSingleSlots'),
+                    $activeCounts['single']
+                ));
+            }
+            $singleConfigId = $CORepo->getConfigID('sans_count');
+            if (!$singleConfigId)
+            {
+                throw new \Exception(main\mgLibs\Lang::absoluteT('acmeUpgradeConfigOptionNotFound'));
+            }
+            $configOptionsPayload[$singleConfigId] = $newSingle;
+        }
+
+        if ($newWildcard >= 0)
+        {
+            if ($newWildcard < $activeCounts['wildcard'])
+            {
+                throw new \Exception(sprintf(
+                    main\mgLibs\Lang::absoluteT('acmeDowngradeNotEnoughWildcardSlots'),
+                    $activeCounts['wildcard']
+                ));
+            }
+            $wildcardConfigId = $CORepo->getConfigID('sans_wildcard_count');
+            if (!$wildcardConfigId)
+            {
+                throw new \Exception(main\mgLibs\Lang::absoluteT('acmeUpgradeConfigOptionNotFound'));
+            }
+            $configOptionsPayload[$wildcardConfigId] = $newWildcard;
+        }
+
+        $service = Capsule::table('tblhosting')->where('id', $serviceId)->first();
+        if (!$service)
+        {
+            throw new \Exception(main\mgLibs\Lang::absoluteT('acmeUpgradeServiceNotFound'));
+        }
+
+        $adminUserName = main\eHelpers\Admin::getAdminUserName();
+        $apiParams = [
+            'serviceid'     => $serviceId,
+            'paymentmethod' => $service->paymentmethod,
+            'type'          => 'configoptions',
+            'configoptions' => $configOptionsPayload,
+        ];
+
+        $result = localAPI('UpgradeProduct', $apiParams, $adminUserName);
+
+        if (!isset($result['result']) || $result['result'] !== 'success')
+        {
+            $errorMsg = isset($result['message']) ? $result['message'] : 'UpgradeProduct API failed';
+            throw new \Exception($errorMsg);
+        }
+
+        return [
+            'success' => true,
+            'message' => main\mgLibs\Lang::absoluteT('acmeUpgradeSuccess'),
+        ];
+    }
+
     public function removeDomainJSON($input, $vars = array())
     {
         $serviceId = (int) $input['id'];
@@ -882,9 +975,32 @@ class home extends main\mgLibs\process\AbstractController {
             throw new \Exception(main\mgLibs\Lang::absoluteT('acmeSubscriptionNotCreatedYet'));
         }
 
+        $domainRow = Capsule::table($domainRepo->tableName)
+            ->where('service_id', $serviceId)
+            ->where('domain', $domain)
+            ->where('status', 'added')
+            ->first();
+
         \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->removeAcmeDomain((int) $subscription->api_order_id, (int)$subscription->acme_id, [
             'domain' => $domain,
         ]);
+
+        $addedAt    = $domainRow ? strtotime((string) $domainRow->added_at) : false;
+        $withinWindow = $addedAt !== false && (time() - $addedAt) < (30 * 24 * 60 * 60);
+
+        if ($withinWindow)
+        {
+            // Added within 30 days — delete the row entirely so the slot is freed
+            Capsule::table($domainRepo->tableName)
+                ->where('service_id', $serviceId)
+                ->where('domain', $domain)
+                ->delete();
+
+            return [
+                'success' => true,
+                'message' => main\mgLibs\Lang::absoluteT('acmeDomainRemovedAndRefunded'),
+            ];
+        }
 
         $domainRepo->removeDomain($serviceId, $domain);
 

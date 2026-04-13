@@ -454,6 +454,13 @@ function SSLCENTER_unableDowngradeConfigOption($vars)
 {
     if (isset($vars['filename'], $vars['templatefile'], $_REQUEST['type']) && $vars['filename'] == 'upgrade' && $_REQUEST['type'] == 'configoptions')
     {
+        // Block the standard upgrade page for ACME products — they use the custom modal instead
+        $serviceID = isset($_REQUEST['id']) && is_numeric($_REQUEST['id']) ? (int) $_REQUEST['id'] : null;
+        if ($serviceID !== null && \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeByServiceId($serviceID))
+        {
+            redir('action=productdetails&id=' . $serviceID, 'clientarea.php');
+        }
+
         if (isset($_SESSION['SSLCENTER_configOpsCustomValidateError']) && $_SESSION['SSLCENTER_configOpsCustomValidateError'] != '')
         {
             //diplay downgrade error message

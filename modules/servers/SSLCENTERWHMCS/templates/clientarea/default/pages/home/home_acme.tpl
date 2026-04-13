@@ -129,7 +129,7 @@
                         {if $canAddDomains}
                             <button style="margin-bottom: 10px;" class="btn btn-primary acme-action" data-action="addDomain">Add domain</button>
                         {/if}
-                        <a style="margin-bottom: 10px;" class="btn btn-default" href="upgrade.php?type=configoptions&id={$serviceid|intval}">{$MGLANG->T('acmeBuyMoreDomains')}</a>
+                        <button style="margin-bottom: 10px;" class="btn btn-default acme-action" data-action="openUpgradeDomains">{$MGLANG->T('acmeBuyMoreDomains')}</button>
                         {if $subscription->auto_renew}
                             <button style="margin-bottom: 10px;" class="btn btn-default acme-action" data-action="stopAutoRenewal">{$MGLANG->T('acmeStopAutoRenewal')}</button>
                         {/if}
@@ -139,6 +139,42 @@
             </tr>
         </tbody>
     </table>
+
+    <div class="modal fade" id="acmeUpgradeDomainsModal" tabindex="-1" role="dialog" aria-labelledby="acmeUpgradeDomainsModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content" style="text-align: left;">
+                <div class="modal-header" style="display: block;">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="acmeUpgradeDomainsModalLabel">{$MGLANG->T('acmeBuyMoreDomains')}</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="acmeUpgradeDomainsError" class="alert alert-danger" style="display:none;"></div>
+                    <div class="alert alert-info">
+                        {$MGLANG->T('acmeSingleDomainsLabel')}: {$MGLANG->T('acmeCurrentlyActive')}: <strong>{$singleSansCurrent|intval}</strong> / {$MGLANG->T('acmePurchased')}: <strong>{$singleSansPurchased|intval}</strong>
+                        {if $allowWildcard}
+                            <br>{$MGLANG->T('acmeWildcardDomainsLabel')}: {$MGLANG->T('acmeCurrentlyActive')}: <strong>{$wildcardSansCurrent|intval}</strong> / {$MGLANG->T('acmePurchased')}: <strong>{$wildcardSansPurchased|intval}</strong>
+                        {/if}
+                    </div>
+                    <div class="form-group">
+                        <label for="acmeUpgradeSingleInput">{$MGLANG->T('acmeSingleDomainsLabel')} ({$MGLANG->T('acmeNewLimit')})</label>
+                        <input type="number" id="acmeUpgradeSingleInput" class="form-control" min="{$singleSansCurrent|intval}" value="{$singleSansPurchased|intval}">
+                        <span class="help-block">{$MGLANG->T('acmeMinimumValue')}: {$singleSansCurrent|intval} ({$MGLANG->T('acmeCurrentlyActive')})</span>
+                    </div>
+                    {if $allowWildcard}
+                    <div class="form-group">
+                        <label for="acmeUpgradeWildcardInput">{$MGLANG->T('acmeWildcardDomainsLabel')} ({$MGLANG->T('acmeNewLimit')})</label>
+                        <input type="number" id="acmeUpgradeWildcardInput" class="form-control" min="{$wildcardSansCurrent|intval}" value="{$wildcardSansPurchased|intval}">
+                        <span class="help-block">{$MGLANG->T('acmeMinimumValue')}: {$wildcardSansCurrent|intval} ({$MGLANG->T('acmeCurrentlyActive')})</span>
+                    </div>
+                    {/if}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{$MGLANG->T('Close')}</button>
+                    <button type="button" class="btn btn-primary" id="acmeConfirmUpgradeDomains">{$MGLANG->T('acmeConfirmUpgrade')}</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="modal fade" id="acmeRemoveDomainModal" tabindex="-1" role="dialog" aria-labelledby="acmeRemoveDomainModalLabel">
         <div class="modal-dialog" role="document">
@@ -288,6 +324,11 @@
                 }
                 if (action === 'stopAutoRenewal') {
                     $('#acmeStopAutoRenewalModal').modal('show');
+                    return;
+                }
+                if (action === 'openUpgradeDomains') {
+                    $('#acmeUpgradeDomainsError').hide().text('');
+                    $('#acmeUpgradeDomainsModal').modal('show');
                 }
             });
 
@@ -312,6 +353,23 @@
                     onSuccess: function () {
                         $('#acmeAddDomainError').hide().text('');
                         $('#acmeAddDomainModal').modal('hide');
+                    }
+                });
+            });
+
+            $('#acmeConfirmUpgradeDomains').on('click', function () {
+                var newSingle   = parseInt($('#acmeUpgradeSingleInput').val(), 10);
+                var newWildcard = $('#acmeUpgradeWildcardInput').length ? parseInt($('#acmeUpgradeWildcardInput').val(), 10) : -1;
+                var payload = {};
+                if (!isNaN(newSingle))   { payload['new_sans_count']          = newSingle; }
+                if (!isNaN(newWildcard) && newWildcard >= 0) { payload['new_sans_wildcard_count'] = newWildcard; }
+                runAction('upgradeConfigOptions', payload, {
+                    onError: function (errorMessage) {
+                        $('#acmeUpgradeDomainsError').text(errorMessage).show();
+                    },
+                    onSuccess: function () {
+                        $('#acmeUpgradeDomainsError').hide().text('');
+                        $('#acmeUpgradeDomainsModal').modal('hide');
                     }
                 });
             });

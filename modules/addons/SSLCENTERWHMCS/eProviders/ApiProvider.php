@@ -49,8 +49,8 @@ class ApiProvider {
      * @throws Exception
      */
     private function initApi() {
-        $apiData = $this->getCredencials();
         $api = new \MGModule\SSLCENTERWHMCS\mgLibs\SSLCenterApi();
+        $apiData = $this->getCredencials();
         $api->auth($apiData->api_login, $apiData->api_password);
         $this->api = $api;
     }
