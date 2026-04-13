@@ -3,7 +3,7 @@
 Free of charge SSL Addon for WHMCS to automate SSL certificate sales/distribution of via GoGetSSL.com platform
 
 ***
-**Note:** This version is fully compatible with 8.x.x versions of WHMCS.
+**Note:** This version is fully compatible with 9.x.x versions of WHMCS.
 ***
 
 ### Prerequisites
@@ -26,16 +26,17 @@ You are highly welcome to send us requests for new features, suggestions, issues
 
 ### List of addon features
 - Full integration, no invite links;
-- Multiple year support, up to 3 years;
+- ACME subscription products
+- Multiple-year support, up to 3 years;
 - One-time and Recurring payments
 - cPanel AutoSSL installation plugin
 - SAN/UCC/MDC support;
 - LEI codes for OV/EV orders
 - Online CSR Generator
-- Option to set default country for CSR Generator
-- Fully White Labeled solution
+- Option to set the default country for the CSR Generator
+- Fully white-labeled solution
 - Cron Synchronization for order status updates
-- Multiple renewal settings, including option to set when to send expiration notifications to customers
+- Multiple renewal settings, including an option to set when to send expiration notifications to customers
 - Option to use fixed (same) technical contacts for all SSL certificates
 - Multiple Product Creator option
 - Automated Price import and commission setup
@@ -45,8 +46,11 @@ You are highly welcome to send us requests for new features, suggestions, issues
 ### Sub-Reseller network
 We support ["Products Reseller For WHMCS"](https://www.modulesgarden.com/products/whmcs/products-reseller#features) module from Modules Garden allowing to have own Sub-Resellers using WHMCS to expand your network. Please review [documentation](https://github.com/gogetssl/whmcs-addon/wiki/Sub-Resellers-module) for more details
 
+### Sectigo CaaS/ACME product 
+Starting at v3.0.0, we provide [CaaS/ACME certificates](https://github.com/gogetssl/whmcs-addon/wiki/CaaS-ACME). With Automatic Certificate Management Environment (ACME) automation, you can eliminate manual installations, reduce human error, and ensure your certificates never expire.
+
 ### cPanel AutoSSL Installation 
-Starting at v2.9.0, we provide ["cPanel AutoSSL installation"](https://github.com/gogetssl/whmcs-addon/wiki/cPanel-AutoSSL), allowing to validate and install SSL certificates automatically. 
+Starting at v2.9.0, we provide [cPanel AutoSSL installation"](https://github.com/gogetssl/whmcs-addon/wiki/cPanel-AutoSSL), allowing to validate and install SSL certificates automatically. 
 ***
 
 ### License
