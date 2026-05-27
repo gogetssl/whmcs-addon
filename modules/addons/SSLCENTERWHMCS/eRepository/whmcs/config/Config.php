@@ -29,6 +29,15 @@ class Config {
         return $WHMCSUrl . '/configuressl.php?cert=' . md5($id);
     }
 
+    public function getConfigureAcmeUrl($serviceID) {
+        $WHMCSUrl = \MGModule\SSLCENTERWHMCS\eHelpers\Multibrand::getBrandData($serviceID)['systemURL'];
+        return $WHMCSUrl . '/clientarea.php?action=productdetails&id='.$serviceID.'&acmeconfig=1';
+    }
+
+    public function getConfigureAcmeLink($serviceID) {
+        $url = $this->getConfigureAcmeUrl($serviceID);
+        return sprintf('<a href="%s">%s</a>', $url, $url);
+    }
 
     public function getConfigureSSLLink($id, $serviceID = null, $text = null) {
         $url = $this->getConfigureSSLUrl($id, $serviceID);

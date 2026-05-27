@@ -67,7 +67,7 @@ class Configuration extends AbstractConfiguration
      * Module version
      * @var string
      */
-    public $version = '3.0.1';
+    public $version = '3.0.3';
 
     /**
      * Module author
@@ -222,8 +222,8 @@ class Configuration extends AbstractConfiguration
         (new AcmeSubscriptionRepo())->updateTable();
         (new AcmeSubscriptionDomainRepo())->updateTable();
         EmailTemplateService::createSubscriptionTemplate();
-        EmailTemplateService::createSubscriptionExpirationTemplate();
-        EmailTemplateService::createSubscriptionRenewalTemplate();
+        EmailTemplateService::updateSubscriptionExpirationTemplate();
+        EmailTemplateService::updateSubscriptionRenewalTemplate();
         EmailTemplateService::deleteSubscriptionRenewalNoticeTemplate();
 
         if (version_compare($version, '1.0.32', '<='))

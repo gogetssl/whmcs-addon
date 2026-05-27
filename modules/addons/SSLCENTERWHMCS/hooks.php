@@ -587,9 +587,8 @@ function SSLCENTER_overideDisaplayedProductPricingBasedOnCommission($vars)
     
     new \MGModule\SSLCENTERWHMCS\Loader();
     MGModule\SSLCENTERWHMCS\Addon::I(true);
-    if($vars['filename'] == 'cart' || $vars['filename'] == 'index')
+    if($vars['filename'] == 'cart' || $vars['filename'] == 'index' || $vars['filename'] == 'order')
     {
-    
         switch ($smarty->tpl_vars['templatefile']->value)
         {
             case 'products':
@@ -686,14 +685,101 @@ add_hook('InvoiceCreation', 1, function($vars) {
 
 add_hook('ClientAreaHeadOutput', 1, function($vars) {
     $template = $vars['template'];
-    return <<<HTML
-    <style>
-    .hidden {
-        display:none;
+
+    if (strpos($template, 'lagom') === false) {
+        return '';
     }
-    </style>
+
+    require_once __DIR__ . DS . 'Loader.php';
+    new \MGModule\SSLCENTERWHMCS\Loader();
+    \MGModule\SSLCENTERWHMCS\Addon::I(true);
+
+    $productModel = new \MGModule\SSLCENTERWHMCS\models\productConfiguration\Repository();
+    $sslCommissions = [];
+
+    foreach ($productModel->getModuleProducts() as $product) {
+        if ($product->servertype !== 'SSLCENTERWHMCS') {
+            continue;
+        }
+        $commission = \MGModule\SSLCENTERWHMCS\eHelpers\Commission::getCommissionValue(['pid' => $product->id]);
+        if ($commission !== null && (float) $commission > 0) {
+            $sslCommissions[(int) $product->id] = (float) $commission;
+        }
+    }
+
+    $commissionsJson = json_encode($sslCommissions);
+
+    return <<<HTML
 <script type="text/javascript">
-//custom javascript here
+(function() {
+    var sslCommissions = $commissionsJson;
+    var cycleMonths = {monthly:1, quarterly:3, semiannually:6, annually:12, biennially:24, triennially:36};
+
+    function applyCommission(pricing, commission, prefix) {
+        Object.keys(pricing).forEach(function(cycle) {
+            var p = pricing[cycle];
+            var raw = parseFloat(p.rawPrice);
+            if (isNaN(raw) || raw <= 0) return;
+            var newRaw = raw * (1 + commission);
+            var months = cycleMonths[cycle] || 1;
+            p.rawPrice      = newRaw.toFixed(2);
+            p.price         = prefix + newRaw.toFixed(2);
+            p.finalPrice    = prefix + newRaw.toFixed(2);
+            p.startingPrice = prefix + newRaw.toFixed(2);
+            p.monthlyPrice  = prefix + (newRaw / months).toFixed(2);
+        });
+    }
+
+    var XHRopen = XMLHttpRequest.prototype.open;
+    var XHRsend = XMLHttpRequest.prototype.send;
+
+    XMLHttpRequest.prototype.open = function(method, url) {
+        this._sslcenterUrl = url;
+        if (url && url.indexOf('LagomOrderForm') !== -1) {
+            var xhr = this;
+            this.addEventListener('readystatechange', function() {
+                if (xhr.readyState !== 4) return;
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    var prefix = (data.settings && data.settings.currency) ? data.settings.currency.prefix : '$';
+                    var modified = false;
+
+                    if (data.appState && data.appState.groups) {
+                        data.appState.groups.forEach(function(group) {
+                            if (!group.products) return;
+                            group.products.forEach(function(product) {
+                                var commission = sslCommissions[product.id];
+                                if (commission === undefined) return;
+                                modified = true;
+                                if (product.pricing) {
+                                    applyCommission(product.pricing, commission, prefix);
+                                }
+                                if (product.pricings) {
+                                    Object.keys(product.pricings).forEach(function(cid) {
+                                        applyCommission(product.pricings[cid], commission, prefix);
+                                    });
+                                }
+                            });
+                        });
+                    }
+
+                    if (modified) {
+                        var newText = JSON.stringify(data);
+                        Object.defineProperty(xhr, 'responseText', {get: function() { return newText; }});
+                        Object.defineProperty(xhr, 'response',     {get: function() { return newText; }});
+                    }
+                } catch(e) {
+                    console.log('SSLCENTER interceptor error:', e);
+                }
+            });
+        }
+        return XHRopen.apply(this, arguments);
+    };
+
+    XMLHttpRequest.prototype.send = function() {
+        return XHRsend.apply(this, arguments);
+    };
+})();
 </script>
 HTML;
 

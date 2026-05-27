@@ -51,7 +51,10 @@ class CreateAccount {
                 'auto_renew'=> 1,
             ]);
 
-            sendMessage(\MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::SUBSCRIPTION_TEMPLATE_ID, $this->p['serviceid'], []);
+            sendMessage(\MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::SUBSCRIPTION_TEMPLATE_ID, $this->p['serviceid'], [
+                'ssl_configuration_link' => \MGModule\SSLCENTERWHMCS\eRepository\whmcs\config\Config::getInstance()->getConfigureAcmeLink($sslModel->serviceid),
+                'ssl_configuration_url'  => \MGModule\SSLCENTERWHMCS\eRepository\whmcs\config\Config::getInstance()->getConfigureAcmeUrl($sslModel->serviceid),
+            ]);
             return;
         }
 

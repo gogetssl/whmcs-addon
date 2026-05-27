@@ -300,8 +300,8 @@ class EmailTemplateService {
         $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
         $newTemplate->type    = 'product';
         $newTemplate->name    = self::SUBSCRIPTION_EXPIRATION_TEMPLATE_ID;
-        $newTemplate->subject = 'ACME Subscription Expiration - {$service_domain}';
-        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your ACME subscription service #{$service_id} expires in {$expireDaysLeft} days.</p><p>{$signature}</p>';
+        $newTemplate->subject = 'ACME Subscription Expiration Notice - {$service_domain}';
+        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your ACME Subscription service <strong>#{$service_id}</strong> is approaching its expiration date in <strong>{$expireDaysLeft} days</strong>.</p><p>A renewal invoice has been issued for your service. Please ensure it is paid on time to avoid any interruption to your subscription.</p><p>{$signature}</p>';
         $newTemplate->attachments  = '';
         $newTemplate->fromname  = '';
         $newTemplate->fromemail  = '';
@@ -320,6 +320,21 @@ class EmailTemplateService {
         $newTemplate->created_at = date('Y-m-d H:i:s');
         $newTemplate->updated_at = date('Y-m-d H:i:s');
         $newTemplate->save();
+    }
+
+    public static function updateSubscriptionExpirationTemplate()
+    {
+        $template = \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::SUBSCRIPTION_EXPIRATION_TEMPLATE_ID)->first();
+
+        if (empty($template))
+        {
+            self::createSubscriptionExpirationTemplate();
+            return;
+        }
+
+        $template->subject = 'ACME Subscription Expiration Notice - {$service_domain}';
+        $template->message = '<p>Dear {$client_name},</p><p>Your ACME Subscription service <strong>#{$service_id}</strong> is approaching its expiration date in <strong>{$expireDaysLeft} days</strong>.</p><p>A renewal invoice has been issued for your service. Please ensure it is paid on time to avoid any interruption to your subscription.</p><p>{$signature}</p>';
+        $template->save();
     }
 
     public static function deleteSubscriptionExpirationTemplate()
@@ -340,8 +355,8 @@ class EmailTemplateService {
         $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
         $newTemplate->type    = 'product';
         $newTemplate->name    = self::SUBSCRIPTION_RENEWAL_TEMPLATE_ID;
-        $newTemplate->subject = 'ACME Subscription Renewal';
-        $newTemplate->message = '<p>Dear {$client_name},</p><p>A renewal invoice was generated for your ACME subscription service #{$service_id}. Please pay invoice to avoid automatic subscription cancellation.</p><p>{$signature}</p>';
+        $newTemplate->subject = 'ACME Subscription Renewed';
+        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your renewal invoice has been paid and your ACME Subscription service <strong>#{$service_id}</strong> has been successfully renewed.</p><p>Thank you for your continued use of our service.</p><p>{$signature}</p>';
         $newTemplate->attachments  = '';
         $newTemplate->fromname  = '';
         $newTemplate->fromemail  = '';
@@ -360,6 +375,21 @@ class EmailTemplateService {
         $newTemplate->created_at = date('Y-m-d H:i:s');
         $newTemplate->updated_at = date('Y-m-d H:i:s');
         $newTemplate->save();
+    }
+
+    public static function updateSubscriptionRenewalTemplate()
+    {
+        $template = \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::SUBSCRIPTION_RENEWAL_TEMPLATE_ID)->first();
+
+        if (empty($template))
+        {
+            self::createSubscriptionRenewalTemplate();
+            return;
+        }
+
+        $template->subject = 'ACME Subscription Renewed';
+        $template->message = '<p>Dear {$client_name},</p><p>Your renewal invoice has been paid and your ACME Subscription service <strong>#{$service_id}</strong> has been successfully renewed.</p><p>Thank you for your continued use of our service.</p><p>{$signature}</p>';
+        $template->save();
     }
 
     public static function deleteSubscriptionRenewalTemplate()

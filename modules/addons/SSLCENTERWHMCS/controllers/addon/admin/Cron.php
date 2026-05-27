@@ -1422,6 +1422,7 @@ class Cron extends main\mgLibs\process\AbstractController
             ->whereIn('tblproducts.configoption1', \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::getProductIds())
             ->whereIn('tblinvoices.status', ['Unpaid', 'Payment Pending'])
             ->where('tblinvoiceitems.description', 'LIKE', '%ACME Subscription Renewal')
+            ->where('tblproducts.servertype', 'SSLCENTERWHMCS')
             ->where('tblinvoices.duedate', '<', $today)
             ->get();
 
@@ -1467,6 +1468,7 @@ class Cron extends main\mgLibs\process\AbstractController
             ->join('tblhosting', 'tblhosting.id', '=', 'SSLCENTER_acme_subscriptions.service_id')
             ->join('tblproducts', 'tblproducts.id', '=', 'tblhosting.packageid')
             ->whereIn('tblproducts.configoption1', \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::getProductIds())
+            ->where('tblproducts.servertype', 'SSLCENTERWHMCS')
             ->where('SSLCENTER_acme_subscriptions.auto_renew', '=', 0)
             ->whereNotIn('SSLCENTER_acme_subscriptions.status', ['cancelled', 'terminated'])
             ->where(function($query) use ($today) {

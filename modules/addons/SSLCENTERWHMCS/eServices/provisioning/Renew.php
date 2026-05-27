@@ -28,6 +28,10 @@ class Renew {
 
     public function run() {
 
+        if (\MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeByServiceId($this->p['serviceid'])) {
+            return 'success';
+        }
+
         $apiConf           = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
         if(isset($apiConf->renew_new_order) && $apiConf->renew_new_order == '1')
         {
