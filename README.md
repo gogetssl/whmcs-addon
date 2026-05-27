@@ -49,6 +49,9 @@ We support ["Products Reseller For WHMCS"](https://www.modulesgarden.com/product
 ### Sectigo CaaS/ACME product 
 Starting at v3.0.0, we provide [CaaS/ACME certificates](https://github.com/gogetssl/whmcs-addon/wiki/CaaS-ACME). With Automatic Certificate Management Environment (ACME) automation, you can eliminate manual installations, reduce human error, and ensure your certificates never expire.
 
+### Lagom Smart Order Form
+Starting at v3.0.3, we have a compatibility with [Lagom Smart Order Form](https://www.modulesgarden.com/products/whmcs/lagom-smart-order-form) from Modules Garden
+
 ### cPanel AutoSSL Installation 
 Starting at v2.9.0, we provide [cPanel AutoSSL installation"](https://github.com/gogetssl/whmcs-addon/wiki/cPanel-AutoSSL), allowing to validate and install SSL certificates automatically. 
 ***
