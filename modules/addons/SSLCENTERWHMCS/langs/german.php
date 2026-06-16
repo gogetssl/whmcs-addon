@@ -388,3 +388,5 @@ $_LANG['addonAA']['apiConfiguration']['cronCertificateInstaller']['commandLine']
 $_LANG['addonAA']['orders']['table']['set as verified'] = 'Set as verified';
 $_LANG['addonAA']['orders']['table']['set as installed'] = 'Set as installed';
 $_LANG['addonAA']['orders']['messages']['Success'] = 'Success';
+
+$_LANG['acmeOrderRequiresAtLeastOneSan'] = 'To order this product you must select at least 1 Additional Single domain SAN or Additional Wildcard SAN.';

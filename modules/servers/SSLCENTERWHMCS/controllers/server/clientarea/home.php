@@ -538,18 +538,10 @@ class home extends main\mgLibs\process\AbstractController {
         $singleLimit = $this->getAcmeIncludedSans($input['params'], 'single');
         $singleOptionCount = isset($input['params']['configoptions']['sans_count']) ? (int) $input['params']['configoptions']['sans_count'] : 0;
         $singleLimit += $singleOptionCount;
-        if ($singleLimit <= 0)
-        {
-            $singleLimit = 1;
-        }
 
         $wildcardLimit = $this->getAcmeIncludedSans($input['params'], 'wildcard');
         $wildcardOptionCount = isset($input['params']['configoptions']['sans_wildcard_count']) ? (int) $input['params']['configoptions']['sans_wildcard_count'] : 0;
         $wildcardLimit += $wildcardOptionCount;
-        if ($wildcardLimit <= 0)
-        {
-            $wildcardLimit = 1;
-        }
 
         $vars['allOk']              = true;
         $vars['serviceid']          = $serviceId;
@@ -1337,18 +1329,10 @@ class home extends main\mgLibs\process\AbstractController {
         $singleIncluded = $this->getAcmeIncludedSans($params, 'single');
         $singleBought = isset($params['configoptions']['sans_count']) ? (int) $params['configoptions']['sans_count'] : 0;
         $singleLimit = $singleIncluded + $singleBought;
-        if ($singleLimit <= 0)
-        {
-            $singleLimit = 1;
-        }
 
         $wildcardIncluded = $this->getAcmeIncludedSans($params, 'wildcard');
         $wildcardBought = isset($params['configoptions']['sans_wildcard_count']) ? (int) $params['configoptions']['sans_wildcard_count'] : 0;
         $wildcardLimit = $wildcardIncluded + $wildcardBought;
-        if ($wildcardLimit <= 0)
-        {
-            $wildcardLimit = 1;
-        }
 
         return [
             'single' => $singleLimit,

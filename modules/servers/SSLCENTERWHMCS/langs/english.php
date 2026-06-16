@@ -304,3 +304,4 @@ $_LANG['acmeUpgradeSuccess'] = 'Domain limit updated successfully. An invoice ma
 $_LANG['Can not get Private Key, please refresh page or contact support'] = 'Can not get Private Key, please refresh page or contact support';
 
 $_LANG['csrReadOnly'] = 'Tick to enter your CSR, remember that if you want to use automatic certificate installation you must use the button to generate CSR.';
+$_LANG['acmeOrderRequiresAtLeastOneSan'] = 'To order this product you must select at least 1 Additional Single domain SAN or Additional Wildcard SAN.';

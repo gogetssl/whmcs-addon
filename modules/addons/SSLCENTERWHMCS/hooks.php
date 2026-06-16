@@ -683,6 +683,42 @@ add_hook('InvoiceCreation', 1, function($vars) {
 });
 
 
+add_hook('ShoppingCartValidateProductUpdate', 1, function($params) {
+    require_once __DIR__ . DS . 'Loader.php';
+    new \MGModule\SSLCENTERWHMCS\Loader();
+    \MGModule\SSLCENTERWHMCS\Addon::I(true);
+
+    $productNumber = isset($_REQUEST['i']) ? (int) $_REQUEST['i'] : 0;
+    $pid = isset($_SESSION['cart']['products'][$productNumber]['pid']) ? (int) $_SESSION['cart']['products'][$productNumber]['pid'] : 0;
+    if (!$pid) {
+        return;
+    }
+
+    if (!\MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeByServiceParams(['pid' => $pid])) {
+        return;
+    }
+
+    $sansCountId = Capsule::table('tblproductconfigoptions')
+        ->join('tblproductconfiglinks', 'tblproductconfiglinks.gid', '=', 'tblproductconfigoptions.gid')
+        ->where('tblproductconfiglinks.pid', $pid)
+        ->where('tblproductconfigoptions.optionname', 'LIKE', 'sans_count%')
+        ->value('tblproductconfigoptions.id');
+
+    $wildcardCountId = Capsule::table('tblproductconfigoptions')
+        ->join('tblproductconfiglinks', 'tblproductconfiglinks.gid', '=', 'tblproductconfigoptions.gid')
+        ->where('tblproductconfiglinks.pid', $pid)
+        ->where('tblproductconfigoptions.optionname', 'LIKE', 'sans_wildcard_count%')
+        ->value('tblproductconfigoptions.id');
+
+    $configoptions = isset($_SESSION['cart']['products'][$productNumber]['configoptions']) ? $_SESSION['cart']['products'][$productNumber]['configoptions'] : [];
+    $sansCount     = ($sansCountId    && isset($configoptions[$sansCountId]))    ? (int) $configoptions[$sansCountId]    : 0;
+    $wildcardCount = ($wildcardCountId && isset($configoptions[$wildcardCountId])) ? (int) $configoptions[$wildcardCountId] : 0;
+
+    if ($sansCount <= 0 && $wildcardCount <= 0) {
+        return [\MGModule\SSLCENTERWHMCS\mgLibs\Lang::absoluteT('acmeOrderRequiresAtLeastOneSan')];
+    }
+});
+
 add_hook('ClientAreaHeadOutput', 1, function($vars) {
     $template = $vars['template'];
 
