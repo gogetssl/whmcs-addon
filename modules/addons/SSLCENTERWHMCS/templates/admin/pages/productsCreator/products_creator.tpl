@@ -6,7 +6,16 @@
         </div>
     </div>
     <div class="clearfix"></div>
-{/if}  
+{/if}
+
+<div class="panel panel-default">
+    <div class="panel-heading">{$MGLANG->T('resyncProducts')}</div>
+    <div class="panel-body">
+        <button id="btn-resync-products" class="btn btn-warning">
+            {$MGLANG->T('resyncProducts')}
+        </button>
+    </div>
+</div>
 
 <div class="panel panel-default">
     <div class="panel-heading">{$MGLANG->T('singleProductCreator')}</div>
@@ -333,6 +342,10 @@
                 
                 changePrincingOptions(periods)
             })
+        });
+
+        $('#btn-resync-products').on('click', function () {
+            JSONParser.request('resyncProducts', {}, function () {}, false);
         });
     {/literal}
 </script>

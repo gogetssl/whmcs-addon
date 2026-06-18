@@ -226,11 +226,14 @@ $_LANG['addonAA']['productsCreator']['saveSingle']      = 'Create Single Product
 $_LANG['addonAA']['productsCreator']['multipleProductCreator'] = 'Multiple Product Creator';
 $_LANG['addonAA']['productsCreator']['saveMultiple']           = 'Create Multiple Products';
 
+$_LANG['addonAA']['productsCreator']['resyncProducts'] = 'Re-sync products';
+
 $_LANG['addonAA']['productsCreator']['messages']['mass_product_created']    = 'Products has been added as hidden. Go to "Products Configuration" to unhide it. Before that, verify product configuration and set prices.';
 $_LANG['addonAA']['productsCreator']['messages']['single_product_created']  = 'Product has been added as hidden. Go to "Products Configuration" to unhide it. Before that, verify product configuration.';
 $_LANG['addonAA']['productsCreator']['messages']['no_product_group_found']  = 'No product group found.';
 $_LANG['addonAA']['productsCreator']['messages']['api_product_not_chosen']  = 'SSLCenter product not chosen.';
 $_LANG['addonAA']['productsCreator']['messages']['api_configuration_empty'] = 'API configuration are empty';
+$_LANG['addonAA']['productsCreator']['messages']['resync_success']          = 'Products have been successfully synchronized from API.';
 
 $_LANG['addonAA']['productsConfiguration']['messages']['product_saved']          = 'Product saved.';
 $_LANG['addonAA']['productsConfiguration']['messages']['configurable_generated'] = 'Configurable options for product was successfully generated.';

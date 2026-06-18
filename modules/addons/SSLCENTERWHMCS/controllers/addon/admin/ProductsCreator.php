@@ -642,6 +642,23 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
      * CREATOR
      * ***************************************************** */
 
+    public function resyncProductsJSON() {
+        try {
+            \Illuminate\Database\Capsule\Manager::table('mgfw_SSLCENTER_product_brand')->truncate();
+            $apiProducts = main\eProviders\ApiProvider::getInstance()->getApi()->getProducts();
+            foreach ($apiProducts['products'] as $apiProduct) {
+                \Illuminate\Database\Capsule\Manager::table('mgfw_SSLCENTER_product_brand')->insert([
+                    'pid'   => $apiProduct['id'],
+                    'brand' => $apiProduct['brand'],
+                    'data'  => json_encode($apiProduct),
+                ]);
+            }
+            return ['success' => main\mgLibs\Lang::T('messages', 'resync_success')];
+        } catch (\Exception $e) {
+            return ['error' => $e->getMessage()];
+        }
+    }
+
     public function getCreatorJSON() {
         $creator = new main\mgLibs\forms\Popup('mymodal');
         $creator->addField(new main\mgLibs\forms\TextField(array(

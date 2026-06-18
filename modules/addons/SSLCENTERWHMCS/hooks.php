@@ -719,6 +719,48 @@ add_hook('ShoppingCartValidateProductUpdate', 1, function($params) {
     }
 });
 
+add_hook('ShoppingCartValidateCheckout', 1, function($params) {
+    require_once __DIR__ . DS . 'Loader.php';
+    new \MGModule\SSLCENTERWHMCS\Loader();
+    \MGModule\SSLCENTERWHMCS\Addon::I(true);
+
+    $errors   = [];
+    $products = isset($_SESSION['cart']['products']) ? $_SESSION['cart']['products'] : [];
+
+    foreach ($products as $product) {
+        $pid = isset($product['pid']) ? (int) $product['pid'] : 0;
+        if (!$pid) {
+            continue;
+        }
+
+        if (!\MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeByServiceParams(['pid' => $pid])) {
+            continue;
+        }
+
+        $sansCountId = Capsule::table('tblproductconfigoptions')
+            ->join('tblproductconfiglinks', 'tblproductconfiglinks.gid', '=', 'tblproductconfigoptions.gid')
+            ->where('tblproductconfiglinks.pid', $pid)
+            ->where('tblproductconfigoptions.optionname', 'LIKE', 'sans_count%')
+            ->value('tblproductconfigoptions.id');
+
+        $wildcardCountId = Capsule::table('tblproductconfigoptions')
+            ->join('tblproductconfiglinks', 'tblproductconfiglinks.gid', '=', 'tblproductconfigoptions.gid')
+            ->where('tblproductconfiglinks.pid', $pid)
+            ->where('tblproductconfigoptions.optionname', 'LIKE', 'sans_wildcard_count%')
+            ->value('tblproductconfigoptions.id');
+
+        $configoptions = isset($product['configoptions']) ? $product['configoptions'] : [];
+        $sansCount     = ($sansCountId    && isset($configoptions[$sansCountId]))    ? (int) $configoptions[$sansCountId]    : 0;
+        $wildcardCount = ($wildcardCountId && isset($configoptions[$wildcardCountId])) ? (int) $configoptions[$wildcardCountId] : 0;
+
+        if ($sansCount <= 0 && $wildcardCount <= 0) {
+            $errors[] = \MGModule\SSLCENTERWHMCS\mgLibs\Lang::absoluteT('acmeOrderRequiresAtLeastOneSan');
+        }
+    }
+
+    return $errors;
+});
+
 add_hook('ClientAreaHeadOutput', 1, function($vars) {
     $template = $vars['template'];
 
