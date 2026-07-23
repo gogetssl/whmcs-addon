@@ -1,3 +1,12 @@
+<style>
+.modal .modal-header {
+    display: block;
+}
+
+.modal .modal-dialog {
+    text-align:left;
+}
+</style>
 <div class="mg-module">
     <div id="mg-wrapper" class="module-container">
         <div class="row" id="MGAlerts" style="display: block; text-align: left;">

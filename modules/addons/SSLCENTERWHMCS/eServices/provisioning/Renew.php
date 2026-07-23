@@ -44,6 +44,7 @@ class Renew {
                     if($resellerRenew != 'beforeConfiguration')
                     {
                         $this->updateOneTime();
+                        $this->afterRenew();
                     }
                 } catch (Exception $ex) {
                     return $ex->getMessage();
@@ -82,6 +83,58 @@ class Renew {
 
     }
     
+    private function afterRenew()
+    {
+        $serviceId   = $this->p['serviceid'];
+        $clientId    = (int) $this->p['clientsdetails']['userid'];
+        $domain      = $this->p['domain'];
+        $apiOrderId  = (int) $this->sslService->remoteid;
+        $configdata  = $this->sslService->configdata;
+        $installType = isset($configdata->install_type) ? (string) $configdata->install_type : 'manual';
+        $certExpiry  = isset($configdata->valid_till) ? (string) $configdata->valid_till : '';
+        $daysLeft    = $certExpiry ? max(0, (int) round((strtotime($certExpiry) - time()) / 86400)) : 0;
+        $commonName  = isset($configdata->csr_domain) ? (string) $configdata->csr_domain : $domain;
+
+        $logsRepo = new \MGModule\SSLCENTERWHMCS\models\logs\Repository();
+
+        if ($installType === 'autoinstall' && !empty($configdata->configssl)) {
+            $isWildcard = !empty($configdata->is_wildcard);
+            $tlsItemIdRenew = !empty($configdata->tls_item_id) ? (int) $configdata->tls_item_id : 0;
+
+            $cronQueueRepo = new \MGModule\SSLCENTERWHMCS\models\cronQueue\Repository();
+            $renewValidateTask = [
+                'domain'       => $domain,
+                'install_type' => 'autoinstall',
+                'api_order_id' => $apiOrderId,
+                'is_wildcard'  => $isWildcard,
+                'is_renewal'   => true,
+            ];
+            if ($tlsItemIdRenew > 0) {
+                $renewValidateTask['tls_item_id'] = $tlsItemIdRenew;
+            }
+            $cronQueueRepo->addTask($clientId, $serviceId, 'validate', $renewValidateTask);
+
+            $logsRepo->addLog($clientId, $serviceId, 'info',
+                '[Renew] AutoInstall renewal — validate task queued for domain: ' . $domain);
+
+            $sent = \MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::sendRenewalStartedEmail(
+                $serviceId, $domain, $certExpiry, $daysLeft
+            );
+            if (!$sent) {
+                $logsRepo->addLog($clientId, $serviceId, 'error',
+                    '[Renew] Failed to send Renewal Started email to client');
+            }
+        } else {
+            $sent = \MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::sendRenewalAutorenewedEmail(
+                $serviceId, $domain, (string) $apiOrderId, $commonName
+            );
+            if (!$sent) {
+                $logsRepo->addLog($clientId, $serviceId, 'error',
+                    '[Renew] Failed to send Autorenewed email to client');
+            }
+        }
+    }
+
     private function updateOneTime()
     {
         $serviceID = $this->p['serviceid'];
@@ -154,7 +207,8 @@ class Renew {
             return 'beforeConfiguration';
         }
         
-        $addSSLRenewOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLRenewOrder($this->getOrderParams()); 
+        $addSSLRenewOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLRenewOrder($this->getOrderParams());
+        $tlsItemId = \MGModule\SSLCENTERWHMCS\mgLibs\SSLCenterApi::extractItemId($addSSLRenewOrder);
         $service = Capsule::table('tblhosting')->where('id', $this->p['serviceid'])->first();
 
         // dns manager
@@ -294,11 +348,17 @@ class Renew {
 
         Capsule::table('tblsslorders')->where('serviceid', $this->p['serviceid'])->update(array(
             'remoteid' => $addSSLRenewOrder['order_id']
-        ));     
-        $this->loadSslService();        
+        ));
+        $this->loadSslService();
 
         $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($this->sslService);
         $configDataUpdate->run();
+
+        if ($tlsItemId > 0) {
+            $this->loadSslService();
+            $this->sslService->setConfigdataKey('tls_item_id', $tlsItemId);
+            $this->sslService->save();
+        }
     }
 
     private function loadSslService() {
@@ -346,7 +406,7 @@ class Renew {
 
         if(!isset($p->lastname) || empty($p->lastname))
         {
-            $p->lastname = $$this->p['clientsdetails']['lastname'];
+            $p->lastname = $this->p['clientsdetails']['lastname'];
         }
 
         if(!isset($p->orgname) || empty($p->orgname))
@@ -425,10 +485,13 @@ class Renew {
             $order['webserver_type']     = '-1'; // Required . webserver type, can be taken from getWebservers method
         }
 
+        $adminTitle = !empty($p->jobtitle) ? (string) $p->jobtitle
+                   : (!empty($p->admin_title) ? (string) $p->admin_title : '');
+
         $order['admin_firstname']    = $p->firstname; // Required
         $order['admin_lastname']     = $p->lastname; // Required
         $order['admin_organization'] = $p->orgname; // required for OV SSL certificates
-        $order['admin_title']        = $p->jobtitle; // Required
+        $order['admin_title']        = $adminTitle;
         $order['admin_addressline1'] = $p->address1;
         $order['admin_phone']        = $p->phonenumber; // Required
         $order['admin_email']        = $p->email; // Required
@@ -436,19 +499,20 @@ class Renew {
         $order['admin_country']      = $p->country; // required for OV SSL certificates
         $order['admin_postalcode']   = $p->postcode;
         $order['admin_region']       = $p->state;
-        //$order['admin_fax']          = $cf['firstname']; // required for OV SSL certificates
 
-        
-        //id use administrative unchecked get tech contsact details from module configuration otherwise use client details
-        $apiConf                    = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+        $apiConf         = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
         $useAdminContact = $apiConf->use_admin_contact;
-       
+
+        $techTitle = $useAdminContact ? $adminTitle
+                   : (!empty($apiConf->tech_title) ? (string) $apiConf->tech_title
+                   : (!empty($p->tech_title) ? (string) $p->tech_title : ''));
+
         $order['tech_firstname']    = ($useAdminContact) ? $p->firstname : $apiConf->tech_firstname; // Required
         $order['tech_lastname']     = ($useAdminContact) ? $p->lastname : $apiConf->tech_lastname; // Required
         $order['tech_organization'] = ($useAdminContact) ? $p->orgname : $apiConf->tech_organization; // required for OV SSL certificates
         $order['tech_addressline1'] = ($useAdminContact) ? $p->address1 : $apiConf->tech_addressline1;
         $order['tech_phone']        = ($useAdminContact) ? $p->phonenumber : $apiConf->tech_phone; // Required
-        $order['tech_title']        = ($useAdminContact) ? $p->jobtitle : $apiConf->tech_title; // Required
+        $order['tech_title']        = $techTitle;
         $order['tech_email']        = ($useAdminContact) ? $p->email : $apiConf->tech_email; // Required
         $order['tech_city']         = ($useAdminContact) ? $p->city : $apiConf->tech_city; // required for OV SSL certificates
         $order['tech_country']      = ($useAdminContact) ? $p->country : $apiConf->tech_country; // required for OV SSL certificates

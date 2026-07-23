@@ -264,19 +264,19 @@ class SSLCenterApi {
         }
 
         $createResponse = $this->normalizeAcmeCreateResponse(
-            $this->callV2('/certificates/acme', 'POST', $data)
+            $this->callV2('/certificates/caas', 'POST', $data)
         );
 
-        $orderId = isset($createResponse['order_id']) ? (int) $createResponse['order_id'] : 0;
-        if ($orderId <= 0 && isset($createResponse['id']))
+        $acmeId = isset($createResponse['acme_id']) ? (int) $createResponse['acme_id'] : 0;
+        if ($acmeId <= 0 && !empty($createResponse['items']) && is_array($createResponse['items']))
         {
-            $orderId = (int) $createResponse['id'];
+            $acmeId = isset($createResponse['items'][0]['id']) ? (int) $createResponse['items'][0]['id'] : 0;
         }
 
-        if ($orderId > 0)
+        if ($acmeId > 0)
         {
             $detailsResponse = $this->normalizeAcmeCreateResponse(
-                $this->getCertificateDetails('acme', $orderId)
+                $this->getCertificateDetails('caas', $acmeId)
             );
 
             if (is_array($detailsResponse))
@@ -288,17 +288,17 @@ class SSLCenterApi {
         return $createResponse;
     }
 
-    public function getAcmeSubscriptionStatus($orderId)
+    public function getAcmeSubscriptionStatus($itemId)
     {
-        return $this->callV2('/certificates/acme/' . (int) $orderId, 'GET');
+        return $this->callV2('/certificates/caas/' . (int) $itemId, 'GET');
     }
 
-    public function getCertificateDetails($category, $orderId)
+    public function getCertificateDetails($category, $itemId)
     {
-        return $this->callV2('/certificates/' . rawurlencode((string) $category) . '/' . (int) $orderId, 'GET');
+        return $this->callV2('/certificates/' . rawurlencode((string) $category) . '/' . (int) $itemId, 'GET');
     }
 
-    public function addAcmeDomains($orderId, $data)
+    public function addAcmeDomains($itemId, $data)
     {
         if (isset($data['domains']))
         {
@@ -309,13 +309,13 @@ class SSLCenterApi {
             $data = $this->normalizeDomains($data);
         }
 
-        return $this->callV2('/certificates/acme/' . (int) $orderId . '/domains', 'POST', $data);
+        return $this->callV2('/certificates/caas/' . (int) $itemId . '/domains', 'POST', $data);
     }
 
-    public function removeAcmeDomain($orderId, $acmeID, $data)
+    public function removeAcmeDomain($itemId, $data)
     {
         $domainId = null;
-        $response = $this->getCertificateDetails('acme', $orderId);
+        $response = $this->getCertificateDetails('caas', $itemId);
 
         foreach($response['items'][0]['domains'] as $remoteDomainData)
         {
@@ -331,19 +331,67 @@ class SSLCenterApi {
             throw new SSLCenterApiException('Unable to resolve ACME domain ID.');
         }
 
-        return $this->callV2('/certificates/acme/' . (int) $acmeID . '/domains/' . rawurlencode((string) $domainId), 'DELETE');
+        return $this->callV2('/certificates/caas/' . (int) $itemId . '/domains/' . rawurlencode((string) $domainId), 'DELETE');
     }
 
-    public function cancelCertificate($orderId, $reason = '')
+    public function cancelCertificate($itemId, $reason = '')
     {
         $payload = ['reason' => !empty($reason) ? $reason : 'Cancelled by API client'];
 
-        return $this->callV2('/certificates/' . (int) $orderId . '/cancel', 'POST', $payload);
+        return $this->callV2('/certificates/caas/' . (int) $itemId . '/cancel', 'POST', $payload);
     }
 
-    public function disableSubscriptionAutoRenewal($orderId)
+    public function disableSubscriptionAutoRenewal($itemId)
     {
-        return $this->callV2('/certificates/acme/' . (int) $orderId . '/subscription', 'DELETE');
+        return $this->callV2('/certificates/caas/' . (int) $itemId . '/subscription', 'DELETE');
+    }
+
+    public function getTlsDetails($itemId)
+    {
+        return $this->callV2('/certificates/tls/' . (int) $itemId, 'GET');
+    }
+
+    public function reissueTlsCertificate($itemId, $data)
+    {
+        return $this->callV2('/certificates/tls/' . (int) $itemId, 'POST', $data);
+    }
+
+    public function changeTlsDcv($itemId, $data)
+    {
+        return $this->callV2('/certificates/tls/' . (int) $itemId . '/validation/change', 'PATCH', $data);
+    }
+
+    public function recheckTlsDcv($itemId, $data = [])
+    {
+        return $this->callV2('/certificates/tls/' . (int) $itemId . '/validation/recheck', 'POST', $data ?: null);
+    }
+
+    public function resendTlsDcvEmail($itemId, $data = [])
+    {
+        return $this->callV2('/certificates/tls/' . (int) $itemId . '/validation/resend', 'POST', $data ?: null);
+    }
+
+    public function addTlsSan($itemId, $data)
+    {
+        return $this->callV2('/certificates/tls/' . (int) $itemId . '/add-san', 'POST', $data);
+    }
+
+    public function getTlsFiles($itemId)
+    {
+        return $this->callV2('/certificates/tls/' . (int) $itemId . '/files', 'GET');
+    }
+
+    public static function extractItemId($apiResponse)
+    {
+        if (!is_array($apiResponse))
+        {
+            return 0;
+        }
+        if (!empty($apiResponse['items']) && is_array($apiResponse['items']) && isset($apiResponse['items'][0]['id']))
+        {
+            return (int) $apiResponse['items'][0]['id'];
+        }
+        return 0;
     }
 
     public function reIssueOrder($orderId, $data) {

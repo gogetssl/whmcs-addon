@@ -90,11 +90,41 @@ class Cpanel
         $curl_info = curl_getinfo($this->ch);
         if($resultorg == false)
         {
-            throw new \Exception(curl_error($this->ch));
+            $error = curl_error($this->ch);
+            logModuleCall('SSLCENTERWHMCS_cpanel', $api . $name,
+                $this->sanitizeParams($params),
+                'cURL error: ' . $error,
+                '',
+                [$this->service['password'] ?? '', $this->service['hash'] ?? '']
+            );
+            throw new \Exception($error);
         }
         $result = substr($resultorg, $curl_info['header_size']);
-        $resp = json_decode($result);
+        $resp   = json_decode($result);
+
+        logModuleCall(
+            'SSLCENTERWHMCS_cpanel',
+            $api . $name,
+            $this->sanitizeParams($params),
+            $result,
+            isset($resp->errors) ? $resp->errors : (isset($resp->data) ? $resp->data : $resp),
+            [$this->service['password'] ?? '', $this->service['hash'] ?? '']
+        );
+
         return $resp;
+    }
+
+    private function sanitizeParams(array $params)
+    {
+        $safe = [];
+        foreach ($params as $k => $v) {
+            if (in_array($k, ['cert', 'key', 'cabundle'], true)) {
+                $safe[$k] = '[' . strlen((string) $v) . ' bytes]';
+            } else {
+                $safe[$k] = $v;
+            }
+        }
+        return $safe;
     }
 
     public function listDomains($username)
@@ -135,6 +165,59 @@ class Cpanel
         return $domains;
     }
 
+    public function listDomainsGrouped($username)
+    {
+        $this->initiateConnection($username);
+        $response = $this->exec("list_domains", "/execute/DomainInfo/");
+
+        $grouped = [
+            'main'      => null,
+            'addon'     => [],
+            'parked'    => [],
+            'subdomain' => [],
+        ];
+
+        if (isset($response->data->main_domain) && !empty($response->data->main_domain)) {
+            $grouped['main'] = $response->data->main_domain;
+        }
+
+        if (isset($response->data->addon_domains) && !empty($response->data->addon_domains)) {
+            foreach ($response->data->addon_domains as $domain) {
+                $grouped['addon'][] = $domain;
+            }
+        }
+
+        if (isset($response->data->parked_domains) && !empty($response->data->parked_domains)) {
+            foreach ($response->data->parked_domains as $domain) {
+                $grouped['parked'][] = $domain;
+            }
+        }
+
+        if (isset($response->data->sub_domains) && !empty($response->data->sub_domains)) {
+            $allKnownParents = [];
+            if ($grouped['main']) {
+                $allKnownParents[] = $grouped['main'];
+            }
+            foreach ($grouped['addon'] as $d) {
+                $allKnownParents[] = $d;
+            }
+
+            foreach ($response->data->sub_domains as $domain) {
+                $parent = null;
+                $parts = explode('.', $domain);
+                if (count($parts) > 2) {
+                    $possibleParent = implode('.', array_slice($parts, 1));
+                    if (in_array($possibleParent, $allKnownParents)) {
+                        $parent = $possibleParent;
+                    }
+                }
+                $grouped['subdomain'][] = ['domain' => $domain, 'parent' => $parent];
+            }
+        }
+
+        return $grouped;
+    }
+
     public function setService($service)
     {
         $this->service['hostname'] = $service->hostname;
@@ -168,22 +251,39 @@ class Cpanel
         $this->initiateConnection($username);
 
         $data = [
-            'domain' => $domain,
-            'cert' => $cert,
-            'key' => $key,
-            'cabundle'=> $cabundle
+            'domain'    => $domain,
+            'cert'      => $cert,
+            'key'       => $key,
+            'cabundle'  => $cabundle,
         ];
 
         $response = $this->exec("install_ssl", "/execute/SSL/", $data);
 
-        if(isset($response->errors) && !empty($response->errors))
-        {
-            if (strpos($response->errors[0], 'install_ssl was handled successfully') !== false)
-            {
+        if (isset($response->errors) && !empty($response->errors)) {
+            if (strpos($response->errors[0], 'install_ssl was handled successfully') !== false) {
+                logModuleCall('SSLCENTERWHMCS_cpanel', 'installSSL',
+                    ['domain' => $domain, 'cert' => '[' . strlen($cert) . ' bytes]', 'key' => '[' . strlen($key) . ' bytes]', 'cabundle' => '[' . strlen($cabundle) . ' bytes]'],
+                    'Success (reported via errors field): ' . $response->errors[0],
+                    'installed',
+                    [$this->service['password'] ?? '', $this->service['hash'] ?? '']
+                );
                 return true;
             }
+            logModuleCall('SSLCENTERWHMCS_cpanel', 'installSSL',
+                ['domain' => $domain, 'cert' => '[' . strlen($cert) . ' bytes]', 'key' => '[' . strlen($key) . ' bytes]', 'cabundle' => '[' . strlen($cabundle) . ' bytes]'],
+                'Error: ' . $response->errors[0],
+                'failed',
+                [$this->service['password'] ?? '', $this->service['hash'] ?? '']
+            );
             throw new \Exception($response->errors[0]);
         }
+
+        logModuleCall('SSLCENTERWHMCS_cpanel', 'installSSL',
+            ['domain' => $domain, 'cert' => '[' . strlen($cert) . ' bytes]', 'key' => '[' . strlen($key) . ' bytes]', 'cabundle' => '[' . strlen($cabundle) . ' bytes]'],
+            json_encode($response),
+            'success - no errors',
+            [$this->service['password'] ?? '', $this->service['hash'] ?? '']
+        );
         return true;
     }
 
@@ -210,10 +310,23 @@ class Cpanel
             'fallback'      => '0',
         ]);
 
-        if(isset($response->errors) && !empty($response->errors))
-        {
+        $requestLog = ['dir' => $dir, 'file' => $file, 'content' => $content];
+        if (isset($response->errors) && !empty($response->errors)) {
+            logModuleCall('SSLCENTERWHMCS_cpanel', 'saveFile',
+                $requestLog,
+                'Error: ' . $response->errors[0],
+                'failed',
+                [$this->service['password'] ?? '', $this->service['hash'] ?? '']
+            );
             throw new \Exception($response->errors[0]);
         }
+
+        logModuleCall('SSLCENTERWHMCS_cpanel', 'saveFile',
+            $requestLog,
+            json_encode($response),
+            'success',
+            [$this->service['password'] ?? '', $this->service['hash'] ?? '']
+        );
         return true;
     }
 
@@ -296,12 +409,25 @@ class Cpanel
         $out = curl_exec($ch);
 
         if (curl_errno($ch)) {
-            throw new \Exception("cURL Error: " . curl_errno($ch) . " - " . curl_error($ch));
+            $curlErr = curl_errno($ch) . ' - ' . curl_error($ch);
+            logModuleCall('SSLCENTERWHMCS_cpanel', $params['cpanel_jsonapi_func'] ?? 'cpanel_api',
+                array_diff_key($params, array_flip(['cpanel_jsonapi_user'])),
+                'cURL Error: ' . $curlErr,
+                '',
+                [$this->service['password'] ?? '', $this->service['hash'] ?? '']
+            );
+            throw new \Exception("cURL Error: " . $curlErr);
         }
 
         $out_info = curl_getinfo($ch);
         if($out_info['http_code'] != 200) {
             if($out_info['http_code'] == 301 || $out_info['http_code'] == 302){
+                logModuleCall('SSLCENTERWHMCS_cpanel', $params['cpanel_jsonapi_func'] ?? 'cpanel_api',
+                    array_diff_key($params, array_flip(['cpanel_jsonapi_user'])),
+                    'HTTP ' . $out_info['http_code'] . ' redirect — SSL required',
+                    '',
+                    [$this->service['password'] ?? '', $this->service['hash'] ?? '']
+                );
                 throw new \Exception('Module require SSL');
             }
         }
@@ -335,8 +461,21 @@ class Cpanel
         }
 
         if(isset($a->metadata->result) && $a->metadata->result == 0) {
+            logModuleCall('SSLCENTERWHMCS_cpanel', $params['cpanel_jsonapi_func'] ?? 'cpanel_api',
+                array_diff_key($params, array_flip(['cpanel_jsonapi_user'])),
+                $out,
+                'metadata result=0: ' . $a->metadata->reason,
+                [$this->service['password'] ?? '', $this->service['hash'] ?? '']
+            );
             throw new \Exception($a->metadata->reason);
         }
+
+        logModuleCall('SSLCENTERWHMCS_cpanel', $params['cpanel_jsonapi_func'] ?? 'cpanel_api',
+            array_diff_key($params, array_flip(['cpanel_jsonapi_user'])),
+            $out,
+            isset($a->data) ? $a->data : $a,
+            [$this->service['password'] ?? '', $this->service['hash'] ?? '']
+        );
 
         return isset($a->data)?$a->data:$a;
     }

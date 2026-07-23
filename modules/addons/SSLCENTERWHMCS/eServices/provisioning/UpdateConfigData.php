@@ -96,6 +96,32 @@ class UpdateConfigData
             $sslOrder->setSanDetails($order['san']);
             $sslOrder->setConfigdataKey("approveremail", $order['approver_email']);
 
+            if (!empty($order['csr_code']) && empty($sslOrder->getCsr())) {
+                $sslOrder->setCsr($order['csr_code']);
+            }
+
+            if (empty($sslOrder->getConfigdataKey('configssl')) && !empty($sslOrder->getConfigdataKey('install_type'))) {
+                $sslOrder->setConfigdataKey('configssl', 1);
+            }
+
+            // Backfill is_wildcard: if not set but order has wildcard SANs, mark as wildcard
+            if (empty($sslOrder->getConfigdataKey('is_wildcard'))) {
+                $hasSanWildcard = false;
+                if (!empty($order['san']) && is_array($order['san'])) {
+                    foreach ($order['san'] as $san) {
+                        $sanName = is_array($san) ? ($san['san_name'] ?? '') : (is_object($san) ? ($san->san_name ?? '') : '');
+                        if (strpos((string) $sanName, '*.') === 0) {
+                            $hasSanWildcard = true;
+                            break;
+                        }
+                    }
+                }
+                $mainDomain = (string) $sslOrder->getDomain();
+                if ($hasSanWildcard || strpos($mainDomain, '*.') === 0) {
+                    $sslOrder->setConfigdataKey('is_wildcard', 1);
+                }
+            }
+
             $sslOrder->save();
        // }
 

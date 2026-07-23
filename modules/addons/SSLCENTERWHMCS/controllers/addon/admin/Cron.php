@@ -168,7 +168,7 @@ class Cron extends main\mgLibs\process\AbstractController
         foreach ($synchServicesId as $serviceid)
         {
             $srv = Capsule::table('tblhosting')->where('id', $serviceid)->first();
-            if (!$srv || $serviceid != 18)
+            if (!$srv)
             {
                 continue;
             }

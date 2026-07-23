@@ -643,9 +643,53 @@ function SSLCENTER_overideDisaplayedProductPricingBasedOnCommission($vars)
 add_hook('ClientAreaHeadOutput', 999999999999, 'SSLCENTER_overideDisaplayedProductPricingBasedOnCommission');
 
 add_hook('InvoiceCreation', 1, function($vars) {
-    
+
     $invoiceid = $vars['invoiceid'];
-    
+
+    // ---- Renewal Invoice notification for SSLCENTER products ----
+    try {
+        require_once __DIR__ . DS . 'Loader.php';
+        new \MGModule\SSLCENTERWHMCS\Loader();
+
+        $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+        if (isset($apiConf->automatic_processing_of_renewal_orders) && $apiConf->automatic_processing_of_renewal_orders == '1') {
+
+            $renewalItems = Capsule::table('tblinvoiceitems')
+                ->join('tblhosting', 'tblhosting.id', '=', 'tblinvoiceitems.relid')
+                ->join('tblproducts', 'tblproducts.id', '=', 'tblhosting.packageid')
+                ->where('tblinvoiceitems.invoiceid', $invoiceid)
+                ->where('tblinvoiceitems.type', 'Hosting')
+                ->where('tblproducts.servertype', 'SSLCENTERWHMCS')
+                ->select(['tblhosting.id as serviceid', 'tblhosting.userid', 'tblhosting.domain'])
+                ->get();
+
+            foreach ($renewalItems as $item) {
+                if (\MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeByServiceId($item->serviceid)) {
+                    continue;
+                }
+
+                $sslRepo   = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+                $sslConfig = $sslRepo->getByServiceId($item->serviceid);
+
+                if (!$sslConfig || empty($sslConfig->getConfigdataKey('valid_till'))) {
+                    continue;
+                }
+
+                $certExpiry = (string) $sslConfig->getConfigdataKey('valid_till');
+
+                \MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::sendRenewalInvoiceEmail(
+                    (int) $item->serviceid,
+                    $item->domain,
+                    $certExpiry,
+                    $invoiceid
+                );
+            }
+        }
+    } catch (\Exception $e) {
+        logActivity('SSLCenter InvoiceCreation hook error: ' . $e->getMessage());
+    }
+    // ---- End renewal invoice notification ----
+
     $items = Capsule::table('tblinvoiceitems')->where('invoiceid', $invoiceid)->where('type', 'Upgrade')->get();
     
     foreach ($items as $item)

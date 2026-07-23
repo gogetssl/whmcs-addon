@@ -305,3 +305,145 @@ $_LANG['Can not get Private Key, please refresh page or contact support'] = 'Can
 
 $_LANG['csrReadOnly'] = 'Tick to enter your CSR, remember that if you want to use automatic certificate installation you must use the button to generate CSR.';
 $_LANG['acmeOrderRequiresAtLeastOneSan'] = 'To order this product you must select at least 1 Additional Single domain SAN or Additional Wildcard SAN.';
+
+// SSL Configuration page (?configssl=1)
+$_LANG['serverCA']['home']['sslConfigPageTitle']          = 'SSL Certificate Configuration';
+$_LANG['serverCA']['home']['sslConfigGenerateCertTitle']  = 'Generate Certificate -';
+$_LANG['serverCA']['home']['sslConfigServerInfoTitle']    = 'Server Information';
+$_LANG['serverCA']['home']['sslConfigServerInfoText']     = 'AutoInstall option is only available for WHM/cPanel servers, and automates the processes of CSR generation, verification when possible, and installation of the certificate. Existing CSR option can be used for all other cases, and requires manual generation of the CSR and installation of the certificate.';
+$_LANG['serverCA']['home']['sslConfigDomainLabel']        = 'Domain';
+$_LANG['serverCA']['home']['sslConfigPleaseChoose']       = 'Please choose one...';
+$_LANG['serverCA']['home']['sslConfigFirstSelectDomain']  = 'First select domain';
+$_LANG['serverCA']['home']['sslConfigSanNote']            = 'Note: To avoid possible errors, please do not include the common name from your CSR or duplicate any SAN entries in the additional domain fields below.';
+$_LANG['serverCA']['home']['sslConfigDcvEmailLabel']      = 'Select your preferred DCV email';
+$_LANG['serverCA']['home']['sslConfigDcvEmailFallback']   = 'Email validation will be used in case File or DNS validation fails';
+$_LANG['serverCA']['home']['sslConfigCsrSubtext']         = 'This information will be used in CSR generation.';
+$_LANG['serverCA']['home']['sslConfigCsrGenerated']       = 'CSR generated successfully.';
+$_LANG['serverCA']['home']['sslConfigInstallType']        = 'Installation Type';
+$_LANG['serverCA']['home']['sslConfigAutoinstall']        = 'Autoinstall (via cPanel)';
+$_LANG['serverCA']['home']['sslConfigManual']             = 'Manual Enrollment';
+$_LANG['serverCA']['home']['sslConfigSelectDomain']    = 'Select Domain';
+$_LANG['serverCA']['home']['sslConfigDomainNotListed'] = 'Domain not listed (use manual enrollment)';
+$_LANG['serverCA']['home']['sslConfigIncludeWww']      = 'Include www prefix in CSR generation';
+$_LANG['serverCA']['home']['sslConfigWildcardLabel']   = 'Wildcard certificate';
+$_LANG['serverCA']['home']['sslConfigValidationMethod']= 'Domain Validation Method';
+$_LANG['serverCA']['home']['sslConfigValidationEmail'] = 'Email';
+$_LANG['serverCA']['home']['sslConfigValidationHttp']  = 'HTTP File';
+$_LANG['serverCA']['home']['sslConfigValidationHttps'] = 'HTTPS File';
+$_LANG['serverCA']['home']['sslConfigValidationDns']   = 'DNS Record';
+$_LANG['serverCA']['home']['sslConfigApproverEmail']      = 'Approver Email';
+$_LANG['serverCA']['home']['sslConfigEmailDcvNeedsCn']     = 'Please enter the Common Name (domain) above before selecting email validation.';
+$_LANG['serverCA']['home']['sslConfigEmailDcvNeedsDomain'] = 'Please select a domain above before selecting email validation.';
+$_LANG['serverCA']['home']['sslConfigCsrSection']      = 'CSR Details';
+$_LANG['serverCA']['home']['sslConfigCsrPaste']        = 'Paste your CSR code';
+$_LANG['serverCA']['home']['sslConfigGenerateCsr']     = 'Generate CSR';
+$_LANG['serverCA']['home']['sslConfigCsrCountry']      = 'Country (2-letter code)';
+$_LANG['serverCA']['home']['sslConfigCsrState']        = 'State / Province';
+$_LANG['serverCA']['home']['sslConfigCsrCity']         = 'City / Locality';
+$_LANG['serverCA']['home']['sslConfigCsrOrg']          = 'Organisation';
+$_LANG['serverCA']['home']['sslConfigCsrOrgUnit']      = 'Organisational Unit';
+$_LANG['serverCA']['home']['sslConfigCsrEmail']        = 'Email Address';
+$_LANG['serverCA']['home']['sslConfigCsrCommonName']     = 'Common Name (domain)';
+$_LANG['serverCA']['home']['sslConfigCsrCommonNameHint'] = 'Enter the domain name for the certificate (e.g. example.com). A CSR will be generated automatically.';
+$_LANG['serverCA']['home']['sslConfigOwnCsrLabel']        = 'Your CSR Code';
+$_LANG['serverCA']['home']['sslConfigOwnCsrHint']         = 'Paste your existing CSR. The domain will be extracted automatically from the CSR.';
+$_LANG['serverCA']['home']['sslConfigAutoGenerateCsr']    = 'Generate CSR automatically';
+$_LANG['serverCA']['home']['sslConfigOwnCsrRequired']      = 'Please paste your CSR code.';
+$_LANG['serverCA']['home']['sslConfigEmailDcvNeedsCsr']     = 'Please paste your CSR first before selecting email validation.';
+$_LANG['serverCA']['home']['sslConfigEmailDcvCsrNoCn']     = 'Unable to extract domain from CSR. Please check your CSR code.';
+$_LANG['serverCA']['home']['sslConfigDnsFallbackLabel']     = 'Fallback email for DNS validation (optional)';
+$_LANG['serverCA']['home']['sslConfigDnsFallbackHint']      = 'If DNS validation fails, it will automatically switch to email using this address. Leave empty to auto-select.';
+$_LANG['serverCA']['home']['sslConfigDnsFallbackNeedsDomain'] = 'Select a domain above to configure a DNS fallback email.';
+$_LANG['serverCA']['home']['sslConfigDnsFallbackAutoSelect'] = '— Auto-select on switch —';
+$_LANG['serverCA']['home']['sslConfigAdminContact']    = 'Administrator Contact';
+$_LANG['serverCA']['home']['sslConfigTechContact']     = 'Technical Contact';
+$_LANG['serverCA']['home']['sslConfigSameAsAdmin']     = 'Same as Administrator';
+$_LANG['serverCA']['home']['sslConfigFirstname']       = 'First Name';
+$_LANG['serverCA']['home']['sslConfigLastname']        = 'Last Name';
+$_LANG['serverCA']['home']['sslConfigEmail']           = 'Email';
+$_LANG['serverCA']['home']['sslConfigPhone']           = 'Phone';
+$_LANG['serverCA']['home']['sslConfigOrganization']    = 'Organisation';
+$_LANG['serverCA']['home']['sslConfigTitle']           = 'Title';
+$_LANG['serverCA']['home']['sslConfigAddress']         = 'Address';
+$_LANG['serverCA']['home']['sslConfigCity']            = 'City';
+$_LANG['serverCA']['home']['sslConfigRegion']          = 'Region / State';
+$_LANG['serverCA']['home']['sslConfigPostalcode']      = 'Postal Code';
+$_LANG['serverCA']['home']['sslConfigCountry']         = 'Country';
+$_LANG['serverCA']['home']['sslConfigSanSection']      = 'Additional Domains (SANs)';
+$_LANG['serverCA']['home']['sslConfigSanSingle']       = 'Single Domains';
+$_LANG['serverCA']['home']['sslConfigSanWildcard']          = 'Wildcard Domains';
+$_LANG['serverCA']['home']['sslConfigSanWildcardAutoNote']  = 'Select domains below. *. will be prepended automatically to each selected domain.';
+$_LANG['serverCA']['home']['sslConfigSubmit']          = 'Submit Configuration';
+$_LANG['serverCA']['home']['sslConfigOrderType']       = 'Order Type';
+$_LANG['serverCA']['home']['sslConfigOrderTypeNew']    = 'New';
+$_LANG['serverCA']['home']['sslConfigOrderTypeRenew']  = 'Renew';
+
+// absoluteT keys used in submitSslConfigurationJSON
+$_LANG['sslConfigurationSubmitted'] = 'Your SSL certificate order has been placed successfully. The certificate will be issued once domain validation is complete.';
+
+// Modern SSL certificate view (home_ssl_modern.tpl)
+$_LANG['serverCA']['home']['viewSite']                = 'View Site';
+$_LANG['serverCA']['home']['configureSSL']            = 'Configure SSL';
+$_LANG['serverCA']['home']['reissueSSL']              = 'Reissue';
+$_LANG['serverCA']['home']['certificateDetails']      = 'Certificate Details';
+$_LANG['serverCA']['home']['download']                = 'Download';
+$_LANG['serverCA']['home']['installCertificate']      = 'Install on Server';
+$_LANG['serverCA']['home']['resendValidationEmail']   = 'Resend Validation Email';
+$_LANG['serverCA']['home']['renewalWarning']          = 'Your certificate expires soon. Renew now to avoid service interruption.';
+$_LANG['serverCA']['home']['renew']                   = 'Renew Now';
+$_LANG['serverCA']['home']['dcvInstructions']         = 'Validation Instructions';
+$_LANG['serverCA']['home']['httpValidationInfo']      = 'Create the file below on your web server at the exact path shown. The CA will fetch this URL to verify domain ownership.';
+$_LANG['serverCA']['home']['httpValidationTip']       = 'If your hosting is on cPanel, the document root is typically <strong>/home/cpuser/public_html/</strong>. Create the directories <code>.well-known/pki-validation/</code> inside it and upload the file. If autoinstall is enabled, the cron will attempt to do this automatically.';
+$_LANG['serverCA']['home']['dnsValidationInfo']       = 'Add the following DNS TXT record to your domain and wait for propagation.';
+$_LANG['serverCA']['home']['emailValidationInfo']     = 'A validation email has been sent to';
+$_LANG['serverCA']['home']['emailValidationClick']    = 'Please click the approval link in that email to complete domain validation.';
+$_LANG['serverCA']['home']['timelineTitle']           = 'Certificate Activity';
+$_LANG['serverCA']['home']['timelineEmpty']           = 'No activity recorded yet.';
+$_LANG['serverCA']['home']['cronTaskValidate']        = 'Waiting for domain validation to complete';
+$_LANG['serverCA']['home']['cronTaskInstall']         = 'Certificate installation scheduled';
+$_LANG['serverCA']['home']['cronTaskRenew']           = 'Renewal processing';
+$_LANG['serverCA']['home']['cronTaskReissue']         = 'Automatic certificate reissue';
+$_LANG['serverCA']['home']['cronStatusPending']       = 'Pending';
+$_LANG['serverCA']['home']['cronStatusProcessing']    = 'In Progress';
+$_LANG['serverCA']['home']['cronStatusDone']          = 'Done';
+$_LANG['serverCA']['home']['cronStatusError']         = 'Failed';
+
+// Change DCV method modal
+$_LANG['serverCA']['home']['changeDcvMethod']         = 'Change Validation Method';
+$_LANG['serverCA']['home']['changeDcvMethodInfo']     = 'Select a new validation method. The change will apply to all domains in this order.';
+$_LANG['serverCA']['home']['validationMethod']        = 'Validation Method';
+$_LANG['serverCA']['home']['approverEmail']           = 'Approver Email';
+$_LANG['serverCA']['home']['loadingEmails']           = 'Loading emails...';
+$_LANG['serverCA']['home']['noEmailsFound']           = 'No emails found';
+$_LANG['serverCA']['home']['saveChanges']             = 'Save Changes';
+$_LANG['serverCA']['home']['cancel']                  = 'Cancel';
+$_LANG['serverCA']['home']['saving']                  = 'Saving...';
+$_LANG['serverCA']['home']['selectApproverEmailFirst'] = 'Please select an approver email.';
+$_LANG['serverCA']['home']['changeDcvSuccess']        = 'Validation method changed successfully.';
+$_LANG['serverCA']['home']['errorOccurred']           = 'An error occurred. Please try again.';
+
+// Validation warning
+$_LANG['serverCA']['home']['validationWarningTitle']  = 'Automatic Validation Failed — Action Required';
+$_LANG['serverCA']['home']['validationWarningDesc']   = 'The validation file was uploaded to your server, but the Certificate Authority could not verify it after multiple attempts. This may be caused by a redirect, CDN (e.g. Cloudflare), or <code>.htaccess</code> rules blocking access to the file.';
+$_LANG['serverCA']['home']['validationWarningAction'] = 'Please switch to Email Approval — it does not require server access and validates instantly.';
+$_LANG['serverCA']['home']['switchToEmailValidation'] = 'Switch to Email Validation';
+
+// AutoInstall Thank You / Enrollment status messages (2.3 PAGE 2)
+$_LANG['serverCA']['home']['autoinstallStatusTitle']        = 'AutoInstall SSL — Validation In Progress';
+$_LANG['serverCA']['home']['thankYou']                      = 'Thank You';
+// 2.3.1 Single DV
+$_LANG['serverCA']['home']['autoinstallSingleDvMsg']        = 'AutoInstallSSL is currently performing domain validation for your certificate. Once the CA validates your domain the certificate will be installed on your server. We will notify you once the certificate is installed. You can check the status on your order detail page.';
+// 2.3.2 Wildcard DV
+$_LANG['serverCA']['home']['autoinstallWildcardDvIntro']    = 'AutoInstallSSL is currently performing domain validation for your certificate.';
+$_LANG['serverCA']['home']['autoinstallWildcardDvMsg']      = 'If you chose email validation or if DNS validation is not available the CA will email the domain validation for approval to the following emails:';
+$_LANG['serverCA']['home']['autoinstallOutroDomain']        = 'Once the CA validates your domain the certificate will be installed on your server.<br>We will notify you once the certificate is installed. You can check the status on your order detail page.';
+// 2.3.3 Single OV
+$_LANG['serverCA']['home']['autoinstallOvIntro']            = 'AutoInstallSSL is currently performing domain validation for your certificate.';
+$_LANG['serverCA']['home']['autoinstallOvNextStep']         = 'Your next step:';
+$_LANG['serverCA']['home']['autoinstallOvMsg']              = 'Perform Organization Validation, the CA will be emailing and calling the admin contact to confirm the organization is accurate and the contact is authorized.';
+$_LANG['serverCA']['home']['autoinstallOutroDomainOrg']     = 'Once the CA validates your domain &amp; organization the certificate will be installed on your server.<br>We will notify you once the certificate is installed. You can check the status on your order detail page.';
+// 2.3.4 Wildcard OV
+$_LANG['serverCA']['home']['autoinstallWildcardOvIntro']    = 'AutoInstallSSL is currently performing domain validation for your certificate.';
+$_LANG['serverCA']['home']['autoinstallWildcardOvNextSteps']= 'Here are your next steps:';
+$_LANG['serverCA']['home']['autoinstallWildcardOvMsg']      = 'Perform Organization Validation, the CA will be emailing and calling the admin contact to confirm the organization is accurate and the contact is authorized. If you chose email validation or if DNS validation is not available the CA will email the domain validation for approval to the following emails:';
+$_LANG['serverCA']['home']['goToCertificateDetails']        = 'View My Certificate';

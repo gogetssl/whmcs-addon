@@ -3,442 +3,110 @@
 namespace MGModule\SSLCENTERWHMCS\eServices;
 
 use WHMCS\Database\Capsule;
+use MGModule\SSLCENTERWHMCS\eServices\emailTemplates\StandardTemplates;
+use MGModule\SSLCENTERWHMCS\eServices\emailTemplates\AcmeTemplates;
+use MGModule\SSLCENTERWHMCS\eServices\emailTemplates\AutoInstallTemplates;
 
-class EmailTemplateService {
-    
-    const CONFIGURATION_TEMPLATE_ID = 'SSLCenter - Configuration Required';
-    const EXPIRATION_TEMPLATE_ID = 'SSLCenter - Service Expiration';
-    const SEND_CERTIFICATE_TEMPLATE_ID = 'SSLCenter - Send Certificate';
-    const RENEWAL_TEMPLATE_ID = 'SSLCenter - Renewal';
-    const REISSUE_TEMPLATE_ID = 'SSLCenter - Reissue';
-    const SUBSCRIPTION_TEMPLATE_ID = 'SSLCenter - ACME Subscription Configuration';
-    const SUBSCRIPTION_EXPIRATION_TEMPLATE_ID = 'SSLCenter - ACME Subscription Expiration';
-    const SUBSCRIPTION_RENEWAL_TEMPLATE_ID = 'SSLCenter - ACME Subscription Renewal';
+class EmailTemplateService
+{
+    use StandardTemplates;
+    use AcmeTemplates;
+    use AutoInstallTemplates;
+
+    // ---- Standard SSL templates ----
+    const CONFIGURATION_TEMPLATE_ID          = 'SSLCenter - Configuration Required';
+    const EXPIRATION_TEMPLATE_ID             = 'SSLCenter - Service Expiration';
+    const SEND_CERTIFICATE_TEMPLATE_ID       = 'SSLCenter - Send Certificate';
+    const RENEWAL_TEMPLATE_ID                = 'SSLCenter - Renewal';
+    const REISSUE_TEMPLATE_ID                = 'SSLCenter - Reissue';
+
+    // ---- ACME Subscription templates ----
+    const SUBSCRIPTION_TEMPLATE_ID              = 'SSLCenter - ACME Subscription Configuration';
+    const SUBSCRIPTION_EXPIRATION_TEMPLATE_ID   = 'SSLCenter - ACME Subscription Expiration';
+    const SUBSCRIPTION_RENEWAL_TEMPLATE_ID      = 'SSLCenter - ACME Subscription Renewal';
     const SUBSCRIPTION_RENEWAL_NOTICE_TEMPLATE_ID = 'SSLCenter – Subscription renewal';
 
-    public static function createRenewalTemplate() {
-        if(!is_null(self::getTemplate(self::RENEWAL_TEMPLATE_ID))) {
-            return 'Template exist, nothing to do here';
-        }
-        $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
-        $newTemplate->type    = 'product';
-        $newTemplate->name    = self::RENEWAL_TEMPLATE_ID;
-        $newTemplate->subject = 'SSL Certificate - Renew';
-        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your current SSL certificate #{$service_id} expires within next 30-days. Please login to the client area and click "Renew" button to start the renewal process.</p><p>{$signature}</p>';
-        $newTemplate->attachments  = '';
-        $newTemplate->fromname  = '';
-        $newTemplate->fromemail  = '';
-        $newTemplate->disabled  = '0';
-        $newTemplate->custom  = 1;
-        $newTemplate->language = '';
-        $newTemplate->copyto = '';
-        
-        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
-        if(!empty($query))
-        {
-            $newTemplate->blind_copy_to = '';
-        }
-        
-        $newTemplate->plaintext = '0';
-        $newTemplate->created_at = date('Y-m-d H:i:s');
-        $newTemplate->updated_at = date('Y-m-d H:i:s');
-        $newTemplate->save();
-    }
-    public static function updateRenewalTemplate() {        
-        $template          =  \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::RENEWAL_TEMPLATE_ID)->first();     
-        
-        if(empty($template))
-        {
-            self::createRenewalTemplate();
-        }
-        
-        $template          =  \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::RENEWAL_TEMPLATE_ID)->first(); 
-        $template->message = '<p>Dear {$client_name},</p><p>Your current SSL certificate #{$service_id} expires within next 30-days. Please login to the client area and click "Renew" button to start the renewal process.</p><p>{$signature}</p>';
-        $template->save();
-    }
-    public static function deleteRenewalTemplate() {
-        $template = self::getTemplate(self::RENEWAL_TEMPLATE_ID);
-        if(is_null($template)) {
-            return 'Template not exist, nothing to do here';
-        }
-        $template->delete();
-    }
-        
-    public static function createConfigurationTemplate() {
-        if(!is_null(self::getTemplate(self::CONFIGURATION_TEMPLATE_ID))) {
-            return 'Template exist, nothing to do here';
-        }
-        $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
-        $newTemplate->type    = 'product';
-        $newTemplate->name    = self::CONFIGURATION_TEMPLATE_ID;
-        $newTemplate->subject = 'SSL Certificate - configuration required';
-        $newTemplate->message = '<p>Dear {$client_name},</p><p>Thank you for your order for an SSL Certificate. Before you can use your certificate, it requires configuration which can be done at the URL below.</p><p>{$ssl_configuration_link}</p><p>Instructions are provided throughout the process but if you experience any problems or have any questions, please open a ticket for assistance.</p><p>{$signature}</p>';
-        $newTemplate->attachments  = '';
-        $newTemplate->fromname  = '';
-        $newTemplate->fromemail  = '';
-        $newTemplate->disabled  = '0';
-        $newTemplate->custom  = 1;
-        $newTemplate->language = '';
-        $newTemplate->copyto = '';
-        
-        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
-        if(!empty($query))
-        {
-            $newTemplate->blind_copy_to = '';
-        }
-        
-        $newTemplate->plaintext = '0';
-        $newTemplate->created_at = date('Y-m-d H:i:s');
-        $newTemplate->updated_at = date('Y-m-d H:i:s');
-        $newTemplate->save();
-    }
-    public static function updateConfigurationTemplate() {        
-        $template          =  \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::CONFIGURATION_TEMPLATE_ID)->first();     
-        
-        if(empty($template))
-        {
-            self::createConfigurationTemplate();
-        }
-        
-        $template          =  \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::CONFIGURATION_TEMPLATE_ID)->first(); 
-        $template->message = '<p>Dear {$client_name},</p><p>Thank you for your order for an SSL Certificate{if $service_domain} related to domain: {$service_domain}{/if}. Before you can use your certificate, it requires configuration which can be done at the URL below.</p><p>{$ssl_configuration_link}</p><p>Instructions are provided throughout the process but if you experience any problems or have any questions, please open a ticket for assistance.</p><p>{$signature}</p>';
-        $template->save();
-    }
-    public static function deleteConfigurationTemplate() {
-        $template = self::getTemplate(self::CONFIGURATION_TEMPLATE_ID);
-        if(is_null($template)) {
-            return 'Template not exist, nothing to do here';
-        }
-        $template->delete();
-    }
-    
-    public static function createCertyficateTemplate() {
-        if(!is_null(self::getTemplate(self::SEND_CERTIFICATE_TEMPLATE_ID))) {
-            return 'Template exist, nothing to do here';
-        }
-        $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
-        $newTemplate->type    = 'product';
-        $newTemplate->name    = self::SEND_CERTIFICATE_TEMPLATE_ID;
-        $newTemplate->subject = 'SSL Certificate';
-        $newTemplate->message = '<p>Dear {$client_name},</p><p>Domain: </p><p>{$domain}</p><p>Intermediate certificate: </p><p>{$ssl_certyficate}</p><p>CRT: </p><p>{$crt_code}</p><p>{$signature}</p>';
-        $newTemplate->attachments  = '';
-        $newTemplate->fromname  = '';
-        $newTemplate->fromemail  = '';
-        $newTemplate->disabled  = '0';
-        $newTemplate->custom  = 1;
-        $newTemplate->language = '';
-        $newTemplate->copyto = '';
-        
-        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
-        if(!empty($query))
-        {
-            $newTemplate->blind_copy_to = '';
-        }
-        
-        $newTemplate->plaintext = '0';
-        $newTemplate->created_at = date('Y-m-d H:i:s');
-        $newTemplate->updated_at = date('Y-m-d H:i:s');
-        $newTemplate->save();
-    }
-    
-    public static function deleteCertyficateTemplate() {
-        $template = self::getTemplate(self::SEND_CERTIFICATE_TEMPLATE_ID);
-        if(is_null($template)) {
-            return 'Template not exist, nothing to do here';
-        }
-        $template->delete();
-    }
-    
-    public static function getTemplate($name) {
+    // ---- AutoInstall / Cron templates ----
+    const RENEWAL_INVOICE_TEMPLATE_ID        = 'SSLCenter - Renewal Invoice';
+    const RENEWAL_STARTED_TEMPLATE_ID        = 'SSLCenter - Renewal Started';
+    const RENEWAL_COMPLETE_TEMPLATE_ID       = 'SSLCenter - Renewal Complete';
+    const RENEWAL_AUTORENEWED_TEMPLATE_ID    = 'SSLCenter - Certificate Autorenewed';
+    const CERT_REVOKED_TEMPLATE_ID           = 'SSLCenter - Certificate Revoked';
+    const DNS_TO_EMAIL_SWITCH_TEMPLATE_ID    = 'SSLCenter - DNS Validation Switched to Email';
+    const AUTO_REISSUE_FAILED_TEMPLATE_ID    = 'SSLCenter - Auto Reissue Failed';
+    const CERT_EXPIRED_TEMPLATE_ID           = 'SSLCenter - Certificate Expired';
+    const CERT_INSTALLED_TEMPLATE_ID         = 'SSLCenter - Certificate Installed';
+    const VALIDATION_WARNING_TEMPLATE_ID     = 'SSLCenter - Validation Warning';
+
+    // ---- Generic lookup helpers ----
+
+    public static function getTemplate($name)
+    {
         return \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName($name)->first();
     }
-    
-    public static function getTemplateName($id) {
-        $template  = \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereId($id)->first();
-        
+
+    public static function getTemplateName($id)
+    {
+        $template = \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereId($id)->first();
         return $template->name;
     }
-    
+
     public static function getGeneralTemplates()
     {
         return \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereType('product')->get();
-    }    
-     
-    public static function createExpireNotificationTemplate() {
-        if(!is_null(self::getTemplate(self::EXPIRATION_TEMPLATE_ID))) {
-            return 'Template exist, nothing to do here';
-        }
-        $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
-        $newTemplate->type    = 'product';
-        $newTemplate->name    = self::EXPIRATION_TEMPLATE_ID;
-        $newTemplate->subject = 'Service Expiration Notification - {$service_domain}';
-        $newTemplate->message = '<p>Dear {$client_name},</p><p>We would like to inform You about your service <strong>#{$service_id}</strong>  is going to expire in {$expireDaysLeft} days.</p><p>{$signature}</p>';
-        $newTemplate->attachments  = '';
-        $newTemplate->fromname  = '';
-        $newTemplate->fromemail  = '';
-        $newTemplate->disabled  = '0';
-        $newTemplate->custom  = 1;
-        $newTemplate->language = '';
-        $newTemplate->copyto = '';
-        
-        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
-        if(!empty($query))
-        {
-            $newTemplate->blind_copy_to = '';
-        }
-
-        $newTemplate->plaintext = '0';
-        $newTemplate->created_at = date('Y-m-d H:i:s');
-        $newTemplate->updated_at = date('Y-m-d H:i:s');
-        $newTemplate->save();
-    }
-    
-    public static function deleteExpireNotificationTemplate() {
-        $template = self::getTemplate(self::EXPIRATION_TEMPLATE_ID);
-        if(is_null($template)) {
-            return 'Template not exist, nothing to do here';
-        }
-        $template->delete();
     }
 
-    public static function createReissueTemplate() {
-        if(!is_null(self::getTemplate(self::REISSUE_TEMPLATE_ID))) {
-            return 'Template exist, nothing to do here';
-        }
-        $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
-        $newTemplate->type    = 'product';
-        $newTemplate->name    = self::REISSUE_TEMPLATE_ID;
-        $newTemplate->subject = 'SSL Certificate - Reissue';
-        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your current SSL certificate #{$service_id} expires within next 30-days. You are using an SSL subscription and no other payments are required. However, you need to reissue your SSL certificate to receive new files for the next period.</p><p>{$signature}</p>';
-        $newTemplate->attachments  = '';
-        $newTemplate->fromname  = '';
-        $newTemplate->fromemail  = '';
-        $newTemplate->disabled  = '0';
-        $newTemplate->custom  = 1;
-        $newTemplate->language = '';
-        $newTemplate->copyto = '';
-        
-        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
-        if(!empty($query))
-        {
-            $newTemplate->blind_copy_to = '';
-        }
-        
-        $newTemplate->plaintext = '0';
-        $newTemplate->created_at = date('Y-m-d H:i:s');
-        $newTemplate->updated_at = date('Y-m-d H:i:s');
-        $newTemplate->save();
-    }
-    public static function updateReissueTemplate() {        
-        $template          =  \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::REISSUE_TEMPLATE_ID)->first();     
-        
-        if(empty($template))
-        {
-            self::createReissueTemplate();
-        }
-        
-        $template          =  \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::REISSUE_TEMPLATE_ID)->first(); 
-        $template->subject = 'SSL Certificate - Reissue';
-        $template->message = '<p>Dear {$client_name},</p><p>Your current SSL certificate #{$service_id} expires within next 30-days. You are using an SSL subscription and no other payments are required. However, you need to reissue your SSL certificate to receive new files for the next period.</p><p>{$signature}</p>';
-        $template->save();
-    }
-    
-    public static function deleteReissueTemplate() {
-        $template = self::getTemplate(self::REISSUE_TEMPLATE_ID);
-        if(is_null($template)) {
-            return 'Template not exist, nothing to do here';
-        }
-        $template->delete();
-    }
+    // ---- Generic internal helpers used by traits ----
 
-    public static function createSubscriptionTemplate()
+    protected static function createTemplate($name, $subject, $message, $type = 'product')
     {
-        if(!is_null(self::getTemplate(self::SUBSCRIPTION_TEMPLATE_ID))) {
-            return 'Template exist, nothing to do here';
-        }
-
-        $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
-        $newTemplate->type    = 'product';
-        $newTemplate->name    = self::SUBSCRIPTION_TEMPLATE_ID;
-        $newTemplate->subject = 'ACME Subscription - configuration required';
-        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your ACME subscription service #{$service_id} is ready for configuration in client area. Configuration can be done at the URL below.</p><p>{$ssl_configuration_link}</p><p>Please add your domains and create subscription.</p><p>{$signature}</p>';
-        $newTemplate->attachments  = '';
-        $newTemplate->fromname  = '';
-        $newTemplate->fromemail  = '';
-        $newTemplate->disabled  = '0';
-        $newTemplate->custom  = 1;
-        $newTemplate->language = '';
-        $newTemplate->copyto = '';
-
-        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
-        if(!empty($query))
-        {
-            $newTemplate->blind_copy_to = '';
-        }
-
-        $newTemplate->plaintext = '0';
-        $newTemplate->created_at = date('Y-m-d H:i:s');
-        $newTemplate->updated_at = date('Y-m-d H:i:s');
-        $newTemplate->save();
-    }
-
-    public static function deleteSubscriptionTemplate()
-    {
-        $template = self::getTemplate(self::SUBSCRIPTION_TEMPLATE_ID);
-        if(is_null($template)) {
-            return 'Template not exist, nothing to do here';
-        }
-        $template->delete();
-    }
-
-    public static function createSubscriptionExpirationTemplate()
-    {
-        if(!is_null(self::getTemplate(self::SUBSCRIPTION_EXPIRATION_TEMPLATE_ID))) {
-            return 'Template exist, nothing to do here';
-        }
-
-        $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
-        $newTemplate->type    = 'product';
-        $newTemplate->name    = self::SUBSCRIPTION_EXPIRATION_TEMPLATE_ID;
-        $newTemplate->subject = 'ACME Subscription Expiration Notice - {$service_domain}';
-        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your ACME Subscription service <strong>#{$service_id}</strong> is approaching its expiration date in <strong>{$expireDaysLeft} days</strong>.</p><p>A renewal invoice has been issued for your service. Please ensure it is paid on time to avoid any interruption to your subscription.</p><p>{$signature}</p>';
-        $newTemplate->attachments  = '';
-        $newTemplate->fromname  = '';
-        $newTemplate->fromemail  = '';
-        $newTemplate->disabled  = '0';
-        $newTemplate->custom  = 1;
-        $newTemplate->language = '';
-        $newTemplate->copyto = '';
-
-        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
-        if(!empty($query))
-        {
-            $newTemplate->blind_copy_to = '';
-        }
-
-        $newTemplate->plaintext = '0';
-        $newTemplate->created_at = date('Y-m-d H:i:s');
-        $newTemplate->updated_at = date('Y-m-d H:i:s');
-        $newTemplate->save();
-    }
-
-    public static function updateSubscriptionExpirationTemplate()
-    {
-        $template = \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::SUBSCRIPTION_EXPIRATION_TEMPLATE_ID)->first();
-
-        if (empty($template))
-        {
-            self::createSubscriptionExpirationTemplate();
+        if (!is_null(self::getTemplate($name))) {
             return;
         }
 
-        $template->subject = 'ACME Subscription Expiration Notice - {$service_domain}';
-        $template->message = '<p>Dear {$client_name},</p><p>Your ACME Subscription service <strong>#{$service_id}</strong> is approaching its expiration date in <strong>{$expireDaysLeft} days</strong>.</p><p>A renewal invoice has been issued for your service. Please ensure it is paid on time to avoid any interruption to your subscription.</p><p>{$signature}</p>';
-        $template->save();
-    }
+        $tpl              = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
+        $tpl->type        = $type;
+        $tpl->name        = $name;
+        $tpl->subject     = $subject;
+        $tpl->message     = $message;
+        $tpl->attachments = '';
+        $tpl->fromname    = '';
+        $tpl->fromemail   = '';
+        $tpl->disabled    = '0';
+        $tpl->custom      = 1;
+        $tpl->language    = '';
+        $tpl->copyto      = '';
+        $tpl->plaintext   = '0';
+        $tpl->created_at  = date('Y-m-d H:i:s');
+        $tpl->updated_at  = date('Y-m-d H:i:s');
 
-    public static function deleteSubscriptionExpirationTemplate()
-    {
-        $template = self::getTemplate(self::SUBSCRIPTION_EXPIRATION_TEMPLATE_ID);
-        if(is_null($template)) {
-            return 'Template not exist, nothing to do here';
-        }
-        $template->delete();
-    }
-
-    public static function createSubscriptionRenewalTemplate()
-    {
-        if(!is_null(self::getTemplate(self::SUBSCRIPTION_RENEWAL_TEMPLATE_ID))) {
-            return 'Template exist, nothing to do here';
-        }
-
-        $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
-        $newTemplate->type    = 'product';
-        $newTemplate->name    = self::SUBSCRIPTION_RENEWAL_TEMPLATE_ID;
-        $newTemplate->subject = 'ACME Subscription Renewed';
-        $newTemplate->message = '<p>Dear {$client_name},</p><p>Your renewal invoice has been paid and your ACME Subscription service <strong>#{$service_id}</strong> has been successfully renewed.</p><p>Thank you for your continued use of our service.</p><p>{$signature}</p>';
-        $newTemplate->attachments  = '';
-        $newTemplate->fromname  = '';
-        $newTemplate->fromemail  = '';
-        $newTemplate->disabled  = '0';
-        $newTemplate->custom  = 1;
-        $newTemplate->language = '';
-        $newTemplate->copyto = '';
-
-        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
-        if(!empty($query))
-        {
-            $newTemplate->blind_copy_to = '';
+        $hasBcc = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
+        if (!empty($hasBcc)) {
+            $tpl->blind_copy_to = '';
         }
 
-        $newTemplate->plaintext = '0';
-        $newTemplate->created_at = date('Y-m-d H:i:s');
-        $newTemplate->updated_at = date('Y-m-d H:i:s');
-        $newTemplate->save();
+        $tpl->save();
     }
 
-    public static function updateSubscriptionRenewalTemplate()
+    protected static function updateTemplate($name, $subject, $message)
     {
-        $template = \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName(self::SUBSCRIPTION_RENEWAL_TEMPLATE_ID)->first();
+        $tpl = \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName($name)->first();
 
-        if (empty($template))
-        {
-            self::createSubscriptionRenewalTemplate();
+        if (empty($tpl)) {
+            self::createTemplate($name, $subject, $message);
             return;
         }
 
-        $template->subject = 'ACME Subscription Renewed';
-        $template->message = '<p>Dear {$client_name},</p><p>Your renewal invoice has been paid and your ACME Subscription service <strong>#{$service_id}</strong> has been successfully renewed.</p><p>Thank you for your continued use of our service.</p><p>{$signature}</p>';
-        $template->save();
+        $tpl->subject = $subject;
+        $tpl->message = $message;
+        $tpl->save();
     }
 
-    public static function deleteSubscriptionRenewalTemplate()
+    protected static function deleteTemplate($name)
     {
-        $template = self::getTemplate(self::SUBSCRIPTION_RENEWAL_TEMPLATE_ID);
-        if(is_null($template)) {
-            return 'Template not exist, nothing to do here';
+        $tpl = self::getTemplate($name);
+        if (!is_null($tpl)) {
+            $tpl->delete();
         }
-        $template->delete();
     }
-
-    public static function createSubscriptionRenewalNoticeTemplate()
-    {
-        if(!is_null(self::getTemplate(self::SUBSCRIPTION_RENEWAL_NOTICE_TEMPLATE_ID))) {
-            return 'Template exist, nothing to do here';
-        }
-
-        $newTemplate          = new \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate();
-        $newTemplate->type    = 'product';
-        $newTemplate->name    = self::SUBSCRIPTION_RENEWAL_NOTICE_TEMPLATE_ID;
-        $newTemplate->subject = 'Subscription renewal';
-        $newTemplate->message = '<p>Dear {$client_name},</p><p>We would like to inform that your subscription service #{$service_id} is going to be renewed in {$expireDaysLeft} days.</p><p>{$signature}</p>';
-        $newTemplate->attachments  = '';
-        $newTemplate->fromname  = '';
-        $newTemplate->fromemail  = '';
-        $newTemplate->disabled  = '0';
-        $newTemplate->custom  = 1;
-        $newTemplate->language = '';
-        $newTemplate->copyto = '';
-
-        $query = Capsule::connection()->select("SHOW COLUMNS FROM `tblemailtemplates` LIKE 'blind_copy_to';");
-        if(!empty($query))
-        {
-            $newTemplate->blind_copy_to = '';
-        }
-
-        $newTemplate->plaintext = '0';
-        $newTemplate->created_at = date('Y-m-d H:i:s');
-        $newTemplate->updated_at = date('Y-m-d H:i:s');
-        $newTemplate->save();
-    }
-
-    public static function deleteSubscriptionRenewalNoticeTemplate()
-    {
-        $template = self::getTemplate(self::SUBSCRIPTION_RENEWAL_NOTICE_TEMPLATE_ID);
-        if(is_null($template)) {
-            return 'Template not exist, nothing to do here';
-        }
-        $template->delete();
-    }
-    
 }

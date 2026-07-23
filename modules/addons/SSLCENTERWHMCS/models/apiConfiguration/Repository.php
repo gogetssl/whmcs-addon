@@ -76,17 +76,19 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'sidebar_templates'                      => $params['sidebar_templates'],
                         'custom_guide'                           => $params['custom_guide'],
                         'disable_email_validation'               => $params['disable_email_validation'],
-                        'email_whois'                            => $params['email_whois']
+                        'email_whois'                            => $params['email_whois'],
+                        'wildcard_dns_timeout_minutes'           => isset($params['wildcard_dns_timeout_minutes']) ? (int) $params['wildcard_dns_timeout_minutes'] : 65,
+                        'auto_reissue_days_before_expire'        => isset($params['auto_reissue_days_before_expire']) ? (int) $params['auto_reissue_days_before_expire'] : 7,
             ]);
         }
         else
         {
-            
+
             if(!isset($params['tech_fax']) || empty($params['tech_fax']))
             {
                 $params['tech_fax'] = '';
             }
-            
+
             Capsule::table($this->tableName)->update(
                     [
                         'api_login'                              => $params['api_login'],
@@ -131,6 +133,8 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'custom_guide'                           => $params['custom_guide'],
                         'disable_email_validation'               => $params['disable_email_validation'],
                         'email_whois'                            => $params['email_whois'],
+                        'wildcard_dns_timeout_minutes'           => isset($params['wildcard_dns_timeout_minutes']) ? (int) $params['wildcard_dns_timeout_minutes'] : 65,
+                        'auto_reissue_days_before_expire'        => isset($params['auto_reissue_days_before_expire']) ? (int) $params['auto_reissue_days_before_expire'] : 7,
             ]);
         }
     }
@@ -373,7 +377,21 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                     $table->boolean('auto_install_cpanel');
                 });
             }
-            /* 'renew_invoice_days_reccuring'          
+            if (!Capsule::schema()->hasColumn($this->tableName, 'wildcard_dns_timeout_minutes'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->integer('wildcard_dns_timeout_minutes')->nullable()->default(65);
+                });
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'auto_reissue_days_before_expire'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->integer('auto_reissue_days_before_expire')->nullable()->default(7);
+                });
+            }
+            /* 'renew_invoice_days_reccuring'
               'renew_invoice_days_one_time' */
         }
     }

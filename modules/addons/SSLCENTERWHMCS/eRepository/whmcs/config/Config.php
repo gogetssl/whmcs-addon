@@ -25,7 +25,11 @@ class Config {
 
     public function getConfigureSSLUrl($id, $serviceID = null) {
         $WHMCSUrl = \MGModule\SSLCENTERWHMCS\eHelpers\Multibrand::getBrandData($serviceID)['systemURL'];
-       
+
+        if ($serviceID) {
+            return $WHMCSUrl . '/clientarea.php?action=productdetails&id=' . (int) $serviceID . '&configssl=1';
+        }
+
         return $WHMCSUrl . '/configuressl.php?cert=' . md5($id);
     }
 

@@ -80,6 +80,10 @@ Proin malesuada eros in risus accumsan euismod. Vivamus lacinia pellentesque nun
                     </div>
                     <br />
                     <input type="text" class="form-control" value="{$MGLANG->T('cronCertificateInstaller', 'commandLine', 'cronFrequency')} {$cronCommandLine9}" readonly="">
+                    <br />
+                    <input type="text" class="form-control" value="Every 5 min (autoinstall validation queue) {$cronCommandLineCpanel}" readonly="">
+                    <br />
+                    <input type="text" class="form-control" value="Every 12 hours (active order status check) {$cronCommandLineActiveCheck}" readonly="">
 
                 </div>
             </div>

@@ -418,6 +418,24 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->enableDescription = false;
         $form->addField($field);
 
+        $field           = new main\mgLibs\forms\TextField();
+        $field->readonly = false;
+        $field->name     = 'wildcard_dns_timeout_minutes';
+        $field->required = false;
+        $field->enableDescription = true;
+        $field->value    = isset($input['wildcard_dns_timeout_minutes']) ? (int) $input['wildcard_dns_timeout_minutes'] : 65;
+        $field->error    = $this->getFieldError('wildcard_dns_timeout_minutes');
+        $form->addField($field);
+
+        $field           = new main\mgLibs\forms\TextField();
+        $field->readonly = false;
+        $field->name     = 'auto_reissue_days_before_expire';
+        $field->required = false;
+        $field->enableDescription = true;
+        $field->value    = isset($input['auto_reissue_days_before_expire']) ? (int) $input['auto_reissue_days_before_expire'] : 7;
+        $field->error    = $this->getFieldError('auto_reissue_days_before_expire');
+        $form->addField($field);
+
         $field       = new main\mgLibs\forms\LegendField();
         $field->name = 'tech_legend';
         $form->addField($field);
@@ -534,7 +552,9 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $vars['cronCommandLine4'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'certificateSender.php';
         $vars['cronCommandLine5'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'APIPriceUpdater.php';
         $vars['cronCommandLine6'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'certificateDetailsUpdater.php';
-        $vars['cronCommandLine9'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'installCertificates.php';
+        $vars['cronCommandLine9']  = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'installCertificates.php';
+        $vars['cronCommandLineCpanel'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'processCronQueue.php';
+        $vars['cronCommandLineActiveCheck'] = 'php -q ' . ROOTDIR . DS . 'modules' . DS . 'addons' . DS . 'SSLCENTERWHMCS' . DS . 'cron' . DS . 'checkActiveOrders.php';
 
         return array
             (

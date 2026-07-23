@@ -156,12 +156,15 @@ class SSLStepTwo {
         $this->p['privateKey'] = $privKey;
     }
     private function redirectToStepThree() {
-        $tokenInput = generate_token();
-        preg_match("/value=\"(.*)\\\"/", $tokenInput, $match);
-        $token = $match[1];
-        
-        ob_clean();   
-        header('Location: configuressl.php?cert='. $_GET['cert'] . '&step=3&token=' . $token);
+        ob_clean();
+        if (!empty($this->p['serviceid'])) {
+            header('Location: clientarea.php?action=productdetails&id=' . (int) $this->p['serviceid'] . '&configssl=1');
+        } else {
+            $tokenInput = generate_token();
+            preg_match("/value=\"(.*)\\\"/", $tokenInput, $match);
+            $token = $match[1];
+            header('Location: configuressl.php?cert='. $_GET['cert'] . '&step=3&token=' . $token);
+        }
         die();
     }
     private function SSLStepTwo() {

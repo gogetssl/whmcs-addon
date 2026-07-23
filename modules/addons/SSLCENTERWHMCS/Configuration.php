@@ -15,6 +15,7 @@ use MGModule\SSLCENTERWHMCS\models\orders\Repository as OrdersRepo;
 use MGModule\SSLCENTERWHMCS\models\actions\Repository as ActionsRepo;
 use MGModule\SSLCENTERWHMCS\models\acmeSubscription\Repository as AcmeSubscriptionRepo;
 use MGModule\SSLCENTERWHMCS\models\acmeSubscriptionDomain\Repository as AcmeSubscriptionDomainRepo;
+use MGModule\SSLCENTERWHMCS\models\cronQueue\Repository as CronQueueRepo;
 use MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService;
 use MGModule\SSLCENTERWHMCS\eHelpers\Invoice as InvoiceHelper;
 use MGModule\SSLCENTERWHMCS\eHelpers\Whmcs as LogsHelper;
@@ -67,7 +68,7 @@ class Configuration extends AbstractConfiguration
      * Module version
      * @var string
      */
-    public $version = '3.0.5';
+    public $version = '3.1.0';
 
     /**
      * Module author
@@ -161,6 +162,7 @@ class Configuration extends AbstractConfiguration
         (new ActionsRepo())->createActionsTable();
         (new AcmeSubscriptionRepo())->createTable();
         (new AcmeSubscriptionDomainRepo())->createTable();
+        (new CronQueueRepo())->createTable();
         EmailTemplateService::createConfigurationTemplate();
         EmailTemplateService::createCertyficateTemplate();
         EmailTemplateService::createExpireNotificationTemplate();
@@ -170,6 +172,16 @@ class Configuration extends AbstractConfiguration
         EmailTemplateService::createSubscriptionExpirationTemplate();
         EmailTemplateService::createSubscriptionRenewalTemplate();
         EmailTemplateService::deleteSubscriptionRenewalNoticeTemplate();
+        EmailTemplateService::createRenewalInvoiceTemplate();
+        EmailTemplateService::createRenewalStartedTemplate();
+        EmailTemplateService::createRenewalCompleteTemplate();
+        EmailTemplateService::createRenewalAutorenewedTemplate();
+        EmailTemplateService::createCertRevokedTemplate();
+        EmailTemplateService::createDnsToEmailSwitchTemplate();
+        EmailTemplateService::createAutoReissueFailedTemplate();
+        EmailTemplateService::createCertInstalledTemplate();
+        EmailTemplateService::createCertExpiredTemplate();
+        EmailTemplateService::createValidationWarningTemplate();
         InvoiceHelper::createInfosTable();
         InvoiceHelper::createPendingPaymentInvoice();
     }
@@ -197,6 +209,16 @@ class Configuration extends AbstractConfiguration
         EmailTemplateService::deleteSubscriptionExpirationTemplate();
         EmailTemplateService::deleteSubscriptionRenewalTemplate();
         EmailTemplateService::deleteSubscriptionRenewalNoticeTemplate();
+        EmailTemplateService::deleteRenewalInvoiceTemplate();
+        EmailTemplateService::deleteRenewalStartedTemplate();
+        EmailTemplateService::deleteRenewalCompleteTemplate();
+        EmailTemplateService::deleteRenewalAutorenewedTemplate();
+        EmailTemplateService::deleteCertRevokedTemplate();
+        EmailTemplateService::deleteDnsToEmailSwitchTemplate();
+        EmailTemplateService::deleteAutoReissueFailedTemplate();
+        EmailTemplateService::deleteCertInstalledTemplate();
+        EmailTemplateService::deleteCertExpiredTemplate();
+        EmailTemplateService::deleteValidationWarningTemplate();
     }
 
     /**
@@ -208,6 +230,7 @@ class Configuration extends AbstractConfiguration
         $version = $vars['version'];
 
         EmailTemplateService::createExpireNotificationTemplate();
+        EmailTemplateService::createValidationWarningTemplate();
         EmailTemplateService::updateConfigurationTemplate();
         EmailTemplateService::updateRenewalTemplate();
         EmailTemplateService::updateReissueTemplate();
@@ -221,10 +244,20 @@ class Configuration extends AbstractConfiguration
         (new ActionsRepo())->updateActionsTable();
         (new AcmeSubscriptionRepo())->updateTable();
         (new AcmeSubscriptionDomainRepo())->updateTable();
+        (new CronQueueRepo())->createTable();
         EmailTemplateService::createSubscriptionTemplate();
         EmailTemplateService::updateSubscriptionExpirationTemplate();
         EmailTemplateService::updateSubscriptionRenewalTemplate();
         EmailTemplateService::deleteSubscriptionRenewalNoticeTemplate();
+        EmailTemplateService::createDnsToEmailSwitchTemplate();
+        EmailTemplateService::createAutoReissueFailedTemplate();
+        EmailTemplateService::createCertInstalledTemplate();
+        EmailTemplateService::createCertExpiredTemplate();
+        EmailTemplateService::createCertRevokedTemplate();
+        EmailTemplateService::createRenewalInvoiceTemplate();
+        EmailTemplateService::createRenewalStartedTemplate();
+        EmailTemplateService::createRenewalCompleteTemplate();
+        EmailTemplateService::createRenewalAutorenewedTemplate();
 
         if (version_compare($version, '1.0.32', '<='))
         {
