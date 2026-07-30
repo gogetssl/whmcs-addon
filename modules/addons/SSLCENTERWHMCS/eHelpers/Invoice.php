@@ -263,6 +263,38 @@ class Invoice
         
         $adminUserName = Admin::getAdminUserName();
 
+        // Check if WHMCS already auto-generated a renewal invoice for this service
+        // covering the same billing period, including immediately-paid invoices.
+        // WHMCS descriptions use "Product - domain (date_from - date_to)" without
+        // "Renewal", so we narrow by nextduedate (trying Y-m-d, m/d/Y, d/m/Y formats
+        // to cover different WHMCS date format settings).
+        $nextDueDate    = $service->nextduedate;
+        $nextDueDateTs  = strtotime($nextDueDate);
+        $dateVariants   = [
+            $nextDueDate,                          // 2026-07-26
+            date('m/d/Y', $nextDueDateTs),         // 07/26/2026
+            date('d/m/Y', $nextDueDateTs),         // 26/07/2026
+        ];
+
+        $existingWhmcsInvoiceItem = Capsule::table('tblinvoiceitems')
+            ->join('tblinvoices', 'tblinvoiceitems.invoiceid', '=', 'tblinvoices.id')
+            ->where('tblinvoiceitems.relid', $service->id)
+            ->where('tblinvoiceitems.type', 'Hosting')
+            ->whereNotIn('tblinvoices.status', ['Cancelled', 'Refunded'])
+            ->where(function ($q) use ($dateVariants) {
+                foreach ($dateVariants as $dateVariant) {
+                    $q->orWhere('tblinvoiceitems.description', 'LIKE', '%' . $dateVariant . '%');
+                }
+            })
+            ->first();
+
+        if ($existingWhmcsInvoiceItem) {
+            if ($returnInvoiceID) {
+                return $existingWhmcsInvoiceItem->invoiceid;
+            }
+            return false;
+        }
+
         $results = localAPI('CreateInvoice', $postData, $adminUserName);
         
         $invoiceId = $results['invoiceid'];

@@ -31,8 +31,8 @@
     <h2>{$MGLANG->T('sslConfigGenerateCertTitle')} {$productName|escape}</h2>
 
     {* Install type toggle *}
+    {if $hasCpanel}
     <div class="ssl-install-toggle">
-        {if $hasCpanel}
         <div class="btn-group" role="group">
             <button type="button" class="btn btn-success" id="btn-autoinstall">
                 <span class="glyphicon glyphicon-ok"></span> {$MGLANG->T('sslConfigAutoinstall')}
@@ -41,17 +41,8 @@
                 {$MGLANG->T('sslConfigManual')}
             </button>
         </div>
-        {else}
-        <div class="btn-group" role="group">
-            <button type="button" class="btn btn-default disabled" id="btn-autoinstall">
-                {$MGLANG->T('sslConfigAutoinstall')}
-            </button>
-            <button type="button" class="btn btn-success" id="btn-manual">
-                {$MGLANG->T('sslConfigManual')}
-            </button>
-        </div>
-        {/if}
     </div>
+    {/if}
     <input type="hidden" id="install_type" name="install_type" value="{if $hasCpanel}autoinstall{else}manual{/if}">
 
     {* ===== AUTOINSTALL SECTION ===== *}

@@ -32,30 +32,50 @@ trait SslConfigTrait
         // Load ALL cPanel services for this client — domain matching is irrelevant
         $cpanelDomains = null;
         try {
-            $cpanelService    = new Service();
+            $cpanelService     = new Service();
             $allCpanelServices = $cpanelService->getCpanelServices($userId);
 
             if ($allCpanelServices->isNotEmpty()) {
                 $merged = ['main' => null, 'addon' => [], 'parked' => [], 'subdomain' => []];
+                $seen   = [];
 
                 foreach ($allCpanelServices as $svcInfo) {
-                    $cpanel  = new Cpanel();
-                    $cpanel->setService($svcInfo);
-                    $grouped = $cpanel->listDomainsGrouped($svcInfo->user);
+                    try {
+                        $cpanel  = new Cpanel();
+                        $cpanel->setService($svcInfo);
+                        $grouped = $cpanel->listDomainsGrouped($svcInfo->user);
+                    } catch (\Exception $e) {
+                        // This hosting server is unreachable or misconfigured — skip it,
+                        // continue collecting domains from the remaining services.
+                        continue;
+                    }
 
-                    if (!$merged['main'] && !empty($grouped['main'])) {
-                        $merged['main'] = $grouped['main'];
-                    } elseif (!empty($grouped['main'])) {
-                        $merged['addon'][] = $grouped['main'];
+                    if (!empty($grouped['main']) && !isset($seen[$grouped['main']])) {
+                        $seen[$grouped['main']] = true;
+                        if (!$merged['main']) {
+                            $merged['main'] = $grouped['main'];
+                        } else {
+                            $merged['addon'][] = $grouped['main'];
+                        }
                     }
                     foreach ($grouped['addon'] as $d) {
-                        $merged['addon'][] = $d;
+                        if (!isset($seen[$d])) {
+                            $seen[$d]        = true;
+                            $merged['addon'][] = $d;
+                        }
                     }
                     foreach ($grouped['parked'] as $d) {
-                        $merged['parked'][] = $d;
+                        if (!isset($seen[$d])) {
+                            $seen[$d]         = true;
+                            $merged['parked'][] = $d;
+                        }
                     }
                     foreach ($grouped['subdomain'] as $s) {
-                        $merged['subdomain'][] = $s;
+                        $subKey = is_array($s) ? $s['domain'] : $s;
+                        if (!isset($seen[$subKey])) {
+                            $seen[$subKey]        = true;
+                            $merged['subdomain'][] = $s;
+                        }
                     }
                 }
 
@@ -64,7 +84,7 @@ trait SslConfigTrait
                 }
             }
         } catch (\Exception $e) {
-            // cPanel not available — manual enrollment only
+            // getCpanelServices itself failed — manual enrollment only
         }
 
         // Build optgroup structure: each parent domain is a group with itself + subdomains

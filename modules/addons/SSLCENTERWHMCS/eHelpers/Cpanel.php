@@ -36,6 +36,7 @@ class Cpanel
         curl_setopt($this->ch, CURLOPT_HEADER, true);
         curl_setopt($this->ch, CURLINFO_HEADER_OUT, true);
         $resultorg = curl_exec($this->ch);
+
         $info = curl_getinfo($this->ch);
         $result = substr($resultorg, $info['header_size']);
         if($resultorg == false)
@@ -43,6 +44,25 @@ class Cpanel
             throw new \Exception(curl_error($this->ch));
         }
         $this->sessionUrl = preg_replace( '{/login(?:/)??.*}', '', $sessionUrl);
+    }
+
+    /**
+     * Builds the Authorization header for WHM/cPanel API calls.
+     *
+     * Distinguishes between:
+     *  - Legacy WHM access hash (long, may contain newlines) → "Authorization: WHM user:hash"
+     *  - cPanel API token (short, alphanumeric, no newlines)  → "Authorization: cpanel user:token"
+     */
+    private function buildAuthHeader(): array
+    {
+        $hash = $this->service['hash'] ?? '';
+        if (empty($hash)) {
+            return [];
+        }
+        $clean   = str_replace(["\r", "\n"], '', $hash);
+        $isToken = strpos($hash, "\n") === false && strlen($clean) < 200;
+        $scheme  = 'WHM';
+        return ['Authorization: ' . $scheme . ' ' . $this->service['username'] . ':' . $clean];
     }
 
     protected function getSessionDetails($username)
@@ -57,14 +77,16 @@ class Cpanel
         curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($this->ch, CURLOPT_TIMEOUT, 15);
         curl_setopt($this->ch, CURLOPT_CONNECTTIMEOUT, 15);
-        if($this->service['hash'] != '') {
-            $header[0] = 'Authorization: WHM '.$this->service['username'].':'.str_replace(array("\r", "\n"),"", $this->service['hash']);
-            curl_setopt($this->ch, CURLOPT_HTTPHEADER, $header);
-        } elseif($this->service['password'] != '') {
+        $authHeader = $this->buildAuthHeader();
+
+        if (!empty($authHeader)) {
+            curl_setopt($this->ch, CURLOPT_HTTPHEADER, $authHeader);
+        } elseif ($this->service['password'] != '') {
             curl_setopt($this->ch, CURLOPT_USERPWD, $this->service['username'].':'.$this->service['password']);
         }
         curl_setopt($this->ch, CURLOPT_URL, $query);
         $resultorg = curl_exec($this->ch);
+
         $info = curl_getinfo($this->ch);
         $result = substr($resultorg, $info['header_size']);
         if($resultorg == false)
@@ -396,10 +418,10 @@ class Cpanel
             CURLOPT_TIMEOUT => is_numeric($this->service['timeout']) ? intval($this->service['timeout']) : 30
         );
 
-        if($this->service['hash'] != '') {
-            $header[0] = 'Authorization: WHM '.$this->service['username'].':'.str_replace(array("\r", "\n"),"", $this->service['hash']);
-            $chOptions[CURLOPT_HTTPHEADER] = $header;
-        } elseif($this->service['password'] != '') {
+        $authHeader = $this->buildAuthHeader();
+        if (!empty($authHeader)) {
+            $chOptions[CURLOPT_HTTPHEADER] = $authHeader;
+        } elseif ($this->service['password'] != '') {
             $chOptions[CURLOPT_USERPWD] = $this->service['username'].':'.$this->service['password'];
         } else {
             throw new \Exception('Password or Access key is required');
