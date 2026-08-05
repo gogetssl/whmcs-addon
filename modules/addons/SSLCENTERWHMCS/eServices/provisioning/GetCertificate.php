@@ -16,7 +16,7 @@ class GetCertificate {
      * 
      * @param \MGModule\SSLCENTERWHMCS\eModels\whmcs\service\SSL $ssl
      */
-    function __construct(\ MGModule\SSLCENTERWHMCS\eModels\whmcs\service\SSL $ssl) {
+    function __construct(\MGModule\SSLCENTERWHMCS\eModels\whmcs\service\SSL $ssl) {
         $this->ssl = $ssl;
     }
 
