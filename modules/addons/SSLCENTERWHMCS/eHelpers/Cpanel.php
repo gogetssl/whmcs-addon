@@ -7,6 +7,15 @@ class Cpanel
     private $service;
     protected $ch = false;
     protected $sessionUrl;
+    private $loggingEnabled = true;
+
+    private function logCall($action, $request, $response, $processed = '', $replacements = [])
+    {
+        if (!$this->loggingEnabled) {
+            return;
+        }
+        logModuleCall('SSLCENTERWHMCS_cpanel', $action, $request, $response, $processed, $replacements);
+    }
 
 
     protected function initiateConnection($username)
@@ -113,7 +122,7 @@ class Cpanel
         if($resultorg == false)
         {
             $error = curl_error($this->ch);
-            logModuleCall('SSLCENTERWHMCS_cpanel', $api . $name,
+            $this->logCall($api . $name,
                 $this->sanitizeParams($params),
                 'cURL error: ' . $error,
                 '',
@@ -124,8 +133,7 @@ class Cpanel
         $result = substr($resultorg, $curl_info['header_size']);
         $resp   = json_decode($result);
 
-        logModuleCall(
-            'SSLCENTERWHMCS_cpanel',
+        $this->logCall(
             $api . $name,
             $this->sanitizeParams($params),
             $result,
@@ -252,6 +260,9 @@ class Cpanel
         $this->service['hash'] = $service->hash;
         $this->service['username'] = $service->username;
         $this->service['password'] = decrypt($service->password);
+
+        $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+        $this->loggingEnabled = empty($apiConf->disable_hosting_module_log);
     }
 
     public function getRootDirectory($username, $domain)
@@ -281,18 +292,17 @@ class Cpanel
 
         $response = $this->exec("install_ssl", "/execute/SSL/", $data);
 
+        $sslLog = ['domain' => $domain, 'cert' => '[' . strlen($cert) . ' bytes]', 'key' => '[' . strlen($key) . ' bytes]', 'cabundle' => '[' . strlen($cabundle) . ' bytes]'];
         if (isset($response->errors) && !empty($response->errors)) {
             if (strpos($response->errors[0], 'install_ssl was handled successfully') !== false) {
-                logModuleCall('SSLCENTERWHMCS_cpanel', 'installSSL',
-                    ['domain' => $domain, 'cert' => '[' . strlen($cert) . ' bytes]', 'key' => '[' . strlen($key) . ' bytes]', 'cabundle' => '[' . strlen($cabundle) . ' bytes]'],
+                $this->logCall('installSSL', $sslLog,
                     'Success (reported via errors field): ' . $response->errors[0],
                     'installed',
                     [$this->service['password'] ?? '', $this->service['hash'] ?? '']
                 );
                 return true;
             }
-            logModuleCall('SSLCENTERWHMCS_cpanel', 'installSSL',
-                ['domain' => $domain, 'cert' => '[' . strlen($cert) . ' bytes]', 'key' => '[' . strlen($key) . ' bytes]', 'cabundle' => '[' . strlen($cabundle) . ' bytes]'],
+            $this->logCall('installSSL', $sslLog,
                 'Error: ' . $response->errors[0],
                 'failed',
                 [$this->service['password'] ?? '', $this->service['hash'] ?? '']
@@ -300,8 +310,7 @@ class Cpanel
             throw new \Exception($response->errors[0]);
         }
 
-        logModuleCall('SSLCENTERWHMCS_cpanel', 'installSSL',
-            ['domain' => $domain, 'cert' => '[' . strlen($cert) . ' bytes]', 'key' => '[' . strlen($key) . ' bytes]', 'cabundle' => '[' . strlen($cabundle) . ' bytes]'],
+        $this->logCall('installSSL', $sslLog,
             json_encode($response),
             'success - no errors',
             [$this->service['password'] ?? '', $this->service['hash'] ?? '']
@@ -323,6 +332,9 @@ class Cpanel
     public function saveFile($username, $file, $dir, $content)
     {
         $this->initiateConnection($username);
+
+        $requestLog = ['dir' => $dir, 'file' => $file, 'content' => $content];
+
         $response = $this->exec("save_file_content", "/execute/Fileman/", [
             'dir'           => $dir,
             'file'          => $file,
@@ -332,19 +344,41 @@ class Cpanel
             'fallback'      => '0',
         ]);
 
-        $requestLog = ['dir' => $dir, 'file' => $file, 'content' => $content];
         if (isset($response->errors) && !empty($response->errors)) {
-            logModuleCall('SSLCENTERWHMCS_cpanel', 'saveFile',
-                $requestLog,
-                'Error: ' . $response->errors[0],
-                'failed',
-                [$this->service['password'] ?? '', $this->service['hash'] ?? '']
-            );
-            throw new \Exception($response->errors[0]);
+            $error = $response->errors[0];
+
+            // On some cPanel versions save_file_content fails when the file
+            // already exists. Delete it first and retry once.
+            $isExistsError = stripos($error, 'exist') !== false
+                          || stripos($error, 'already') !== false
+                          || stripos($error, 'create') !== false;
+
+            if ($isExistsError) {
+                $this->exec("delete_files", "/execute/Fileman/", [
+                    'files' => json_encode([$dir . $file]),
+                ]);
+
+                $response = $this->exec("save_file_content", "/execute/Fileman/", [
+                    'dir'           => $dir,
+                    'file'          => $file,
+                    'from_charset'  => 'UTF-8',
+                    'to_charset'    => 'ASCII',
+                    'content'       => $content,
+                    'fallback'      => '0',
+                ]);
+            }
+
+            if (isset($response->errors) && !empty($response->errors)) {
+                $this->logCall('saveFile', $requestLog,
+                    'Error: ' . $response->errors[0],
+                    'failed',
+                    [$this->service['password'] ?? '', $this->service['hash'] ?? '']
+                );
+                throw new \Exception($response->errors[0]);
+            }
         }
 
-        logModuleCall('SSLCENTERWHMCS_cpanel', 'saveFile',
-            $requestLog,
+        $this->logCall('saveFile', $requestLog,
             json_encode($response),
             'success',
             [$this->service['password'] ?? '', $this->service['hash'] ?? '']
@@ -432,7 +466,7 @@ class Cpanel
 
         if (curl_errno($ch)) {
             $curlErr = curl_errno($ch) . ' - ' . curl_error($ch);
-            logModuleCall('SSLCENTERWHMCS_cpanel', $params['cpanel_jsonapi_func'] ?? 'cpanel_api',
+            $this->logCall($params['cpanel_jsonapi_func'] ?? 'cpanel_api',
                 array_diff_key($params, array_flip(['cpanel_jsonapi_user'])),
                 'cURL Error: ' . $curlErr,
                 '',
@@ -444,7 +478,7 @@ class Cpanel
         $out_info = curl_getinfo($ch);
         if($out_info['http_code'] != 200) {
             if($out_info['http_code'] == 301 || $out_info['http_code'] == 302){
-                logModuleCall('SSLCENTERWHMCS_cpanel', $params['cpanel_jsonapi_func'] ?? 'cpanel_api',
+                $this->logCall($params['cpanel_jsonapi_func'] ?? 'cpanel_api',
                     array_diff_key($params, array_flip(['cpanel_jsonapi_user'])),
                     'HTTP ' . $out_info['http_code'] . ' redirect — SSL required',
                     '',
@@ -483,7 +517,7 @@ class Cpanel
         }
 
         if(isset($a->metadata->result) && $a->metadata->result == 0) {
-            logModuleCall('SSLCENTERWHMCS_cpanel', $params['cpanel_jsonapi_func'] ?? 'cpanel_api',
+            $this->logCall($params['cpanel_jsonapi_func'] ?? 'cpanel_api',
                 array_diff_key($params, array_flip(['cpanel_jsonapi_user'])),
                 $out,
                 'metadata result=0: ' . $a->metadata->reason,
@@ -492,7 +526,7 @@ class Cpanel
             throw new \Exception($a->metadata->reason);
         }
 
-        logModuleCall('SSLCENTERWHMCS_cpanel', $params['cpanel_jsonapi_func'] ?? 'cpanel_api',
+        $this->logCall($params['cpanel_jsonapi_func'] ?? 'cpanel_api',
             array_diff_key($params, array_flip(['cpanel_jsonapi_user'])),
             $out,
             isset($a->data) ? $a->data : $a,

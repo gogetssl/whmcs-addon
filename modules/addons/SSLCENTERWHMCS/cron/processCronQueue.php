@@ -598,9 +598,25 @@ function extractHttpValidationData($dcvMethod, $approverMethod)
     if (is_array($content)) {
         $content = implode('', $content);
     }
+
+    $filename = isset($methodData['filename']) ? $methodData['filename'] : '';
+
+    // Some CAs (e.g. Comodo/Sectigo) return a generic name in 'filename'
+    // (like 'fileauth.txt') but the real hash-based filename is embedded
+    // in the 'url' field (e.g. '...pki-validation/50FC565434A9C6B677435251A1C01D8C.txt').
+    // Always prefer the filename extracted from the URL when available.
+    if (!empty($methodData['url'])) {
+        $urlPath     = parse_url($methodData['url'], PHP_URL_PATH);
+        $urlFilename = $urlPath ? basename($urlPath) : '';
+        if (!empty($urlFilename)) {
+            $filename = $urlFilename;
+        }
+    }
+
     return [
-        'filename' => isset($methodData['filename']) ? $methodData['filename'] : '',
+        'filename' => $filename,
         'content'  => $content,
+        'url'      => isset($methodData['url']) ? $methodData['url'] : '',
     ];
 }
 

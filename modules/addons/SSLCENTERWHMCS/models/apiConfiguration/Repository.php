@@ -79,6 +79,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'email_whois'                            => $params['email_whois'],
                         'wildcard_dns_timeout_minutes'           => isset($params['wildcard_dns_timeout_minutes']) ? (int) $params['wildcard_dns_timeout_minutes'] : 65,
                         'auto_reissue_days_before_expire'        => isset($params['auto_reissue_days_before_expire']) ? (int) $params['auto_reissue_days_before_expire'] : 7,
+                        'disable_hosting_module_log'             => $params['disable_hosting_module_log'],
             ]);
         }
         else
@@ -135,6 +136,7 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                         'email_whois'                            => $params['email_whois'],
                         'wildcard_dns_timeout_minutes'           => isset($params['wildcard_dns_timeout_minutes']) ? (int) $params['wildcard_dns_timeout_minutes'] : 65,
                         'auto_reissue_days_before_expire'        => isset($params['auto_reissue_days_before_expire']) ? (int) $params['auto_reissue_days_before_expire'] : 7,
+                        'disable_hosting_module_log'             => $params['disable_hosting_module_log'],
             ]);
         }
     }
@@ -389,6 +391,13 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 Capsule::schema()->table($this->tableName, function($table)
                 {
                     $table->integer('auto_reissue_days_before_expire')->nullable()->default(7);
+                });
+            }
+            if (!Capsule::schema()->hasColumn($this->tableName, 'disable_hosting_module_log'))
+            {
+                Capsule::schema()->table($this->tableName, function($table)
+                {
+                    $table->boolean('disable_hosting_module_log')->default(0);
                 });
             }
             /* 'renew_invoice_days_reccuring'

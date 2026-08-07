@@ -59,6 +59,8 @@ $_LANG['addonAA']['apiConfiguration']['item']['wildcard_dns_timeout_minutes']['l
 $_LANG['addonAA']['apiConfiguration']['item']['wildcard_dns_timeout_minutes']['description']           = 'If a wildcard certificate DNS validation is not completed within this many minutes, the system will automatically switch to Email validation and notify the client. Default: 65';
 $_LANG['addonAA']['apiConfiguration']['item']['auto_reissue_days_before_expire']['label']              = 'Auto-Reissue Days Before Expiry';
 $_LANG['addonAA']['apiConfiguration']['item']['auto_reissue_days_before_expire']['description']        = 'Number of days before certificate expiry to trigger automatic reissue for AutoInstall SSL orders. Set to 0 to disable. Default: 7';
+$_LANG['addonAA']['apiConfiguration']['item']['disable_hosting_module_log']['label']                   = 'Disable Hosting Module Log';
+$_LANG['addonAA']['apiConfiguration']['item']['disableHostingModuleLog']['label']                      = 'Disable module logging for cPanel / DirectAdmin / Plesk requests';
 $_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['label']                    = 'Expires Soon';
 $_LANG['addonAA']['apiConfiguration']['item']['summary_expires_soon_days']['description']              = 'Count SSL order in statistics if it expires in fewer or equal days than the above selection.';
 $_LANG['addonAA']['apiConfiguration']['item']['send_certificate_template']['label']                    = 'Send Certificate Email Template';

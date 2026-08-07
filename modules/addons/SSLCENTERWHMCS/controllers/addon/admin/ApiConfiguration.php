@@ -436,6 +436,16 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->error    = $this->getFieldError('auto_reissue_days_before_expire');
         $form->addField($field);
 
+        $field                    = new main\mgLibs\forms\CheckboxField();
+        $field->name              = 'disable_hosting_module_log';
+        $field->options           = ['disableHostingModuleLog'];
+        $field->value             = !empty($input['disable_hosting_module_log']) ? ['disableHostingModuleLog'] : [''];
+        $field->inline            = false;
+        $field->colWidth          = 2;
+        $field->continue          = false;
+        $field->enableDescription = false;
+        $form->addField($field);
+
         $field       = new main\mgLibs\forms\LegendField();
         $field->name = 'tech_legend';
         $form->addField($field);
@@ -588,7 +598,8 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
                     'email_whois',
                     'renew_new_order',
                     'visible_renew_button',
-                    'save_activity_logs'
+                    'save_activity_logs',
+                    'disable_hosting_module_log'
                 );
                 foreach ($checkFieldsArray as $field)
                 {
