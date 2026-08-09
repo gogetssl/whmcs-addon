@@ -732,8 +732,17 @@ add_hook('ShoppingCartValidateProductUpdate', 1, function($params) {
     new \MGModule\SSLCENTERWHMCS\Loader();
     \MGModule\SSLCENTERWHMCS\Addon::I(true);
 
-    $productNumber = isset($_REQUEST['i']) ? (int) $_REQUEST['i'] : 0;
-    $pid = isset($_SESSION['cart']['products'][$productNumber]['pid']) ? (int) $_SESSION['cart']['products'][$productNumber]['pid'] : 0;
+    $productNumber = isset($params['i']) ? (int) $params['i'] : (isset($_REQUEST['i']) ? (int) $_REQUEST['i'] : 0);
+
+    $pid = 0;
+    if (isset($_SESSION['cart']['products'][$productNumber]['pid'])) {
+        $pid = (int) $_SESSION['cart']['products'][$productNumber]['pid'];
+    } elseif (isset($params['pid'])) {
+        $pid = (int) $params['pid'];
+    } elseif (isset($_REQUEST['pid'])) {
+        $pid = (int) $_REQUEST['pid'];
+    }
+
     if (!$pid) {
         return;
     }
@@ -742,23 +751,34 @@ add_hook('ShoppingCartValidateProductUpdate', 1, function($params) {
         return;
     }
 
-    $sansCountId = Capsule::table('tblproductconfigoptions')
-        ->join('tblproductconfiglinks', 'tblproductconfiglinks.gid', '=', 'tblproductconfigoptions.gid')
-        ->where('tblproductconfiglinks.pid', $pid)
-        ->where('tblproductconfigoptions.optionname', 'LIKE', 'sans_count%')
-        ->value('tblproductconfigoptions.id');
+    // Validate what the customer has just submitted, not what is already stored. The cart
+    // is only written to the session after validation passes, so at this point
+    // $_SESSION['cart'] still holds the previous values - on a first visit to the
+    // configure page that is the configurable option minimum, not the customer's choice.
+    $configoptions = null;
+    if (isset($params['configoption']) && is_array($params['configoption'])) {
+        $configoptions = $params['configoption'];
+    } elseif (isset($_REQUEST['configoption']) && is_array($_REQUEST['configoption'])) {
+        $configoptions = $_REQUEST['configoption'];
+    }
 
-    $wildcardCountId = Capsule::table('tblproductconfigoptions')
-        ->join('tblproductconfiglinks', 'tblproductconfiglinks.gid', '=', 'tblproductconfigoptions.gid')
-        ->where('tblproductconfiglinks.pid', $pid)
-        ->where('tblproductconfigoptions.optionname', 'LIKE', 'sans_wildcard_count%')
-        ->value('tblproductconfigoptions.id');
+    if ($configoptions === null) {
+        // Nothing was submitted, so fall back to the stored cart values rather than
+        // treating the order as if it had no SANs at all.
+        $configoptions = isset($_SESSION['cart']['products'][$productNumber]['configoptions'])
+            ? $_SESSION['cart']['products'][$productNumber]['configoptions']
+            : [];
+    }
 
-    $configoptions = isset($_SESSION['cart']['products'][$productNumber]['configoptions']) ? $_SESSION['cart']['products'][$productNumber]['configoptions'] : [];
-    $sansCount     = ($sansCountId    && isset($configoptions[$sansCountId]))    ? (int) $configoptions[$sansCountId]    : 0;
-    $wildcardCount = ($wildcardCountId && isset($configoptions[$wildcardCountId])) ? (int) $configoptions[$wildcardCountId] : 0;
+    $capacity = \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::getSanCapacityByPid($pid, $configoptions);
 
-    if ($sansCount <= 0 && $wildcardCount <= 0) {
+    // The product exposes neither SAN configurable option, so the customer cannot act on
+    // this error. Blocking here would only produce a dead end in the cart.
+    if (!$capacity['offered']) {
+        return;
+    }
+
+    if ($capacity['single'] + $capacity['wildcard'] <= 0) {
         return [\MGModule\SSLCENTERWHMCS\mgLibs\Lang::absoluteT('acmeOrderRequiresAtLeastOneSan')];
     }
 });
@@ -781,23 +801,14 @@ add_hook('ShoppingCartValidateCheckout', 1, function($params) {
             continue;
         }
 
-        $sansCountId = Capsule::table('tblproductconfigoptions')
-            ->join('tblproductconfiglinks', 'tblproductconfiglinks.gid', '=', 'tblproductconfigoptions.gid')
-            ->where('tblproductconfiglinks.pid', $pid)
-            ->where('tblproductconfigoptions.optionname', 'LIKE', 'sans_count%')
-            ->value('tblproductconfigoptions.id');
-
-        $wildcardCountId = Capsule::table('tblproductconfigoptions')
-            ->join('tblproductconfiglinks', 'tblproductconfiglinks.gid', '=', 'tblproductconfigoptions.gid')
-            ->where('tblproductconfiglinks.pid', $pid)
-            ->where('tblproductconfigoptions.optionname', 'LIKE', 'sans_wildcard_count%')
-            ->value('tblproductconfigoptions.id');
-
         $configoptions = isset($product['configoptions']) ? $product['configoptions'] : [];
-        $sansCount     = ($sansCountId    && isset($configoptions[$sansCountId]))    ? (int) $configoptions[$sansCountId]    : 0;
-        $wildcardCount = ($wildcardCountId && isset($configoptions[$wildcardCountId])) ? (int) $configoptions[$wildcardCountId] : 0;
+        $capacity      = \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::getSanCapacityByPid($pid, $configoptions);
 
-        if ($sansCount <= 0 && $wildcardCount <= 0) {
+        if (!$capacity['offered']) {
+            continue;
+        }
+
+        if ($capacity['single'] + $capacity['wildcard'] <= 0) {
             $errors[] = \MGModule\SSLCENTERWHMCS\mgLibs\Lang::absoluteT('acmeOrderRequiresAtLeastOneSan');
         }
     }
