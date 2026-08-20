@@ -7,9 +7,11 @@ use WHMCS\Database\Capsule;
 use MGModule\SSLCENTERWHMCS\eModels\cpanelservices\Service;
 use MGModule\SSLCENTERWHMCS\eHelpers\Cpanel;
 use MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription as AcmeHelper;
+use MGModule\SSLCENTERWHMCS\eHelpers\AisSubscription as AisHelper;
 use MGModule\SSLCENTERWHMCS\models\orders\Repository as OrderRepo;
 use MGModule\SSLCENTERWHMCS\models\logs\Repository as LogsRepo;
 use MGModule\SSLCENTERWHMCS\controllers\server\clientarea\Traits\AcmeTrait;
+use MGModule\SSLCENTERWHMCS\controllers\server\clientarea\Traits\AisTrait;
 use MGModule\SSLCENTERWHMCS\controllers\server\clientarea\Traits\StandardSslTrait;
 use MGModule\SSLCENTERWHMCS\controllers\server\clientarea\Traits\SslConfigTrait;
 
@@ -18,7 +20,7 @@ use MGModule\SSLCENTERWHMCS\controllers\server\clientarea\Traits\SslConfigTrait;
  */
 class home extends main\mgLibs\process\AbstractController {
 
-    use AcmeTrait, StandardSslTrait, SslConfigTrait;
+    use AcmeTrait, AisTrait, StandardSslTrait, SslConfigTrait;
 
     function indexHTML($input, $vars = array()) {
         try {
@@ -37,6 +39,15 @@ class home extends main\mgLibs\process\AbstractController {
                     return $this->acmeConfigurationHTML($input, $vars);
                 }
                 return $this->indexAcmeHTML($input, $vars);
+            }
+
+            if (AisHelper::isAisByServiceParams($input['params']))
+            {
+                if (isset($_GET['aisconfig']) && (string) $_GET['aisconfig'] === '1')
+                {
+                    return $this->aisConfigurationHTML($input, $vars);
+                }
+                return $this->indexAisHTML($input, $vars);
             }
 
             if (isset($_GET['configssl']) && (string) $_GET['configssl'] === '1')

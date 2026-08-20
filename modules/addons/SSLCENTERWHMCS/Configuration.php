@@ -15,6 +15,7 @@ use MGModule\SSLCENTERWHMCS\models\orders\Repository as OrdersRepo;
 use MGModule\SSLCENTERWHMCS\models\actions\Repository as ActionsRepo;
 use MGModule\SSLCENTERWHMCS\models\acmeSubscription\Repository as AcmeSubscriptionRepo;
 use MGModule\SSLCENTERWHMCS\models\acmeSubscriptionDomain\Repository as AcmeSubscriptionDomainRepo;
+use MGModule\SSLCENTERWHMCS\models\aisSubscription\Repository as AisSubscriptionRepo;
 use MGModule\SSLCENTERWHMCS\models\cronQueue\Repository as CronQueueRepo;
 use MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService;
 use MGModule\SSLCENTERWHMCS\eHelpers\Invoice as InvoiceHelper;
@@ -68,7 +69,7 @@ class Configuration extends AbstractConfiguration
      * Module version
      * @var string
      */
-    public $version = '3.1.3';
+    public $version = '3.1.4';
 
     /**
      * Module author
@@ -162,6 +163,7 @@ class Configuration extends AbstractConfiguration
         (new ActionsRepo())->createActionsTable();
         (new AcmeSubscriptionRepo())->createTable();
         (new AcmeSubscriptionDomainRepo())->createTable();
+        (new AisSubscriptionRepo())->createTable();
         (new CronQueueRepo())->createTable();
         EmailTemplateService::createConfigurationTemplate();
         EmailTemplateService::createCertyficateTemplate();
@@ -200,6 +202,7 @@ class Configuration extends AbstractConfiguration
         (new ActionsRepo())->dropActionsTable();
         (new AcmeSubscriptionRepo())->dropTable();
         (new AcmeSubscriptionDomainRepo())->dropTable();
+        (new AisSubscriptionRepo())->dropTable();
         EmailTemplateService::deleteConfigurationTemplate();
         EmailTemplateService::deleteCertyficateTemplate();
         EmailTemplateService::deleteExpireNotificationTemplate();
@@ -244,6 +247,7 @@ class Configuration extends AbstractConfiguration
         (new ActionsRepo())->updateActionsTable();
         (new AcmeSubscriptionRepo())->updateTable();
         (new AcmeSubscriptionDomainRepo())->updateTable();
+        (new AisSubscriptionRepo())->updateTable();
         (new CronQueueRepo())->createTable();
         EmailTemplateService::createSubscriptionTemplate();
         EmailTemplateService::updateSubscriptionExpirationTemplate();

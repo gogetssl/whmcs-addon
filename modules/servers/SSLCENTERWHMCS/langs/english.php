@@ -120,6 +120,28 @@ $_LANG['serverCA']['home']['acmeNewLimit']                       = 'new limit';
 $_LANG['serverCA']['home']['acmeMinimumValue']                   = 'Minimum';
 $_LANG['serverCA']['home']['acmeConfirmUpgrade']                 = 'Confirm';
 
+// AIS (+ Automate) subscriptions
+$_LANG['serverCA']['home']['aisOrderStatus']          = 'Order status';
+$_LANG['serverCA']['home']['aisProductName']          = 'Product name';
+$_LANG['serverCA']['home']['aisDomain']               = 'Domain';
+$_LANG['serverCA']['home']['aisAutoinstallStatus']    = 'AutoInstall status';
+$_LANG['serverCA']['home']['aisRenewalDate']          = 'Next renewal date';
+$_LANG['serverCA']['home']['aisLoginLink']            = 'Get started / Login';
+$_LANG['serverCA']['home']['aisManageLink']           = 'Manage AutoInstall SSL';
+$_LANG['serverCA']['home']['aisRefreshDetails']       = 'Refresh details';
+$_LANG['serverCA']['home']['aisDomainLabel']          = 'Domain to secure';
+$_LANG['serverCA']['home']['aisDomainHint']           = 'Enter the domain or wildcard domain (e.g. example.com or *.example.com) you want to secure.';
+$_LANG['serverCA']['home']['aisSubmitConfiguration']  = 'Create AIS subscription';
+$_LANG['serverCA']['home']['aisConfigurationTitle']   = 'AutoInstall SSL Configuration';
+
+$_LANG['aisDomainRequired']      = 'Domain is required.';
+$_LANG['aisInvalidDomain']       = 'Invalid domain name.';
+$_LANG['aisAlreadyCreated']      = 'AIS subscription is already created.';
+$_LANG['aisMissingProductId']    = 'AIS product ID is not configured. Please set configoption1 on the WHMCS product.';
+$_LANG['aisMissingOrderId']      = 'The API did not return an order ID. Please try again.';
+$_LANG['aisCreatedSuccessfully'] = 'AIS subscription created successfully.';
+$_LANG['aisDetailsRefreshed']    = 'AIS details refreshed.';
+
 $_LANG['serverCA']['reissueCertificate'] = 'Reissue Certificate';
 $_LANG['serverCA']['contactDetails']     = 'Contact Details';
 

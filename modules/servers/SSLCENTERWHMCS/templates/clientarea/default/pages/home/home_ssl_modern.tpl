@@ -499,7 +499,7 @@
                             {elseif $sanData.method == 'dns' && is_string($sanData.san_validation)}
                                 <span style="font-size:11px;word-break:break-all;">{$sanData.san_validation|escape|truncate:60:'...'}</span>
                             {elseif is_array($sanData.san_validation) && isset($sanData.san_validation.content)}
-                                <span style="font-size:11px;word-break:break-all;">{$sanData.san_validation.content|implode:' '|truncate:60:'...'}</span>
+                                <span style="font-size:11px;word-break:break-all;">{if is_array($sanData.san_validation.content)}{$sanData.san_validation.content|implode:' '|truncate:60:'...'}{else}{$sanData.san_validation.content|truncate:60:'...'|escape}{/if}</span>
                             {else}
                                 N/A
                             {/if}

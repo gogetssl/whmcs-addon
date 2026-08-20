@@ -298,6 +298,16 @@ class SSLCenterApi {
         return $this->callV2('/certificates/' . rawurlencode((string) $category) . '/' . (int) $itemId, 'GET');
     }
 
+    public function createAis(array $data)
+    {
+        return $this->callV2('/certificates/ais', 'POST', $data);
+    }
+
+    public function getAisDetails($itemId)
+    {
+        return $this->callV2('/certificates/ais/' . (int) $itemId, 'GET');
+    }
+
     public function addAcmeDomains($itemId, $data)
     {
         if (isset($data['domains']))
