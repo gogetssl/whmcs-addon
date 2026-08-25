@@ -167,7 +167,12 @@ class home extends main\mgLibs\process\AbstractController {
                             }
 
                             if($vars['dcv_method'] == 'http' || $vars['dcv_method'] == 'https'){
-                               $vars['approver_method'][$vars['dcv_method']]['content'] = explode(PHP_EOL, $vars['approver_method'][$vars['dcv_method']]['content']);
+                                $rawContent = isset($vars['approver_method'][$vars['dcv_method']]['content'])
+                                    ? $vars['approver_method'][$vars['dcv_method']]['content']
+                                    : '';
+                                $vars['approver_method'][$vars['dcv_method']]['content'] = is_array($rawContent)
+                                    ? $rawContent
+                                    : explode(PHP_EOL, (string) $rawContent);
                             }
 
                             if ($vars['dcv_method'] === 'dns' && isset($vars['approver_method']['dns']['record'])) {
@@ -210,12 +215,18 @@ class home extends main\mgLibs\process\AbstractController {
                                 case 'http':
                                     $vars['san_revalidate'] = true;
                                     $vars['sans'][$san->san_name]['san_validation'] = (array)$san->validation->http;
-                                    $vars['sans'][$san->san_name]['san_validation']['content'] = explode(PHP_EOL, $san->validation->http->content);
+                                    $rawSanContent = isset($san->validation->http->content) ? $san->validation->http->content : '';
+                                    $vars['sans'][$san->san_name]['san_validation']['content'] = is_array($rawSanContent)
+                                        ? $rawSanContent
+                                        : explode(PHP_EOL, (string) $rawSanContent);
                                     break;
                                 case 'https':
                                     $vars['san_revalidate'] = true;
                                     $vars['sans'][$san->san_name]['san_validation'] = (array)$san->validation->https;
-                                    $vars['sans'][$san->san_name]['san_validation']['content'] = explode(PHP_EOL, $san->validation->https->content);
+                                    $rawSanContent = isset($san->validation->https->content) ? $san->validation->https->content : '';
+                                    $vars['sans'][$san->san_name]['san_validation']['content'] = is_array($rawSanContent)
+                                        ? $rawSanContent
+                                        : explode(PHP_EOL, (string) $rawSanContent);
                                     break;
                                 default:
                                     $vars['sans'][$san->san_name]['san_validation'] = $san->validation->email;
@@ -342,7 +353,8 @@ class home extends main\mgLibs\process\AbstractController {
                     header('Expires: 0');
                     header('Cache-Control: must-revalidate');
                     header('Pragma: public');
-                    print implode(PHP_EOL, $vars['sans'][$_GET['domain']]['san_validation']['content']);
+                    $dlContent = $vars['sans'][$_GET['domain']]['san_validation']['content'];
+                    print is_array($dlContent) ? implode(PHP_EOL, $dlContent) : (string) $dlContent;
                     exit;
                 }
 
@@ -353,7 +365,8 @@ class home extends main\mgLibs\process\AbstractController {
                     header('Expires: 0');
                     header('Cache-Control: must-revalidate');
                     header('Pragma: public');
-                    print implode(PHP_EOL, $vars['approver_method']['https']['content']);
+                    $dlContent = $vars['approver_method']['https']['content'];
+                    print is_array($dlContent) ? implode(PHP_EOL, $dlContent) : (string) $dlContent;
                     exit;
                 }
 
@@ -364,7 +377,8 @@ class home extends main\mgLibs\process\AbstractController {
                     header('Expires: 0');
                     header('Cache-Control: must-revalidate');
                     header('Pragma: public');
-                    print implode(PHP_EOL, $vars['approver_method']['http']['content']);
+                    $dlContent = $vars['approver_method']['http']['content'];
+                    print is_array($dlContent) ? implode(PHP_EOL, $dlContent) : (string) $dlContent;
                     exit;
                 }
             }
