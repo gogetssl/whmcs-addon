@@ -308,6 +308,18 @@ class SSLCenterApi {
         return $this->callV2('/certificates/ais/' . (int) $itemId, 'GET');
     }
 
+    public function cancelAisSubscription($itemId, $reason = '')
+    {
+        $payload = ['reason' => !empty($reason) ? $reason : 'Cancelled by client'];
+
+        return $this->callV2('/certificates/ais/' . (int) $itemId . '/cancel', 'POST', $payload);
+    }
+
+    public function disableAisAutoRenewal($itemId)
+    {
+        return $this->callV2('/certificates/ais/' . (int) $itemId . '/subscription', 'DELETE');
+    }
+
     public function addAcmeDomains($itemId, $data)
     {
         if (isset($data['domains']))

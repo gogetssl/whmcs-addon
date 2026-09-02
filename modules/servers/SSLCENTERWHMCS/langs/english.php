@@ -139,8 +139,16 @@ $_LANG['aisInvalidDomain']       = 'Invalid domain name.';
 $_LANG['aisAlreadyCreated']      = 'AIS subscription is already created.';
 $_LANG['aisMissingProductId']    = 'AIS product ID is not configured. Please set configoption1 on the WHMCS product.';
 $_LANG['aisMissingOrderId']      = 'The API did not return an order ID. Please try again.';
-$_LANG['aisCreatedSuccessfully'] = 'AIS subscription created successfully.';
-$_LANG['aisDetailsRefreshed']    = 'AIS details refreshed.';
+$_LANG['aisCreatedSuccessfully']            = 'AIS subscription created successfully.';
+$_LANG['aisDetailsRefreshed']               = 'AIS details refreshed.';
+$_LANG['aisSubscriptionNotCreatedYet']      = 'AIS subscription has not been created yet.';
+$_LANG['aisAutoRenewalDisabled']            = 'Auto-renewal has been disabled.';
+$_LANG['aisSubscriptionCancelled']          = 'AIS subscription has been cancelled.';
+
+$_LANG['serverCA']['home']['aisStopAutoRenewal']           = 'Stop Auto-Renewal';
+$_LANG['serverCA']['home']['aisCancelSubscription']        = 'Cancel Subscription';
+$_LANG['serverCA']['home']['aisStopAutoRenewalConfirm']    = 'Are you sure you want to disable auto-renewal? The subscription will expire on the renewal date and will not be renewed automatically.';
+$_LANG['serverCA']['home']['aisCancelSubscriptionConfirm'] = 'Are you sure you want to cancel this AIS subscription? This action cannot be undone.';
 
 $_LANG['serverCA']['reissueCertificate'] = 'Reissue Certificate';
 $_LANG['serverCA']['contactDetails']     = 'Contact Details';

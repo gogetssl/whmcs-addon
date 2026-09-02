@@ -635,6 +635,7 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
                 }
 
                 $apiConfigRepo = new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository();
+                $apiConfigRepo->updateApiConfigurationTable();
                 $apiConfigRepo->setConfiguration($input);
 
                 // Invalidate cached auth key so next API call re-authenticates with new credentials

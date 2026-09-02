@@ -46,6 +46,17 @@
             </tr>
             {/if}
 
+            <tr>
+                <td class="text-left">{$MGLANG->T('acmeAutoRenew')}</td>
+                <td class="text-left">
+                    {if $aisAutoRenew}
+                        <span class="label label-success">Enabled</span>
+                    {else}
+                        <span class="label label-default">Disabled</span>
+                    {/if}
+                </td>
+            </tr>
+
             {if $subscription->login_sso_link}
             <tr>
                 <td class="text-left">{$MGLANG->T('aisLoginLink')}</td>
@@ -72,44 +83,120 @@
         <tr>
             <td class="text-left">{$MGLANG->T('Actions')}</td>
             <td class="text-left">
-                <button id="ais-refresh" class="btn btn-default btn-sm">
+                <button id="ais-refresh" style="margin-bottom: 10px;" class="btn btn-default btn-sm">
                     {$MGLANG->T('aisRefreshDetails')}
                 </button>
+                {if $subscription && $subscription->api_order_id}
+                    {if $aisAutoRenew}
+                        <button id="ais-stop-auto-renewal" style="margin-bottom: 10px;" class="btn btn-default btn-sm">
+                            {$MGLANG->T('aisStopAutoRenewal')}
+                        </button>
+                    {/if}
+                    <button id="ais-cancel-subscription" style="margin-bottom: 10px;" class="btn btn-danger btn-sm">
+                        {$MGLANG->T('aisCancelSubscription')}
+                    </button>
+                {/if}
             </td>
         </tr>
     </tbody>
 </table>
 
+<div class="modal fade" id="aisStopAutoRenewalModal" tabindex="-1" role="dialog" aria-labelledby="aisStopAutoRenewalModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="display: block;">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="aisStopAutoRenewalModalLabel">{$MGLANG->T('aisStopAutoRenewal')}</h4>
+            </div>
+            <div class="modal-body">
+                {$MGLANG->T('aisStopAutoRenewalConfirm')}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">{$MGLANG->T('Close')}</button>
+                <button type="button" class="btn btn-warning" id="aisConfirmStopAutoRenewal">{$MGLANG->T('aisStopAutoRenewal')}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="aisCancelSubscriptionModal" tabindex="-1" role="dialog" aria-labelledby="aisCancelSubscriptionModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="display: block;">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="aisCancelSubscriptionModalLabel">{$MGLANG->T('aisCancelSubscription')}</h4>
+            </div>
+            <div class="modal-body">
+                {$MGLANG->T('aisCancelSubscriptionConfirm')}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">{$MGLANG->T('Close')}</button>
+                <button type="button" class="btn btn-danger" id="aisConfirmCancelSubscription">{$MGLANG->T('aisCancelSubscription')}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script type="text/javascript">
 {literal}
-document.getElementById('ais-refresh').addEventListener('click', function () {
-    var btn    = this;
+(function () {
+    var serviceUrl = 'clientarea.php?action=productdetails&id={/literal}{$serviceid}{literal}&json=1&mg-model=home';
     var alerts = document.getElementById('ais-alerts');
-    btn.disabled = true;
-    alerts.innerHTML = '';
 
-    $.post(
-        'clientarea.php?action=productdetails&id={/literal}{$serviceid}{literal}&json=1&mg-model=home',
-        {'mg-action': 'refreshAisDetails'},
-        function (ret) {
+    function runAction(action, onError) {
+        $.post(serviceUrl, {'mg-action': action}, function (ret) {
             ret = ret.replace('<JSONRESPONSE#', '').replace('#ENDJSONRESPONSE>', '');
             try {
                 var payload = JSON.parse(ret);
                 if (payload.result === 'error') {
                     alerts.innerHTML = '<div class="alert alert-danger">' + (payload.error || 'An error occurred.') + '</div>';
-                    btn.disabled = false;
+                    if (typeof onError === 'function') { onError(); }
                 } else {
-                    var msg = (payload.data && payload.data.message) ? payload.data.message : '{/literal}{$MGLANG->T('aisDetailsRefreshed')}{literal}';
+                    var msg = (payload.data && payload.data.message) ? payload.data.message : 'Done';
                     alerts.innerHTML = '<div class="alert alert-success">' + msg + '</div>';
-                    setTimeout(function () { window.location.reload(); }, 1000);
+                    setTimeout(function () { window.location.reload(); }, 1200);
                 }
             } catch (e) {
                 alerts.innerHTML = '<div class="alert alert-danger">An error occurred.</div>';
-                btn.disabled = false;
+                if (typeof onError === 'function') { onError(); }
             }
-        }
-    );
-});
+        });
+    }
+
+    var refreshBtn = document.getElementById('ais-refresh');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function () {
+            var btn = this;
+            btn.disabled = true;
+            alerts.innerHTML = '';
+            runAction('refreshAisDetails', function () { btn.disabled = false; });
+        });
+    }
+
+    var stopBtn = document.getElementById('ais-stop-auto-renewal');
+    if (stopBtn) {
+        stopBtn.addEventListener('click', function () {
+            $('#aisStopAutoRenewalModal').modal('show');
+        });
+    }
+
+    var cancelBtn = document.getElementById('ais-cancel-subscription');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function () {
+            $('#aisCancelSubscriptionModal').modal('show');
+        });
+    }
+
+    document.getElementById('aisConfirmStopAutoRenewal') && document.getElementById('aisConfirmStopAutoRenewal').addEventListener('click', function () {
+        $('#aisStopAutoRenewalModal').modal('hide');
+        runAction('stopAisAutoRenewal');
+    });
+
+    document.getElementById('aisConfirmCancelSubscription') && document.getElementById('aisConfirmCancelSubscription').addEventListener('click', function () {
+        $('#aisCancelSubscriptionModal').modal('hide');
+        runAction('cancelAisSubscription');
+    });
+}());
 {/literal}
 </script>
 {/if}

@@ -8,24 +8,42 @@ class AisSubscription
 {
     const NAME_SUFFIX = ' + Automate';
 
-    public static function isAisByProductName($productName)
+    public static function isAisByApiProductName($apiProductName)
     {
-        return substr(rtrim((string) $productName), -strlen(self::NAME_SUFFIX)) === self::NAME_SUFFIX;
+        return substr(rtrim((string) $apiProductName), -strlen(self::NAME_SUFFIX)) === self::NAME_SUFFIX;
+    }
+
+    public static function isAisByApiProductId($apiProductId)
+    {
+        $row = Capsule::table('mgfw_SSLCENTER_product_brand')
+            ->where('pid', (int) $apiProductId)
+            ->first();
+
+        if ($row && !empty($row->data))
+        {
+            $data = json_decode($row->data, true);
+            $apiProductName = isset($data['product']) ? $data['product'] : '';
+            return static::isAisByApiProductName($apiProductName);
+        }
+
+        return false;
     }
 
     public static function isAisByServiceParams(array $params)
     {
-        if (isset($params['pid']))
+        $apiProductId = isset($params['configoption1']) ? $params['configoption1'] : null;
+
+        if (!$apiProductId && isset($params['pid']))
         {
             $product = Capsule::table('tblproducts')
-                ->select(['name'])
+                ->select(['configoption1'])
                 ->where('id', (int) $params['pid'])
                 ->first();
 
-            return $product && self::isAisByProductName($product->name);
+            $apiProductId = $product ? $product->configoption1 : null;
         }
 
-        return false;
+        return $apiProductId ? static::isAisByApiProductId((int) $apiProductId) : false;
     }
 
     public static function isAisByServiceId($serviceId)
@@ -41,10 +59,10 @@ class AisSubscription
         }
 
         $product = Capsule::table('tblproducts')
-            ->select(['name'])
+            ->select(['configoption1'])
             ->where('id', (int) $service->packageid)
             ->first();
 
-        return $product && self::isAisByProductName($product->name);
+        return $product ? static::isAisByApiProductId((int) $product->configoption1) : false;
     }
 }

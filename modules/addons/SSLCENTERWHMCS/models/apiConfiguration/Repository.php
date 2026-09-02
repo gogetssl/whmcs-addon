@@ -189,6 +189,9 @@ class Repository extends \MGModule\SSLCENTERWHMCS\mgLibs\models\Repository
                 $table->text('custom_guide')->nullable();
                 $table->boolean('disable_email_validation');
                 $table->boolean('email_whois');
+                $table->integer('wildcard_dns_timeout_minutes')->nullable()->default(65);
+                $table->integer('auto_reissue_days_before_expire')->nullable()->default(7);
+                $table->boolean('disable_hosting_module_log')->default(0);
             });
         }
     }

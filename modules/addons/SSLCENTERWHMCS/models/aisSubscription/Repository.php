@@ -65,6 +65,8 @@ class Repository extends MainRepository
                 $table->date('period_start')->nullable();
                 $table->date('period_end')->nullable();
                 $table->date('renewal_date')->nullable();
+                $table->boolean('auto_renew')->default(1);
+                $table->timestamp('cancelled_at')->nullable();
                 $table->timestamps();
             });
         }
@@ -76,6 +78,20 @@ class Repository extends MainRepository
         {
             $this->createTable();
             return;
+        }
+
+        if (!Capsule::schema()->hasColumn($this->tableName, 'auto_renew'))
+        {
+            Capsule::schema()->table($this->tableName, function ($table) {
+                $table->boolean('auto_renew')->default(1)->after('renewal_date');
+            });
+        }
+
+        if (!Capsule::schema()->hasColumn($this->tableName, 'cancelled_at'))
+        {
+            Capsule::schema()->table($this->tableName, function ($table) {
+                $table->timestamp('cancelled_at')->nullable()->after('auto_renew');
+            });
         }
     }
 

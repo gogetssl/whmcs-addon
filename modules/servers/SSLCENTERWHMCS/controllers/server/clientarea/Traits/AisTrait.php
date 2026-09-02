@@ -18,6 +18,7 @@ trait AisTrait
             ->first();
 
         $aisRepo     = new \MGModule\SSLCENTERWHMCS\models\aisSubscription\Repository();
+        $aisRepo->updateTable();
         $subscription = $aisRepo->getByServiceId($serviceId);
 
         if ($subscription && (int) $subscription->api_order_id > 0
@@ -46,6 +47,7 @@ trait AisTrait
         $vars['isAisSubscription']  = true;
         $vars['productName']        = isset($product->name) ? $product->name : '';
         $vars['subscription']       = $subscription;
+        $vars['aisAutoRenew']       = $subscription && isset($subscription->auto_renew) ? (int) $subscription->auto_renew : 1;
         $vars['configurationStatus'] = $sslService ? $sslService->status : null;
         $vars['configurationURL']   = 'clientarea.php?action=productdetails&id=' . $serviceId . '&aisconfig=1';
 
@@ -209,6 +211,66 @@ trait AisTrait
         return [
             'success' => true,
             'message' => main\mgLibs\Lang::absoluteT('aisDetailsRefreshed'),
+        ];
+    }
+
+    public function stopAisAutoRenewalJSON($input, $vars = array())
+    {
+        $serviceId = (int) $input['id'];
+        $aisRepo   = new \MGModule\SSLCENTERWHMCS\models\aisSubscription\Repository();
+        $subscription = $aisRepo->getByServiceId($serviceId);
+
+        if (!$subscription || (int) $subscription->api_order_id <= 0)
+        {
+            throw new \Exception(main\mgLibs\Lang::absoluteT('aisSubscriptionNotCreatedYet'));
+        }
+
+        if ((int) $subscription->ais_item_id > 0)
+        {
+            \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()
+                ->disableAisAutoRenewal((int) $subscription->ais_item_id);
+        }
+
+        $aisRepo->upsertByServiceId($serviceId, [
+            'auto_renew' => 0,
+        ]);
+
+        return [
+            'success' => true,
+            'message' => main\mgLibs\Lang::absoluteT('aisAutoRenewalDisabled'),
+        ];
+    }
+
+    public function cancelAisSubscriptionJSON($input, $vars = array())
+    {
+        $serviceId = (int) $input['id'];
+        $aisRepo   = new \MGModule\SSLCENTERWHMCS\models\aisSubscription\Repository();
+        $subscription = $aisRepo->getByServiceId($serviceId);
+
+        if (!$subscription || (int) $subscription->api_order_id <= 0)
+        {
+            throw new \Exception(main\mgLibs\Lang::absoluteT('aisSubscriptionNotCreatedYet'));
+        }
+
+        if ((int) $subscription->ais_item_id > 0)
+        {
+            \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()
+                ->cancelAisSubscription((int) $subscription->ais_item_id, 'Cancelled by client');
+        }
+
+        $aisRepo->upsertByServiceId($serviceId, [
+            'status'       => 'cancelled',
+            'auto_renew'   => 0,
+            'cancelled_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        Capsule::table('tblhosting')->where('id', $serviceId)->update([
+            'domainstatus' => 'Cancelled',
+        ]);
+
+        return [
+            'success' => true,
+            'message' => main\mgLibs\Lang::absoluteT('aisSubscriptionCancelled'),
         ];
     }
 

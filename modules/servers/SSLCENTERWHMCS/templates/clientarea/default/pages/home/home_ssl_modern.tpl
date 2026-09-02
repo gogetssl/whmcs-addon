@@ -439,9 +439,9 @@
                             {if $dcv_method == 'email'}
                                 N/A
                             {elseif isset($approver_method[$dcv_method].filename)}
-                                <code style="font-size:11px;">{$approver_method[$dcv_method].filename|escape}</code>
+                                <code style="font-size:11px;">{$approver_method[$dcv_method].filename}</code>
                             {elseif isset($approver_method[$dcv_method].host)}
-                                <code style="font-size:11px;">{$approver_method[$dcv_method].host|escape}</code>
+                                <code style="font-size:11px;">{$approver_method[$dcv_method].host}</code>
                             {else}
                                 N/A
                             {/if}
@@ -451,9 +451,9 @@
                                 N/A
                             {elseif isset($approver_method[$dcv_method].content)}
                                 {if is_array($approver_method[$dcv_method].content)}
-                                <span style="font-size:11px;word-break:break-all;">{$approver_method[$dcv_method].content|implode:' '|truncate:60:'...'}</span>
+                                    <span style="font-size:11px;word-break:break-all;">{$approver_method[$dcv_method].content|implode:' '|truncate:60:'...'|escape}</span>
                                 {else}
-                                <span style="font-size:11px;word-break:break-all;">{$approver_method[$dcv_method].content|truncate:60:'...'|escape}</span>
+                                    <span style="font-size:11px;word-break:break-all;">{$approver_method[$dcv_method].content|truncate:60:'...'|escape}</span>
                                 {/if}
                             {else}
                                 N/A
@@ -499,7 +499,11 @@
                             {elseif $sanData.method == 'dns' && is_string($sanData.san_validation)}
                                 <span style="font-size:11px;word-break:break-all;">{$sanData.san_validation|escape|truncate:60:'...'}</span>
                             {elseif is_array($sanData.san_validation) && isset($sanData.san_validation.content)}
-                                <span style="font-size:11px;word-break:break-all;">{if is_array($sanData.san_validation.content)}{$sanData.san_validation.content|implode:' '|truncate:60:'...'}{else}{$sanData.san_validation.content|truncate:60:'...'|escape}{/if}</span>
+                                {if is_array($sanData.san_validation.content)}
+                                    <span style="font-size:11px;word-break:break-all;">{$sanData.san_validation.content|implode:' '|truncate:60:'...'|escape}</span>
+                                {else}
+                                    <span style="font-size:11px;word-break:break-all;">{$sanData.san_validation.content|truncate:60:'...'|escape}</span>
+                                {/if}
                             {else}
                                 N/A
                             {/if}
@@ -630,7 +634,13 @@
                     </div>
                     {else}
                     <strong>Record:</strong>
-                    <code style="word-break:break-all;">{if isset($approver_method.dns.record)}{$approver_method.dns.record|escape}{else}{$approver_method.dns|escape}{/if}</code>
+                    <code style="word-break:break-all;">
+                    {if isset($approver_method.dns.record)}
+                        $approver_method.dns.record}
+                    {elseif is_string($approver_method.dns)}
+                        {$approver_method.dns}
+                    {/if}
+                    </code>
                     {/if}
                 </div>
                 {/if}
