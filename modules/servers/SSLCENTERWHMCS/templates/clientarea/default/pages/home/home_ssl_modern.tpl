@@ -451,7 +451,11 @@
                                 N/A
                             {elseif isset($approver_method[$dcv_method].content)}
                                 {if is_array($approver_method[$dcv_method].content)}
-                                    <span style="font-size:11px;word-break:break-all;">{$approver_method[$dcv_method].content|implode:' '|truncate:60:'...'|escape}</span>
+                                    <span style="font-size:11px;word-break:break-all;">
+                                        {foreach $approver_method[$dcv_method].content as $mainContent}
+                                            {$mainContent|truncate:60:'...'|escape}
+                                        {/foreach}
+                                    </span>
                                 {else}
                                     <span style="font-size:11px;word-break:break-all;">{$approver_method[$dcv_method].content|truncate:60:'...'|escape}</span>
                                 {/if}
@@ -500,7 +504,11 @@
                                 <span style="font-size:11px;word-break:break-all;">{$sanData.san_validation|escape|truncate:60:'...'}</span>
                             {elseif is_array($sanData.san_validation) && isset($sanData.san_validation.content)}
                                 {if is_array($sanData.san_validation.content)}
-                                    <span style="font-size:11px;word-break:break-all;">{$sanData.san_validation.content|implode:' '|truncate:60:'...'|escape}</span>
+                                    <span style="font-size:11px;word-break:break-all;">
+                                        {foreach $sanData.san_validation.content as $sanContent}
+                                            {$sanContent|truncate:60:'...'|escape}
+                                        {/foreach}
+                                    </span>
                                 {else}
                                     <span style="font-size:11px;word-break:break-all;">{$sanData.san_validation.content|truncate:60:'...'|escape}</span>
                                 {/if}
