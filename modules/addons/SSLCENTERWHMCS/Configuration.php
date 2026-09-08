@@ -194,34 +194,6 @@ class Configuration extends AbstractConfiguration
      */
     function deactivate()
     {
-        (new APIConfigurationRepo())->dropApiConfigurationTable();
-        (new ProductPriceRepo())->dropApiProductsPricesTable();
-        (new UserCommissionRepo())->dropUserCommissionTable();
-        (new LogsRepo())->dropLogsTable();
-        (new OrdersRepo())->dropOrdersTable();
-        (new ActionsRepo())->dropActionsTable();
-        (new AcmeSubscriptionRepo())->dropTable();
-        (new AcmeSubscriptionDomainRepo())->dropTable();
-        (new AisSubscriptionRepo())->dropTable();
-        EmailTemplateService::deleteConfigurationTemplate();
-        EmailTemplateService::deleteCertyficateTemplate();
-        EmailTemplateService::deleteExpireNotificationTemplate();
-        EmailTemplateService::deleteRenewalTemplate();
-        EmailTemplateService::deleteReissueTemplate();
-        EmailTemplateService::deleteSubscriptionTemplate();
-        EmailTemplateService::deleteSubscriptionExpirationTemplate();
-        EmailTemplateService::deleteSubscriptionRenewalTemplate();
-        EmailTemplateService::deleteSubscriptionRenewalNoticeTemplate();
-        EmailTemplateService::deleteRenewalInvoiceTemplate();
-        EmailTemplateService::deleteRenewalStartedTemplate();
-        EmailTemplateService::deleteRenewalCompleteTemplate();
-        EmailTemplateService::deleteRenewalAutorenewedTemplate();
-        EmailTemplateService::deleteCertRevokedTemplate();
-        EmailTemplateService::deleteDnsToEmailSwitchTemplate();
-        EmailTemplateService::deleteAutoReissueFailedTemplate();
-        EmailTemplateService::deleteCertInstalledTemplate();
-        EmailTemplateService::deleteCertExpiredTemplate();
-        EmailTemplateService::deleteValidationWarningTemplate();
     }
 
     /**

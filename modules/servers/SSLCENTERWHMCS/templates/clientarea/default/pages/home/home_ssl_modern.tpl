@@ -907,7 +907,8 @@
             $msg.hide();
 
             var newDcvMethods = {};
-            $.each(changeDcvDomains, function (i, d) { newDcvMethods[d] = method; });
+            var effectiveMethod = (method === 'email' && email) ? email : method;
+            $.each(changeDcvDomains, function (i, d) { newDcvMethods[d] = effectiveMethod; });
 
             $.post(serviceUrl, {
                 'mg-action':     'revalidate',
