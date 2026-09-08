@@ -265,8 +265,8 @@ trait StandardSslTrait
 
         $sslorder = (array)Capsule::table('tblsslorders')->where('serviceid', $serviceId)->first();
         $sslorderconfigdata = json_decode($sslorder['configdata'], true);
-        $sslorderconfigdata['dcv_method'] = $data['new_method'];
-        if($data['new_method'] != 'email') { $sslorderconfigdata['approveremail'] = ''; }
+        $sslorderconfigdata['dcv_method'] = isset($data['new_methods']) ? explode(',', $data['new_methods'])[0] : '';
+        if($sslorderconfigdata['dcv_method'] != 'email') { $sslorderconfigdata['approveremail'] = ''; }
         Capsule::table('tblsslorders')->where('serviceid', $serviceId)->update(array(
             'configdata' => json_encode($sslorderconfigdata)
         ));

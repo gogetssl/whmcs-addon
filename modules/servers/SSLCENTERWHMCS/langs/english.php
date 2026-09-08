@@ -412,6 +412,109 @@ $_LANG['serverCA']['home']['sslConfigOrderTypeRenew']  = 'Renew';
 $_LANG['sslConfigurationSubmitted'] = 'Your SSL certificate order has been placed successfully. The certificate will be issued once domain validation is complete.';
 
 // Modern SSL certificate view (home_ssl_modern.tpl)
+// Banner labels
+$_LANG['serverCA']['home']['sslBannerActiveInstalled']   = 'SSL Certificate Active &amp; Installed';
+$_LANG['serverCA']['home']['sslBannerActive']            = 'SSL Certificate Active';
+$_LANG['serverCA']['home']['sslBannerProcessing']        = 'Pending Validation';
+$_LANG['serverCA']['home']['sslBannerExpired']           = 'SSL Certificate Expired';
+$_LANG['serverCA']['home']['sslBannerCancelled']         = 'SSL Certificate Cancelled';
+$_LANG['serverCA']['home']['sslBannerReissue']           = 'Reissue Pending';
+$_LANG['serverCA']['home']['sslBannerAwaitingConfig']    = 'Awaiting Configuration';
+$_LANG['serverCA']['home']['sslSyncSuccess']             = 'Certificate data has been successfully synchronized with the Certificate Authority.';
+// Header badge labels
+$_LANG['serverCA']['home']['sslBadgeInstalled']          = 'Installed';
+$_LANG['serverCA']['home']['sslBadgeActive']             = 'Active';
+$_LANG['serverCA']['home']['sslBadgePending']            = 'Pending';
+$_LANG['serverCA']['home']['sslBadgeExpired']            = 'Expired';
+$_LANG['serverCA']['home']['sslBadgeCancelled']          = 'Cancelled';
+$_LANG['serverCA']['home']['sslBadgeReissue']            = 'Reissue';
+$_LANG['serverCA']['home']['sslServiceLabel']            = 'Service #';
+$_LANG['serverCA']['home']['sslSyncBtn']                 = 'Sync';
+// Status card labels
+$_LANG['serverCA']['home']['sslStatusActiveInstalled']   = 'Active &amp; Installed';
+$_LANG['serverCA']['home']['sslStatusActive']            = 'Active';
+$_LANG['serverCA']['home']['sslStatusPendingValidation'] = 'Pending Validation';
+$_LANG['serverCA']['home']['sslStatusExpired']           = 'Expired';
+$_LANG['serverCA']['home']['sslStatusCancelled']         = 'Cancelled';
+$_LANG['serverCA']['home']['sslStatusReissue']           = 'Reissue Pending';
+$_LANG['serverCA']['home']['sslStatusAwaitingConfig']    = 'Awaiting Configuration';
+$_LANG['serverCA']['home']['sslDaysLeftSuffix']          = 'd left';
+$_LANG['serverCA']['home']['sslExpiredText']             = 'Expired';
+// Certificate Details card
+$_LANG['serverCA']['home']['sslSerial']                  = 'Serial';
+$_LANG['serverCA']['home']['sslCertExpires']             = 'Certificate Expires';
+$_LANG['serverCA']['home']['sslSubscriptionEndsLabel']   = 'Subscription Ends';
+$_LANG['serverCA']['home']['sslExpiresLabel']            = 'Expires';
+$_LANG['serverCA']['home']['sslPendingIssuance']         = 'Pending issuance';
+// Download card
+$_LANG['serverCA']['home']['sslDownloadPem']             = 'Certificate (.pem)';
+$_LANG['serverCA']['home']['sslDownloadCrt']             = 'Certificate (.crt)';
+$_LANG['serverCA']['home']['sslDownloadNotAvailable']    = 'Not available yet';
+$_LANG['serverCA']['home']['sslDownloadPrivateKey']      = 'Private Key (.key)';
+$_LANG['serverCA']['home']['sslDownloadCaBundle']        = 'CA Bundle (.ca)';
+$_LANG['serverCA']['home']['sslPrivateKeyTitle']         = 'Private Key';
+// Tab
+$_LANG['serverCA']['home']['sslTabOverview']             = 'Overview';
+// Order Information section
+$_LANG['serverCA']['home']['sslOrderInformation']        = 'Order Information';
+$_LANG['serverCA']['home']['sslOrderIdLabel']            = 'SSL Order ID';
+$_LANG['serverCA']['home']['sslVendorOrderId']           = 'Vendor Order ID';
+$_LANG['serverCA']['home']['sslOrderStatusLabel']        = 'Order Status';
+$_LANG['serverCA']['home']['sslStatusActiveValid']       = 'Active (valid)';
+$_LANG['serverCA']['home']['sslTypeLabel']               = 'Type';
+$_LANG['serverCA']['home']['sslWildcardLabel']           = 'Wildcard';
+$_LANG['serverCA']['home']['sslYes']                     = 'Yes';
+$_LANG['serverCA']['home']['sslNo']                      = 'No';
+$_LANG['serverCA']['home']['sslPurchasedLabel']          = 'Purchased';
+// Organization section
+$_LANG['serverCA']['home']['sslOrganizationTitle']       = 'Organization';
+$_LANG['serverCA']['home']['sslNameLabel']               = 'Name';
+$_LANG['serverCA']['home']['sslUnitLabel']               = 'Unit';
+$_LANG['serverCA']['home']['sslAddressLabel']            = 'Address';
+// Contact sections
+$_LANG['serverCA']['home']['sslAdminContactTitle']       = 'Administrative Contact';
+$_LANG['serverCA']['home']['sslTechContactTitle']        = 'Technical Contact';
+$_LANG['serverCA']['home']['sslOrgFieldLabel']           = 'Organization';
+$_LANG['serverCA']['home']['sslEmailLabel']              = 'Email';
+$_LANG['serverCA']['home']['sslPhoneLabel']              = 'Phone';
+// Validation Details
+$_LANG['serverCA']['home']['sslValidationDetails']       = 'Validation Details';
+$_LANG['serverCA']['home']['sslMethodLabel']             = 'Method';
+$_LANG['serverCA']['home']['sslStatusHeader']            = 'Status';
+$_LANG['serverCA']['home']['sslNameFile']                = 'Name / File';
+$_LANG['serverCA']['home']['sslContentEntry']            = 'Content / Entry';
+$_LANG['serverCA']['home']['sslValidated']               = 'Validated';
+$_LANG['serverCA']['home']['sslPendingBadge']            = 'Pending';
+$_LANG['serverCA']['home']['sslNa']                      = 'N/A';
+$_LANG['serverCA']['home']['sslApprovalEmail']           = 'Approval Email';
+$_LANG['serverCA']['home']['sslRecord']                  = 'Record:';
+// DCV instruction block labels
+$_LANG['serverCA']['home']['sslVerificationUrl']         = 'Verification URL';
+$_LANG['serverCA']['home']['sslDirectoryOnServer']       = 'Directory on server';
+$_LANG['serverCA']['home']['sslFilenameLabel']           = 'Filename';
+$_LANG['serverCA']['home']['sslFileContent']             = 'File content';
+$_LANG['serverCA']['home']['sslHostName']                = 'Host / Name';
+$_LANG['serverCA']['home']['sslRecordType']              = 'Record Type';
+$_LANG['serverCA']['home']['sslValueLabel']              = 'Value';
+$_LANG['serverCA']['home']['sslDownloadValidationFile']  = 'Download Validation File';
+// DCV method options
+$_LANG['serverCA']['home']['sslMethodHttp']              = 'HTTP File';
+$_LANG['serverCA']['home']['sslMethodHttps']             = 'HTTPS File';
+$_LANG['serverCA']['home']['sslMethodDns']               = 'DNS TXT Record';
+$_LANG['serverCA']['home']['sslMethodEmail']             = 'Email Approval';
+// Timeline status labels
+$_LANG['serverCA']['home']['sslTimelineScheduled']       = 'Scheduled';
+$_LANG['serverCA']['home']['sslTimelineInProgress']      = 'In Progress';
+$_LANG['serverCA']['home']['sslTimelineCompleted']       = 'Completed';
+$_LANG['serverCA']['home']['sslTimelineAttention']       = 'Attention Required';
+// JS action strings
+$_LANG['serverCA']['home']['sslInstalling']              = 'Installing...';
+$_LANG['serverCA']['home']['sslInstalledSuccessfully']   = 'Certificate installed successfully.';
+$_LANG['serverCA']['home']['sslInstallationFailed']      = 'Installation failed.';
+$_LANG['serverCA']['home']['sslEmailSent']               = 'Validation email sent.';
+$_LANG['serverCA']['home']['sslProcessing']              = 'Processing...';
+$_LANG['serverCA']['home']['sslRenewalCreated']          = 'Renewal Invoice Created';
+
 $_LANG['serverCA']['home']['viewSite']                = 'View Site';
 $_LANG['serverCA']['home']['configureSSL']            = 'Configure SSL';
 $_LANG['serverCA']['home']['reissueSSL']              = 'Reissue';

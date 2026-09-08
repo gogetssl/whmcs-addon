@@ -110,25 +110,25 @@
     {assign var='stateLabel' value=''}
     {assign var='stateIcon'  value=''}
     {if $certState == 'active_installed'}
-        {assign var='stateLabel' value='SSL Certificate Active &amp; Installed'}
+        {assign var='stateLabel' value=$MGLANG->T('sslBannerActiveInstalled')|default:'SSL Certificate Active &amp; Installed'}
         {assign var='stateIcon'  value='glyphicon-ok-circle'}
     {elseif $certState == 'active'}
-        {assign var='stateLabel' value='SSL Certificate Active'}
+        {assign var='stateLabel' value=$MGLANG->T('sslBannerActive')|default:'SSL Certificate Active'}
         {assign var='stateIcon'  value='glyphicon-ok-circle'}
     {elseif $certState == 'processing'}
-        {assign var='stateLabel' value='Pending Validation'}
+        {assign var='stateLabel' value=$MGLANG->T('sslBannerProcessing')|default:'Pending Validation'}
         {assign var='stateIcon'  value='glyphicon-time'}
     {elseif $certState == 'expired'}
-        {assign var='stateLabel' value='SSL Certificate Expired'}
+        {assign var='stateLabel' value=$MGLANG->T('sslBannerExpired')|default:'SSL Certificate Expired'}
         {assign var='stateIcon'  value='glyphicon-exclamation-sign'}
     {elseif $certState == 'cancelled'}
-        {assign var='stateLabel' value='SSL Certificate Cancelled'}
+        {assign var='stateLabel' value=$MGLANG->T('sslBannerCancelled')|default:'SSL Certificate Cancelled'}
         {assign var='stateIcon'  value='glyphicon-remove-circle'}
     {elseif $certState == 'reissue'}
-        {assign var='stateLabel' value='Reissue Pending'}
+        {assign var='stateLabel' value=$MGLANG->T('sslBannerReissue')|default:'Reissue Pending'}
         {assign var='stateIcon'  value='glyphicon-refresh'}
     {else}
-        {assign var='stateLabel' value='Awaiting Configuration'}
+        {assign var='stateLabel' value=$MGLANG->T('sslBannerAwaitingConfig')|default:'Awaiting Configuration'}
         {assign var='stateIcon'  value='glyphicon-cog'}
     {/if}
 
@@ -140,7 +140,7 @@
     {if $syncSuccess}
     <div id="ssl-sync-notice" class="alert" style="background:#e8f9ef;color:#1a7a3e;border:1px solid #b7e8cc;border-radius:6px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
         <span class="glyphicon glyphicon-ok-circle" style="font-size:18px;flex-shrink:0;"></span>
-        <span>Certificate data has been successfully synchronized with the Certificate Authority.</span>
+        <span>{$MGLANG->T('sslSyncSuccess')|default:'Certificate data has been successfully synchronized with the Certificate Authority.'}</span>
         <button type="button" onclick="document.getElementById('ssl-sync-notice').style.display='none';" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#1a7a3e;font-size:18px;line-height:1;">&times;</button>
     </div>
     {/if}
@@ -167,20 +167,20 @@
 
     {* ---- Header ---- *}
     {assign var='badgeLabel' value=''}
-    {if $certState == 'active_installed'}{assign var='badgeLabel' value='Installed'}
-    {elseif $certState == 'active'}{assign var='badgeLabel' value='Active'}
-    {elseif $certState == 'processing'}{assign var='badgeLabel' value='Pending'}
-    {elseif $certState == 'expired'}{assign var='badgeLabel' value='Expired'}
-    {elseif $certState == 'cancelled'}{assign var='badgeLabel' value='Cancelled'}
-    {elseif $certState == 'reissue'}{assign var='badgeLabel' value='Reissue'}
-    {else}{assign var='badgeLabel' value='Pending'}{/if}
+    {if $certState == 'active_installed'}{assign var='badgeLabel' value=$MGLANG->T('sslBadgeInstalled')|default:'Installed'}
+    {elseif $certState == 'active'}{assign var='badgeLabel' value=$MGLANG->T('sslBadgeActive')|default:'Active'}
+    {elseif $certState == 'processing'}{assign var='badgeLabel' value=$MGLANG->T('sslBadgePending')|default:'Pending'}
+    {elseif $certState == 'expired'}{assign var='badgeLabel' value=$MGLANG->T('sslBadgeExpired')|default:'Expired'}
+    {elseif $certState == 'cancelled'}{assign var='badgeLabel' value=$MGLANG->T('sslBadgeCancelled')|default:'Cancelled'}
+    {elseif $certState == 'reissue'}{assign var='badgeLabel' value=$MGLANG->T('sslBadgeReissue')|default:'Reissue'}
+    {else}{assign var='badgeLabel' value=$MGLANG->T('sslBadgePending')|default:'Pending'}{/if}
 
     <div class="ssl-mod-header">
         <div class="ssl-mod-header-left">
             <span class="ssl-mod-header-icon glyphicon glyphicon-lock"></span>
             <div>
                 <p class="ssl-mod-header-domain">{$domain|default:$productDomain|escape}</p>
-                <p class="ssl-mod-header-service">Service #{$serviceid}</p>
+                <p class="ssl-mod-header-service">{$MGLANG->T('sslServiceLabel')|default:'Service #'}{$serviceid}</p>
             </div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
@@ -191,7 +191,7 @@
             </button>
             {/if}
             <a href="{$actual_link}&refreshapi=1" class="btn btn-default btn-sm" style="font-weight:600;letter-spacing:.3px;color:#ccc;border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.1);" title="Sync certificate data from API">
-                <span class="glyphicon glyphicon-refresh" style="margin-right:5px;"></span>Sync
+                <span class="glyphicon glyphicon-refresh" style="margin-right:5px;"></span>{$MGLANG->T('sslSyncBtn')|default:'Sync'}
             </a>
         </div>
     </div>
@@ -213,13 +213,13 @@
                 {/if}
             </div>
             <div class="ssl-mod-status-label ssl-mod-status-label-{$certState}">
-                {if $certState == 'active_installed'}Active &amp; Installed
-                {elseif $certState == 'active'}Active
-                {elseif $certState == 'processing'}Pending Validation
-                {elseif $certState == 'expired'}Expired
-                {elseif $certState == 'cancelled'}Cancelled
-                {elseif $certState == 'reissue'}Reissue Pending
-                {else}Awaiting Configuration{/if}
+                {if $certState == 'active_installed'}{$MGLANG->T('sslStatusActiveInstalled')|default:'Active &amp; Installed'}
+                {elseif $certState == 'active'}{$MGLANG->T('sslStatusActive')|default:'Active'}
+                {elseif $certState == 'processing'}{$MGLANG->T('sslStatusPendingValidation')|default:'Pending Validation'}
+                {elseif $certState == 'expired'}{$MGLANG->T('sslStatusExpired')|default:'Expired'}
+                {elseif $certState == 'cancelled'}{$MGLANG->T('sslStatusCancelled')|default:'Cancelled'}
+                {elseif $certState == 'reissue'}{$MGLANG->T('sslStatusReissue')|default:'Reissue Pending'}
+                {else}{$MGLANG->T('sslStatusAwaitingConfig')|default:'Awaiting Configuration'}{/if}
             </div>
             {if $certState == 'active_installed' || $certState == 'active'}
                 {if $domain}
@@ -241,29 +241,29 @@
         {* Certificate Details card *}
         <div class="ssl-mod-card">
             <div class="ssl-mod-card-title">{$MGLANG->T('certificateDetails')|default:'Certificate Details'}</div>
-            <div class="ssl-mod-detail-label">SERIAL</div>
+            <div class="ssl-mod-detail-label">{$MGLANG->T('sslSerial')|default:'Serial'|upper}</div>
             <div class="ssl-mod-detail-value">{if $certSerial}#{$certSerial|escape}{else}&mdash;{/if}</div>
             {if $certIssued && $validTill}
-            <div class="ssl-mod-detail-label">CERTIFICATE EXPIRES</div>
+            <div class="ssl-mod-detail-label">{$MGLANG->T('sslCertExpires')|default:'Certificate Expires'|upper}</div>
             <div class="ssl-mod-detail-value">{$validTill}</div>
             <div>
                 {if $nextReissue > 90}
-                    <span class="ssl-mod-days-ok">{$nextReissue}d left</span>
+                    <span class="ssl-mod-days-ok">{$nextReissue}{$MGLANG->T('sslDaysLeftSuffix')|default:'d left'}</span>
                 {elseif $nextReissue > 30}
-                    <span class="ssl-mod-days-warn">{$nextReissue}d left</span>
+                    <span class="ssl-mod-days-warn">{$nextReissue}{$MGLANG->T('sslDaysLeftSuffix')|default:'d left'}</span>
                 {elseif $nextReissue >= 0}
-                    <span class="ssl-mod-days-crit">{$nextReissue}d left</span>
+                    <span class="ssl-mod-days-crit">{$nextReissue}{$MGLANG->T('sslDaysLeftSuffix')|default:'d left'}</span>
                 {else}
-                    <span class="ssl-mod-days-crit">Expired</span>
+                    <span class="ssl-mod-days-crit">{$MGLANG->T('sslExpiredText')|default:'Expired'}</span>
                 {/if}
             </div>
             {if $subscriptionEnds}
-            <div class="ssl-mod-detail-label">SUBSCRIPTION ENDS</div>
+            <div class="ssl-mod-detail-label">{$MGLANG->T('sslSubscriptionEndsLabel')|default:'Subscription Ends'|upper}</div>
             <div class="ssl-mod-detail-value">{$subscriptionEnds}</div>
             {/if}
             {elseif !$certIssued}
-            <div class="ssl-mod-detail-label">EXPIRES</div>
-            <div class="ssl-mod-detail-value" style="color:#aaa;">Pending issuance</div>
+            <div class="ssl-mod-detail-label">{$MGLANG->T('sslExpiresLabel')|default:'Expires'|upper}</div>
+            <div class="ssl-mod-detail-value" style="color:#aaa;">{$MGLANG->T('sslPendingIssuance')|default:'Pending issuance'}</div>
             {/if}
         </div>
 
@@ -272,23 +272,23 @@
             <div class="ssl-mod-card-title">{$MGLANG->T('download')|default:'Download'}</div>
             {if $downloadpem}
             <a href="{$downloadpem}" class="btn btn-primary ssl-mod-dl-btn">
-                <span class="glyphicon glyphicon-download-alt"></span> Certificate (.pem)
+                <span class="glyphicon glyphicon-download-alt"></span> {$MGLANG->T('sslDownloadPem')|default:'Certificate (.pem)'}
             </a>
             {elseif $downloadcrt}
             <a href="{$downloadcrt}" class="btn btn-primary ssl-mod-dl-btn">
-                <span class="glyphicon glyphicon-download-alt"></span> Certificate (.crt)
+                <span class="glyphicon glyphicon-download-alt"></span> {$MGLANG->T('sslDownloadCrt')|default:'Certificate (.crt)'}
             </a>
             {else}
-            <p style="color:#aaa;font-size:13px;">Not available yet</p>
+            <p style="color:#aaa;font-size:13px;">{$MGLANG->T('sslDownloadNotAvailable')|default:'Not available yet'}</p>
             {/if}
             {if $privateKey}
             <button type="button" class="btn btn-default ssl-mod-dl-btn" id="ssl-mod-show-key">
-                <span class="glyphicon glyphicon-eye-open"></span> Private Key (.key)
+                <span class="glyphicon glyphicon-eye-open"></span> {$MGLANG->T('sslDownloadPrivateKey')|default:'Private Key (.key)'}
             </button>
             {/if}
             {if $downloadca}
             <a href="{$downloadca}" class="btn btn-default ssl-mod-dl-btn">
-                <span class="glyphicon glyphicon-download-alt"></span> CA Bundle (.ca)
+                <span class="glyphicon glyphicon-download-alt"></span> {$MGLANG->T('sslDownloadCaBundle')|default:'CA Bundle (.ca)'}
             </a>
             {/if}
             {if $btnInstallCrt}
@@ -307,13 +307,13 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Private Key</h4>
+                    <h4 class="modal-title">{$MGLANG->T('sslPrivateKeyTitle')|default:'Private Key'}</h4>
                 </div>
                 <div class="modal-body">
-                    <textarea class="form-control" rows="12" readonly onclick="this.select()">{$privateKey}</textarea>
+                    <textarea class="form-control" rows="12" readonly onclick="this.select()">{$privateKey|escape:'html'}</textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{$MGLANG->T('Close')|default:'Close'}</button>
                 </div>
             </div>
         </div>
@@ -322,7 +322,7 @@
 
     {* ---- Tabs ---- *}
     <div class="ssl-mod-tabs">
-        <div class="ssl-mod-tab active" data-tab="overview">Overview</div>
+        <div class="ssl-mod-tab active" data-tab="overview">{$MGLANG->T('sslTabOverview')|default:'Overview'}</div>
     </div>
 
     {* ---- Overview tab ---- *}
@@ -331,49 +331,49 @@
         {* Order Info + Organization *}
         <div class="ssl-mod-info-row">
             <div class="ssl-mod-info-box">
-                <div class="ssl-mod-info-box-title">Order Information</div>
+                <div class="ssl-mod-info-box-title">{$MGLANG->T('sslOrderInformation')|default:'Order Information'}</div>
                 <table class="ssl-mod-info-table">
                     {if $sslOrderApiId}
-                    <tr><td>SSL Order ID</td><td>#{$sslOrderApiId|escape}</td></tr>
+                    <tr><td>{$MGLANG->T('sslOrderIdLabel')|default:'SSL Order ID'}</td><td>#{$sslOrderApiId|escape}</td></tr>
                     {/if}
                     {if $partner_order_id}
-                    <tr><td>Vendor Order ID</td><td>#{$partner_order_id|escape}</td></tr>
+                    <tr><td>{$MGLANG->T('sslVendorOrderId')|default:'Vendor Order ID'}</td><td>#{$partner_order_id|escape}</td></tr>
                     {/if}
                     <tr>
-                        <td>Order Status</td>
+                        <td>{$MGLANG->T('sslOrderStatusLabel')|default:'Order Status'}</td>
                         <td>
                             {if $certState == 'active_installed' || $certState == 'active'}
-                                <span style="color:#27ae60;font-weight:600;">Active (valid)</span>
+                                <span style="color:#27ae60;font-weight:600;">{$MGLANG->T('sslStatusActiveValid')|default:'Active (valid)'}</span>
                             {elseif $certState == 'processing'}
-                                <span style="color:#f39c12;font-weight:600;">Pending Validation</span>
+                                <span style="color:#f39c12;font-weight:600;">{$MGLANG->T('sslStatusPendingValidation')|default:'Pending Validation'}</span>
                             {elseif $certState == 'expired'}
-                                <span style="color:#e74c3c;font-weight:600;">Expired</span>
+                                <span style="color:#e74c3c;font-weight:600;">{$MGLANG->T('sslStatusExpired')|default:'Expired'}</span>
                             {elseif $certState == 'cancelled'}
-                                <span style="color:#e74c3c;font-weight:600;">Cancelled</span>
+                                <span style="color:#e74c3c;font-weight:600;">{$MGLANG->T('sslStatusCancelled')|default:'Cancelled'}</span>
                             {elseif $certState == 'reissue'}
-                                <span style="color:#e67e22;font-weight:600;">Reissue Pending</span>
+                                <span style="color:#e67e22;font-weight:600;">{$MGLANG->T('sslStatusReissue')|default:'Reissue Pending'}</span>
                             {else}
-                                <span style="color:#95a5a6;font-weight:600;">Awaiting Configuration</span>
+                                <span style="color:#95a5a6;font-weight:600;">{$MGLANG->T('sslStatusAwaitingConfig')|default:'Awaiting Configuration'}</span>
                             {/if}
                         </td>
                     </tr>
-                    <tr><td>Type</td><td>{$certType|escape}</td></tr>
-                    <tr><td>Wildcard</td><td>{if $certIsWildcard}Yes{else}No{/if}</td></tr>
+                    <tr><td>{$MGLANG->T('sslTypeLabel')|default:'Type'}</td><td>{$certType|escape}</td></tr>
+                    <tr><td>{$MGLANG->T('sslWildcardLabel')|default:'Wildcard'}</td><td>{if $certIsWildcard}{$MGLANG->T('sslYes')|default:'Yes'}{else}{$MGLANG->T('sslNo')|default:'No'}{/if}</td></tr>
                     {if $purchasedDate}
-                    <tr><td>Purchased</td><td>{$purchasedDate}</td></tr>
+                    <tr><td>{$MGLANG->T('sslPurchasedLabel')|default:'Purchased'}</td><td>{$purchasedDate}</td></tr>
                     {/if}
                     {if $validFrom}
-                    <tr><td>Valid From</td><td>{$validFrom}</td></tr>
+                    <tr><td>{$MGLANG->T('validFrom')|default:'Valid From'}</td><td>{$validFrom}</td></tr>
                     {/if}
                 </table>
             </div>
 
             <div class="ssl-mod-info-box">
-                <div class="ssl-mod-info-box-title">Organization</div>
+                <div class="ssl-mod-info-box-title">{$MGLANG->T('sslOrganizationTitle')|default:'Organization'}</div>
                 <table class="ssl-mod-info-table">
-                    <tr><td>Name</td><td>{if $certOrg}{$certOrg|escape}{else}&mdash;{/if}</td></tr>
-                    <tr><td>Unit</td><td>{if $certOrgUnit}{$certOrgUnit|escape}{else}&mdash;{/if}</td></tr>
-                    <tr><td>Address</td><td>{if $certAddress}{$certAddress|escape}{else}&mdash;{/if}</td></tr>
+                    <tr><td>{$MGLANG->T('sslNameLabel')|default:'Name'}</td><td>{if $certOrg}{$certOrg|escape}{else}&mdash;{/if}</td></tr>
+                    <tr><td>{$MGLANG->T('sslUnitLabel')|default:'Unit'}</td><td>{if $certOrgUnit}{$certOrgUnit|escape}{else}&mdash;{/if}</td></tr>
+                    <tr><td>{$MGLANG->T('sslAddressLabel')|default:'Address'}</td><td>{if $certAddress}{$certAddress|escape}{else}&mdash;{/if}</td></tr>
                 </table>
             </div>
         </div>
@@ -383,23 +383,23 @@
         <div class="ssl-mod-info-row" style="margin-bottom:22px;">
             {if $adminContact}
             <div class="ssl-mod-info-box">
-                <div class="ssl-mod-info-box-title">Administrative Contact</div>
+                <div class="ssl-mod-info-box-title">{$MGLANG->T('sslAdminContactTitle')|default:'Administrative Contact'}</div>
                 <table class="ssl-mod-info-table">
-                    {if $adminContact.name}<tr><td>Name</td><td>{$adminContact.name|escape}</td></tr>{/if}
-                    {if $adminContact.organization}<tr><td>Organization</td><td>{$adminContact.organization|escape}</td></tr>{/if}
-                    {if $adminContact.email}<tr><td>Email</td><td>{$adminContact.email|escape}</td></tr>{/if}
-                    {if $adminContact.phone}<tr><td>Phone</td><td>{$adminContact.phone|escape}</td></tr>{/if}
+                    {if $adminContact.name}<tr><td>{$MGLANG->T('sslNameLabel')|default:'Name'}</td><td>{$adminContact.name|escape}</td></tr>{/if}
+                    {if $adminContact.organization}<tr><td>{$MGLANG->T('sslOrgFieldLabel')|default:'Organization'}</td><td>{$adminContact.organization|escape}</td></tr>{/if}
+                    {if $adminContact.email}<tr><td>{$MGLANG->T('sslEmailLabel')|default:'Email'}</td><td>{$adminContact.email|escape}</td></tr>{/if}
+                    {if $adminContact.phone}<tr><td>{$MGLANG->T('sslPhoneLabel')|default:'Phone'}</td><td>{$adminContact.phone|escape}</td></tr>{/if}
                 </table>
             </div>
             {/if}
             {if $techContact}
             <div class="ssl-mod-info-box">
-                <div class="ssl-mod-info-box-title">Technical Contact</div>
+                <div class="ssl-mod-info-box-title">{$MGLANG->T('sslTechContactTitle')|default:'Technical Contact'}</div>
                 <table class="ssl-mod-info-table">
-                    {if $techContact.name}<tr><td>Name</td><td>{$techContact.name|escape}</td></tr>{/if}
-                    {if $techContact.organization}<tr><td>Organization</td><td>{$techContact.organization|escape}</td></tr>{/if}
-                    {if $techContact.email}<tr><td>Email</td><td>{$techContact.email|escape}</td></tr>{/if}
-                    {if $techContact.phone}<tr><td>Phone</td><td>{$techContact.phone|escape}</td></tr>{/if}
+                    {if $techContact.name}<tr><td>{$MGLANG->T('sslNameLabel')|default:'Name'}</td><td>{$techContact.name|escape}</td></tr>{/if}
+                    {if $techContact.organization}<tr><td>{$MGLANG->T('sslOrgFieldLabel')|default:'Organization'}</td><td>{$techContact.organization|escape}</td></tr>{/if}
+                    {if $techContact.email}<tr><td>{$MGLANG->T('sslEmailLabel')|default:'Email'}</td><td>{$techContact.email|escape}</td></tr>{/if}
+                    {if $techContact.phone}<tr><td>{$MGLANG->T('sslPhoneLabel')|default:'Phone'}</td><td>{$techContact.phone|escape}</td></tr>{/if}
                 </table>
             </div>
             {/if}
@@ -409,15 +409,15 @@
         {* ---- Validation Details ---- *}
         {if $dcv_method || $sans}
         <div class="ssl-mod-val-wrap">
-            <div class="ssl-mod-val-title">Validation Details</div>
+            <div class="ssl-mod-val-title">{$MGLANG->T('sslValidationDetails')|default:'Validation Details'}</div>
             <table class="ssl-mod-val-table">
                 <thead>
                     <tr>
-                        <th>Domain</th>
-                        <th>Method</th>
-                        <th>Status</th>
-                        <th>Name / File</th>
-                        <th>Content / Entry</th>
+                        <th>{$MGLANG->T('domain')|default:'Domain'}</th>
+                        <th>{$MGLANG->T('sslMethodLabel')|default:'Method'}</th>
+                        <th>{$MGLANG->T('sslStatusHeader')|default:'Status'}</th>
+                        <th>{$MGLANG->T('sslNameFile')|default:'Name / File'}</th>
+                        <th>{$MGLANG->T('sslContentEntry')|default:'Content / Entry'}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -428,27 +428,27 @@
                         <td><span style="text-transform:uppercase;font-size:11px;font-weight:700;color:#555;">{$dcv_method|upper}</span></td>
                         <td>
                             {if $certState == 'active_installed' || $certState == 'active'}
-                                <span class="ssl-val-badge ssl-val-badge-validated">Validated</span>
+                                <span class="ssl-val-badge ssl-val-badge-validated">{$MGLANG->T('sslValidated')|default:'Validated'}</span>
                             {elseif $certState == 'processing' || $certState == 'reissue'}
-                                <span class="ssl-val-badge ssl-val-badge-pending">Pending</span>
+                                <span class="ssl-val-badge ssl-val-badge-pending">{$MGLANG->T('sslPendingBadge')|default:'Pending'}</span>
                             {else}
                                 <span class="ssl-val-badge ssl-val-badge-na">—</span>
                             {/if}
                         </td>
                         <td>
                             {if $dcv_method == 'email'}
-                                N/A
+                                {$MGLANG->T('sslNa')|default:'N/A'}
                             {elseif isset($approver_method[$dcv_method].filename)}
                                 <code style="font-size:11px;">{$approver_method[$dcv_method].filename}</code>
                             {elseif isset($approver_method[$dcv_method].host)}
                                 <code style="font-size:11px;">{$approver_method[$dcv_method].host}</code>
                             {else}
-                                N/A
+                                {$MGLANG->T('sslNa')|default:'N/A'}
                             {/if}
                         </td>
                         <td>
                             {if $dcv_method == 'email'}
-                                N/A
+                                {$MGLANG->T('sslNa')|default:'N/A'}
                             {elseif isset($approver_method[$dcv_method].content)}
                                 {if is_array($approver_method[$dcv_method].content)}
                                     <span style="font-size:11px;word-break:break-all;">
@@ -467,7 +467,7 @@
                     {if $dcv_method == 'email' && $approver_method}
                     <tr>
                         <td colspan="5" class="ssl-mod-val-email">
-                            Approval Email &nbsp;&nbsp; {$approver_method|escape}
+                            {$MGLANG->T('sslApprovalEmail')|default:'Approval Email'} &nbsp;&nbsp; {$approver_method|escape}
                         </td>
                     </tr>
                     {/if}
@@ -481,16 +481,16 @@
                         <td><span style="text-transform:uppercase;font-size:11px;font-weight:700;color:#555;">{$sanData.method|upper}</span></td>
                         <td>
                             {if $certState == 'active_installed' || $certState == 'active'}
-                                <span class="ssl-val-badge ssl-val-badge-validated">Validated</span>
+                                <span class="ssl-val-badge ssl-val-badge-validated">{$MGLANG->T('sslValidated')|default:'Validated'}</span>
                             {elseif $certState == 'processing'}
-                                <span class="ssl-val-badge ssl-val-badge-pending">Pending</span>
+                                <span class="ssl-val-badge ssl-val-badge-pending">{$MGLANG->T('sslPendingBadge')|default:'Pending'}</span>
                             {else}
                                 <span class="ssl-val-badge ssl-val-badge-na">—</span>
                             {/if}
                         </td>
                         <td>
                             {if $sanData.method == 'email' || $sanData.method == 'dns'}
-                                N/A
+                                {$MGLANG->T('sslNa')|default:'N/A'}
                             {elseif is_array($sanData.san_validation) && isset($sanData.san_validation.filename)}
                                 <code style="font-size:11px;">{$sanData.san_validation.filename|escape}</code>
                             {else}
@@ -499,7 +499,7 @@
                         </td>
                         <td>
                             {if $sanData.method == 'email'}
-                                N/A
+                                {$MGLANG->T('sslNa')|default:'N/A'}
                             {elseif $sanData.method == 'dns' && is_string($sanData.san_validation)}
                                 <span style="font-size:11px;word-break:break-all;">{$sanData.san_validation|escape|truncate:60:'...'}</span>
                             {elseif is_array($sanData.san_validation) && isset($sanData.san_validation.content)}
@@ -513,14 +513,14 @@
                                     <span style="font-size:11px;word-break:break-all;">{$sanData.san_validation.content|truncate:60:'...'|escape}</span>
                                 {/if}
                             {else}
-                                N/A
+                                {$MGLANG->T('sslNa')|default:'N/A'}
                             {/if}
                         </td>
                     </tr>
                     {if $sanData.method == 'email' && $sanData.san_validation}
                     <tr>
                         <td colspan="5" class="ssl-mod-val-email">
-                            Approval Email &nbsp;&nbsp; {$sanData.san_validation|escape}
+                            {$MGLANG->T('sslApprovalEmail')|default:'Approval Email'} &nbsp;&nbsp; {$sanData.san_validation|escape}
                         </td>
                     </tr>
                     {/if}
@@ -597,19 +597,19 @@
                 {assign var='dcvContent'  value=$approver_method[$dcv_method].content}
                 <div class="ssl-mod-dcv-block">
                     <div style="margin-bottom:8px;">
-                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">Verification URL</span>
+                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">{$MGLANG->T('sslVerificationUrl')|default:'Verification URL'}</span>
                         <code style="display:block;margin-top:4px;word-break:break-all;">{$dcv_method}://{$domain|escape}/.well-known/pki-validation/{$dcvFilename|escape}</code>
                     </div>
                     <div style="margin-bottom:8px;">
-                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">Directory on server</span>
+                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">{$MGLANG->T('sslDirectoryOnServer')|default:'Directory on server'}</span>
                         <code style="display:block;margin-top:4px;">&lt;document_root&gt;/.well-known/pki-validation/</code>
                     </div>
                     <div style="margin-bottom:8px;">
-                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">Filename</span>
+                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">{$MGLANG->T('sslFilenameLabel')|default:'Filename'}</span>
                         <code style="display:block;margin-top:4px;">{$dcvFilename|escape}</code>
                     </div>
                     <div>
-                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">File content</span>
+                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">{$MGLANG->T('sslFileContent')|default:'File content'}</span>
                         <code style="display:block;margin-top:4px;white-space:pre-wrap;">{if is_array($dcvContent)}{$dcvContent|implode:"\n"|escape}{else}{$dcvContent|escape}{/if}</code>
                     </div>
                 </div>
@@ -619,7 +619,7 @@
                 </div>
                 {if $btndownload}
                 <a href="{$btndownload}" class="btn btn-default btn-sm" style="margin-top:6px;">
-                    <span class="glyphicon glyphicon-download-alt"></span> Download Validation File
+                    <span class="glyphicon glyphicon-download-alt"></span> {$MGLANG->T('sslDownloadValidationFile')|default:'Download Validation File'}
                 </a>
                 {/if}
                 {/if}
@@ -629,24 +629,24 @@
                 <div class="ssl-mod-dcv-block">
                     {if isset($approver_method.dns.host)}
                     <div style="margin-bottom:8px;">
-                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">Host / Name</span>
+                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">{$MGLANG->T('sslHostName')|default:'Host / Name'}</span>
                         <code style="display:block;margin-top:4px;word-break:break-all;">{$approver_method.dns.host|escape}</code>
                     </div>
                     <div style="margin-bottom:8px;">
-                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">Record Type</span>
+                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">{$MGLANG->T('sslRecordType')|default:'Record Type'}</span>
                         <code style="display:block;margin-top:4px;">{if isset($approver_method.dns.type)}{$approver_method.dns.type|escape}{else}CNAME{/if}</code>
                     </div>
                     <div>
-                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">Value</span>
+                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">{$MGLANG->T('sslValueLabel')|default:'Value'}</span>
                         <code style="display:block;margin-top:4px;word-break:break-all;">{$approver_method.dns.content|escape}</code>
                     </div>
                     {else}
-                    <strong>Record:</strong>
+                    <strong>{$MGLANG->T('sslRecord')|default:'Record:'}</strong>
                     <code style="word-break:break-all;">
                     {if isset($approver_method.dns.record)}
-                        $approver_method.dns.record}
+                        {$approver_method.dns.record|escape}
                     {elseif is_string($approver_method.dns)}
-                        {$approver_method.dns}
+                        {$approver_method.dns|escape}
                     {/if}
                     </code>
                     {/if}
@@ -686,11 +686,11 @@
                             <label style="font-weight:600;">{$MGLANG->T('validationMethod')|default:'Validation Method'}</label>
                             <select class="form-control" id="change-dcv-method-select">
                                 {if !in_array($brand, $brandsWithOnlyEmailValidation)}
-                                <option value="http">HTTP File</option>
-                                <option value="https">HTTPS File</option>
-                                <option value="dns">DNS TXT Record</option>
+                                <option value="http">{$MGLANG->T('sslMethodHttp')|default:'HTTP File'}</option>
+                                <option value="https">{$MGLANG->T('sslMethodHttps')|default:'HTTPS File'}</option>
+                                <option value="dns">{$MGLANG->T('sslMethodDns')|default:'DNS TXT Record'}</option>
                                 {/if}
-                                <option value="email">Email Approval</option>
+                                <option value="email">{$MGLANG->T('sslMethodEmail')|default:'Email Approval'}</option>
                             </select>
                         </div>
                         <div id="change-dcv-email-section" style="display:none;">
@@ -738,10 +738,10 @@
                         {assign var='taskIcon' value='glyphicon-remove-circle'}
                         {assign var='taskColor' value='#c0392b'}
                     {/if}
-                    {assign var='statusLabel' value='Scheduled'}
-                    {if $task->status == 'processing'}{assign var='statusLabel' value='In Progress'}
-                    {elseif $task->status == 'done'}{assign var='statusLabel' value='Completed'}
-                    {elseif $task->status == 'error'}{assign var='statusLabel' value='Attention Required'}
+                    {assign var='statusLabel' value=$MGLANG->T('sslTimelineScheduled')|default:'Scheduled'}
+                    {if $task->status == 'processing'}{assign var='statusLabel' value=$MGLANG->T('sslTimelineInProgress')|default:'In Progress'}
+                    {elseif $task->status == 'done'}{assign var='statusLabel' value=$MGLANG->T('sslTimelineCompleted')|default:'Completed'}
+                    {elseif $task->status == 'error'}{assign var='statusLabel' value=$MGLANG->T('sslTimelineAttention')|default:'Attention Required'}
                     {/if}
                     <li style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;">
                         <span class="glyphicon {$taskIcon}" style="color:{$taskColor};font-size:16px;margin-right:12px;flex-shrink:0;"></span>
@@ -808,7 +808,7 @@
 
 <script type="text/javascript">
 (function ($) {
-    var serviceUrl = 'clientarea.php?action=productdetails&id={$serviceid}&json=1';
+    var serviceUrl = 'clientarea.php?action=productdetails&id={$serviceid}&json=1&mg-model=home';
 
     {if $privateKey}
     $('#ssl-mod-show-key').on('click', function () {
@@ -819,17 +819,17 @@
     {if $btnInstallCrt}
     $('#ssl-mod-install-btn').on('click', function () {
         var btn = $(this);
-        btn.prop('disabled', true).html('<span class="glyphicon glyphicon-refresh"></span> Installing...');
+        btn.prop('disabled', true).html('<span class="glyphicon glyphicon-refresh"></span> {$MGLANG->T('sslInstalling')|default:'Installing...'}');
         $.post(serviceUrl, { 'mg-action': 'installCertificate' }, function (ret) {
             ret = ret.replace('<JSONRESPONSE#', '').replace('#ENDJSONRESPONSE>', '');
             try {
                 var d = JSON.parse(ret);
                 if (d.data && d.data.success) {
-                    $('#MGAlerts').alerts('success', d.data.message || 'Certificate installed successfully.');
-                    btn.html('<span class="glyphicon glyphicon-ok"></span> Installed');
+                    $('#MGAlerts').alerts('success', d.data.message || '{$MGLANG->T('sslInstalledSuccessfully')|default:'Certificate installed successfully.'}');
+                    btn.html('<span class="glyphicon glyphicon-ok"></span> {$MGLANG->T('sslBadgeInstalled')|default:'Installed'}');
                 } else {
-                    $('#MGAlerts').alerts('error', (d.data && d.data.message) || 'Installation failed.');
-                    btn.prop('disabled', false).html('<span class="glyphicon glyphicon-cloud-upload"></span> Install on Server');
+                    $('#MGAlerts').alerts('error', (d.data && d.data.message) || '{$MGLANG->T('sslInstallationFailed')|default:'Installation failed.'}');
+                    btn.prop('disabled', false).html('<span class="glyphicon glyphicon-cloud-upload"></span> {$MGLANG->T('installCertificate')|default:'Install on Server'}');
                 }
             } catch (e) { btn.prop('disabled', false); }
         });
@@ -844,7 +844,7 @@
             ret = ret.replace('<JSONRESPONSE#', '').replace('#ENDJSONRESPONSE>', '');
             try {
                 var d = JSON.parse(ret);
-                $('#MGAlerts').alerts('success', (d.data && d.data.success) || 'Validation email sent.');
+                $('#MGAlerts').alerts('success', (d.data && d.data.success) || '{$MGLANG->T('sslEmailSent')|default:'Validation email sent.'}');
             } catch (e) {}
             btn.prop('disabled', false);
         });
@@ -853,7 +853,7 @@
 
     {if $certState == 'processing'}
     (function () {
-        var changeDcvDomains = [{foreach $sans as $sanName => $sanData}'{$sanName|addslashes}',{/foreach}];
+        var changeDcvDomains = [{if $domain}'{$domain|default:''|addslashes}',{/if}{foreach $sans as $sanName => $sanData}'{$sanName|addslashes}',{/foreach}];
         var changeDcvBrand   = '{$brand|default:''|addslashes}';
 
         function loadChangeDcvEmails() {
@@ -947,14 +947,14 @@
     {if $displayRenewButton}
     $('#ssl-mod-renew-btn').on('click', function () {
         var btn = $(this);
-        btn.prop('disabled', true).html('Processing...');
+        btn.prop('disabled', true).html('{$MGLANG->T('sslProcessing')|default:'Processing...'}');
         $.post(serviceUrl, { 'mg-action': 'renew' }, function (ret) {
             ret = ret.replace('<JSONRESPONSE#', '').replace('#ENDJSONRESPONSE>', '');
             try {
                 var d = JSON.parse(ret);
                 if (d.data && d.data.success) {
                     $('#MGAlerts').alerts('success', d.data.msg || d.data.success);
-                    btn.html('Renewal Invoice Created');
+                    btn.html('{$MGLANG->T('sslRenewalCreated')|default:'Renewal Invoice Created'}');
                 } else {
                     $('#MGAlerts').alerts('error', (d.data && d.data.error) || 'An error occurred.');
                     btn.prop('disabled', false).html('{$MGLANG->T('renew')|default:'Renew Now'}');

@@ -122,8 +122,10 @@ class home extends main\mgLibs\process\AbstractController {
 
             $vars['privateKey'] = '';
             $privateKey = $sslService->getPrivateKey();
-            if($privateKey) {
-                $vars['privateKey'] = $privateKey;
+            if ($privateKey) {
+                $vars['privateKey'] = (strpos($privateKey, '-----BEGIN') !== false)
+                    ? $privateKey
+                    : decrypt($privateKey);
             }
             $vars['san_revalidate'] = false;
 
@@ -421,14 +423,11 @@ class home extends main\mgLibs\process\AbstractController {
                 $sslService = $sslRepo->getByServiceId($input['params']['serviceid']);
                 $privateKey = $sslService->getPrivateKey();
 
-                if(!empty($privateKey))
+                if (!empty($privateKey))
                 {
-                    if (strpos($privateKey, '-----BEGIN PRIVATE KEY-----') !== false) {
-                        $pemfile .= $privateKey;
-                    }
-                    else {
-                        $pemfile .= decrypt($privateKey);
-                    }
+                    $pemfile .= (strpos($privateKey, '-----BEGIN') !== false)
+                        ? $privateKey
+                        : decrypt($privateKey);
                 }
 
                 $pemfile .= $certificateDetails['crt']. "\n";
