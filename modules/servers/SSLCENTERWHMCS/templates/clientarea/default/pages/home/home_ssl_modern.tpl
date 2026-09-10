@@ -610,7 +610,15 @@
                     </div>
                     <div>
                         <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">{$MGLANG->T('sslFileContent')|default:'File content'}</span>
-                        <code style="display:block;margin-top:4px;white-space:pre-wrap;">{if is_array($dcvContent)}{$dcvContent|implode:"\n"|escape}{else}{$dcvContent|escape}{/if}</code>
+                        <code style="display:block;margin-top:4px;white-space:pre-wrap;text-align: left;">{strip}
+                            {if is_array($dcvContent)}
+                                {foreach $dcvContent as $line}
+                                    {$line|escape}{"\n"}
+                                {/foreach}
+                            {else}
+                                {$dcvContent|escape}
+                            {/if}
+                            {/strip}</code>
                     </div>
                 </div>
                 <div class="alert alert-info" style="margin-top:10px;font-size:12px;padding:8px 12px;">
