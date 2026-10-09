@@ -1,0 +1,1339 @@
+================================================================================
+  SSL Center WHMCS Addon (SSLCENTERWHMCS) - Release Notes
+  GoGetSSL reseller integration for WHMCS
+================================================================================
+
+  Repository : https://github.com/gogetssl/whmcs-addon
+  Releases   : https://github.com/gogetssl/whmcs-addon/releases
+  Wiki       : https://github.com/gogetssl/whmcs-addon/wiki
+
+  Entries are listed newest first. Each entry shows the version, the release
+  date (YYYY-MM-DD) and the changes, grouped as:
+
+    [!]      Action required after upgrading
+    Added    New features
+    Changed  Changes to existing behaviour
+    Fixed    Bug fixes
+    Removed  Removed features or options
+
+  Issue numbers (#123) refer to https://github.com/gogetssl/whmcs-addon/issues
+
+  General upgrade steps
+    1. Back up your WHMCS files and database.
+    2. Upload/replace modules/addons/SSLCENTERWHMCS and
+       modules/servers/SSLCENTERWHMCS.
+    3. Open System Settings > Addon Modules (WHMCS 7: Setup > Addon Modules)
+       so the addon's database upgrade runs. Disable and re-enable the addon
+       when an entry below says so.
+    4. Check that all cron jobs listed on the addon's API Configuration page
+       are set up.
+
+
+================================================================================
+  3.x
+================================================================================
+
+v3.1.8 (2026-09-10)
+-------------------
+Fixed
+  - TypeError "implode(): Argument #2 ($array) must be of type ?array, string
+    given" on the client-area certificate details page when showing HTTP/HTTPS
+    validation file content. Lines are now printed and escaped one by one.
+
+v3.1.7 (2026-09-08)
+-------------------
+Changed
+  - Deactivating the addon no longer deletes its database tables and email
+    templates, so settings and order data survive a disable/re-enable.
+Fixed
+  - Certificate details page is now fully translatable: status banners,
+    badges, downloads, tabs, order info, buttons and renewal messages use
+    language strings (about 100 new English keys).
+  - "Change Validation Method" now includes the main domain, not only SANs,
+    and saves the methods that were actually submitted.
+  - Switching to Email validation sends the selected approver email address
+    to the API.
+  - Private key is shown and included in the PEM download whether it is
+    stored plain or encrypted; it is HTML-escaped in the private key dialog.
+
+v3.1.6.1 (2026-09-03)
+---------------------
+Fixed
+  - HTTP/HTTPS validation content for the main domain and SANs on the
+    certificate details page is printed line by line instead of through an
+    implode/truncate call that could fail.
+
+v3.1.6 (2026-09-02)
+-------------------
+[!] Disable and re-enable the addon (or save its configuration) so the new
+    settings columns are created.
+Added
+  - AutoInstall SSL (+ Automate) variants: RapidSSL Plan, RapidSSL Plan
+    Wildcard, GeoTrust Plan, GeoTrust Plan Wildcard. AutoInstall products are
+    now recognised by the GoGetSSL API product name (ending in " + Automate")
+    instead of the WHMCS product name.
+  - "Stop Auto-Renewal" and "Cancel Subscription" actions (with confirmation)
+    for AutoInstall SSL subscriptions in the client area, plus an auto-renewal
+    status row. Cancelling marks the WHMCS service as Cancelled.
+Fixed
+  - SQLSTATE[42S22] (unknown column) error on activation and when saving
+    settings. Fresh installs now create the Wildcard DNS timeout, Auto-Reissue
+    days and Disable Hosting Module Log columns.
+  - Smarty output of validation file names, hosts and content in the DCV
+    instructions on the certificate details page.
+Changed
+  - Translation updates (AutoInstall SSL strings).
+
+v3.1.4.1 (2026-08-25)
+---------------------
+Fixed
+  - Errors on the certificate details page and in validation file downloads
+    when the API returns HTTP/HTTPS validation content as a list instead of
+    text (main domain and SANs).
+
+v3.1.4 (2026-08-20)
+-------------------
+Added
+  - AutoInstall SSL (+ Automate) subscription products. Client-area overview
+    with order status, domain, AutoInstall status and next renewal date,
+    "Get started / Login" and "Manage AutoInstall SSL" single sign-on links and
+    a "Refresh details" button.
+  - AutoInstall SSL configuration page where the client enters the domain or
+    wildcard to secure and creates the subscription.
+Fixed
+  - ACME cart/checkout check "order requires at least one SAN" now counts SANs
+    included with the product, reads the submitted configurable options and is
+    skipped for products without SAN options.
+  - SAN validation content on the certificate details page no longer errors
+    when it is a string rather than a list.
+Changed
+  - Translation updates (AutoInstall SSL strings).
+
+v3.1.3 (2026-08-07)
+-------------------
+Added
+  - "Disable Hosting Module Log" option (API Configuration) to stop module
+    logging of cPanel/DirectAdmin/Plesk requests.
+Fixed
+  - HTTP/HTTPS file validation for Sectigo orders: the real hash-based file
+    name is taken from the validation URL instead of the generic
+    "fileauth.txt".
+  - Uploading a validation file to cPanel when the file already exists: the
+    file is deleted and the upload retried.
+Removed
+  - Old cPanel certificate installer cron command from the API Configuration
+    page (replaced by the cron queue introduced in 3.1.0).
+
+v3.1.2 (2026-07-30)
+-------------------
+Fixed
+  - SSL Configuration page no longer fails when one of the client's hosting
+    servers is unreachable; that server is skipped.
+  - Duplicate domains from several cPanel accounts are removed from the domain
+    picker.
+  - No duplicate renewal invoice is created when WHMCS has already generated
+    or paid an invoice for the same service and billing period.
+Changed
+  - AutoInstall/Manual toggle is hidden when the client has no cPanel service
+    (manual enrollment only).
+  - WHM/cPanel access hash is cleaned of line breaks before use.
+
+v3.1.0 (2026-07-23)
+-------------------
+[!] Add two new cron jobs (commands shown on the API Configuration page):
+    the cron queue processor (every 5 minutes) and the active orders check
+    (every 12 hours). Ten new email templates are installed on upgrade.
+Added
+  - New client-area SSL Configuration page replacing the WHMCS configure-SSL
+    steps:
+      * install type: AutoInstall via cPanel or Manual Enrollment
+      * domain picker from the client's cPanel accounts (optionally with www)
+      * automatic CSR generation or own CSR
+      * validation method Email / HTTP / HTTPS / DNS, with optional fallback
+        email for DNS
+      * admin and tech contacts, single and wildcard SANs, new/renew order type
+  - Redesigned certificate details page: status banner and badges, PEM / CRT /
+    private key / CA bundle downloads, Install on Server, Resend Validation
+    Email, Renew Now, per-domain validation instructions, Certificate Activity
+    timeline and a Change Validation Method dialog.
+  - AutoInstall automation via a cron queue: polls domain validation, uploads
+    HTTP/HTTPS validation files to cPanel, installs the issued certificate on
+    cPanel and reissues automatically before expiry. DNS validation that keeps
+    failing is switched to email (wildcards after a configurable timeout).
+  - Active orders check: detects expired certificates (one-time notice) and
+    syncs next due / next invoice dates with the certificate end date.
+  - Settings "Wildcard DNS Validation Timeout (minutes)" (default 65) and
+    "Auto-Reissue Days Before Expiry" (default 7).
+  - Email templates: renewal invoice, renewal started, renewal complete,
+    auto-renewed, certificate revoked, DNS-to-email switch, auto-reissue
+    failed, certificate installed, certificate expired, validation warning.
+
+v3.0.5 (2026-06-18)
+-------------------
+Added
+  - "Re-sync products" button in Products Creator: reloads the product and
+    brand list from the GoGetSSL API.
+  - ACME SAN requirement (at least one single or wildcard SAN) is also checked
+    at checkout.
+
+v3.0.4 (2026-06-16)
+-------------------
+Added
+  - Cart validation for ACME products: at least one additional single or
+    wildcard SAN must be selected before the product can be added or updated.
+Changed
+  - ACME domain limits are no longer forced to a minimum of 1; with no SANs
+    purchased the limit is 0.
+  - Translation updates (English, Danish, German).
+
+v3.0.3 (2026-05-27)
+-------------------
+[!] The "ACME Subscription Expiration" template is overwritten with clearer
+    wording, and "ACME Subscription Renewal" is replaced by "ACME Subscription
+    Renewed" (a confirmation sent after payment). Re-apply custom edits.
+Added
+  - Compatibility with ModulesGarden Lagom Smart Order Form: client
+    commissions are applied to SSL prices shown in Lagom and on the standard
+    order page.
+  - ACME welcome email includes the configuration link and URL merge fields.
+Changed
+  - WHMCS renewal no longer places a standard SSL renewal order for ACME
+    subscription services.
+  - ACME renewal crons only process products using the SSLCENTERWHMCS module.
+Fixed
+  - PHP 8 error in the order form server-type script.
+
+v3.0.1 (2026-04-13)
+-------------------
+Added
+  - "Buy more domains / refund" on ACME services opens a dialog showing active
+    and purchased single/wildcard domain counts and lets the client set a new
+    limit. The change runs through a WHMCS upgrade (may create an invoice); it
+    is blocked while Unpaid/Overdue invoices exist and cannot go below the
+    number of active domains.
+Changed
+  - The standard WHMCS configurable-options upgrade page redirects to the
+    service page for ACME products.
+  - Removing an ACME domain within 30 days of adding it frees its slot.
+
+v3.0.0 (2026-04-09)
+-------------------
+[!] Disable and re-enable the addon after uploading the files (new database
+    tables and email templates).
+Added
+  - Sectigo CaaS (ACME) subscription product.
+    Setup guide: https://github.com/gogetssl/whmcs-addon/wiki/CaaS-ACME
+      * Client area shows order status, ACME account ID, EAB MAC ID/key,
+        server URL, renewal/expiry and next invoice dates, auto-renewal flag
+        and the list of single and wildcard domains.
+      * Client actions: create subscription, add domains (within purchased
+        limits), buy more domains, remove a domain, check details, stop
+        auto-renewal, cancel with refund or credit within the refund window.
+      * Email templates: subscription, subscription expiration, subscription
+        renewal.
+  - GoGetSSL API v2 support: "API Partner Code" field, partner-code
+    authentication and connection test.
+  - "Renewal Settings (Subscription billing)": automatic renewal invoices,
+    days before expiry and expiration notifications. A cron task refreshes
+    pending subscriptions, creates renewal invoices, sends expiry emails and
+    cancels overdue or expired subscriptions.
+Changed
+  - Products Creator / Products Configuration sync ACME pricing and SAN /
+    wildcard configurable options from the API (annual pricing only).
+
+
+================================================================================
+  2.x
+================================================================================
+
+v2.12.1 (2026-02-11)
+--------------------
+Added
+  - Custom hook "SSLCenter_StepThree", run after an SSL order is placed:
+        add_hook('SSLCenter_StepThree', 1, function ($vars) { ... });
+    $vars: serviceid (int), userid (int), api_ssl_order (array),
+           order_details (array)
+Fixed
+  - "Payment Pending" invoice handling in the client area now applies only to
+    invoices containing SSLCENTERWHMCS products; other invoices are no longer
+    switched to Unpaid.
+
+v2.12.0 (2026-01-27)
+--------------------
+Added
+  - WHMCS 9 compatibility (country list loading).
+Fixed
+  - CSR Generator on PHP 8 (the 2.11.5 failure check always failed on PHP 8).
+  - CSR Generator reports a clear error if exporting the private key or CSR
+    fails.
+
+v2.11.5 (2026-01-05)
+--------------------
+Changed
+  - CSR Generator (client area and admin) creates CSRs with an explicit
+    SHA-256 signature.
+
+v2.11.4 (2025-09-05)
+--------------------
+Fixed
+  - Client-area "Reissue Certificate" button submits correctly and opens the
+    reissue page instead of redirecting to login (#276).
+  - PHP 8 errors on the upgrade page and when creating invoices without a
+    promotion code.
+
+v2.11.2 (2025-04-11)
+--------------------
+Fixed
+  - "Invalid order ID 0" error after migration: the certificate page no longer
+    queries the API when the service has no remote order ID.
+
+v2.11.1 (2025-01-20)
+--------------------
+Fixed
+  - Activation/upgrade on database servers without JSON column support (the
+    AutoSSL orders table uses a text column).
+
+v2.11.0 (2024-12-16)
+--------------------
+Fixed
+  - Duplicate SSL orders when the client submits the final configuration step
+    twice (double click or page refresh). Repeated submissions per service are
+    now ignored. A tracking table is created automatically on upgrade.
+
+v2.10.2 (2024-09-25)
+--------------------
+Fixed
+  - With "renew as new order" enabled, a renewed service set back to
+    "Awaiting Configuration" now receives the "SSLCenter - Configuration
+    Required" email with the configuration link.
+
+v2.10.1 (2024-09-20)
+--------------------
+Changed
+  - Automatic DNS validation now works with ModulesGarden DNS Manager 3
+    (3.4.1+) for new orders, renewals and reissues. DNS Manager 2 is no longer
+    supported.
+
+v2.9.6 (2024-05-28)
+-------------------
+Fixed
+  - Order data with special characters (e.g. "&" in company names) is no
+    longer sent to the API as HTML entities, which broke renewals.
+  - Removed a duplicate client-area controller that could clash with the
+    cPanel CSR generator on case-sensitive servers.
+Removed
+  - Unused demo/test data models.
+
+v2.9.5 (2024-03-27)
+-------------------
+Added
+  - Guide messages for end customers.
+    https://github.com/gogetssl/whmcs-addon/wiki/Guide-Messages
+Fixed
+  - Reissue (admin and client) no longer counts empty SAN fields as a domain,
+    which caused false SAN limit errors and extra SAN charges on multi-domain
+    certificates.
+  - Client-area Revalidate dialog no longer errors when no validation methods
+    are disabled.
+  - API requests send the correct "User-Agent" header.
+Changed
+  - Reissue step one no longer asks for the web server type.
+  - Technical contact phone is saved with the country calling code.
+
+v2.9.3 (2024-03-19)
+-------------------
+Added
+  - "Issued SSL message" product setting (Products Configuration, bulk edit
+    and Products Creator), shown in the client area once the certificate is
+    active.
+Changed
+  - "Custom Guide" renamed to "Processing SSL message". The global guide and
+    the per-product processing message are shown as separate rows.
+Fixed
+  - cPanel certificate installer cron command is displayed correctly on the
+    API Configuration page.
+  - Translation updates (English, German).
+
+v2.9.2 (2024-03-06)
+-------------------
+Added
+  - "Automatic certificate installation in cPanel" option on the API
+    Configuration page.
+Changed
+  - The CSR field on step one is read-only only when the client has cPanel
+    domains and automatic installation is enabled.
+  - Translation updates (English, Danish, German).
+
+v2.9.1 (2024-03-04)
+-------------------
+Fixed
+  - Clients can enter their own CSR again: a checkbox above the CSR field
+    makes it editable (automatic installation still needs a generated CSR).
+  - Upgrade error from very old versions (1.0.32 or older).
+
+v2.9.0 (2024-02-12)
+-------------------
+[!] Add the new certificate installer cron shown on the API Configuration
+    page (once a day suggested).
+Added
+  - cPanel AutoSSL integration.
+    https://github.com/gogetssl/whmcs-addon/wiki/cPanel-AutoSSL
+      * When the client has a cPanel hosting service in WHMCS, step one offers
+        "Choose a domain" from that account, or "Custom domain".
+      * Choosing a cPanel domain generates the CSR and private key.
+      * After ordering, domain validation is set up on cPanel automatically:
+        HTTP/HTTPS file in .well-known/pki-validation or a DNS CNAME/TXT record,
+        for the main domain and SANs.
+      * "Install Certificate" button installs the certificate, key and CA
+        bundle on the matching cPanel account.
+  - Admin "Orders" page (AutoSSL orders with "Set as verified" / "Set as
+    installed") and "Logs" page (validation and installation events).
+Fixed
+  - SAN and wildcard SAN fields hidden when the product's SAN limit is 0.
+  - Dialog headers in the "twenty-one" template.
+
+v2.8.18 (2024-01-19)
+--------------------
+Fixed
+  - Automatic renewal skips services that were never configured instead of
+    sending an invalid renewal order to the API.
+  - Renewal approver email is read correctly when stored as an object.
+
+v2.8.16 (2023-12-14)
+--------------------
+Fixed
+  - "Download PEM" and "Get Private Key" work when the stored private key is
+    not encrypted.
+
+v2.8.15 (2023-12-06)
+--------------------
+Fixed
+  - SAN renewals: SANs using email validation use the order's approver email
+    instead of the literal value "email".
+
+v2.8.14 (2023-11-07)
+--------------------
+Added
+  - "Use Profile Data for CSR" option (API Configuration > CSR Generator):
+    the CSR Generator is pre-filled from the client profile, only the Common
+    Name is needed.
+Fixed
+  - Renewal orders fill missing contact fields from the client details.
+  - Client-area reissue no longer decrypts the private key twice.
+
+v2.8.13 (2023-08-30)
+--------------------
+Fixed
+  - Private key generated by the CSR Generator is kept during client-area
+    reissue.
+  - A paid earlier renewal invoice no longer blocks creation of the next
+    renewal invoice.
+
+v2.8.11 (2023-07-26)
+--------------------
+Added
+  - API requests identify the addon version, for faster GoGetSSL support.
+Changed
+  - Module Log records full request headers and raw API responses.
+Fixed
+  - OV/EV renewals send organisation details, taken from the client profile
+    when the order has none.
+
+v2.8.9 (2023-06-14)
+-------------------
+Fixed
+  - Unknown or removed API product IDs no longer throw "Invalid API product
+    id".
+  - CSR decoding on the order page uses the first SAN as main domain only if
+    it is a wildcard.
+
+v2.8.8 (2023-04-12)
+-------------------
+Fixed
+  - "Error Connect Database" (#237): DNS Manager integration only runs when
+    the DNS Manager tables exist.
+  - WHMCS cron failing because of module errors (#238): renewals of services
+    without stored order fields no longer throw errors.
+
+v2.8.7 (2023-04-11)
+-------------------
+Fixed
+  - "Table 'mgfw_SSLCENTER_invoices_pendingpayment' doesn't exist": the table
+    is now created automatically when needed.
+
+v2.8.6 (2023-03-30)
+-------------------
+Added
+  - Per-product "Enable Wildcard SANs" option in Products Configuration.
+Fixed
+  - Renew and Reissue email templates used {$serviceid}, which WHMCS does not
+    provide; now {$service_id} (#235).
+  - Single and wildcard SAN fields on the order form are shown independently.
+
+v2.8.4 (2023-02-07)
+-------------------
+Fixed
+  - "Price Auto Download" (#233): API prices are used as-is for the WHMCS
+    default currency (previously only USD) and converted for other
+    currencies using WHMCS rates.
+
+v2.8.3b (2023-01-16)
+--------------------
+Fixed
+  - Client-area "Renew" button respects the addon's renew-button settings.
+  - "Recheck Certificate Details" shown only for unpaid orders.
+
+v2.8.3a (2023-01-05)
+--------------------
+Fixed
+  - Certificate emails attach the certificate files when WHMCS 8 email
+    attachment storage is configured.
+  - Suggested "send certificate" cron corrected to every 3 hours.
+
+v2.8.2 (2023-01-02)
+-------------------
+Fixed
+  - PHP warning in server module hooks ("The use statement with non-compound
+    name 'Exception' has no effect").
+
+v2.8.1 (2022-12-16)
+-------------------
+Fixed
+  - SQLSTATE[42000] syntax error on the client services page "Awaiting
+    Configuration" hook (#223).
+
+v2.8.0 (2022-11-18)
+-------------------
+Added
+  - PHP 8.1 compatibility (beta).
+Fixed
+  - Cron expiration/renewal processing includes "Configuration Submitted"
+    orders; reissue days use stored certificate dates.
+  - Renewal as a new order: wildcard domains handled correctly, missing
+    organisation details fall back to the admin contact, approver emails for
+    the main domain and SANs carry over.
+  - Admin Reissue dialog: wildcard SANs included, selected approver emails
+    sent, extra SAN slots ordered when needed.
+  - Configuration step 2 loads approver email lists directly.
+
+v2.7.9 (2022-10-31)
+-------------------
+[!] A new database table for pending-payment invoices is created on upgrade.
+Added
+  - Renewal option "Set the status of Unpaid for renewal invoices (default is
+    payment pending)" (#218).
+Changed
+  - A "Payment Pending" renewal invoice opened by the client switches to Unpaid
+    so it can be paid or credit applied, and switches back if not paid.
+  - Reissue orders extra SAN slots only when SAN fields are filled in, which
+    fixes "The product X does not support SANs" (#217).
+
+v2.7.7a (2022-10-03)
+--------------------
+Fixed
+  - Client reissue form reliably pre-fills single and wildcard SANs.
+
+v2.7.7 (2022-09-30)
+-------------------
+Fixed
+  - SAN purchases during reissue (admin and client) order only the missing
+    single/wildcard SANs compared with the current order.
+  - Pre-filled SAN lists show one domain per line.
+
+v2.7.6a (2022-09-23)
+--------------------
+Fixed
+  - Client reissue form pre-fills existing SANs split into single and wildcard
+    lists.
+
+v2.7.6 (2022-09-16)
+-------------------
+Fixed
+  - Adding SANs during reissue sends separate single and wildcard SAN counts
+    to the API.
+
+v2.7.5a (2022-09-12)
+--------------------
+Fixed
+  - Duplicate empty Wildcard SAN field on the order form.
+  - DCV for DigiCert/GeoTrust multi-domain certificates: GeoTrust SANs get
+    per-domain validation methods.
+  - New email-validated orders send the approver email for SAN domains.
+Added
+  - Activity log entries when the cron changes due dates or terminates a
+    service.
+
+v2.7.5 (2022-08-01)
+-------------------
+Fixed
+  - Expiration and reissue notification emails not sent in some environments.
+
+v2.7.4 (2022-07-04)
+-------------------
+Added
+  - Currency conversion: "Rate for currency from SSLCENTER" applied by the
+    price auto-updater when your WHMCS default currency differs from your
+    GoGetSSL account currency.
+    https://github.com/gogetssl/whmcs-addon/wiki/Currency-conversion
+
+v2.7.3 (2022-06-14)
+-------------------
+Fixed
+  - Wildcard CSRs without a Common Name: the main domain is taken from the
+    first DNS name; wildcard detection on step 2 works again.
+
+v2.7.2 (2022-06-01)
+-------------------
+Fixed
+  - DNS Manager: CNAME validation records supported (fully qualified names)
+    and records are added to the zone instead of replacing it.
+
+v2.7.0a (2022-05-19)
+--------------------
+[!] To show "This product has X additional SANs included" on the order form
+    and product details, add the snippets from the admin User Commissions page
+    to clientareaproductdetails.tpl and configureproduct.tpl.
+Added
+  - ModulesGarden DNS Manager integration: DNS validation records (and the
+    zone if missing) are created automatically for new orders, renewals and
+    reissues.
+  - FLEX SSL / wildcard SANs: "Included Wildcard SANs", a separate
+    "Additional Wildcard SAN's" configurable option, a "Wildcard SAN Domains"
+    field on order and reissue forms, and wildcard SANs billed separately on
+    renewal invoices. https://github.com/gogetssl/whmcs-addon/wiki/FLEX-SSL
+  - "Download PEM" (private key + certificate + CA bundle) and a "Next
+    Renewal" row in the client area.
+  - "Awaiting Configuration" badge in the client services list.
+Changed
+  - API key is stored in the database instead of being requested on every
+    call; many redundant API calls removed.
+  - Client reissue pre-fills the current CSR and SANs.
+  - "Change validation method" works per domain; HTTP/HTTPS hidden for
+    wildcard domains.
+Fixed
+  - Auto-renew invoices generated while the function was disabled (#201).
+
+v2.6.6 (2021-12-22)
+-------------------
+Fixed
+  - Cron sync of orders in "Configuration Submitted" status (WHMCS renamed
+    "Completed").
+  - Client reissue accepts IP-address SANs.
+  - Client-area file downloads no longer send a broken Content-Length header.
+
+v2.6.5 (2021-12-13)
+-------------------
+Fixed
+  - "Generate CSR" dialog layout in the "twenty-one" template.
+Changed
+  - Redundant approval-method headings hidden on the configuration step.
+
+v2.6.4 (2021-11-23)
+-------------------
+Fixed
+  - Errors on configuration step 2 are shown as a message instead of breaking
+    the page.
+  - DCV method selection works for dynamically added rows.
+
+v2.6.2 (2021-11-14)
+-------------------
+Removed
+  - HTTP/HTTPS validation for wildcard domains and wildcard SANs, required from
+    2021-11-15 by CA/B Forum ballot SC45 (Sectigo, DigiCert).
+
+v2.6.1 (2021-10-04)
+-------------------
+Fixed
+  - Product data fetched from the API when the local product cache is empty
+    (#193).
+  - Client-area hooks no longer fail when the server module path differs.
+
+v2.6.0 (2021-09-20)
+-------------------
+[!] Renewal and Reissue email template bodies are overwritten on upgrade. To
+    also get the new subjects, delete both templates and re-activate the
+    addon.
+Changed
+  - Renewal email ("SSL Certificate - Renew") asks the client to click Renew;
+    Reissue email ("SSL Certificate - Reissue") explains that subscriptions
+    need a reissue, not a payment.
+  - "Expires" renamed to "Valid Till".
+Added
+  - Client reissue step 1 pre-fills existing SAN domains.
+Fixed
+  - Renew button for subscription certificates appears within 30 days of the
+    subscription end.
+  - "Next Reissue" days counted from today for subscriptions.
+  - Order form no longer fails when approver emails cannot be fetched; Email
+    method is hidden for that domain.
+
+v2.5.12 (2021-07-31)
+--------------------
+Fixed
+  - Auto-renewal: SANs using email validation send the approver address
+    instead of the word "email".
+  - Client-area downloads (CSR, certificate, CA, validation files) streamed
+    directly instead of through temporary files.
+
+v2.5.11 (2021-06-09)
+--------------------
+Changed
+  - Web server type set automatically by brand (no selection needed).
+
+v2.5.10 (2021-05-28)
+--------------------
+Added
+  - "Email WHOIS" option (Validation Settings): when checked, only generic
+    approver addresses (admin@, administrator@, hostmaster@, postmaster@,
+    webmaster@) are offered.
+Removed
+  - Web server selector on the order form; "Any Other" is sent automatically.
+Fixed
+  - Admin Reissue dialog form enabled again.
+
+v2.5.9 (2021-03-22)
+-------------------
+Fixed
+  - Wildcard SAN items for products that support them (e.g. Sectigo UCC
+    Wildcard).
+Changed
+  - IP-address certificates (product 144): only HTTP/HTTPS validation offered.
+
+v2.5.8 (2021-03-08)
+-------------------
+Fixed
+  - WHMCS 8 generated renewal invoices for one-time orders (#178): cron no
+    longer changes due dates of monthly, one-time or free services.
+
+v2.5.7 (2021-03-04)
+-------------------
+Fixed
+  - Cron sync includes monthly, one-time and free services, so expired
+    certificates are detected (#176).
+
+v2.5.6 (2021-02-12)
+-------------------
+Fixed
+  - Subscription certificates (e.g. triennial): Next Due Date synced to the
+    subscription end instead of the certificate expiry (#172).
+
+v2.5.5 (2021-02-01)
+-------------------
+Fixed
+  - Reissue reminders no longer sent for terminated or expired services.
+
+v2.5.4a (2021-01-19)
+--------------------
+Added
+  - Configuration step 2 returns DCV methods, approver emails and brand per
+    domain (required by the GoGetSSL WHMCS Reseller module).
+
+v2.5.4 (2021-01-07)
+-------------------
+Fixed
+  - Country values already given as 2-letter codes are accepted (#167).
+
+v2.5.3 (2020-12-21)
+-------------------
+[!] The reissue email template is overwritten on upgrade.
+Added
+  - Approver email shown on the admin service page.
+Changed
+  - Reissue reminders sent only for subscription products (Max Months > 12).
+Fixed
+  - Reissue reminder emails failed to send (#164).
+  - Validation email display in the client area (#161).
+
+v2.5.2 (2020-12-18)
+-------------------
+Added
+  - Approver email shown on the client-area certificate page.
+
+v2.5.1 (2020-12-15)
+-------------------
+Changed
+  - Renewal invoice "days before expiry" options are now 30/21/14/7/3/1/0.
+  - "Max Months" follows the product's maximum period from the API.
+Fixed
+  - "twenty-one" template (WHMCS 8.1) support: country codes for contacts and
+    the "Generate CSR" dialog (#159).
+  - Per-customer expiration/renewal notifications (#158).
+
+v2.5.0f (2020-11-19)
+--------------------
+Fixed
+  - WHMCS 7: duplicate-order check in admin "Import SSL Order".
+
+v2.5.0e (2020-11-12)
+--------------------
+Fixed
+  - WHMCS 7.10: admin "Manage SSL" button logs in as the client again.
+
+v2.5.0d (2020-11-06)
+--------------------
+Changed
+  - WHMCS 8 admin service page hides unused fields (Dedicated IP, Username,
+    Password).
+Fixed
+  - "Next Reissue" days for subscription certificates.
+  - WHMCS 8 logged the admin out during import (#147).
+Removed
+  - Legacy package SSL_Center_WHMCS_6_3_1.zip.
+
+v2.5.0c (2020-10-30)
+--------------------
+Fixed
+  - Renewal as a new order keeps the original "*.domain" for wildcard
+    certificates.
+
+v2.5.0b (2020-10-29)
+--------------------
+Fixed
+  - Admin "Manage SSL" button with a custom admin folder name, and redirect to
+    the right client service.
+
+v2.5.0a (2020-10-29)
+--------------------
+Added
+  - First release compatible with WHMCS 8.
+Fixed
+  - Admin SSL details tab loads order details from the API when missing.
+
+v2.5.0 (2020-10-28)
+-------------------
+Added
+  - Subscription dates in the client area: Valid From, Expires, Subscription
+    Starts, Subscription Ends, Next Reissue. A new "SSLCenter - Reissue" email
+    is sent 30 days before a reissue is due.
+  - LEI code field for OV/EV orders.
+Changed
+  - DCV methods (Email/DNS/HTTP/HTTPS) follow each product's API capabilities,
+    enabling HTTP/DNS validation for DigiCert, RapidSSL, Thawte and GeoTrust.
+Fixed
+  - Billing period lookup on order and renew, import duplicate check, WHMCS 8
+    country list, admin "Login as client" link, cron handling of one-time
+    services; certificate downloads named after the domain.
+
+v2.4.11 (2020-10-23)
+--------------------
+Fixed
+  - CSR validation for wildcard products uses the product's wildcard setting.
+
+v2.4.10 (2020-09-25)
+--------------------
+Fixed
+  - Renewal notifier finds one-time services' SSL orders, so notifications are
+    sent in all cases.
+  - Sync cron no longer re-checks skipped services on every run.
+  - CSR decoder shows clearer error messages.
+
+v2.4.9 (2020-09-23)
+-------------------
+Fixed
+  - Admin renewal error "Approval email must be provided": the stored approver
+    email is used.
+  - Renewals convert full country names to 2-letter codes.
+  - Admin "View Certificate" labels clarified: "Certificate (CRT)",
+    "Intermediate/Chain files", "CSR (Certificate Signing Request)" (#144).
+Changed
+  - Client-area SSL summary redesigned.
+
+v2.4.8a (2020-09-07)
+--------------------
+Added
+  - "Cron Synchronized" field on the admin service tab.
+Fixed
+  - Sync cron re-checked issued certificates constantly; they are now checked
+    once every 24 hours.
+
+v2.4.8 (2020-07-29)
+-------------------
+Added
+  - Renewal invoices with a 0.00 total are marked Paid automatically.
+Fixed
+  - Renewal of imported orders: with "Renew order via existing order"
+    enabled, paying the renewal invoice runs the Renew command.
+
+v2.4.7b (2020-07-22)
+--------------------
+Fixed
+  - Wildcard SANs (*.domain.com) accepted for more products.
+
+v2.4.7a (2020-07-21)
+--------------------
+Changed
+  - Sync cron skips monthly, one-time, free and already-synced services
+    before querying the API (fewer API calls).
+Fixed
+  - Error on new customer order (#131).
+
+v2.4.7 (2020-07-21)
+-------------------
+Fixed
+  - Invoice payment initialises the addon before processing.
+
+v2.4.6 (2020-06-25)
+-------------------
+Added
+  - "SSLCenter - Renewal" email template, sent when an addon renewal invoice
+    is paid (#129).
+
+v2.4.5 (2020-06-15)
+-------------------
+Fixed
+  - Wildcard CSRs rejected during client reissue (#127).
+Added
+  - Danish translation.
+
+v2.4.4 (2020-05-23)
+-------------------
+Added
+  - "Save all products" in Products Configuration.
+    https://github.com/gogetssl/whmcs-addon/wiki/Product-Configuration
+  - "Custom Guide" messages (global and per product, HTML allowed) shown while
+    an order is processing.
+  - GoGetSSL Public IP SSL (product 144): CSR without CN, IP SANs, HTTP/HTTPS
+    validation only.
+  - German translation.
+Changed
+  - Dates shown in the WHMCS client date format (#121).
+
+v2.4.3 (2020-04-17)
+-------------------
+Fixed
+  - Validation hash file not shown on some environments.
+  - Downloads use the system temp directory instead of the WHMCS folder.
+  - Activation on WHMCS versions without the "blind_copy_to" template column.
+
+v2.4.2a (2020-04-09)
+--------------------
+Fixed
+  - Renew button respects 'Visible "Renew" button in ClientArea' and is hidden
+    for orders in "Configure" status.
+
+v2.4.2 (2020-04-07)
+-------------------
+Fixed
+  - Commission pricing applies only to SSL Center products, not other WHMCS
+    products.
+
+v2.4.1a (2020-03-31)
+--------------------
+Added
+  - "Months One Time" product setting: sell multi-year (e.g. 4-year) SSL as
+    one-time orders; termination date set to the certificate expiry.
+Fixed
+  - Cron set identical "nextinvoicedate" and "nextduedate", giving clients one
+    day to pay; the WHMCS "Invoice Days Before" setting is now respected.
+  - Commission pricing and invoice descriptions for one-time products.
+
+v2.3.3 (2020-02-27)
+-------------------
+[!] Critical cron changes: all cron jobs must be enabled.
+    https://github.com/gogetssl/whmcs-addon/wiki/CRON-Jobs
+Added
+  - "Download Certificate", "Download Intermediate/Chain" and "Download CSR"
+    buttons (#104); Send Certificate attaches the files.
+  - "List of pages with visible sidebar" setting for the orders summary (#102).
+Fixed
+  - Ordering when the local product brand cache is empty.
+
+v2.3.2d (2020-02-19)
+--------------------
+Stabilisation release (2.3.2 - 2.3.2d) after an in-depth QA review: more than
+15 critical issues fixed, pages ~3x faster thanks to local caching of product
+and order data.
+[!] New mandatory cron jobs (order status sync daily and every 5 minutes).
+    https://github.com/gogetssl/whmcs-addon/wiki/CRON-Jobs
+Added
+  - Live SSL status for pending orders, "Download" validation file (also per
+    SAN) and "Domain Validation Method" (change method and revalidate).
+  - "Renew order via existing order" and "automatic processing of renewal
+    orders" options. https://github.com/gogetssl/whmcs-addon/wiki/Renewal-Process
+  - Bulk "Set for many products" in Products Configuration.
+Fixed
+  - Wildcard products reject CSRs whose CN does not start with "*.".
+  - Auto-renewals keep the original validation method and SAN methods.
+  - Renewal invoices: correct SAN amounts, no duplicate renewal within an hour.
+  - Commission prices shown in the cart; per-currency pricing.
+Removed
+  - Fax number field.
+  - Web server list from the API (fixed list: IIS / Any Other).
+
+v2.3.0 (2019-11-22)
+-------------------
+[!] Add the new "Certificate Details Updater" cron (once a day), then run it
+    once to fill details for existing orders.
+Added
+  - Certificate details stored locally (status, validity, SANs, CA/CRT, DCV)
+    so pages load without live API calls.
+  - Admin "Recheck Certificate Details" and client "Check Certificate Details"
+    buttons.
+Fixed
+  - Approver email changes (admin and client) are saved on the service.
+  - Renewal orders fill missing contacts from the client profile.
+
+v2.2.8 (2019-11-12)
+-------------------
+Fixed
+  - Wildcard CSR processing after 2.2.7.
+
+v2.2.7a (2019-11-08)
+--------------------
+[!] Activity logging is off after upgrade; enable it under Logs Settings.
+Added
+  - "Activity log" option (Logs Settings) to turn addon entries in the WHMCS
+    activity log on or off. https://github.com/gogetssl/whmcs-addon/wiki/Log-Settings
+Fixed
+  - CSR decoder errors read correctly in configuration and reissue.
+
+v2.2.6 (2019-10-24)
+-------------------
+Fixed
+  - CSR decoder: trailing white space in the Common Name.
+
+v2.2.5 (2019-10-18)
+-------------------
+Fixed
+  - Admin "View Certificate" shows the CSR and certificate again (#75, #77).
+
+v2.2.4 (2019-10-16)
+-------------------
+Fixed
+  - Private key generated during client reissue is saved to the service.
+
+v2.2.3 (2019-10-15)
+-------------------
+[!] Both new options are off after upgrade: enable them to keep the client
+    Renew button and automatic renewal invoices.
+Added
+  - 'Visible "Renew" button in ClientArea' and "Renew - New Order" options
+    (Renewal Settings). The first shows the client Renew button; the second
+    lets the module create its own renewal invoices.
+
+v2.2.2 (2019-10-09)
+-------------------
+Added
+  - Issued certificate (CRT) included in certificate emails via the
+    {$crt_code} merge field (add it to existing templates manually).
+
+v2.2.1 (2019-09-24)
+-------------------
+Changed
+  - SAN upgrades/downgrades (configurable options) are charged the full price
+    instead of pro rata; promotions and tax recalculated.
+
+v2.1.12 (2019-09-11)
+--------------------
+Fixed
+  - Sync cron skips orders without a remote order ID and includes orders from
+    the legacy "gogetssl" module (#50).
+
+v2.1.11a (2019-09-10)
+---------------------
+Fixed
+  - Client reissue uses the corrected web server list.
+
+v2.1.11 (2019-09-09)
+--------------------
+Fixed
+  - Correct web server software IDs for Sectigo and non-Sectigo products.
+
+v2.1.10 (2019-09-05)
+--------------------
+Fixed
+  - Sync cron terminates services whose certificate order was cancelled, not
+    only expired (#50).
+
+v2.1.9 (2019-08-29)
+-------------------
+Fixed
+  - Browser autocomplete disabled on the CSR Generator Common Name field.
+
+v2.1.8 (2019-08-27)
+-------------------
+Fixed
+  - Activation SQL error 1064; the "Configuration Required" template is
+    recreated if missing.
+  - Admin "Import SSL Order" shows a clear error when the product has no
+    pricing.
+
+v2.1.6 (2019-08-23)
+-------------------
+Fixed
+  - Activation error "Field 'attachments' doesn't have a default value" when
+    creating email templates.
+
+v2.1.5 (2019-08-20)
+-------------------
+Fixed
+  - CSR decoder failed on trailing spaces/new lines, leaving no validation
+    methods on step 2.
+Changed
+  - Faster configuration form: web server list built in.
+
+v2.1.4 (2019-07-19)
+-------------------
+Fixed
+  - Activation on newer WHMCS 7 / MySQL: "Foreign key constraint is
+    incorrectly formed" on the user commission table.
+
+v2.1.3a (2019-07-01)
+--------------------
+Fixed
+  - Template loading on some installations (absolute and relative template
+    paths) (#43).
+  - CSR Generator no longer trims one character too many.
+
+v2.1.2 (2019-06-27)
+-------------------
+Fixed
+  - CSR Generator added a trailing blank line that broke CSR decoding.
+
+v2.1.1 (2019-06-13)
+-------------------
+Fixed
+  - Ordering/reissuing with HTTP/HTTPS/DNS validation failed because of a
+    hidden required approver email field.
+
+v2.1.0 (2019-05-21)
+-------------------
+Added
+  - Multibrand 2.x support (configuration links and branding per service).
+Fixed
+  - Public IP SANs: only HTTP/HTTPS validation offered.
+
+v2.0.8a (2019-03-29)
+--------------------
+Changed
+  - CSR Generator shows a "*.domain.tld" hint for wildcard products.
+
+v2.0.8 (2019-03-27)
+-------------------
+Added
+  - Option to enable/disable auto-renewal.
+
+v2.0.7 (2019-03-18)
+-------------------
+Changed
+  - CSR Generator always creates 2048-bit RSA keys.
+
+v2.0.6 (2019-03-06)
+-------------------
+Added
+  - "Payment Pending" invoices shown as Unpaid with a payment button in the
+    client area.
+Fixed
+  - Disabling the addon failed when module tables were missing.
+
+v2.0.5 (2019-02-19)
+-------------------
+Fixed
+  - Renewal invoices created without tax (VAT).
+  - Commission pricing in the cart for guests and other currencies (#27).
+  - "Cannot fetch web server list".
+
+v2.0.4 (2019-02-04)
+-------------------
+Changed
+  - Automatic renewal invoices created as "Payment Pending" instead of
+    becoming Overdue (#22); cancelled automatically when the certificate
+    expires. https://github.com/gogetssl/whmcs-addon/wiki/Additional-Integration
+
+v2.0.3 (2018-12-28)
+-------------------
+Fixed
+  - Price updater cron applies each product's own API prices.
+  - Error when disabling/upgrading the addon.
+
+v2.0.1 (2018-12-14)
+-------------------
+Fixed
+  - Expiry notifications for renewed and one-time certificates (#20).
+  - Enabling SANs on a product without a SAN option group (#19, #21).
+Added
+  - Template variables for custom client themes ("Back to Service Details").
+
+v2.0.0 (2018-12-05)
+-------------------
+[!] Module renamed from "GoGetSSL WHMCS" (GGSSLWHMCS) to the white-label
+    "SSL Center" (SSLCENTERWHMCS). Install it alongside 1.x, then use "Data &
+    Configuration Migration" > "Migrate" in the addon configuration.
+    https://github.com/gogetssl/whmcs-addon/wiki/Migration-to-v.2
+[!] All cron paths changed; recreate the crons and add the price updater cron.
+Added
+  - Price auto-download with percentage mark-up, and a price updater cron.
+  - "Commission Rules" page: per-client commission applied in the cart and on
+    renewal invoices.
+  - Renewal invoices and orders include purchased SANs (#18).
+Fixed
+  - Private key download button.
+
+
+================================================================================
+  1.x (GGSSLWHMCS - discontinued)
+================================================================================
+
+v1.0.42 (2018-11-09)
+--------------------
+Added
+  - Selectable validity months for one-time products (Products Configuration).
+  - CSR shown and downloadable on the client-area certificate page.
+  - Client renewals logged in the WHMCS activity log.
+Fixed
+  - Renewal invoice items linked to their service.
+
+v1.0.41 (2018-10-25)
+--------------------
+Changed
+  - SAN quantity cannot be lowered for an active certificate (#14).
+  - "Certificate Verification" wording; email column hidden when email
+    validation is disabled (#15).
+
+v1.0.40 (2018-10-12)
+--------------------
+Added
+  - Client-area order lists (Total, Unpaid, Processing, Expires Soon), linked
+    from the orders summary.
+  - "Disable Email Validation" option.
+Changed
+  - Orders summary hidden for clients without SSL orders.
+Fixed
+  - Renewal invoices use the current price and the service billing cycle (#12).
+
+v1.0.39 (2018-10-02)
+--------------------
+Fixed
+  - "Import SSL Order" uses the client's payment gateway and shows real
+    errors.
+
+v1.0.38 (2018-09-26)
+--------------------
+Fixed
+  - CSR Generator response broken on some servers.
+
+v1.0.37 (2018-09-24)
+--------------------
+Changed
+  - PHP 7.2+ compatibility (WHMCS PDO connection only).
+
+v1.0.36 (2018-09-16)
+--------------------
+Fixed
+  - Web server list on custom order form templates.
+
+v1.0.35 (2018-09-12)
+--------------------
+Fixed
+  - "Invalid API product id" when a linked product was removed from the API.
+  - Invoice errors for free products (#6).
+
+v1.0.34 (2018-08-30)
+--------------------
+Changed
+  - Renew button available for all billing cycles within 90 days of expiry.
+
+v1.0.33 (2018-08-21)
+--------------------
+[!] "Display Orders Summary" is off after upgrade; enable it to keep the
+    summary.
+Added
+  - CSR Generator during reissue.
+  - "Display Orders Summary" option.
+Changed
+  - Service domain and invoice description updated from the CSR.
+
+v1.0.32 (2018-08-20)
+--------------------
+[!] Add the certificate sender cron.
+Added
+  - Cron that emails the certificate once issued.
+Fixed
+  - Template override (#3).
+
+v1.0.31 (2018-08-08)
+--------------------
+[!] Add the certificate stats loader cron (every 4 hours).
+Added
+  - Client "Send Certificate" button and selectable certificate email
+    template.
+Fixed
+  - SAN option could not be fully disabled (#2).
+
+v1.0.29 (2018-07-20)
+--------------------
+Added
+  - Client "SSL Orders Summary" (sidebar and home page block).
+    https://github.com/gogetssl/whmcs-addon/wiki/Orders-Summary
+
+v1.0.28 (2018-07-12)
+--------------------
+Added
+  - Partner (Comodo/DigiCert) order ID in the admin area.
+Removed
+  - API order ID from the client area.
+
+v1.0.27 (2018-06-20)
+--------------------
+Added
+  - Admin "Import SSL Order" for existing certificates.
+
+v1.0.26 (2018-06-13)
+--------------------
+Added
+  - Default country for the CSR Generator.
+
+v1.0.25 (2018-06-04)
+--------------------
+[!] Save Renewal Settings after upgrading.
+Added
+  - "Days before expiry" for automatic renewal invoices.
+  - Buy more SANs; order ID on the certificate page.
+Changed
+  - CNAME records shown with uppercase "CNAME".
+
+v1.0.24 (2018-05-31)
+--------------------
+Changed
+  - Multi-level wildcard SANs; renewal tech contact follows "Use
+    Administrative Contact Details".
+
+v1.0.23 (2018-05-31)
+--------------------
+Fixed
+  - Approver emails for SAN and wildcard domains during reissue.
+
+v1.0.22 (2018-05-31)
+--------------------
+Fixed
+  - Cron errors for deleted services.
+
+v1.0.21 (2018-05-31)
+--------------------
+[!] Disable and re-enable the addon; "Configuration Required" template is
+    overwritten.
+Added
+  - Renewal Settings and a client "Renew" button; CSR errors shown; CSRs below
+    2048 bits rejected.
+
+v1.0.20 (2018-05-31)
+--------------------
+Added
+  - Multi-domain wildcard SANs.
+Changed
+  - Expired certificates terminate the WHMCS service during sync.
+
+v1.0.16 - v1.0.19 (2018-05-31)
+------------------------------
+Added
+  - Renewal invoices before expiry; expiration notices for one-time services.
+Fixed
+  - Brand detection on configuration steps and several stability issues.
+
+v1.0.2 - v1.0.15 (2018-05-31)
+-----------------------------
+Initial releases (GGSSLWHMCS): admin API configuration, Products
+Configuration/Creator, 3-step client SSL configuration, CSR Generator,
+reissue/renew/resend actions, due-date sync and expiry notification crons.
+
+================================================================================
