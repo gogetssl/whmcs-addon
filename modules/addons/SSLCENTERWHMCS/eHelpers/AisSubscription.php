@@ -6,27 +6,18 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class AisSubscription
 {
-    const NAME_SUFFIX = ' + Automate';
+    // GoGetSSL API product IDs of AutoInstall SSL (+ Automate) products:
+    // 400 RapidSSL Plan, 401 RapidSSL Wildcard Plan, 402 GeoTrust DV Plan, 403 GeoTrust DV Wildcard Plan
+    const PRODUCT_IDS = [400, 401, 402, 403];
 
-    public static function isAisByApiProductName($apiProductName)
+    public static function getProductIds()
     {
-        return substr(rtrim((string) $apiProductName), -strlen(self::NAME_SUFFIX)) === self::NAME_SUFFIX;
+        return self::PRODUCT_IDS;
     }
 
     public static function isAisByApiProductId($apiProductId)
     {
-        $row = Capsule::table('mgfw_SSLCENTER_product_brand')
-            ->where('pid', (int) $apiProductId)
-            ->first();
-
-        if ($row && !empty($row->data))
-        {
-            $data = json_decode($row->data, true);
-            $apiProductName = isset($data['product']) ? $data['product'] : '';
-            return static::isAisByApiProductName($apiProductName);
-        }
-
-        return false;
+        return in_array((int) $apiProductId, self::PRODUCT_IDS, true);
     }
 
     public static function isAisByServiceParams(array $params)
