@@ -33,6 +33,23 @@
   3.x
 ================================================================================
 
+v3.1.10 (2026-10-09)
+--------------------
+Added
+  - "Revalidate" button on the client-area certificate page (Validation
+    Instructions panel) that asks the CA to check domain validation again
+    after the client has placed the validation file or DNS record. It is
+    shown only when:
+      * the order status is "processing",
+      * the certificate is installed manually (not cPanel AutoInstall),
+      * the product is not an Automated SSL product (ACME, AutoInstall SSL),
+      * the main domain or a SAN uses HTTP, HTTPS or DNS validation.
+  - After a click the button is disabled for 3 minutes with a countdown.
+    The limit is stored per order and also enforced by the server.
+Changed
+  - The Revalidate button on the legacy certificate page follows the same
+    rules; it is no longer shown for cancelled orders.
+
 v3.1.9 (2026-10-09)
 -------------------
 Changed
