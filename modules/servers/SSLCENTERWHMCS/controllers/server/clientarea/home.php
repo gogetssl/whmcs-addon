@@ -485,6 +485,10 @@ class home extends main\mgLibs\process\AbstractController {
         $vars['approver_email'] = isset($sslService->configdata->approver_method->email) && !empty($sslService->configdata->approver_method->email) ? $sslService->configdata->approver_method->email : false;
         $vars['installType']  = isset($sslService->configdata->install_type) ? (string) $sslService->configdata->install_type : 'manual';
 
+        $revalidateState            = $this->getRevalidateState($input['params'], isset($sslService) ? $sslService : null, isset($vars['activationStatus']) ? $vars['activationStatus'] : '');
+        $vars['canRevalidate']      = $revalidateState['allowed'];
+        $vars['revalidateCooldown'] = $revalidateState['cooldown'];
+
         // Modern view: certificates configured via configssl (have a record in SSLCENTER_orders)
         $moduleOrderRow = null;
         try {

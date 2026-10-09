@@ -248,9 +248,10 @@
                     {if $btndownload}
                         <a href="{$btndownload}"><button type="button" class="btn btn-default" style="margin:2px">{$MGLANG->T('download')}</button></a>
                     {/if}
-                    {if isset($approver_method.https) || isset($approver_method.http) || isset($approver_method.dns) || $san_revalidate}
-                        <button type="button" id="btnRevalidateNew" class="btn btn-default" style="margin:2px">{$MGLANG->T('revalidate')}</button>
                     {/if}
+                    {if $canRevalidate}
+                        <button type="button" id="btnRevalidateNew" class="btn btn-default" style="margin:2px" data-cooldown="{$revalidateCooldown|intval}">{$MGLANG->T('revalidate')}</button>
+                        <span id="revalidateTimer" style="margin-left:6px;font-size:12px;color:#777;"></span>
                     {/if}
 
                     {if $btnInstallCrt}
@@ -1248,19 +1249,49 @@
                 });
 
 
+                var revalidateTick = null;
+                function startRevalidateCooldown(seconds) {
+                    var left = parseInt(seconds, 10) || 0;
+                    if (left <= 0) {
+                        return;
+                    }
+                    clearInterval(revalidateTick);
+                    $('#btnRevalidateNew').prop('disabled', true);
+                    var render = function () {
+                        var m = Math.floor(left / 60), s = left % 60;
+                        $('#revalidateTimer').text({/literal}'{$MGLANG->T('revalidateAvailableIn')}'{literal} + ' ' + m + ':' + (s < 10 ? '0' : '') + s);
+                    };
+                    render();
+                    revalidateTick = setInterval(function () {
+                        left--;
+                        if (left <= 0) {
+                            clearInterval(revalidateTick);
+                            $('#revalidateTimer').text('');
+                            $('#btnRevalidateNew').prop('disabled', false);
+                            return;
+                        }
+                        render();
+                    }, 1000);
+                }
+                startRevalidateCooldown($('#btnRevalidateNew').data('cooldown'));
+
                 jQuery('#btnRevalidateNew').on("click",function(){
 
-                    $('#btnRevalidateNew').append(' <i class="fa fa-spinner fa-spin"></i>');
+                    $('#btnRevalidateNew').prop('disabled', true).append(' <i class="fa fa-spinner fa-spin"></i>');
                     JSONParser.request('revalidateNew',{json: 1,id: serviceid}, function (data) {
+                        $('#btnRevalidateNew').find('.fa-spinner').remove();
                         if (data.success == true) {
                             $('#MGAlerts>div').css('display', 'none');
-                            $('#btnRevalidateNew').find('.fa-spinner').remove();
                             $('#MGAlerts>div[data-prototype="success"]').show();
                             $('#MGAlerts>div[data-prototype="success"] strong').html(data.message);
                         } else if (data.success == false) {
-                            $('#btnRevalidateNew').find('.fa-spinner').remove();
                             $('#MGAlerts>div[data-prototype="error"]').show();
                             $('#MGAlerts>div[data-prototype="error"] strong').html(data.message);
+                        }
+                        if (data.cooldown) {
+                            startRevalidateCooldown(data.cooldown);
+                        } else {
+                            $('#btnRevalidateNew').prop('disabled', false);
                         }
                     }, false);
                 });

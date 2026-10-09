@@ -353,14 +353,113 @@ trait StandardSslTrait
         return ['success' => 1, 'message' => main\mgLibs\Lang::absoluteT('The certificate has been installed correctly')];
     }
 
+    /**
+     * Seconds the Revalidate button stays disabled after it was used.
+     */
+    protected function getRevalidateCooldownSeconds() {
+        return 180;
+    }
+
+    /**
+     * Revalidate (/orders/ssl/revalidate/) is offered only for standard SSL orders that:
+     * - are not Automated SSL products (ACME 300, AutoInstall SSL 400-403),
+     * - are installed manually (install_type is not "autoinstall"),
+     * - have API status "processing",
+     * - use HTTP/HTTPS/DNS validation for the main domain or at least one SAN.
+     *
+     * @return array ['allowed' => bool, 'cooldown' => seconds left before it can be used again]
+     */
+    protected function getRevalidateState($params, $sslService, $activationStatus) {
+        $state = ['allowed' => false, 'cooldown' => 0];
+
+        if (!$sslService || empty($sslService->remoteid)) {
+            return $state;
+        }
+
+        if (\MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeByServiceParams($params)
+            || \MGModule\SSLCENTERWHMCS\eHelpers\AisSubscription::isAisByServiceParams($params)) {
+            return $state;
+        }
+
+        $configdata  = (array) $sslService->configdata;
+        $installType = isset($configdata['install_type']) ? (string) $configdata['install_type'] : 'manual';
+        if ($installType === 'autoinstall') {
+            return $state;
+        }
+
+        if (strtolower((string) $activationStatus) !== 'processing') {
+            return $state;
+        }
+
+        $methods = [];
+        if (!empty($configdata['dcv_method'])) {
+            $methods[] = (string) $configdata['dcv_method'];
+        }
+        if (!empty($configdata['san_details'])) {
+            foreach ((array) $configdata['san_details'] as $san) {
+                $san = (object) $san;
+                if (!empty($san->validation_method)) {
+                    $methods[] = (string) $san->validation_method;
+                }
+            }
+        }
+        if (!array_intersect($methods, ['http', 'https', 'dns'])) {
+            return $state;
+        }
+
+        $lastAt = isset($configdata['revalidate_last_at']) ? (int) $configdata['revalidate_last_at'] : 0;
+
+        $state['allowed']  = true;
+        $state['cooldown'] = max(0, $lastAt + $this->getRevalidateCooldownSeconds() - time());
+
+        return $state;
+    }
+
     function revalidateNewJSON($input, $vars = array()) {
         $sslRepo    = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
-        $sslService = $sslRepo->getByServiceId($input['id']);
+        $sslService = $sslRepo->getByServiceId($input['params']['serviceid']);
 
-        $data     = ['domain' => $input['params']['domain']];
-        $response = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->revalidate($sslService->remoteid, $data);
+        $activationStatus = '';
+        if ($sslService && !empty($sslService->remoteid)) {
+            try {
+                $orderStatus      = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
+                $activationStatus = isset($orderStatus['status']) ? $orderStatus['status'] : '';
+            } catch (\Exception $e) {
+                return ['success' => false, 'message' => $e->getMessage()];
+            }
+        }
 
-        return $response;
+        $state = $this->getRevalidateState($input['params'], $sslService, $activationStatus);
+        if (!$state['allowed']) {
+            return ['success' => false, 'message' => main\mgLibs\Lang::absoluteT('serverCA', 'home', 'revalidateNotAvailable')];
+        }
+        if ($state['cooldown'] > 0) {
+            return [
+                'success'  => false,
+                'message'  => main\mgLibs\Lang::absoluteT('serverCA', 'home', 'revalidateCooldown'),
+                'cooldown' => $state['cooldown'],
+            ];
+        }
+
+        $sslService->setConfigdataKey('revalidate_last_at', time());
+        $sslService->save();
+
+        $configdata = (array) $sslService->configdata;
+        $domain     = !empty($configdata['domain']) ? $configdata['domain'] : $input['params']['domain'];
+        $cooldown   = $this->getRevalidateCooldownSeconds();
+
+        try {
+            $response = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->revalidate($sslService->remoteid, ['domain' => $domain]);
+        } catch (\Exception $e) {
+            return ['success' => false, 'message' => $e->getMessage(), 'cooldown' => $cooldown];
+        }
+
+        $success = !empty($response['success']);
+        $message = !empty($response['message'])
+            ? $response['message']
+            : main\mgLibs\Lang::absoluteT('serverCA', 'home', $success ? 'revalidateSuccess' : 'anErrorOccurred');
+
+        return ['success' => $success, 'message' => $message, 'cooldown' => $cooldown];
     }
 
     function getCertificateDetailsJSON($input, $vars = array()) {

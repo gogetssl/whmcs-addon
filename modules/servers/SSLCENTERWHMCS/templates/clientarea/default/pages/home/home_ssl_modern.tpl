@@ -672,6 +672,16 @@
                 </button>
                 {/if}
                 {/if}
+                {if $canRevalidate}
+                <div style="margin-top:12px;">
+                    <button type="button" class="btn btn-primary btn-sm" id="ssl-revalidate-btn" data-cooldown="{$revalidateCooldown|intval}">
+                        <span class="glyphicon glyphicon-repeat"></span>
+                        <span class="ssl-revalidate-label">{$MGLANG->T('revalidate')|default:'Revalidate'}</span>
+                    </button>
+                    <span class="ssl-revalidate-timer" style="margin-left:8px;font-size:12px;color:#777;"></span>
+                    <div style="margin-top:6px;font-size:12px;color:#777;">{$MGLANG->T('revalidateHint')|default:'After you have placed the validation file or DNS record, click Revalidate to ask the CA to check your domain again.'}</div>
+                </div>
+                {/if}
             </div>
         </div>
         {/if}
@@ -857,6 +867,64 @@
             btn.prop('disabled', false);
         });
     });
+    {/if}
+
+    {if $canRevalidate}
+    (function () {
+        var btn   = $('#ssl-revalidate-btn');
+        var timer = btn.siblings('.ssl-revalidate-timer');
+        var tick  = null;
+
+        function startCooldown(seconds) {
+            var left = parseInt(seconds, 10) || 0;
+            if (left <= 0) {
+                return;
+            }
+            clearInterval(tick);
+            btn.prop('disabled', true);
+            var render = function () {
+                var m = Math.floor(left / 60), s = left % 60;
+                timer.text('{$MGLANG->T('revalidateAvailableIn')|default:'Available again in'} ' + m + ':' + (s < 10 ? '0' : '') + s);
+            };
+            render();
+            tick = setInterval(function () {
+                left--;
+                if (left <= 0) {
+                    clearInterval(tick);
+                    timer.text('');
+                    btn.prop('disabled', false);
+                    return;
+                }
+                render();
+            }, 1000);
+        }
+
+        startCooldown(btn.data('cooldown'));
+
+        btn.on('click', function () {
+            btn.prop('disabled', true);
+            timer.text('{$MGLANG->T('sslProcessing')|default:'Processing...'}');
+            $.post(serviceUrl, { 'mg-action': 'revalidateNew' }, function (ret) {
+                ret = ret.replace('<JSONRESPONSE#', '').replace('#ENDJSONRESPONSE>', '');
+                var d = {};
+                try { d = JSON.parse(ret).data || {}; } catch (e) {}
+                if (d.success) {
+                    $('#MGAlerts').alerts('success', d.message || '{$MGLANG->T('revalidateSuccess')|default:'Revalidation has been requested.'}');
+                } else {
+                    $('#MGAlerts').alerts('error', d.message || '{$MGLANG->T('anErrorOccurred')|default:'An error occurred'}');
+                }
+                if (d.cooldown) {
+                    startCooldown(d.cooldown);
+                } else {
+                    timer.text('');
+                    btn.prop('disabled', false);
+                }
+            }).fail(function () {
+                timer.text('');
+                btn.prop('disabled', false);
+            });
+        });
+    })();
     {/if}
 
     {if $certState == 'processing'}
