@@ -33,6 +33,19 @@
   3.x
 ================================================================================
 
+v3.1.9 (2026-10-09)
+-------------------
+Changed
+  - AutoInstall SSL (+ Automate) products are now recognised by their
+    GoGetSSL API product ID (400 RapidSSL Plan, 401 RapidSSL Wildcard Plan,
+    402 GeoTrust DV Plan, 403 GeoTrust DV Wildcard Plan) instead of the
+    product name. Detection no longer depends on the cached product list, so
+    AIS services always open the AutoInstall SSL page even if the product
+    cache is empty or outdated. Existing AIS services are not affected.
+Added
+  - release_notes.txt with the full version history, included in every
+    release package.
+
 v3.1.8 (2026-09-10)
 -------------------
 Fixed
