@@ -33,6 +33,20 @@
   3.x
 ================================================================================
 
+v3.1.11 (2026-10-16)
+--------------------
+Fixed
+  - Client-area certificate page: the "Certificate (.crt)" download was
+    hidden whenever a .pem file was available. Both "Certificate (.crt)" and
+    "Certificate (.pem)" downloads are now shown.
+  - The certificate text could no longer be viewed or copied on the
+    redesigned certificate page. A new "View Certificate (CRT)" button opens
+    a dialog with the certificate and the CA bundle (intermediate/chain) for
+    copy and paste.
+  - The .pem download now puts the private key, certificate and CA bundle
+    each on their own line, so the file is valid even when a stored part has
+    no trailing line break.
+
 v3.1.10 (2026-10-09)
 --------------------
 Added
