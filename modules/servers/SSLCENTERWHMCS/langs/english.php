@@ -458,6 +458,9 @@ $_LANG['serverCA']['home']['sslDownloadNotAvailable']    = 'Not available yet';
 $_LANG['serverCA']['home']['sslDownloadPrivateKey']      = 'Private Key (.key)';
 $_LANG['serverCA']['home']['sslDownloadCaBundle']        = 'CA Bundle (.ca)';
 $_LANG['serverCA']['home']['sslPrivateKeyTitle']         = 'Private Key';
+$_LANG['serverCA']['home']['sslViewCrt']                 = 'View Certificate (CRT)';
+$_LANG['serverCA']['home']['sslCrtTitle']                = 'Certificate (CRT)';
+$_LANG['serverCA']['home']['sslCaBundleTitle']           = 'CA Bundle (Intermediate/Chain)';
 // Tab
 $_LANG['serverCA']['home']['sslTabOverview']             = 'Overview';
 // Order Information section

@@ -270,16 +270,23 @@
         {* Download card *}
         <div class="ssl-mod-card">
             <div class="ssl-mod-card-title">{$MGLANG->T('download')|default:'Download'}</div>
+            {if $downloadcrt}
+            <a href="{$downloadcrt}" class="btn btn-primary ssl-mod-dl-btn">
+                <span class="glyphicon glyphicon-download-alt"></span> {$MGLANG->T('sslDownloadCrt')|default:'Certificate (.crt)'}
+            </a>
+            {/if}
             {if $downloadpem}
             <a href="{$downloadpem}" class="btn btn-primary ssl-mod-dl-btn">
                 <span class="glyphicon glyphicon-download-alt"></span> {$MGLANG->T('sslDownloadPem')|default:'Certificate (.pem)'}
             </a>
-            {elseif $downloadcrt}
-            <a href="{$downloadcrt}" class="btn btn-primary ssl-mod-dl-btn">
-                <span class="glyphicon glyphicon-download-alt"></span> {$MGLANG->T('sslDownloadCrt')|default:'Certificate (.crt)'}
-            </a>
-            {else}
+            {/if}
+            {if !$downloadcrt && !$downloadpem}
             <p style="color:#aaa;font-size:13px;">{$MGLANG->T('sslDownloadNotAvailable')|default:'Not available yet'}</p>
+            {/if}
+            {if $crt}
+            <button type="button" class="btn btn-default ssl-mod-dl-btn" id="ssl-mod-show-crt">
+                <span class="glyphicon glyphicon-eye-open"></span> {$MGLANG->T('sslViewCrt')|default:'View Certificate (CRT)'}
+            </button>
             {/if}
             {if $privateKey}
             <button type="button" class="btn btn-default ssl-mod-dl-btn" id="ssl-mod-show-key">
@@ -311,6 +318,30 @@
                 </div>
                 <div class="modal-body">
                     <textarea class="form-control" rows="12" readonly onclick="this.select()">{$privateKey|escape:'html'}</textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{$MGLANG->T('Close')|default:'Close'}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/if}
+
+    {* ---- Certificate (CRT) modal ---- *}
+    {if $crt}
+    <div class="modal fade" id="modal-certificate-crt" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">{$MGLANG->T('sslCrtTitle')|default:'Certificate (CRT)'}</h4>
+                </div>
+                <div class="modal-body">
+                    <textarea class="form-control" rows="12" readonly onclick="this.select()" style="font-family:monospace;font-size:12px;">{$crt|escape:'html'}</textarea>
+                    {if $ca}
+                    <h5 style="margin-top:15px;font-weight:600;">{$MGLANG->T('sslCaBundleTitle')|default:'CA Bundle (Intermediate/Chain)'}</h5>
+                    <textarea class="form-control" rows="10" readonly onclick="this.select()" style="font-family:monospace;font-size:12px;">{$ca|escape:'html'}</textarea>
+                    {/if}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">{$MGLANG->T('Close')|default:'Close'}</button>
@@ -831,6 +862,12 @@
     {if $privateKey}
     $('#ssl-mod-show-key').on('click', function () {
         $('#modal-private-key').modal('show');
+    });
+    {/if}
+
+    {if $crt}
+    $('#ssl-mod-show-crt').on('click', function () {
+        $('#modal-certificate-crt').modal('show');
     });
     {/if}
 

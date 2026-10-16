@@ -417,7 +417,7 @@ class home extends main\mgLibs\process\AbstractController {
             }
             if($_GET['downloadpem'] == '1' && !empty($certificateDetails['crt']) && !empty($certificateDetails['ca']))
             {
-                $pemfile = '';
+                $pemParts = [];
 
                 $sslRepo    = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
                 $sslService = $sslRepo->getByServiceId($input['params']['serviceid']);
@@ -425,13 +425,20 @@ class home extends main\mgLibs\process\AbstractController {
 
                 if (!empty($privateKey))
                 {
-                    $pemfile .= (strpos($privateKey, '-----BEGIN') !== false)
+                    $pemParts[] = (strpos($privateKey, '-----BEGIN') !== false)
                         ? $privateKey
                         : decrypt($privateKey);
                 }
 
-                $pemfile .= $certificateDetails['crt']. "\n";
-                $pemfile .= $certificateDetails['ca'];
+                $pemParts[] = $certificateDetails['crt'];
+                $pemParts[] = $certificateDetails['ca'];
+
+                // Each PEM block must start on its own line, whatever line endings were stored
+                $pemfile = '';
+                foreach ($pemParts as $part)
+                {
+                    $pemfile .= trim((string) $part) . "\n";
+                }
 
                 header('Content-Type: application/octet-stream');
                 header('Content-Disposition: attachment; filename='.$filenameCa.'.pem');
