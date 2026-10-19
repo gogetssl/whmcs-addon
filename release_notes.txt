@@ -33,6 +33,21 @@
   3.x
 ================================================================================
 
+v3.2.1 (2026-10-19)
+-------------------
+Fixed
+  - Automatic cPanel Installation only uses the client's own cPanel hosting
+    services that are Active or Suspended. Terminated and cancelled hosting
+    services are no longer listed in "Install certificate on" or used for
+    domain matching, installation, validation file upload and DNS records,
+    because their cPanel username may have been reused for another client's
+    account. If a linked hosting service is terminated, the module falls
+    back to finding an active account by domain.
+  - SSL Configuration page, AutoInstall: the main domain and every SAN must
+    be on one of the client's own active cPanel accounts (www. and *.
+    prefixes ignored). Orders with other domains are refused with a clear
+    message instead of being placed.
+
 v3.2.0 (2026-10-19)
 -------------------
 Added
