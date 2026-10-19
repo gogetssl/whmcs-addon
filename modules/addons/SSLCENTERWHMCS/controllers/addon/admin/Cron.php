@@ -1248,6 +1248,7 @@ class Cron extends main\mgLibs\process\AbstractController
 
     /**
      * Decides whether a subscription service should get the reissue reminder now.
+     * Not sent for AutoInstall SSL products or cPanel AutoInstall orders, which are reissued automatically.
      * The reminder is due when the current certificate expires within the next 30 days,
      * has not expired yet, the subscription continues for at least 30 more days after it
      * (otherwise the client has to renew, not reissue), and no reminder was sent yet for
@@ -1265,6 +1266,13 @@ class Cron extends main\mgLibs\process\AbstractController
 
         $configdata = json_decode($sslOrder->configdata, true);
         if (empty($configdata['valid_till']) || empty($configdata['end_date']))
+        {
+            return false;
+        }
+
+        // Reissued automatically: AutoInstall SSL products and cPanel AutoInstall orders
+        if (main\eHelpers\AisSubscription::isAisByServiceId($serviceid)
+            || (isset($configdata['install_type']) && $configdata['install_type'] === 'autoinstall'))
         {
             return false;
         }
