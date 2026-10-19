@@ -183,7 +183,6 @@ class Cron extends main\mgLibs\process\AbstractController
 
             //get days left to expire from WHMCS
             $daysLeft         = $this->checkOrderExpireDate($srv->nextduedate);
-            $daysReissue         = $this->checkReissueDate($srv->id);
 
             //if service is One Time and nextduedate is setted as 0000-00-00 get valid_till from SSLCenter API
 
@@ -197,10 +196,14 @@ class Cron extends main\mgLibs\process\AbstractController
             }
 
             $product = Capsule::table('tblproducts')->where('id', $srv->packageid)->first();
-            if($srv->domainstatus == 'Active' && $daysReissue == '30' && $product->configoption2 > 12 && !$isAcmeSubscription)
+            if($srv->domainstatus == 'Active' && $product->configoption2 > 12 && !$isAcmeSubscription)
             {
-                // send email
-                $emailSendsCountReissue += $this->sendReissueNotfiyEmail($srv->id);
+                $reissueValidTill = $this->getReissueReminderValidTill($srv->id);
+                if ($reissueValidTill !== false && $this->sendReissueNotfiyEmail($srv->id))
+                {
+                    $this->markReissueReminderSent($srv->id, $reissueValidTill);
+                    $emailSendsCountReissue++;
+                }
             }
 
             //service was synchronized, so we can base on nextduedate, that should be the same as valid_till
@@ -1238,25 +1241,73 @@ class Cron extends main\mgLibs\process\AbstractController
         return $skip;
     }
 
-    public function checkReissueDate($serviceid)
+    /**
+     * Days before the current certificate expires in which the reissue reminder is sent.
+     */
+    const REISSUE_REMINDER_DAYS = 30;
+
+    /**
+     * Decides whether a subscription service should get the reissue reminder now.
+     * The reminder is due when the current certificate expires within the next 30 days,
+     * has not expired yet, the subscription continues for at least 30 more days after it
+     * (otherwise the client has to renew, not reissue), and no reminder was sent yet for
+     * this certificate.
+     *
+     * @return string|false valid_till of the certificate the reminder is for, or false
+     */
+    public function getReissueReminderValidTill($serviceid)
     {
         $sslOrder = Capsule::table('tblsslorders')->where('serviceid', $serviceid)->first();
-
-        if(isset($sslOrder->configdata) && !empty($sslOrder->configdata)){
-
-            $configdata = json_decode($sslOrder->configdata, true);
-
-            if(isset($configdata['end_date']) && !empty($configdata['end_date']))
-            {
-                $now = strtotime(date('Y-m-d'));
-                $end_date = strtotime($configdata['valid_till']);
-                $datediff = $now - $end_date;
-
-                $nextReissue = abs(round($datediff / (60 * 60 * 24)));
-                return $nextReissue;
-            }
+        if (!isset($sslOrder->configdata) || empty($sslOrder->configdata))
+        {
+            return false;
         }
-        return false;
+
+        $configdata = json_decode($sslOrder->configdata, true);
+        if (empty($configdata['valid_till']) || empty($configdata['end_date']))
+        {
+            return false;
+        }
+
+        $validTill = strtotime($configdata['valid_till']);
+        $endDate   = strtotime($configdata['end_date']);
+        if (!$validTill || !$endDate)
+        {
+            return false;
+        }
+
+        $today        = strtotime(date('Y-m-d'));
+        $daysToExpiry = (int) floor((strtotime(date('Y-m-d', $validTill)) - $today) / 86400);
+        if ($daysToExpiry < 0 || $daysToExpiry > self::REISSUE_REMINDER_DAYS)
+        {
+            return false;
+        }
+
+        // Final certificate of the subscription: the client needs to renew, not reissue
+        $daysAfterExpiry = (int) floor(($endDate - $validTill) / 86400);
+        if ($daysAfterExpiry < self::REISSUE_REMINDER_DAYS)
+        {
+            return false;
+        }
+
+        $validTillDate = date('Y-m-d', $validTill);
+        if (isset($configdata['reissue_reminder_sent_for']) && $configdata['reissue_reminder_sent_for'] === $validTillDate)
+        {
+            return false;
+        }
+
+        return $validTillDate;
+    }
+
+    public function markReissueReminderSent($serviceid, $validTill)
+    {
+        $sslRepo    = new main\eRepository\whmcs\service\SSL();
+        $sslService = $sslRepo->getByServiceId($serviceid);
+        if ($sslService)
+        {
+            $sslService->setConfigdataKey('reissue_reminder_sent_for', $validTill);
+            $sslService->save();
+        }
     }
 
     public function checkOrderExpireDate($expireDate)
