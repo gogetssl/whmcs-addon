@@ -33,6 +33,35 @@
   3.x
 ================================================================================
 
+v3.2.0 (2026-10-19)
+-------------------
+Added
+  - "Install certificate on": choose which of the client's cPanel hosting
+    services a certificate is installed on, or keep finding the account by
+    domain. Available in the admin area (SSL service, Module tab, saved with
+    "Save Changes") and in the client area (certificate page). Install on
+    Server, the install cron and the automatic installation cron use the
+    chosen account first. Useful when the client has several hosting
+    services, the domain is not on the account under the same name, or the
+    certificate was ordered before automatic installation existed.
+  - Automatic cPanel Installation can be switched on for existing
+    certificates (installation, validation file upload and reissue via
+    cron). It needs the certificate's private key stored in WHMCS, so it is
+    not available for orders placed with the client's own CSR. Switching it
+    on for an issued certificate queues its installation.
+  - Support for hosting accounts provisioned by the ModulesGarden cPanel
+    Extended module, in addition to the standard cPanel module.
+Changed
+  - Module upgrades no longer overwrite existing email templates. Only
+    missing templates are created, so customised templates are kept.
+  - Wildcard certificates (*.example.com) are matched to the cPanel account
+    hosting example.com.
+  - "cPanel AutoSSL" is now called "Automatic cPanel Installation" in the
+    documentation, to avoid confusion with cPanel's own AutoSSL feature.
+Fixed
+  - "Install on Server" and the certificate installation cron failed when
+    the private key was stored unencrypted.
+
 v3.1.12 (2026-10-19)
 --------------------
 Fixed
