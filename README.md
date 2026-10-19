@@ -29,7 +29,7 @@ You are highly welcome to send us requests for new features, suggestions, issues
 - ACME subscription products
 - Multiple-year support, up to 3 years;
 - One-time and Recurring payments
-- cPanel AutoSSL installation plugin
+- Automatic cPanel Installation (validation, installation and reissue of certificates on cPanel / cPanel Extended accounts)
 - SAN/UCC/MDC support;
 - LEI codes for OV/EV orders
 - Online CSR Generator
@@ -52,8 +52,8 @@ Starting at v3.0.0, we provide [CaaS/ACME certificates](https://github.com/goget
 ### Lagom Smart Order Form
 Starting at v3.0.3, we have a compatibility with [Lagom Smart Order Form](https://www.modulesgarden.com/products/whmcs/lagom-smart-order-form) from Modules Garden
 
-### cPanel AutoSSL Installation 
-Starting at v2.9.0, we provide [cPanel AutoSSL installation"](https://github.com/gogetssl/whmcs-addon/wiki/cPanel-AutoSSL), allowing to validate and install SSL certificates automatically. 
+### Automatic cPanel Installation
+Starting at v2.9.0, we provide [Automatic cPanel Installation](https://github.com/gogetssl/whmcs-addon/wiki/cPanel-AutoSSL), allowing to validate and install SSL certificates automatically on the client's cPanel hosting account. Since v3.2.0 the hosting account can be chosen per certificate ("Install certificate on") and ModulesGarden cPanel Extended accounts are supported. This feature is not related to cPanel's own AutoSSL.
 ***
 
 ### License

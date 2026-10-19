@@ -303,7 +303,7 @@ foreach ($installTasks as $task) {
             '[Install] Looking up cPanel hosting account for domain: ' . $domain);
 
         $cpanelService = new Service();
-        $cpanelDetails = $cpanelService->getServiceByDomain($task->client_id, $domain);
+        $cpanelDetails = $cpanelService->getServiceForSsl($task->service_id, $task->client_id, $domain);
 
         if ($cpanelDetails === false) {
             throw new \Exception(
@@ -689,7 +689,7 @@ function uploadHttpValidationFiles($task, $orderStatus, $logsRepo, array $taskDa
             $logsRepo->addLog($task->client_id, $task->service_id, 'info',
                 '[Validate] Looking up cPanel account for domain: ' . $domain);
 
-            $cpanelDetails = $cpanelServiceModel->getServiceByDomain($task->client_id, $domain);
+            $cpanelDetails = $cpanelServiceModel->getServiceForSsl($task->service_id, $task->client_id, $domain);
             if ($cpanelDetails === false) {
                 $logsRepo->addLog($task->client_id, $task->service_id, 'error',
                     '[Validate] cPanel account not found for domain: ' . $domain .

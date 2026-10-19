@@ -327,6 +327,34 @@
     </div>
     {/if}
 
+    {* ---- Install certificate on (cPanel hosting) ---- *}
+    {if $installTargetOptions}
+    <div class="panel panel-default" id="ssl-install-target" style="margin-top:15px;">
+        <div class="panel-heading"><strong>{$MGLANG->T('installTargetTitle')|default:'Automatic cPanel Installation'}</strong></div>
+        <div class="panel-body">
+            <label for="ssl-install-target-select" style="font-weight:600;">{$MGLANG->T('installTargetLabel')|default:'Install certificate on'}</label>
+            <select id="ssl-install-target-select" class="form-control" style="max-width:460px;">
+                <option value="0">{$MGLANG->T('installTargetByDomain')|default:'Find by domain (automatic)'}</option>
+                {foreach from=$installTargetOptions key=targetId item=targetLabel}
+                <option value="{$targetId}"{if $installTargetState.linked_id == $targetId} selected{/if}>{$targetLabel|escape}</option>
+                {/foreach}
+            </select>
+            <div class="checkbox" style="margin:10px 0;">
+                <label>
+                    <input type="checkbox" id="ssl-install-auto"{if $installTargetState.automatic} checked{/if}{if !$installTargetState.can_automate && !$installTargetState.automatic} disabled{/if}>
+                    {$MGLANG->T('installTargetAuto')|default:'Install and reissue this certificate automatically on the selected cPanel account'}
+                </label>
+            </div>
+            {if !$installTargetState.can_automate}
+            <p class="text-muted" style="font-size:12px;">{$MGLANG->T('installTargetNoKey')|default:'Automatic installation is not available because the private key of this certificate is not stored here (it was ordered with your own CSR).'}</p>
+            {/if}
+            <button type="button" class="btn btn-primary btn-sm" id="ssl-install-target-save">
+                <span class="glyphicon glyphicon-floppy-disk"></span> {$MGLANG->T('saveChanges')|default:'Save Changes'}
+            </button>
+        </div>
+    </div>
+    {/if}
+
     {* ---- Certificate (CRT) modal ---- *}
     {if $crt}
     <div class="modal fade" id="modal-certificate-crt" tabindex="-1">
@@ -868,6 +896,26 @@
     {if $crt}
     $('#ssl-mod-show-crt').on('click', function () {
         $('#modal-certificate-crt').modal('show');
+    });
+    {/if}
+
+    {if $installTargetOptions}
+    $('#ssl-install-target-save').on('click', function () {
+        var btn = $(this);
+        btn.prop('disabled', true);
+        $.post(serviceUrl, {
+            'mg-action':      'saveInstallTarget',
+            'install_target': $('#ssl-install-target-select').val(),
+            'install_auto':   $('#ssl-install-auto').is(':checked') ? 1 : 0
+        }, function (ret) {
+            ret = ret.replace('<JSONRESPONSE#', '').replace('#ENDJSONRESPONSE>', '');
+            var d = new Object();
+            try { d = JSON.parse(ret).data || d; } catch (e) { }
+            $('#MGAlerts').alerts(d.success ? 'success' : 'error', d.message || '{$MGLANG->T('anErrorOccurred')|default:'An error occurred'}');
+            btn.prop('disabled', false);
+        }).fail(function () {
+            btn.prop('disabled', false);
+        });
     });
     {/if}
 

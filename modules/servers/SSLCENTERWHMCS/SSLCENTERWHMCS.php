@@ -100,6 +100,24 @@ function SSLCENTERWHMCS_AdminServicesTabFields(array $params) {
     return $adminServiceJS->run();
 }
 
+function SSLCENTERWHMCS_AdminServicesTabFieldsSave(array $params) {
+    if (empty($_POST['sslcenter_install_target_form'])) {
+        return;
+    }
+
+    $sslRepo    = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+    $sslService = $sslRepo->getByServiceId($params['serviceid']);
+    $result     = \MGModule\SSLCENTERWHMCS\eHelpers\InstallTarget::save(
+        $sslService,
+        isset($_POST['sslcenter_install_target']) ? (int) $_POST['sslcenter_install_target'] : 0,
+        !empty($_POST['sslcenter_install_auto'])
+    );
+
+    if (!$result['success']) {
+        logActivity('SSLCENTER WHMCS: "Install certificate on" not saved for Service ID ' . $params['serviceid'] . ' (' . $result['error'] . ')');
+    }
+}
+
 function SSLCENTERWHMCS_SSLAdminGetCertificate($p) {
     return MGModule\SSLCENTERWHMCS\eServices\provisioning\GetCertificate::runBySslId($p['serviceid']);
 }

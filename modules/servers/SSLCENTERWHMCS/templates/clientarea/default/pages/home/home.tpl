@@ -233,6 +233,29 @@
                     <td class="text-left"><textarea onfocus="this.select()" rows="5" class="form-control">{$csr}</textarea></td>
                 </tr>
             {/if}
+            {if $installTargetOptions}
+            <tr id="installTargetTr">
+                <td class="text-left">{$MGLANG->T('installTargetLabel')}</td>
+                <td class="text-left">
+                    <select id="installTargetSelect" class="form-control" style="max-width:460px;">
+                        <option value="0">{$MGLANG->T('installTargetByDomain')}</option>
+                        {foreach from=$installTargetOptions key=targetId item=targetLabel}
+                        <option value="{$targetId}"{if $installTargetState.linked_id == $targetId} selected{/if}>{$targetLabel|escape}</option>
+                        {/foreach}
+                    </select>
+                    <div class="checkbox" style="margin:8px 0;">
+                        <label>
+                            <input type="checkbox" id="installTargetAuto"{if $installTargetState.automatic} checked{/if}{if !$installTargetState.can_automate && !$installTargetState.automatic} disabled{/if}>
+                            {$MGLANG->T('installTargetAuto')}
+                        </label>
+                    </div>
+                    {if !$installTargetState.can_automate}
+                        <p class="text-muted" style="font-size:12px;">{$MGLANG->T('installTargetNoKey')}</p>
+                    {/if}
+                    <button type="button" id="btnInstallTargetSave" class="btn btn-default" style="margin:2px">{$MGLANG->T('saveChanges')}</button>
+                </td>
+            </tr>
+            {/if}
             <tr id="additionalActionsTr">
                 <td class="text-left">{$MGLANG->T('Actions')}</td>
                 <td id="additionalActionsTd" class="text-left">
@@ -1293,6 +1316,21 @@
                         } else {
                             $('#btnRevalidateNew').prop('disabled', false);
                         }
+                    }, false);
+                });
+
+                jQuery('#btnInstallTargetSave').on("click",function(){
+                    $('#btnInstallTargetSave').prop('disabled', true);
+                    JSONParser.request('saveInstallTarget', {
+                        json: 1,
+                        install_target: $('#installTargetSelect').val(),
+                        install_auto: $('#installTargetAuto').is(':checked') ? 1 : 0
+                    }, function (data) {
+                        $('#btnInstallTargetSave').prop('disabled', false);
+                        $('#MGAlerts>div').css('display', 'none');
+                        var box = data.success == true ? 'success' : 'error';
+                        $('#MGAlerts>div[data-prototype="' + box + '"]').show();
+                        $('#MGAlerts>div[data-prototype="' + box + '"] strong').html(data.message);
                     }, false);
                 });
 

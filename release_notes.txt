@@ -352,7 +352,7 @@ v2.11.1 (2025-01-20)
 --------------------
 Fixed
   - Activation/upgrade on database servers without JSON column support (the
-    AutoSSL orders table uses a text column).
+    Automatic cPanel Installation orders table uses a text column).
 
 v2.11.0 (2024-12-16)
 --------------------
@@ -437,7 +437,7 @@ v2.9.0 (2024-02-12)
 [!] Add the new certificate installer cron shown on the API Configuration
     page (once a day suggested).
 Added
-  - cPanel AutoSSL integration.
+  - Automatic cPanel Installation (previously called "cPanel AutoSSL").
     https://github.com/gogetssl/whmcs-addon/wiki/cPanel-AutoSSL
       * When the client has a cPanel hosting service in WHMCS, step one offers
         "Choose a domain" from that account, or "Custom domain".
@@ -447,7 +447,7 @@ Added
         for the main domain and SANs.
       * "Install Certificate" button installs the certificate, key and CA
         bundle on the matching cPanel account.
-  - Admin "Orders" page (AutoSSL orders with "Set as verified" / "Set as
+  - Admin "Orders" page (automatic installation orders with "Set as verified" / "Set as
     installed") and "Logs" page (validation and installation events).
 Fixed
   - SAN and wildcard SAN fields hidden when the product's SAN limit is 0.

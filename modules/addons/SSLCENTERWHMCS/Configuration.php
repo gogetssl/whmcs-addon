@@ -206,9 +206,10 @@ class Configuration extends AbstractConfiguration
 
         EmailTemplateService::createExpireNotificationTemplate();
         EmailTemplateService::createValidationWarningTemplate();
-        EmailTemplateService::updateConfigurationTemplate();
-        EmailTemplateService::updateRenewalTemplate();
-        EmailTemplateService::updateReissueTemplate();
+        // Upgrades only add missing email templates; existing (possibly customised) templates are never overwritten
+        EmailTemplateService::createConfigurationTemplate();
+        EmailTemplateService::createRenewalTemplate();
+        EmailTemplateService::createReissueTemplate();
         InvoiceHelper::createInfosTable();
         InvoiceHelper::createPendingPaymentInvoice();
         (new APIConfigurationRepo())->updateApiConfigurationTable();
@@ -222,8 +223,8 @@ class Configuration extends AbstractConfiguration
         (new AisSubscriptionRepo())->updateTable();
         (new CronQueueRepo())->createTable();
         EmailTemplateService::createSubscriptionTemplate();
-        EmailTemplateService::updateSubscriptionExpirationTemplate();
-        EmailTemplateService::updateSubscriptionRenewalTemplate();
+        EmailTemplateService::createSubscriptionExpirationTemplate();
+        EmailTemplateService::createSubscriptionRenewalTemplate();
         EmailTemplateService::deleteSubscriptionRenewalNoticeTemplate();
         EmailTemplateService::createDnsToEmailSwitchTemplate();
         EmailTemplateService::createAutoReissueFailedTemplate();

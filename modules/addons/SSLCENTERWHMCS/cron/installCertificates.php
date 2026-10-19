@@ -28,12 +28,15 @@ foreach ($orders as $order)
 
     $cert = $details['crt'];
     $cabundle = $details['ca'];
-    $key = decrypt($details['private_key']);
+    $key = '';
+    if (!empty($details['private_key'])) {
+        $key = (strpos($details['private_key'], '-----BEGIN') !== false) ? $details['private_key'] : decrypt($details['private_key']);
+    }
 
     try {
 
         $service = new Service();
-        $serviceCpanel = $service->getServiceByDomain($order->client_id, $order->domain);
+        $serviceCpanel = $service->getServiceForSsl($order->service_id, $order->client_id, $order->domain);
 
         if($serviceCpanel === false) continue;
 

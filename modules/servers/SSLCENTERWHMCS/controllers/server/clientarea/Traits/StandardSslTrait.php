@@ -333,11 +333,14 @@ trait StandardSslTrait
         $details  = (array)$sslService->configdata;
         $cert     = $details['crt'];
         $cabundle = $details['ca'];
-        $key      = decrypt($details['private_key']);
+        $key      = '';
+        if (!empty($details['private_key'])) {
+            $key = (strpos($details['private_key'], '-----BEGIN') !== false) ? $details['private_key'] : decrypt($details['private_key']);
+        }
 
         try {
             $service       = new Service();
-            $serviceCpanel = $service->getServiceByDomain($sslService->userid, $details['domain']);
+            $serviceCpanel = $service->getServiceForSsl($sslService->serviceid, $sslService->userid, $details['domain']);
             if($serviceCpanel !== false) {
                 $cpanel = new Cpanel();
                 $cpanel->setService($serviceCpanel);
@@ -351,6 +354,33 @@ trait StandardSslTrait
         }
 
         return ['success' => 1, 'message' => main\mgLibs\Lang::absoluteT('The certificate has been installed correctly')];
+    }
+
+    /**
+     * Saves "Install certificate on" (cPanel hosting service) and the automatic cPanel installation switch.
+     */
+    function saveInstallTargetJSON($input, $vars = array()) {
+        $sslRepo    = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+        $sslService = $sslRepo->getByServiceId($input['params']['serviceid']);
+
+        if (!$sslService || (int) $sslService->userid !== (int) $input['params']['userid']) {
+            return ['success' => false, 'message' => main\mgLibs\Lang::absoluteT('serverCA', 'home', 'anErrorOccurred')];
+        }
+
+        $result = \MGModule\SSLCENTERWHMCS\eHelpers\InstallTarget::save(
+            $sslService,
+            isset($input['install_target']) ? (int) $input['install_target'] : 0,
+            !empty($input['install_auto'])
+        );
+
+        if (!$result['success']) {
+            return ['success' => false, 'message' => main\mgLibs\Lang::absoluteT('serverCA', 'home', 'installTargetError_' . $result['error'])];
+        }
+
+        return [
+            'success' => true,
+            'message' => main\mgLibs\Lang::absoluteT('serverCA', 'home', $result['queued'] ? 'installTargetSavedQueued' : 'installTargetSaved'),
+        ];
     }
 
     /**

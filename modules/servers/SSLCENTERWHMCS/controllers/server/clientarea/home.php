@@ -139,7 +139,7 @@ class home extends main\mgLibs\process\AbstractController {
                         $checkOrderSSL = $sslOrderRepo->checkOrdersInstallation($serviceId);
 
                         $service = new Service();
-                        $serviceCpanel = $service->getServiceByDomain($input['params']['userid'], $input['params']['domain']);
+                        $serviceCpanel = $service->getServiceForSsl($serviceId, $input['params']['userid'], $input['params']['domain']);
                         if($serviceCpanel !== false && $checkOrderSSL === true)
                         {
                             $vars['btnInstallCrt'] = true;
@@ -495,6 +495,15 @@ class home extends main\mgLibs\process\AbstractController {
         $revalidateState            = $this->getRevalidateState($input['params'], isset($sslService) ? $sslService : null, isset($vars['activationStatus']) ? $vars['activationStatus'] : '');
         $vars['canRevalidate']      = $revalidateState['allowed'];
         $vars['revalidateCooldown'] = $revalidateState['cooldown'];
+
+        // "Install certificate on": only for configured orders of clients that have cPanel hosting
+        $vars['installTargetOptions'] = [];
+        if (isset($sslService) && $sslService && !empty($sslService->remoteid) && $sslService->status !== 'Awaiting Configuration') {
+            try {
+                $vars['installTargetOptions'] = \MGModule\SSLCENTERWHMCS\eHelpers\InstallTarget::getOptions($input['params']['userid']);
+            } catch (\Exception $e) {}
+        }
+        $vars['installTargetState'] = \MGModule\SSLCENTERWHMCS\eHelpers\InstallTarget::getState(isset($sslService) ? $sslService : null);
 
         // Modern view: certificates configured via configssl (have a record in SSLCENTER_orders)
         $moduleOrderRow = null;
