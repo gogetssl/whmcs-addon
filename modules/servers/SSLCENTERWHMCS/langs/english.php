@@ -50,6 +50,7 @@ $_LANG['serverCA']['home']['revalidateAvailableIn']              = 'Available ag
 $_LANG['serverCA']['home']['revalidateSuccess']                  = 'Revalidation has been requested.';
 $_LANG['serverCA']['home']['revalidateCooldown']                 = 'Revalidation was requested recently. Please wait before trying again.';
 $_LANG['serverCA']['home']['revalidateNotAvailable']             = 'Revalidation is not available for this certificate.';
+$_LANG['serverCA']['home']['autoinstallDomainNotOwned']          = 'Automatic cPanel installation is only possible for domains on your own active cPanel hosting accounts. Not found:';
 $_LANG['serverCA']['home']['installTargetTitle']                 = 'Automatic cPanel Installation';
 $_LANG['serverCA']['home']['installTargetLabel']                 = 'Install certificate on';
 $_LANG['serverCA']['home']['installTargetByDomain']              = 'Find by domain (automatic)';

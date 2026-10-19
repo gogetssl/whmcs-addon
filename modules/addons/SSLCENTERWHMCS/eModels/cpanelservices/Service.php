@@ -22,6 +22,12 @@ class Service extends EloquentModel {
      */
     const LINKED_SERVICE_KEY = 'cpanel_service_id';
 
+    /**
+     * Only hosting services in these statuses are used. A terminated or cancelled service's cPanel username
+     * may have been reused for another client's account, so certificates are never installed there.
+     */
+    const USABLE_STATUSES = ['Active', 'Suspended'];
+
     protected function cpanelServicesQuery()
     {
         $placeholders = implode(',', array_fill(0, count(self::CPANEL_SERVER_TYPES), '?'));
@@ -42,7 +48,8 @@ class Service extends EloquentModel {
         ])
             ->join('tblproducts', 'tblhosting.packageid', '=', 'tblproducts.id')
             ->join('tblservers', 'tblhosting.server', '=', 'tblservers.id')
-            ->whereRaw('LOWER(tblproducts.servertype) IN (' . $placeholders . ')', self::CPANEL_SERVER_TYPES);
+            ->whereRaw('LOWER(tblproducts.servertype) IN (' . $placeholders . ')', self::CPANEL_SERVER_TYPES)
+            ->whereIn('tblhosting.domainstatus', self::USABLE_STATUSES);
     }
 
     public function getcPanelServices($userid)
@@ -104,6 +111,38 @@ class Service extends EloquentModel {
         }
 
         return $domains;
+    }
+
+    /**
+     * Domains from $domains that are not on any of the client's own cPanel accounts.
+     * www. and *. prefixes are ignored, so www.example.com and *.example.com count as example.com.
+     */
+    public function getDomainsNotOwnedByClient($userid, array $domains)
+    {
+        $normalize = function ($domain) {
+            $domain = strtolower(trim((string) $domain));
+            foreach (['*.', 'www.'] as $prefix) {
+                if (strpos($domain, $prefix) === 0) {
+                    $domain = substr($domain, strlen($prefix));
+                }
+            }
+            return $domain;
+        };
+
+        $owned = [];
+        foreach ($this->getDomainByUser($userid) as $ownedDomain) {
+            $owned[$normalize($ownedDomain)] = true;
+        }
+
+        $notOwned = [];
+        foreach ($domains as $domain) {
+            $normalized = $normalize($domain);
+            if ($normalized !== '' && !isset($owned[$normalized])) {
+                $notOwned[] = strtolower(trim($domain));
+            }
+        }
+
+        return array_values(array_unique($notOwned));
     }
 
     public function getServiceByDomain($userid, $domain)

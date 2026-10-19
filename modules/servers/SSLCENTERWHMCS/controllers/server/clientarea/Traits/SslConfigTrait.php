@@ -277,6 +277,18 @@ trait SslConfigTrait
 
         $isWildcard = strpos($mainDomain, '*.') === 0 || !empty(trim($wildcardRaw));
 
+        // AutoInstall: the main domain and every SAN must be on one of the client's own active cPanel accounts
+        if ($installType === 'autoinstall') {
+            $requestedDomains = array_merge(
+                [$mainDomain],
+                preg_split('/[\s,]+/', strtolower($sanDomainsRaw . "\n" . $wildcardRaw), -1, PREG_SPLIT_NO_EMPTY)
+            );
+            $notOwned = (new Service())->getDomainsNotOwnedByClient($userId, $requestedDomains);
+            if (!empty($notOwned)) {
+                throw new \Exception(main\mgLibs\Lang::absoluteT('serverCA', 'home', 'autoinstallDomainNotOwned') . ' ' . htmlspecialchars(implode(', ', $notOwned), ENT_QUOTES));
+            }
+        }
+
         $csrCode    = '';
         $privateKey = '';
 
