@@ -33,6 +33,23 @@
   3.x
 ================================================================================
 
+v3.1.12 (2026-10-19)
+--------------------
+Fixed
+  - Reissue reminder ("SSLCenter - Reissue" email to the client for
+    multi-year subscription certificates) is sent at the right time:
+      * once per certificate, while the current certificate expires within
+        the next 30 days. A day missed by the cron no longer skips the
+        reminder, and it is never repeated for the same certificate.
+      * no longer sent after the certificate has expired (previously it could
+        also be sent 30 days after expiry).
+      * not sent for the last certificate of a subscription, which needs a
+        renewal rather than a reissue.
+Changed
+  - The reissue reminder is no longer sent for certificates that are
+    reissued automatically: AutoInstall SSL products and cPanel AutoInstall
+    orders.
+
 v3.1.11 (2026-10-16)
 --------------------
 Fixed
