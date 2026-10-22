@@ -145,23 +145,50 @@ class Lang
      * @param string $lang Lang Name
      */
     public static function loadLang($lang)
-    {    
-        $originalLanguageFile = self::getInstance()->dir . DS . $lang . '.php';
-        if (file_exists($originalLanguageFile))
-        {
-            include $originalLanguageFile;
-            self::getInstance()->langs       = array_merge(self::getInstance()->langs, $_LANG);
-            self::getInstance()->currentLang = $lang;           
-        }         
+    {
+        // The addon and server modules share one language instance, but each has its own langs folder
+        // (client area texts live in the server module, admin texts in the addon). Load both, key by key:
+        // the other module's file first, then this module's file, then the overrides of both (overrides win).
+        $dirs = self::getLangDirs();
 
-        $file = self::getInstance()->dir . DS . 'overrides' . DS . $lang . '.php';
-        
-        if (file_exists($file))
+        $files = [];
+        foreach ($dirs as $dir) {
+            $files[] = $dir . DS . $lang . '.php';
+        }
+        foreach ($dirs as $dir) {
+            $files[] = $dir . DS . 'overrides' . DS . $lang . '.php';
+        }
+
+        foreach ($files as $file)
         {
-            include $file;
-            self::getInstance()->langs       = array_merge(self::getInstance()->langs, $_LANG);
-            self::getInstance()->currentLang = $lang;
-        } 
+            if (file_exists($file))
+            {
+                $_LANG = [];
+                include $file;
+                if (is_array($_LANG))
+                {
+                    self::getInstance()->langs = array_replace_recursive(self::getInstance()->langs, $_LANG);
+                }
+                self::getInstance()->currentLang = $lang;
+            }
+        }
+    }
+
+    /**
+     * Language folders of both modules: the other module's folder first, this instance's folder last.
+     */
+    private static function getLangDirs()
+    {
+        $dir   = self::getInstance()->dir;
+        $other = null;
+
+        if (strpos($dir, DS . 'addons' . DS) !== false) {
+            $other = str_replace(DS . 'addons' . DS, DS . 'servers' . DS, $dir);
+        } elseif (strpos($dir, DS . 'servers' . DS) !== false) {
+            $other = str_replace(DS . 'servers' . DS, DS . 'addons' . DS, $dir);
+        }
+
+        return ($other && is_dir($other)) ? [$other, $dir] : [$dir];
     }
 
     /**
