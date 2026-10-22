@@ -505,7 +505,8 @@ class home extends main\mgLibs\process\AbstractController {
         }
         $vars['installTargetState'] = \MGModule\SSLCENTERWHMCS\eHelpers\InstallTarget::getState(isset($sslService) ? $sslService : null);
 
-        // Modern view: certificates configured via configssl (have a record in SSLCENTER_orders)
+        // Modern view: every configured standard SSL order. Orders configured before 2.9.0 have no SSLCENTER_orders
+        // record, but are shown in the same view.
         $moduleOrderRow = null;
         try {
             $orderRepo      = new OrderRepo();
@@ -515,7 +516,8 @@ class home extends main\mgLibs\process\AbstractController {
                 ->first();
         } catch (\Exception $e) {}
 
-        if ($moduleOrderRow !== null) {
+        $isConfiguredOrder = isset($sslService) && $sslService && !empty($sslService->remoteid) && $sslService->status !== 'Awaiting Configuration';
+        if ($moduleOrderRow !== null || $isConfiguredOrder) {
             $activationStatus = strtolower((string) ($vars['activationStatus'] ?? ''));
             $configStatus     = isset($sslService) ? (string) $sslService->status : '';
 
@@ -577,81 +579,62 @@ class home extends main\mgLibs\process\AbstractController {
                 $rawLogs  = Capsule::table($logsRepo->tableName)
                     ->where('service_id', $serviceId)
                     ->orderBy('date', 'desc')
-                    ->limit(30)
+                    ->limit(300)
                     ->get();
 
                 $cronRepo     = new \MGModule\SSLCENTERWHMCS\models\cronQueue\Repository();
                 $rawCronTasks = Capsule::table($cronRepo->tableName)
                     ->where('service_id', $serviceId)
                     ->orderBy('created_at', 'desc')
-                    ->limit(20)
+                    ->limit(50)
                     ->get();
+
+                // Timeline texts come from the language file (serverCA > home > activity*)
+                $activityText = function ($key) {
+                    return main\mgLibs\Lang::absoluteT('serverCA', 'home', $key);
+                };
+                $activityFill = function ($text, $domain, $method = '', $expiry = '') use ($activityText) {
+                    return str_replace(
+                        ['{domain}', '{method}', '{expiry}'],
+                        [$domain !== null ? $domain : $activityText('activityYourCertificate'), (string) $method, (string) $expiry],
+                        $text
+                    );
+                };
+                // Date and time in the WHMCS client date format (e.g. 19/10/2026 14:35)
+                $activityDate = function ($date) {
+                    if (empty($date)) {
+                        return '';
+                    }
+                    return function_exists('fromMySQLDate') ? fromMySQLDate($date, true, true) : date('d/m/Y H:i', strtotime($date));
+                };
+                $methodText = function ($method) use ($activityText) {
+                    return $method ? sprintf($activityText('activityViaMethod'), '<strong>' . htmlspecialchars(strtoupper($method)) . '</strong>') : '';
+                };
 
                 // Build enriched cron task list and track which types are active
                 $activeCronTypes = [];
                 foreach ($rawCronTasks as $task) {
-                    $td     = json_decode($task->data, true) ?: [];
-                    $method = isset($td['dcv_method']) ? strtoupper($td['dcv_method']) : null;
-                    $d      = $task->domain ? '<strong>' . htmlspecialchars($task->domain) . '</strong>' : 'your domain';
-                    $m      = $method ? ' via <strong>' . htmlspecialchars($method) . '</strong> validation' : '';
+                    $td = json_decode($task->data, true) ?: [];
+                    $d  = $task->domain ? '<strong>' . htmlspecialchars($task->domain) . '</strong>' : $activityText('activityYourDomain');
+                    $m  = $methodText(isset($td['dcv_method']) ? $td['dcv_method'] : null);
 
-                    switch ($task->type) {
-                        case 'validate':
-                            $msgs = [
-                                'pending'    => "Domain ownership verification for {$d}{$m} has been scheduled.",
-                                'processing' => "Domain ownership for {$d}{$m} is currently being verified.",
-                                'done'       => "Domain ownership for {$d}{$m} has been verified successfully.",
-                                'error'      => "Domain verification for {$d}{$m} requires attention — please check your validation settings.",
-                            ];
-                            break;
-                        case 'install':
-                            $msgs = [
-                                'pending'    => "SSL certificate installation for {$d} has been scheduled.",
-                                'processing' => "Your SSL certificate for {$d} is currently being installed on your server.",
-                                'done'       => "Your SSL certificate for {$d} has been installed on your server successfully.",
-                                'error'      => "SSL certificate installation for {$d} encountered an issue — please contact our support team.",
-                            ];
-                            break;
-                        case 'renew':
-                            $msgs = [
-                                'pending'    => "Certificate renewal for {$d} has been scheduled.",
-                                'processing' => "Your SSL certificate for {$d} is currently being renewed.",
-                                'done'       => "Your SSL certificate for {$d} has been renewed successfully.",
-                                'error'      => "Certificate renewal for {$d} encountered an issue — please contact our support team.",
-                            ];
-                            break;
-                        case 'reissue':
-                            $msgs = [
-                                'pending'    => "Automatic certificate reissue for {$d} has been scheduled.",
-                                'processing' => "Your SSL certificate for {$d} is currently being reissued automatically.",
-                                'done'       => "Your SSL certificate for {$d} has been reissued automatically.",
-                                'error'      => "Automatic reissue for {$d} encountered an issue — please contact our support team.",
-                            ];
-                            break;
-                        default:
-                            $msgs = [
-                                'pending'    => "A task for {$d} has been scheduled.",
-                                'processing' => "A task for {$d} is in progress.",
-                                'done'       => "A task for {$d} has been completed.",
-                                'error'      => "A task for {$d} encountered an issue.",
-                            ];
-                    }
-
-                    $statusKey = isset($msgs[$task->status]) ? $task->status : 'pending';
+                    $taskType  = in_array($task->type, ['validate', 'install', 'renew', 'reissue']) ? $task->type : 'other';
+                    $statusKey = in_array($task->status, ['pending', 'processing', 'done', 'error']) ? $task->status : 'pending';
 
                     if (in_array($task->status, ['pending', 'processing'])) {
                         $activeCronTypes[] = $task->type;
                     }
 
                     $cronTasks[] = (object)[
-                        'type'       => $task->type,
-                        'status'     => $task->status,
-                        'msg'        => $msgs[$statusKey],
-                        'created_at' => $task->created_at,
+                        'type'         => $task->type,
+                        'status'       => $task->status,
+                        'msg'          => $activityFill($activityText('activityTask_' . $taskType . '_' . $statusKey), $d, $m),
+                        'created_at'   => $task->created_at,
+                        'date_display' => $activityDate($task->created_at),
                     ];
                 }
 
-                // Map log prefixes to cron task types for deduplication
+                // Map log prefixes to cron task types for deduplication, and to language keys
                 $prefixToCronType = [
                     '[Install]'     => 'install',
                     '[Validate]'    => 'validate',
@@ -659,46 +642,17 @@ class home extends main\mgLibs\process\AbstractController {
                     '[AutoReissue]' => 'reissue',
                     '[Reissue]'     => 'reissue',
                 ];
-
-                // Message templates with {domain}, {method}, {expiry} placeholders
-                $logTemplates = [
-                    '[Install]' => [
-                        'success' => 'Your SSL certificate for {domain} has been successfully installed on your server.',
-                        'error'   => 'SSL certificate installation for {domain} encountered an issue. Please contact our support team.',
-                        'info'    => 'SSL certificate installation for {domain} is currently in progress.',
-                    ],
-                    '[Validate]' => [
-                        'success' => 'Domain ownership verification for {domain}{method} completed successfully.',
-                        'error'   => 'Domain verification for {domain}{method} encountered an issue. Please check your validation settings and try again.',
-                        'info'    => 'Domain ownership verification for {domain}{method} is in progress.',
-                    ],
-                    '[Renew]' => [
-                        'success' => 'Your SSL certificate for {domain} has been renewed successfully.',
-                        'error'   => 'Certificate renewal for {domain} encountered an issue. Please contact our support team.',
-                        'info'    => 'Certificate renewal for {domain} is currently being processed.',
-                    ],
-                    '[AutoReissue]' => [
-                        'success' => 'Your SSL certificate for {domain} has been reissued automatically.',
-                        'error'   => 'Automatic reissue for {domain} encountered an error. Please contact our support team.',
-                        'info'    => 'Your certificate for {domain} is expiring{expiry} — an automatic reissue has been scheduled.',
-                    ],
-                    '[Reissue]' => [
-                        'success' => 'Your SSL certificate for {domain} has been reissued successfully.',
-                        'error'   => 'Certificate reissue for {domain} encountered an issue. Please contact our support team.',
-                        'info'    => 'Certificate reissue for {domain} is in progress.',
-                    ],
-                    '[ActiveCheck]' => [
-                        'success' => 'Your SSL certificate for {domain} is active and valid.',
-                        'error'   => 'Your SSL certificate for {domain} requires immediate attention. Please contact our support team.',
-                        'info'    => 'Certificate status for {domain} has been updated.',
-                    ],
-                    '[Sync]' => [
-                        'success' => 'Certificate data for {domain} has been synchronized with the Certificate Authority.',
-                        'error'   => 'Data synchronization for {domain} encountered an issue.',
-                        'info'    => 'Certificate data for {domain} has been refreshed.',
-                    ],
+                $prefixToLangKey = [
+                    '[Install]'     => 'Install',
+                    '[Validate]'    => 'Validate',
+                    '[Renew]'       => 'Renew',
+                    '[AutoReissue]' => 'AutoReissue',
+                    '[Reissue]'     => 'Reissue',
+                    '[ActiveCheck]' => 'ActiveCheck',
+                    '[Sync]'        => 'Sync',
                 ];
 
+                $lastShown = null;
                 foreach ($rawLogs as $log) {
                     $raw = (string) $log->msg;
 
@@ -709,40 +663,39 @@ class home extends main\mgLibs\process\AbstractController {
                     }
 
                     // Extract validation method
-                    $method = null;
+                    $method = '';
                     if (preg_match('/\b(DNS|HTTP|HTTPS|email)\b(?:\s+validation)?/i', $raw, $m)) {
-                        $method = ' via <strong>' . htmlspecialchars(strtoupper($m[1])) . '</strong> validation';
+                        $method = $methodText($m[1]);
                     }
 
                     // Extract expiry date
-                    $expiry = null;
+                    $expiry = '';
                     if (preg_match('/(?:expires?|expiry)[:\s]+(\d{4}-\d{2}-\d{2})/i', $raw, $m)) {
-                        $expiry = ' on <strong>' . htmlspecialchars($m[1]) . '</strong>';
+                        $expiryDate = function_exists('fromMySQLDate') ? fromMySQLDate($m[1], false, true) : $m[1];
+                        $expiry     = sprintf($activityText('activityExpiryOn'), '<strong>' . htmlspecialchars($expiryDate) . '</strong>');
                     }
 
-                    $friendly       = null;
+                    $friendly        = null;
                     $matchedCronType = null;
+                    $skip            = false;
 
-                    foreach ($logTemplates as $prefix => $typeMap) {
+                    foreach ($prefixToLangKey as $prefix => $langKey) {
                         if (strpos($raw, $prefix) === 0) {
-                            $matchedCronType = $prefixToCronType[$prefix] ?? null;
+                            $matchedCronType = isset($prefixToCronType[$prefix]) ? $prefixToCronType[$prefix] : null;
 
                             // Skip log if an active (pending/processing) cron task of the same type exists
                             if ($matchedCronType && in_array($matchedCronType, $activeCronTypes)) {
+                                $skip = true;
                                 break;
                             }
 
-                            $tplType  = isset($typeMap[$log->type]) ? $log->type : 'info';
-                            $friendly = $typeMap[$tplType];
-                            $friendly = str_replace('{domain}', $domain ?? 'your certificate', $friendly);
-                            $friendly = str_replace('{method}', $method ?? '', $friendly);
-                            $friendly = str_replace('{expiry}', $expiry ?? '', $friendly);
+                            $logType  = in_array($log->type, ['success', 'error', 'info']) ? $log->type : 'info';
+                            $friendly = $activityFill($activityText('activityLog_' . $langKey . '_' . $logType), $domain, $method, $expiry);
                             break;
                         }
                     }
 
-                    // Skip entry if it would duplicate an active cron task
-                    if ($friendly === null && $matchedCronType && in_array($matchedCronType, $activeCronTypes)) {
+                    if ($skip) {
                         continue;
                     }
 
@@ -751,10 +704,18 @@ class home extends main\mgLibs\process\AbstractController {
                         $friendly = htmlspecialchars(trim(preg_split('/\s+[—|]\s+/', $stripped, 2)[0]));
                     }
 
+                    // Repeated identical entries (e.g. periodic status checks) are shown once, with the latest date
+                    $entryKey = $log->type . '|' . $friendly;
+                    if ($entryKey === $lastShown) {
+                        continue;
+                    }
+                    $lastShown = $entryKey;
+
                     $serviceLogs[] = (object)[
-                        'type' => $log->type,
-                        'msg'  => $friendly,
-                        'date' => $log->date,
+                        'type'         => $log->type,
+                        'msg'          => $friendly,
+                        'date'         => $log->date,
+                        'date_display' => $activityDate($log->date),
                     ];
                 }
             } catch (\Exception $e) {}
@@ -785,7 +746,7 @@ class home extends main\mgLibs\process\AbstractController {
             $vars['certAddress']      = $certAddress;
             $vars['certType']         = $certType;
             $vars['certIsWildcard']   = isset($vars['domain']) && strpos($vars['domain'], '*.') === 0;
-            $vars['purchasedDate']    = isset($moduleOrderRow->date) ? date('M j, Y', strtotime((string) $moduleOrderRow->date)) : '';
+            $vars['purchasedDate']    = isset($moduleOrderRow->date) ? fromMySQLDate((string) $moduleOrderRow->date, false, true) : '';
             $vars['sslOrderApiId']    = isset($sslService) ? $sslService->remoteid : '';
             $vars['sslOrderLocalId']  = isset($sslService) ? $sslService->id : '';
             $vars['serviceLogs']            = $serviceLogs;

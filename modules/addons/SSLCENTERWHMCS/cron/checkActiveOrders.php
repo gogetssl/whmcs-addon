@@ -142,15 +142,21 @@ foreach ($activeOrders as $order) {
                         ? date('Y-m-d', strtotime($endDate . ' -' . $renewInvoiceDays . ' days'))
                         : date('Y-m-d', strtotime($endDate));
 
-                    DB::table('tblhosting')->where('id', $serviceId)->update([
-                        'nextduedate'     => $dueFormatted,
-                        'nextinvoicedate' => $dueFormatted,
-                    ]);
+                    $hosting = DB::table('tblhosting')->where('id', $serviceId)->first(['nextduedate', 'nextinvoicedate']);
 
-                    $logsRepo->addLog($clientId, $serviceId, 'info',
-                        '[ActiveCheck] Synced dates for service #' . $serviceId
-                        . ' — nextduedate/nextinvoicedate: ' . $dueFormatted
-                        . ($renewInvoiceDays > 0 ? ' (' . $renewInvoiceDays . ' days before subscription end ' . $endDate . ')' : ''));
+                    // Only update (and log) when the dates actually change, so the activity history is not
+                    // filled with identical entries on every cron run
+                    if (!$hosting || $hosting->nextduedate !== $dueFormatted || $hosting->nextinvoicedate !== $dueFormatted) {
+                        DB::table('tblhosting')->where('id', $serviceId)->update([
+                            'nextduedate'     => $dueFormatted,
+                            'nextinvoicedate' => $dueFormatted,
+                        ]);
+
+                        $logsRepo->addLog($clientId, $serviceId, 'info',
+                            '[ActiveCheck] Synced dates for service #' . $serviceId
+                            . ' — nextduedate/nextinvoicedate: ' . $dueFormatted
+                            . ($renewInvoiceDays > 0 ? ' (' . $renewInvoiceDays . ' days before subscription end ' . $endDate . ')' : ''));
+                    }
                 }
             }
 

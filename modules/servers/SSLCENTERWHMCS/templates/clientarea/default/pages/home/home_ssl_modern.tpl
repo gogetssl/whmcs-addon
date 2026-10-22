@@ -241,10 +241,10 @@
         {* Certificate Details card *}
         <div class="ssl-mod-card">
             <div class="ssl-mod-card-title">{$MGLANG->T('certificateDetails')|default:'Certificate Details'}</div>
-            <div class="ssl-mod-detail-label">{$MGLANG->T('sslSerial')|default:'Serial'|upper}</div>
+            <div class="ssl-mod-detail-label">{$MGLANG->T('sslSerial')|default:'Serial'}</div>
             <div class="ssl-mod-detail-value">{if $certSerial}#{$certSerial|escape}{else}&mdash;{/if}</div>
             {if $certIssued && $validTill}
-            <div class="ssl-mod-detail-label">{$MGLANG->T('sslCertExpires')|default:'Certificate Expires'|upper}</div>
+            <div class="ssl-mod-detail-label">{$MGLANG->T('sslCertExpires')|default:'Certificate Expires'}</div>
             <div class="ssl-mod-detail-value">{$validTill}</div>
             <div>
                 {if $nextReissue > 90}
@@ -258,11 +258,11 @@
                 {/if}
             </div>
             {if $subscriptionEnds}
-            <div class="ssl-mod-detail-label">{$MGLANG->T('sslSubscriptionEndsLabel')|default:'Subscription Ends'|upper}</div>
+            <div class="ssl-mod-detail-label">{$MGLANG->T('sslSubscriptionEndsLabel')|default:'Subscription Ends'}</div>
             <div class="ssl-mod-detail-value">{$subscriptionEnds}</div>
             {/if}
             {elseif !$certIssued}
-            <div class="ssl-mod-detail-label">{$MGLANG->T('sslExpiresLabel')|default:'Expires'|upper}</div>
+            <div class="ssl-mod-detail-label">{$MGLANG->T('sslExpiresLabel')|default:'Expires'}</div>
             <div class="ssl-mod-detail-value" style="color:#aaa;">{$MGLANG->T('sslPendingIssuance')|default:'Pending issuance'}</div>
             {/if}
         </div>
@@ -282,6 +282,16 @@
             {/if}
             {if !$downloadcrt && !$downloadpem}
             <p style="color:#aaa;font-size:13px;">{$MGLANG->T('sslDownloadNotAvailable')|default:'Not available yet'}</p>
+            {/if}
+            {if $downloadcsr}
+            <a href="{$downloadcsr}" class="btn btn-default ssl-mod-dl-btn">
+                <span class="glyphicon glyphicon-download-alt"></span> {$MGLANG->T('sslDownloadCsr')|default:'CSR (.csr)'}
+            </a>
+            {/if}
+            {if $crt && $certIssued}
+            <button type="button" class="btn btn-default ssl-mod-dl-btn" id="ssl-mod-send-cert">
+                <span class="glyphicon glyphicon-envelope"></span> {$MGLANG->T('sendCertificate')|default:'Send Certificate'}
+            </button>
             {/if}
             {if $crt}
             <button type="button" class="btn btn-default ssl-mod-dl-btn" id="ssl-mod-show-crt">
@@ -333,7 +343,7 @@
         <div class="panel-heading"><strong>{$MGLANG->T('installTargetTitle')|default:'Automatic cPanel Installation'}</strong></div>
         <div class="panel-body">
             <label for="ssl-install-target-select" style="font-weight:600;">{$MGLANG->T('installTargetLabel')|default:'Install certificate on'}</label>
-            <select id="ssl-install-target-select" class="form-control" style="max-width:460px;">
+            <select id="ssl-install-target-select" class="form-control" style="display:inline-block;width:100%;max-width:460px;">
                 <option value="0">{$MGLANG->T('installTargetByDomain')|default:'Find by domain (automatic)'}</option>
                 {foreach from=$installTargetOptions key=targetId item=targetLabel}
                 <option value="{$targetId}"{if $installTargetState.linked_id == $targetId} selected{/if}>{$targetLabel|escape}</option>
@@ -820,12 +830,12 @@
                     {elseif $task->status == 'done'}{assign var='statusLabel' value=$MGLANG->T('sslTimelineCompleted')|default:'Completed'}
                     {elseif $task->status == 'error'}{assign var='statusLabel' value=$MGLANG->T('sslTimelineAttention')|default:'Attention Required'}
                     {/if}
-                    <li style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;">
+                    <li class="ssl-timeline-item" style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;">
                         <span class="glyphicon {$taskIcon}" style="color:{$taskColor};font-size:16px;margin-right:12px;flex-shrink:0;"></span>
                         <div style="flex:1;min-width:0;font-size:13px;color:#333;">{$task->msg nofilter}</div>
                         <div style="text-align:right;flex-shrink:0;margin-left:16px;">
                             <span style="font-size:11px;font-weight:700;color:{$taskColor};text-transform:uppercase;letter-spacing:.5px;">{$statusLabel}</span>
-                            <div style="font-size:11px;color:#bbb;margin-top:2px;">{$task->created_at|date_format:'%d %b %Y'}</div>
+                            <div style="font-size:11px;color:#bbb;margin-top:2px;white-space:nowrap;">{$task->date_display}</div>
                         </div>
                     </li>
                     {/foreach}
@@ -843,11 +853,11 @@
                         {assign var='logIcon' value='glyphicon-info-sign'}
                         {assign var='logColor' value='#2980b9'}
                     {/if}
-                    <li style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;">
+                    <li class="ssl-timeline-item" style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;">
                         <span class="glyphicon {$logIcon}" style="color:{$logColor};font-size:16px;margin-right:12px;flex-shrink:0;"></span>
                         <div style="flex:1;min-width:0;font-size:13px;color:#333;">{$log->msg nofilter}</div>
                         <div style="text-align:right;flex-shrink:0;margin-left:16px;">
-                            <div style="font-size:11px;color:#bbb;">{$log->date|date_format:'%d %b %Y'}</div>
+                            <div style="font-size:11px;color:#bbb;white-space:nowrap;">{$log->date_display}</div>
                         </div>
                     </li>
                     {/foreach}
@@ -860,6 +870,11 @@
                     {/if}
 
                 </ul>
+                <div class="ssl-timeline-pager" style="display:none;padding:8px 16px 12px;text-align:center;">
+                    <button type="button" class="btn btn-default btn-sm ssl-timeline-prev">&laquo; {$MGLANG->T('activityPrevious')|default:'Previous'}</button>
+                    <span class="ssl-timeline-page" style="margin:0 12px;font-size:12px;color:#777;"></span>
+                    <button type="button" class="btn btn-default btn-sm ssl-timeline-next">{$MGLANG->T('activityNext')|default:'Next'} &raquo;</button>
+                </div>
             </div>
         </div>
         {/if}
@@ -896,6 +911,50 @@
     {if $crt}
     $('#ssl-mod-show-crt').on('click', function () {
         $('#modal-certificate-crt').modal('show');
+    });
+    {/if}
+
+    // Certificate Activity: 10 entries per page
+    (function () {
+        var items   = $('.ssl-mod-timeline .ssl-timeline-item');
+        var perPage = 10;
+        if (items.length <= perPage) {
+            return;
+        }
+        var pager = $('.ssl-timeline-pager');
+        var pages = Math.ceil(items.length / perPage);
+        var page  = 0;
+        var label = '{$MGLANG->T('activityPageOf')|default:'Page %s of %s'}';
+        function showPage() {
+            items.hide().slice(page * perPage, (page + 1) * perPage).show();
+            pager.find('.ssl-timeline-page').text(label.replace('%s', page + 1).replace('%s', pages));
+            pager.find('.ssl-timeline-prev').prop('disabled', page === 0);
+            pager.find('.ssl-timeline-next').prop('disabled', page >= pages - 1);
+        }
+        pager.find('.ssl-timeline-prev').on('click', function () { if (page > 0) { page--; showPage(); } });
+        pager.find('.ssl-timeline-next').on('click', function () { if (page < pages - 1) { page++; showPage(); } });
+        pager.show();
+        showPage();
+    })();
+
+    {if $crt && $certIssued}
+    $('#ssl-mod-send-cert').on('click', function () {
+        var btn = $(this);
+        btn.prop('disabled', true);
+        $.post(serviceUrl, { 'mg-action': 'sendCertificateEmail' }, function (ret) {
+            ret = ret.replace('<JSONRESPONSE#', '').replace('#ENDJSONRESPONSE>', '');
+            var d = new Object();
+            try { d = JSON.parse(ret); } catch (e) { }
+            var data = d.data || new Object();
+            if (data.success) {
+                $('#MGAlerts').alerts('success', data.success);
+            } else {
+                $('#MGAlerts').alerts('error', data.message || data.error || d.error || '{$MGLANG->T('anErrorOccurred')|default:'An error occurred'}');
+            }
+            btn.prop('disabled', false);
+        }).fail(function () {
+            btn.prop('disabled', false);
+        });
     });
     {/if}
 

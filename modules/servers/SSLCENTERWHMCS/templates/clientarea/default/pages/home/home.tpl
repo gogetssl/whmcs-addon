@@ -237,7 +237,7 @@
             <tr id="installTargetTr">
                 <td class="text-left">{$MGLANG->T('installTargetLabel')}</td>
                 <td class="text-left">
-                    <select id="installTargetSelect" class="form-control" style="max-width:460px;">
+                    <select id="installTargetSelect" class="form-control" style="display:inline-block;width:100%;max-width:460px;">
                         <option value="0">{$MGLANG->T('installTargetByDomain')}</option>
                         {foreach from=$installTargetOptions key=targetId item=targetLabel}
                         <option value="{$targetId}"{if $installTargetState.linked_id == $targetId} selected{/if}>{$targetLabel|escape}</option>
