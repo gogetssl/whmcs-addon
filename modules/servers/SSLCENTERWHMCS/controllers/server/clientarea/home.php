@@ -56,6 +56,7 @@ class home extends main\mgLibs\process\AbstractController {
             }
 
             $disabledValidationMethods = [];
+            $vars['brandsWithOnlyEmailValidation'] = ['geotrust','thawte','rapidssl','symantec',];
 
             $serviceId  = $input['params']['serviceid'];
             $serviceBillingCycle = $input['params']['templatevars']['billingcycle'];

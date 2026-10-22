@@ -772,7 +772,7 @@
                         <div class="form-group">
                             <label style="font-weight:600;">{$MGLANG->T('validationMethod')|default:'Validation Method'}</label>
                             <select class="form-control" id="change-dcv-method-select">
-                                {if !in_array($brand, $brandsWithOnlyEmailValidation)}
+                                {if !$brandsWithOnlyEmailValidation || !in_array($brand, $brandsWithOnlyEmailValidation)}
                                 <option value="http">{$MGLANG->T('sslMethodHttp')|default:'HTTP File'}</option>
                                 <option value="https">{$MGLANG->T('sslMethodHttps')|default:'HTTPS File'}</option>
                                 <option value="dns">{$MGLANG->T('sslMethodDns')|default:'DNS TXT Record'}</option>
@@ -898,6 +898,7 @@
 {/if}{* end allOk *}
 </div>{* end ssl-mod *}
 
+{if !$error}
 <script type="text/javascript">
 (function ($) {
     var serviceUrl = 'clientarea.php?action=productdetails&id={$serviceid}&json=1&mg-model=home';
@@ -1107,7 +1108,7 @@
         $('#modal-change-dcv').on('show.bs.modal', function () {
             $('#change-dcv-msg').hide().removeClass('alert-success alert-danger');
             $('#change-dcv-submit').prop('disabled', false).html('<span class="glyphicon glyphicon-ok" style="margin-right:4px;"></span>{$MGLANG->T('saveChanges')|default:'Save Changes'}');
-            {if in_array($brand, $brandsWithOnlyEmailValidation)}
+            {if $brandsWithOnlyEmailValidation && in_array($brand, $brandsWithOnlyEmailValidation)}
             $('#change-dcv-method-select').val('email').trigger('change');
             {/if}
         });
@@ -1187,3 +1188,4 @@
 
 }(jQuery));
 </script>
+{/if}{* end !$error *}
