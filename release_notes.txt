@@ -33,6 +33,38 @@
   3.x
 ================================================================================
 
+v3.3.0 (2026-10-22)
+-------------------
+Added
+  - Certificate Activity (client area): pagination with 10 entries per page,
+    and the full history (up to 300 entries) instead of the latest 30.
+  - Certificate Activity dates are shown with the time and in the date
+    format configured in WHMCS (e.g. 19/10/2026 14:35).
+  - "Download CSR" and "Send Certificate" buttons on the certificate page.
+Changed
+  - Certificates configured before version 2.9.0 now also use the
+    redesigned certificate page instead of the old one.
+  - All Certificate Activity messages are translatable through the module
+    language file (serverCA > home > activity*).
+  - Repeated identical Certificate Activity entries are shown once.
+  - "Install certificate on" select follows the alignment of the panel
+    (centred in themes that centre panel content).
+Fixed
+  - Client area texts of the module were not translatable: the language
+    files of the server module (modules/servers/SSLCENTERWHMCS/langs and its
+    overrides folder) were not loaded in the client area, so built-in
+    English defaults were shown. Both modules' language files and override
+    folders are now loaded; partial translations fall back to English per
+    text instead of per section.
+  - Accented characters in certificate page labels were shown as HTML
+    entities (e.g. "N&UACUTE;MERO DE SERIE" instead of "NUMERO DE SERIE"
+    with accents).
+  - "Certificate status ... has been updated" was added to the activity
+    history twice a day per certificate: the active orders cron now only
+    updates and logs next due / invoice dates when they actually change.
+  - Certificate page crashed with "Oops!" (PHP 8) when the certificate
+    details could not be loaded; the error message is now shown instead.
+
 v3.2.1 (2026-10-19)
 -------------------
 Fixed
