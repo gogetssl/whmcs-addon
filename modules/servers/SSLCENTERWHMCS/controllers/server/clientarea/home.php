@@ -651,11 +651,27 @@ class home extends main\mgLibs\process\AbstractController {
                     '[Reissue]'     => 'Reissue',
                     '[ActiveCheck]' => 'ActiveCheck',
                     '[Sync]'        => 'Sync',
+                    '[Order]'       => 'Order',
+                    '[Error]'       => 'Error',
+                ];
+
+                // Entries written by older versions without a prefix
+                $legacyLogPatterns = [
+                    '/^The certificate for the (.+?) domain has been installed correctly\.?$/i' => '[Install] Certificate installed for domain: $1',
+                    '/^SSL order placed for domain: (.+)$/i'                                    => '[Order] SSL order placed for domain: $1',
+                    '/^The order has been placed\.?$/i'                                         => '[Order] SSL order placed.',
+                    '/^\[([^\]\s]+\.[^\]\s]+)\]\s*(Error.*)$/i'                             => '[Error] Error for domain: $1 — $2',
                 ];
 
                 $lastShown = null;
                 foreach ($rawLogs as $log) {
                     $raw = (string) $log->msg;
+                    foreach ($legacyLogPatterns as $legacyPattern => $legacyReplacement) {
+                        if (preg_match($legacyPattern, $raw)) {
+                            $raw = preg_replace($legacyPattern, $legacyReplacement, $raw);
+                            break;
+                        }
+                    }
 
                     // Extract domain
                     $domain = null;

@@ -519,7 +519,7 @@ trait SslConfigTrait
         }
 
         $logsRepo = new LogsRepo();
-        $logsRepo->addLog($userId, $serviceId, 'success', 'SSL order placed for domain: ' . $mainDomain);
+        $logsRepo->addLog($userId, $serviceId, 'success', '[Order] SSL order placed for domain: ' . $mainDomain);
 
         run_hook('SSLCenter_StepThree', [
             'serviceid'     => $serviceId,

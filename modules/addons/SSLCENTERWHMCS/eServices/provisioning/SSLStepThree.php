@@ -523,7 +523,8 @@ class SSLStepThree {
         );
 
         $logs = new LogsRepo();
-        $logs-> addLog($this->p['userid'], $this->p['serviceid'], 'success', 'The order has been placed.');
+        $logs->addLog($this->p['userid'], $this->p['serviceid'], 'success',
+            '[Order] SSL order placed' . (!empty($orderDetails['domain']) ? ' for domain: ' . $orderDetails['domain'] : '.'));
 
         $order = Capsule::table('SSLCENTER_orders')->where('service_id', $this->p['serviceid'])->first();
         $sslOrder = Capsule::table('tblsslorders')->where('id', $order->ssl_order_id)->first();

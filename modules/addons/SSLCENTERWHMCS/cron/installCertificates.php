@@ -44,12 +44,12 @@ foreach ($orders as $order)
         $cpanel->setService($serviceCpanel);
         $cpanel->installSSL($serviceCpanel->user, $order->domain, $cert, $key, $cabundle);
 
-        $logsRepo->addLog($order->client_id, $order->service_id, 'success', 'The certificate for the '.$order->domain.' domain has been installed correctly.');
+        $logsRepo->addLog($order->client_id, $order->service_id, 'success', '[Install] Certificate installed for domain: ' . $order->domain);
         $orderRepo->updateStatus($order->service_id, 'Success');
 
     } catch (\Exception $e) {
 
-        $logsRepo->addLog($order->client_id, $order->service_id, 'error', '['.$order->domain.'] Error: '.$e->getMessage());
+        $logsRepo->addLog($order->client_id, $order->service_id, 'error', '[Install] Error for domain: ' . $order->domain . ' — ' . $e->getMessage());
         continue;
 
     }

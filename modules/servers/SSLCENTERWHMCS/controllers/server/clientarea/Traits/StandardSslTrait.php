@@ -345,11 +345,11 @@ trait StandardSslTrait
                 $cpanel = new Cpanel();
                 $cpanel->setService($serviceCpanel);
                 $cpanel->installSSL($serviceCpanel->user, $details['domain'], $cert, $key, $cabundle);
-                $logsRepo->addLog($sslService->userid, $sslService->serviceid, 'success', 'The certificate for the ' . $details['domain'] . ' domain has been installed correctly.');
+                $logsRepo->addLog($sslService->userid, $sslService->serviceid, 'success', '[Install] Certificate installed for domain: ' . $details['domain']);
                 $orderRepo->updateStatus($sslService->serviceid, 'Success');
             }
         } catch (\Exception $e) {
-            $logsRepo->addLog($sslService->userid, $sslService->serviceid, 'error', '['.$details['domain'].'] Error: '.$e->getMessage());
+            $logsRepo->addLog($sslService->userid, $sslService->serviceid, 'error', '[Install] Error for domain: ' . $details['domain'] . ' — ' . $e->getMessage());
             return ['success' => 0, 'message' => $e->getMessage()];
         }
 
