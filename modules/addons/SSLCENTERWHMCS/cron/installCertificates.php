@@ -3,6 +3,8 @@
 use MGModule\SSLCENTERWHMCS\eModels\cpanelservices\Service;
 use WHMCS\Database\Capsule as DB;
 use MGModule\SSLCENTERWHMCS\eHelpers\Cpanel;
+use MGModule\SSLCENTERWHMCS\eHelpers\PrivateKey;
+use MGModule\SSLCENTERWHMCS\eHelpers\PrivateKeyMismatchException;
 use MGModule\SSLCENTERWHMCS\models\orders\Repository as OrderRepo;
 use MGModule\SSLCENTERWHMCS\models\logs\Repository as LogsRepo;
 
@@ -31,6 +33,16 @@ foreach ($orders as $order)
     $key = '';
     if (!empty($details['private_key'])) {
         $key = (strpos($details['private_key'], '-----BEGIN') !== false) ? $details['private_key'] : decrypt($details['private_key']);
+    }
+
+    // Key of another CSR: retrying cannot help, so log it once and skip the order until
+    // a reissue brings a certificate that matches the key (then it is installed again).
+    if (!empty($key) && PrivateKey::matchesCertificate($cert, $key) === false) {
+        $mismatchMsg = '[Install] Error for domain: ' . $order->domain . ' — ' . PrivateKeyMismatchException::MESSAGE;
+        if ($logsRepo->getLastMessage($order->service_id) !== $mismatchMsg) {
+            $logsRepo->addLog($order->client_id, $order->service_id, 'error', $mismatchMsg);
+        }
+        continue;
     }
 
     try {

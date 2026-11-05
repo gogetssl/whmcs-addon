@@ -55,6 +55,18 @@ class Repository extends MainRepository {
         Capsule::table($this->tableName)->truncate();
     }
 
+    /**
+     * Latest log message of a service ('' when there is none).
+     */
+    public function getLastMessage($service_id)
+    {
+        $log = Capsule::table($this->tableName)
+            ->where('service_id', $service_id)
+            ->orderBy('id', 'desc')
+            ->first();
+        return $log ? (string) $log->msg : '';
+    }
+
     public function addLog($client_id, $service_id, $type, $msg)
     {
         Capsule::table($this->tableName)->insert([

@@ -286,10 +286,8 @@ class Cpanel
         // A key of another CSR can never be installed; cPanel then only reports that it cannot find the key.
         // An empty key is still sent: cPanel then uses the key from the account's own SSL store (CSR generated in cPanel).
         if (!empty($key) && PrivateKey::matchesCertificate($cert, $key) === false) {
-            $error = 'The private key stored in WHMCS does not match the certificate (it belongs to another CSR). '
-                . 'Reissue the certificate with a CSR generated in WHMCS, or install it manually with the private key of its CSR.';
-            $this->logCall('installSSL', $sslLog, 'Error: ' . $error, 'skipped - key mismatch');
-            throw new \Exception($error);
+            $this->logCall('installSSL', $sslLog, 'Error: ' . PrivateKeyMismatchException::MESSAGE, 'skipped - key mismatch');
+            throw new PrivateKeyMismatchException();
         }
 
         $this->initiateConnection($username);

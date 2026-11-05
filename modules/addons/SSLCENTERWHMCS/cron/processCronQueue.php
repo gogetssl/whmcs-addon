@@ -350,6 +350,10 @@ foreach ($installTasks as $task) {
 
         $cronQueueRepo->markDone($task->id);
 
+    } catch (\MGModule\SSLCENTERWHMCS\eHelpers\PrivateKeyMismatchException $e) {
+        // Retrying cannot help; a reissue queues new tasks
+        $logsRepo->addLog($task->client_id, $task->service_id, 'error', '[Install] Error: ' . $e->getMessage());
+        $cronQueueRepo->markFailed($task->id, $e->getMessage());
     } catch (\Exception $e) {
         $logsRepo->addLog($task->client_id, $task->service_id, 'error', '[Install] Error: ' . $e->getMessage());
         $cronQueueRepo->markError($task->id, $e->getMessage());

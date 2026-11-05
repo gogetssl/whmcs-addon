@@ -84,6 +84,19 @@ class Repository
             ]);
     }
 
+    /**
+     * Error that retrying cannot fix: no further attempts.
+     */
+    public function markFailed($id, $message = '')
+    {
+        Capsule::table($this->tableName)->where('id', $id)->update([
+            'status'        => 'error',
+            'attempts'      => Capsule::raw('attempts + 1'),
+            'error_message' => substr($message, 0, 512),
+            'updated_at'    => date('Y-m-d H:i:s'),
+        ]);
+    }
+
     public function markError($id, $message = '')
     {
         $task = Capsule::table($this->tableName)->where('id', $id)->first();
