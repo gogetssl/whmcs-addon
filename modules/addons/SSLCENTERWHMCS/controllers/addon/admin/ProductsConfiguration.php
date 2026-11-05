@@ -242,6 +242,19 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
             $apiProduct = $this->getAcmePricingApiProduct((int) $this->readValue($apiProduct, ['id']), $apiProduct);
         }
 
+        // S/MIME prices from API v2: [{term, selling, retail}]
+        $v2Prices = $this->readValue($apiProduct, ['v2_prices']);
+        if (!$isAcme && empty($v2Prices) && \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::isSmimeByApiProductId((int) $this->readValue($apiProduct, ['id']))) {
+            // no S/MIME prices from the API: keep the WHMCS prices
+            return;
+        }
+        if (!$isAcme && !empty($v2Prices)) {
+            $apiProduct = [
+                'id'     => (int) $this->readValue($apiProduct, ['id']),
+                'prices' => json_decode(json_encode($v2Prices), true),
+            ];
+        }
+
         $pricingByCurrency = $this->buildProductPricingByCurrency($apiProduct, $productModel->getAllCurrencies());
         foreach ($productPricing as $pricing) {
             if (!isset($pricingByCurrency[$pricing->currency])) {

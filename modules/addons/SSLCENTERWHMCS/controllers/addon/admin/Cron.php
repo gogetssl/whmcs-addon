@@ -46,7 +46,15 @@ class Cron extends main\mgLibs\process\AbstractController
             $this->setSSLServiceAsSynchronized($serviceID);
 
             try{
-                $order = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
+                if (in_array((int) $serviceID, $this->getSmimeServiceIds(), true)) {
+                    // S/MIME (API v2): same fields as the API v1 order status below
+                    $order = $this->getSmimeOrderStatus($serviceID);
+                    if ($order === null) {
+                        continue;
+                    }
+                } else {
+                    $order = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
+                }
             } catch (\Exception $e) {
                 continue;
             }
@@ -189,7 +197,12 @@ class Cron extends main\mgLibs\process\AbstractController
             if ($srv->billingcycle == 'One Time')
             {
                 $sslOrder = Capsule::table('tblsslorders')->where('serviceid', $srv->id)->first();
-                if(isset($sslOrder->remoteid) && !empty($sslOrder->remoteid) && !$isAcmeSubscription) {
+                if (in_array((int) $srv->id, $this->getSmimeServiceIds(), true)) {
+                    $smimeConfig = isset($sslOrder->configdata) ? json_decode($sslOrder->configdata, true) : [];
+                    if (!empty($smimeConfig['valid_till'])) {
+                        $daysLeft = $this->checkOrderExpireDate(date('Y-m-d', strtotime($smimeConfig['valid_till'])));
+                    }
+                } elseif(isset($sslOrder->remoteid) && !empty($sslOrder->remoteid) && !$isAcmeSubscription) {
                     $order    = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslOrder->remoteid);
                     $daysLeft = $this->checkOrderExpireDate($order['valid_till']);
                 }
@@ -286,6 +299,9 @@ class Cron extends main\mgLibs\process\AbstractController
                     $serviceid = $sslInvoice->service_id;
 
                     $sslInfo = $this->getSSLOrders($serviceid)[0];
+                    if (in_array((int) $serviceid, $this->getSmimeServiceIds(), true)) {
+                        continue;
+                    }
                     $sslOrder    = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslInfo->remoteid);
 
                     $today = (string)date('Y-m-d');
@@ -353,6 +369,12 @@ class Cron extends main\mgLibs\process\AbstractController
             {
                 continue;
             }
+            // S/MIME: the certificate authority delivers the certificate to the mailbox
+            if (in_array((int) $service->id, $this->getSmimeServiceIds(), true))
+            {
+                continue;
+            }
+
             $apiOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($ssl->remoteid);
             if ($apiOrder['status'] !== 'active' || empty($apiOrder['ca_code']))
             {
@@ -441,6 +463,11 @@ class Cron extends main\mgLibs\process\AbstractController
 
         foreach ($sslOrders as $sslService)
         {
+            // S/MIME certificates are refreshed from API v2 by the status jobs
+            if (in_array((int) $sslService->serviceid, $this->getSmimeServiceIds(), true))
+            {
+                continue;
+            }
 
             $sslService = \MGModule\SSLCENTERWHMCS\eModels\whmcs\service\SSL::hydrate(array($sslService))[0];
 
@@ -483,7 +510,25 @@ class Cron extends main\mgLibs\process\AbstractController
             {
                 continue;
             }
-            $apiOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($ssl->remoteid);
+            if (in_array((int) $service->id, $this->getSmimeServiceIds(), true))
+            {
+                try
+                {
+                    $apiOrder = $this->getSmimeOrderStatus($service->id);
+                }
+                catch (\Exception $e)
+                {
+                    $apiOrder = null;
+                }
+                if ($apiOrder === null)
+                {
+                    continue;
+                }
+            }
+            else
+            {
+                $apiOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($ssl->remoteid);
+            }
 
             $this->setSSLCertificateValidTillDate($service->id, $apiOrder['valid_till']);
             $this->setSSLCertificateStatus($service->id, $apiOrder['status']);
@@ -524,7 +569,15 @@ class Cron extends main\mgLibs\process\AbstractController
                 $apiProduct = isset($apiProductsById[(int) $product->{C::API_PRODUCT_ID}]) ? $apiProductsById[(int) $product->{C::API_PRODUCT_ID}] : null;
                 $isAcmeProduct = \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeProductId((int) $product->{C::API_PRODUCT_ID});
 
-                if ($apiProduct !== null && $isAcmeProduct)
+                if (main\eHelpers\SmimeProduct::isSmimeByApiProductId((int) $product->{C::API_PRODUCT_ID}))
+                {
+                    // S/MIME prices from API v2: [{term, selling, retail}]; no prices from the API = keep the WHMCS prices
+                    if ($apiProduct !== null && !empty($apiProduct['v2_prices']))
+                    {
+                        $this->generateNewPricesFromApiProduct($product->pricing, ['prices' => $apiProduct['v2_prices']]);
+                    }
+                }
+                elseif ($apiProduct !== null && $isAcmeProduct)
                 {
                     $this->generateNewPricesFromApiProduct($product->pricing, $apiProduct);
                     $this->syncProductDataFromApi((int) $product->id, $apiProduct);
@@ -920,9 +973,24 @@ class Cron extends main\mgLibs\process\AbstractController
     }
     private function checkOrdersStatus($sslorders, $processingOnly = false)
     {
+        // S/MIME certificates are read from API v2, not from the API v1 order statuses
+        $smimeServiceIds = $this->getSmimeServiceIds();
+        $smimeOrders = [];
         $cids = [];
         foreach ($sslorders as $sslService) {
+            if (in_array((int) $sslService->serviceid, $smimeServiceIds, true)) {
+                $smimeOrders[] = $sslService;
+                continue;
+            }
             $cids[] = $sslService->remoteid;
+        }
+
+        if (!empty($smimeOrders)) {
+            $this->refreshSmimeOrders($smimeOrders);
+        }
+
+        if (empty($cids)) {
+            return;
         }
         try
         {
@@ -970,6 +1038,19 @@ class Cron extends main\mgLibs\process\AbstractController
         ->get(['tblsslorders.*']);
 
         main\eHelpers\Whmcs::savelogActivitySSLCenter("SSLCENTER WHMCS: Certificates (ssl status Processing) Data Updater started.");
+
+        // S/MIME orders waiting for mailbox validation or issuance ("processing" ones are in $sslorders already)
+        $smimeServiceIds = $this->getSmimeServiceIds();
+        if (!empty($smimeServiceIds)) {
+            $pendingSmime = Capsule::table('tblhosting')
+                ->join('tblsslorders', 'tblsslorders.serviceid', '=', 'tblhosting.id')
+                ->where('tblhosting.domainstatus', 'Active')
+                ->whereIn('tblhosting.id', $smimeServiceIds)
+                ->where('tblsslorders.status', 'Configuration Submitted')
+                ->where('tblsslorders.configdata', 'not like', '%"ssl_status":"processing"%')
+                ->get(['tblsslorders.*']);
+            $this->refreshSmimeOrders($pendingSmime);
+        }
 
         $this->checkOrdersStatus($sslorders, true);
         $updatedPendingAcme = $this->refreshPendingAcmeSubscriptions();
@@ -1124,6 +1205,80 @@ class Cron extends main\mgLibs\process\AbstractController
         }
 
         return $newPrice;
+    }
+
+    /**
+     * Service IDs of S/MIME services (API v2) - skipped by the API v1 order jobs.
+     */
+    private function getSmimeServiceIds()
+    {
+        static $ids = null;
+        if ($ids === null)
+        {
+            try
+            {
+                $ids = main\eHelpers\SmimeProduct::getServiceIds();
+            }
+            catch (\Exception $e)
+            {
+                $ids = [];
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Refreshes an S/MIME certificate from API v2 and returns the fields the jobs read from
+     * the API v1 order status: status, valid_from, valid_till, end_date. Null when not ordered yet.
+     */
+    private function getSmimeOrderStatus($serviceID)
+    {
+        $sslService = (new main\eRepository\whmcs\service\SSL())->getByServiceId((int) $serviceID);
+        if (!main\eServices\SmimeService::isSmimeOrder($sslService))
+        {
+            return null;
+        }
+
+        $status = strtolower((string) $sslService->getConfigdataKey('ssl_status'));
+        if (!in_array($status, ['cancelled', 'expired'], true))
+        {
+            main\eServices\SmimeService::refresh($sslService);
+        }
+
+        $validTill = (string) $sslService->getConfigdataKey('valid_till');
+        $validFrom = (string) $sslService->getConfigdataKey('valid_from');
+
+        return [
+            'status'     => strtolower((string) $sslService->getConfigdataKey('ssl_status')),
+            'valid_from' => $validFrom !== '' ? date('Y-m-d', strtotime($validFrom)) : '',
+            'valid_till' => $validTill !== '' ? date('Y-m-d', strtotime($validTill)) : '',
+            'end_date'   => '',
+        ];
+    }
+
+    /**
+     * Refreshes the S/MIME certificates of the given tblsslorders rows (status jobs).
+     */
+    private function refreshSmimeOrders($sslorders)
+    {
+        $refreshed = 0;
+        foreach ($sslorders as $sslOrder)
+        {
+            try
+            {
+                if ($this->getSmimeOrderStatus($sslOrder->serviceid) !== null)
+                {
+                    $refreshed++;
+                }
+            }
+            catch (\Exception $e)
+            {
+                main\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS: S/MIME details refresh failed for service #' . (int) $sslOrder->serviceid . ': ' . $e->getMessage());
+            }
+        }
+
+        return $refreshed;
     }
 
     private function getSSLOrders($serviceID = null)

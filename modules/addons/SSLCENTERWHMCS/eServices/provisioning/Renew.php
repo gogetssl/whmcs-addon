@@ -33,6 +33,11 @@ class Renew {
         }
 
         $apiConf           = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+
+        if (\MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::isSmimeByServiceId($this->p['serviceid'])
+            && isset($apiConf->renew_new_order) && $apiConf->renew_new_order == '1') {
+            return $this->renewSmime();
+        }
         if(isset($apiConf->renew_new_order) && $apiConf->renew_new_order == '1')
         {
             if(isset($apiConf->automatic_processing_of_renewal_orders) && $apiConf->automatic_processing_of_renewal_orders == '1')
@@ -83,6 +88,53 @@ class Renew {
 
     }
     
+    /**
+     * S/MIME renewal = a new S/MIME order: the service goes back to Awaiting Configuration and
+     * the client receives the configuration email (API v2 has no S/MIME renewal call).
+     */
+    private function renewSmime()
+    {
+        $repo     = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+        $sslModel = $repo->getByServiceId($this->p['serviceid']);
+
+        if (is_null($sslModel)) {
+            return 'Create has not been initialized.';
+        }
+
+        if ($sslModel->status === 'Awaiting Configuration') {
+            return 'success';
+        }
+
+        try {
+            $this->checkRenew($this->p['serviceid']);
+        } catch (Exception $ex) {
+            return $ex->getMessage();
+        }
+
+        $previousOrderId = $sslModel->remoteid;
+
+        Capsule::table('tblsslorders')->where('serviceid', $this->p['serviceid'])->update(array(
+            'remoteid'       => '',
+            'configdata'     => '',
+            'completiondate' => '0000-00-00 00:00:00',
+            'status'         => 'Awaiting Configuration'
+        ));
+
+        sendMessage(\MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::CONFIGURATION_TEMPLATE_ID, $this->p['serviceid'], [
+            'ssl_configuration_link' => \MGModule\SSLCENTERWHMCS\eRepository\whmcs\config\Config::getInstance()->getConfigureSSLLink($sslModel->id, $sslModel->serviceid),
+            'ssl_configuration_url'  => \MGModule\SSLCENTERWHMCS\eRepository\whmcs\config\Config::getInstance()->getConfigureSSLUrl($sslModel->id, $sslModel->serviceid),
+        ]);
+
+        (new \MGModule\SSLCENTERWHMCS\models\logs\Repository())->addLog(
+            (int) $this->p['clientsdetails']['userid'], (int) $this->p['serviceid'], 'info',
+            '[Renew] S/MIME renewal: the service is waiting for the new order configuration (previous order #' . $previousOrderId . ').'
+        );
+
+        $this->addRenew($this->p['serviceid']);
+
+        return 'success';
+    }
+
     private function afterRenew()
     {
         $serviceId   = $this->p['serviceid'];

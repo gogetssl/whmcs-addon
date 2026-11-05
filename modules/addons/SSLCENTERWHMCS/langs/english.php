@@ -448,3 +448,10 @@ $_LANG['sslConfigOrderType']          = 'Order Type';
 $_LANG['sslConfigOrderTypeNew']       = 'New';
 $_LANG['sslConfigOrderTypeRenew']     = 'Renew';
 $_LANG['sslConfigPageTitle']          = 'SSL Certificate Configuration';
+
+
+// S/MIME certificates (API v2) - messages also shown in the admin area and cron
+$_LANG['smimeNotOrderedYet']        = 'The S/MIME certificate has not been ordered yet.';
+$_LANG['smimeAlreadyOrdered']       = 'The S/MIME certificate has already been ordered.';
+$_LANG['smimeNotSmimeProduct']      = 'This product is not an S/MIME certificate.';
+$_LANG['smimeMissingOrderId']       = 'The API did not return an order ID.';

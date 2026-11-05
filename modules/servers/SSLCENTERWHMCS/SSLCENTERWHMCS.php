@@ -75,9 +75,22 @@ function SSLCENTERWHMCS_TerminateAccount($params) {
     return $terminateAccount->run();
 }
 
-function SSLCENTERWHMCS_AdminCustomButtonArray() {
+function SSLCENTERWHMCS_AdminCustomButtonArray($params = []) {
     $adminCustomButtonArray = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\AdminCustomButtonArray();
-    return $adminCustomButtonArray->run();
+    return $adminCustomButtonArray->run((array) $params);
+}
+
+function SSLCENTERWHMCS_SSLAdminRefreshSmime($params) {
+    try {
+        $sslService = (new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL())->getByServiceId($params['serviceid']);
+        if (!\MGModule\SSLCENTERWHMCS\eServices\SmimeService::isSmimeOrder($sslService)) {
+            return 'The S/MIME certificate has not been ordered yet.';
+        }
+        \MGModule\SSLCENTERWHMCS\eServices\SmimeService::refresh($sslService);
+    } catch (\Exception $e) {
+        return $e->getMessage();
+    }
+    return 'success';
 }
 
 function SSLCENTERWHMCS_SSLAdminResendApproverEmail($params) {
@@ -225,7 +238,8 @@ function SSLCENTERWHMCS_ClientArea(array $params) {
 }
 
 function SSLCENTERWHMCS_ClientAreaCustomButtonArray($params = []) {
-    if (\MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeByServiceParams((array) $params)) {
+    if (\MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeByServiceParams((array) $params)
+        || \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::isSmimeByServiceParams((array) $params)) {
         return [];
     }
 

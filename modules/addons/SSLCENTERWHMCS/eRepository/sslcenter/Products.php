@@ -72,12 +72,20 @@ class Products {
                 if(isset($products[0]->id))
                 {
                     $this->products = [];
+                    $hasSmime = false;
                     foreach ($products as $apiProduct) {
 
                         $apiProduct = json_decode($apiProduct->data, true);
                         $p = new \MGModule\SSLCENTERWHMCS\eModels\sslcenter\Product();
                         \MGModule\SSLCENTERWHMCS\eHelpers\Fill::fill($p, $apiProduct);
                         $this->products[$p->id] = $p;
+                        if (isset($apiProduct['category']) && $apiProduct['category'] === 'smime') {
+                            $hasSmime = true;
+                        }
+                    }
+
+                    if (!$hasSmime) {
+                        $this->appendSmimeProductsToCache();
                     }
 
                     return $this->products;
@@ -106,5 +114,72 @@ class Products {
         }
         
         return $this->products;
+    }
+
+    /**
+     * Product lists cached before S/MIME support have no S/MIME products. In the admin area
+     * they are read once from API v2 and added to the cache (no API call in the client area).
+     */
+    private function appendSmimeProductsToCache() {
+        static $attempted = false;
+        if ($attempted || !defined('ADMINAREA')) {
+            return;
+        }
+        $attempted = true;
+
+        // at most once an hour (accounts without S/MIME products, API errors)
+        $checkedSetting = 'sslcenter_smime_products_checked';
+        $checked = Capsule::table('tblconfiguration')->where('setting', $checkedSetting)->first();
+        if ($checked && (int) $checked->value > time() - 3600) {
+            return;
+        }
+        if ($checked) {
+            Capsule::table('tblconfiguration')->where('setting', $checkedSetting)->update(['value' => (string) time()]);
+        } else {
+            Capsule::table('tblconfiguration')->insert(['setting' => $checkedSetting, 'value' => (string) time()]);
+        }
+
+        try {
+            $v2Products = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getV2Products();
+        } catch (\Exception $e) {
+            return;
+        }
+
+        if (!is_array($v2Products)) {
+            return;
+        }
+
+        foreach (\MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::mergeWithKnownProducts($v2Products) as $v2Product) {
+            if (!is_array($v2Product) || !isset($v2Product['id'], $v2Product['category']) || $v2Product['category'] !== 'smime') {
+                continue;
+            }
+
+            $smimeProduct = \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::toV1Product($v2Product);
+            \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::rememberProductIds([$smimeProduct['id']]);
+
+            if (isset($this->products[$smimeProduct['id']])) {
+                $merged = \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::mergeIntoV1Product(
+                    json_decode(json_encode(get_object_vars($this->products[$smimeProduct['id']])), true),
+                    $smimeProduct
+                );
+                Capsule::table('mgfw_SSLCENTER_product_brand')->where('pid', $smimeProduct['id'])->update([
+                    'data' => json_encode($merged),
+                ]);
+                $p = new \MGModule\SSLCENTERWHMCS\eModels\sslcenter\Product();
+                \MGModule\SSLCENTERWHMCS\eHelpers\Fill::fill($p, $merged);
+                $this->products[$p->id] = $p;
+                continue;
+            }
+
+            Capsule::table('mgfw_SSLCENTER_product_brand')->insert([
+                'pid'   => $smimeProduct['id'],
+                'brand' => $smimeProduct['brand'],
+                'data'  => json_encode($smimeProduct),
+            ]);
+
+            $p = new \MGModule\SSLCENTERWHMCS\eModels\sslcenter\Product();
+            \MGModule\SSLCENTERWHMCS\eHelpers\Fill::fill($p, $smimeProduct);
+            $this->products[$p->id] = $p;
+        }
     }
 }

@@ -42,6 +42,12 @@ class SSLStepThree {
     }
 
     public function run() {
+        // S/MIME certificates are ordered from their own configuration form (API v2)
+        if (\MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::isSmimeByServiceParams($this->p)) {
+            $this->redirectToStepOne('This is an S/MIME certificate. Please configure it on the service page.');
+            return;
+        }
+
         try {
 
             $actionsRepo = new ActionsRepository();

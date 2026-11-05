@@ -31,6 +31,10 @@ class Product {
         return $this->org_required === 1;
     }
     
+    public function isSmime() {
+        return isset($this->category) && $this->category === 'smime';
+    }
+
     public function isSanEnabled() {
         return $this->san_enabled === 1;
     }

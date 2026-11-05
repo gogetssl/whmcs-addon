@@ -422,6 +422,12 @@ class Invoice
 
         $serviceId = $invoiceInfo->service_id;
 
+        // S/MIME: the renewal service is a new S/MIME order the client configures (no API v1 renewal)
+        if (\MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::isSmimeByServiceId($serviceId))
+        {
+            return false;
+        }
+
         $sslOrderInfo = Capsule::table('tblsslorders')->where('serviceid', $serviceId)->first();
         if(!isset($sslOrderInfo->remoteid) || empty($sslOrderInfo->remoteid))
         {

@@ -31,6 +31,8 @@ $activeOrders = DB::table('tblsslorders')
         'tblhosting.domainstatus',
     ])
     ->where('tblproducts.servertype', 'SSLCENTERWHMCS')
+    // S/MIME certificates (API v2) are checked by the status jobs, not with the API v1 order status
+    ->whereNotIn('tblproducts.configoption1', array_map('strval', \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::getAllProductIds()))
     ->whereIn('tblhosting.domainstatus', ['Active'])
     ->whereNotNull('tblsslorders.remoteid')
     ->where('tblsslorders.remoteid', '!=', '')

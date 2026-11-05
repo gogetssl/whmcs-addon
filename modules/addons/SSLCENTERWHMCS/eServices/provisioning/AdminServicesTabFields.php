@@ -39,7 +39,11 @@ class AdminServicesTabFields {
             if ($sslService->status === 'Awaiting Configuration') {
                 return ['Configuration Status' => 'Awaiting Configuration'];
             }
-            
+
+            if (\MGModule\SSLCENTERWHMCS\eServices\SmimeService::isSmimeOrder($sslService)) {
+                return $this->getSmimeDetails($sslService);
+            }
+
             if(empty($sslService->remoteid)) {
                 throw new Exception('Order id not exist');
             }
@@ -88,6 +92,48 @@ class AdminServicesTabFields {
         } catch (Exception $ex) {
             return ['SSLCenter Error' => $ex->getMessage()];
         }
+    }
+
+    /**
+     * S/MIME certificate (API v2) details - saved data, refreshed by the "Refresh S/MIME Details" button and the cron.
+     */
+    private function getSmimeDetails($sslService) {
+        $config = json_decode(json_encode($sslService->configdata), true);
+        $config = is_array($config) ? $config : [];
+
+        $emailsHtml = [];
+        foreach (\MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::normalizeEmails(isset($config['smime_emails']) ? $config['smime_emails'] : []) as $entry) {
+            $emailsHtml[] = htmlspecialchars($entry['email'], ENT_QUOTES)
+                . ($entry['approved']
+                    ? ' <span class="label label-success">validated</span>'
+                    : ' <span class="label label-warning">awaiting validation</span>');
+        }
+
+        $status = isset($config['ssl_status']) ? (string) $config['ssl_status'] : '';
+
+        $return = [
+            'Product Type'           => 'S/MIME certificate (API v2)',
+            'SSLCenter API Order ID' => htmlspecialchars((string) $sslService->remoteid, ENT_QUOTES),
+            'S/MIME Certificate ID'  => (int) $config['smime_item_id'],
+            'CA Order ID'            => !empty($config['partner_order_id']) ? htmlspecialchars($config['partner_order_id'], ENT_QUOTES) : '-',
+            'Configuration Status'   => htmlspecialchars((string) $sslService->status, ENT_QUOTES),
+            'Order Status'           => $status !== '' ? htmlspecialchars(ucfirst($status), ENT_QUOTES) : '-',
+            'Emails'                 => !empty($emailsHtml) ? implode('<br>', $emailsHtml) : '-',
+            'Term'                   => !empty($config['smime_term']) ? (int) $config['smime_term'] . ' months' : '-',
+            'Own CSR'                => !empty($config['smime_csr_provided']) ? 'Yes' : 'No',
+        ];
+
+        if (!empty($config['valid_from'])) {
+            $return['Valid From'] = htmlspecialchars($config['valid_from'], ENT_QUOTES);
+        }
+        if (!empty($config['valid_till'])) {
+            $return['Expires'] = htmlspecialchars($config['valid_till'], ENT_QUOTES);
+        }
+        if (!empty($config['smime_refreshed_at'])) {
+            $return['Last Refreshed'] = htmlspecialchars($config['smime_refreshed_at'], ENT_QUOTES);
+        }
+
+        return $return;
     }
 
     /**

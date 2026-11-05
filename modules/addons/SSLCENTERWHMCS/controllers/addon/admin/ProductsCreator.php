@@ -62,6 +62,11 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
         $apiProduct = $this->apiProductsRepo->getProduct($input[C::API_PRODUCT_ID]);
         $isAcmeProduct = \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeProductId($input[C::API_PRODUCT_ID]);
         $pricingApiProduct = $isAcmeProduct ? $this->getAcmePricingApiProduct($input[C::API_PRODUCT_ID], $apiProduct) : $apiProduct;
+        $isSmimeProduct = method_exists($apiProduct, 'isSmime') && $apiProduct->isSmime() && (int) $apiProduct->id === (int) $input[C::API_PRODUCT_ID];
+        if ($isSmimeProduct && !empty($apiProduct->v2_prices)) {
+            // S/MIME prices from API v2: [{term, selling, retail}]
+            $pricingApiProduct = ['id' => (int) $apiProduct->id, 'prices' => json_decode(json_encode($apiProduct->v2_prices), true)];
+        }
         $sanConfig = $this->extractSanConfig($apiProduct);
         
         $productData = [
@@ -98,6 +103,21 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
                 : $this->toInt($this->readValue($input, [C::PRODUCT_INCLUDED_SANS_WILDCARD]), 0);
         }
 
+        if ($isSmimeProduct)
+        {
+            // S/MIME has no SANs (additional emails are entered on the order form)
+            $productData[C::PRODUCT_ENABLE_SAN]             = '';
+            $productData[C::PRODUCT_ENABLE_SAN_WILDCARD]    = '';
+            $productData[C::PRODUCT_INCLUDED_SANS]          = 0;
+            $productData[C::PRODUCT_INCLUDED_SANS_WILDCARD] = 0;
+            // no domain on the order form: the emails are entered when the certificate is configured
+            $productData['showdomainoptions'] = 0;
+            if (empty($productData['description']))
+            {
+                $productData['description'] = $this->readProductDescription($apiProduct);
+            }
+        }
+
         if(isset($input['issued_ssl_message']) && !empty($input['issued_ssl_message']))
         {
             $productData['configoption23'] = $input['issued_ssl_message'];
@@ -112,6 +132,10 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
         $newProductId = $productModel->createNewProduct($productData);
 
         $shouldApplyApiPricing = $isAcmeProduct || (!empty($productData[C::PRICE_AUTO_DOWNLOAD]) && (string) $productData[C::PRICE_AUTO_DOWNLOAD] === '1');
+        if ($isSmimeProduct && empty($apiProduct->v2_prices)) {
+            // no S/MIME prices from the API: keep the prices entered in the form
+            $shouldApplyApiPricing = false;
+        }
         $apiPricingByCurrency = $shouldApplyApiPricing ? $this->buildProductPricingByCurrency($pricingApiProduct, $productModel->getAllCurrencies()) : [];
 
         foreach ($input['currency'] as $key => $value) {

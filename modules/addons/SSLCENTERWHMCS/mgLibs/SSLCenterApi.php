@@ -199,7 +199,83 @@ class SSLCenterApi {
     }
 
     public function getProducts() {
-        return $this->call('/products/ssl/', $getData);
+        $response = $this->call('/products/ssl/', $getData);
+
+        return $this->appendSmimeProducts($response);
+    }
+
+    /**
+     * S/MIME products are ordered through API v2 and are not in the API v1 SSL product list:
+     * they are read from GET /api/v2/products (category "smime") and added in the API v1 shape.
+     * A failing API v2 call leaves the API v1 list unchanged.
+     */
+    protected function appendSmimeProducts($response)
+    {
+        if (!is_array($response) || !isset($response['products']) || !is_array($response['products'])) {
+            return $response;
+        }
+
+        try {
+            $v2Products = $this->getV2Products();
+        } catch (\Exception $e) {
+            return $response;
+        }
+
+        if (!is_array($v2Products)) {
+            return $response;
+        }
+
+        $positions = [];
+        foreach ($response['products'] as $key => $product) {
+            if (isset($product['id'])) {
+                $positions[(int) $product['id']] = $key;
+            }
+        }
+
+        $smimeIds = [];
+        foreach (\MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::mergeWithKnownProducts($v2Products) as $v2Product) {
+            if (!is_array($v2Product) || !isset($v2Product['id'], $v2Product['category']) || $v2Product['category'] !== 'smime') {
+                continue;
+            }
+
+            $smimeProduct = \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::toV1Product($v2Product);
+            $smimeIds[] = $smimeProduct['id'];
+            if (isset($positions[$smimeProduct['id']])) {
+                $key = $positions[$smimeProduct['id']];
+                $response['products'][$key] = \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::mergeIntoV1Product($response['products'][$key], $smimeProduct);
+                continue;
+            }
+
+            $response['products'][] = $smimeProduct;
+        }
+
+        if (!empty($smimeIds)) {
+            \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::rememberProductIds($smimeIds);
+        }
+
+        return $response;
+    }
+
+    public function getV2Products() {
+        return $this->callV2('/products', 'GET');
+    }
+
+    /**
+     * POST /certificates/smime - $data: product{id (string), term}, emails[], csr (optional),
+     * contacts{organization, administrator} (organization-validated products only)
+     */
+    public function createSmime(array $data) {
+        return $this->callV2('/certificates/smime', 'POST', $data);
+    }
+
+    public function getSmimeDetails($itemId) {
+        return $this->callV2('/certificates/smime/' . (int) $itemId, 'GET');
+    }
+
+    public function cancelSmime($itemId, $reason = '') {
+        $payload = ['reason' => !empty($reason) ? $reason : 'Cancelled'];
+
+        return $this->callV2('/certificates/smime/' . (int) $itemId . '/cancel', 'POST', $payload);
     }
 
     public function getProductDetails($productId) {

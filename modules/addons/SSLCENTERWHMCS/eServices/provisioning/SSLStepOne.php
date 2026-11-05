@@ -21,8 +21,14 @@ class SSLStepOne {
         }
     }
 
-    private function SSLStepOne() {    
-        
+    private function SSLStepOne() {
+
+        // S/MIME certificates have their own configuration form on the service page
+        if (\MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::isSmimeByServiceParams($this->p) && !empty($this->p['serviceid']) && !headers_sent()) {
+            header('Location: clientarea.php?action=productdetails&id=' . (int) $this->p['serviceid'] . '&smimeconfig=1');
+            exit;
+        }
+
         $fields['additionalfields'] = [];
         $apiProductId  = $this->p[ConfigOptions::API_PRODUCT_ID];
         $apiRepo       = new \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products();

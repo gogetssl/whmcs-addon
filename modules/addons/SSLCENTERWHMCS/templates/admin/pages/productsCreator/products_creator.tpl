@@ -219,20 +219,14 @@
 <script>
     {literal}
         $(document).ready(function () {
-        var options = $('select#api_product option');
-            var arr = options.map(function(_, o) {
-                return {
-                    t: $(o).text(),
-                    v: o.value
-                };
-            }).get();
-            arr.sort(function(o1, o2) {
-                return o1.t > o2.t ? 1 : o1.t < o2.t ? -1 : 0;
+            // sort the product options by name - whole elements, so data-peroids / data-is_multidomain stay with their product
+            var apiProductSelect = $('select#api_product');
+            var sortedOptions = apiProductSelect.find('option').get().sort(function(o1, o2) {
+                var t1 = $(o1).text(), t2 = $(o2).text();
+                return t1 > t2 ? 1 : t1 < t2 ? -1 : 0;
             });
-            options.each(function(i, o) {
-                o.value = arr[i].v;
-                $(o).text(arr[i].t);
-            });
+            apiProductSelect.append(sortedOptions);
+            apiProductSelect.prop('selectedIndex', 0);
             $(".pricingtgl").each(function (no, item) {
                 if ($(item).is(":checked")) {
 

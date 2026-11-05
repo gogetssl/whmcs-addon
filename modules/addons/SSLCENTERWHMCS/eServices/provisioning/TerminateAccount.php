@@ -34,7 +34,17 @@ class TerminateAccount {
             return;
         }
        
-        $reason = 'Order canceled for non-payment.'; 
+        $reason = 'Order canceled for non-payment.';
+
+        if (\MGModule\SSLCENTERWHMCS\eServices\SmimeService::isSmimeOrder($serviceSSL)) {
+            $status = strtolower((string) $serviceSSL->getConfigdataKey('ssl_status'));
+            if (!in_array($status, ['cancelled', 'expired', 'failed', 'rejected'], true)) {
+                \MGModule\SSLCENTERWHMCS\eServices\SmimeService::cancel($serviceSSL, $reason);
+            }
+            $serviceSSL->delete();
+            return;
+        }
+
         \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->cancelSSLOrder($serviceSSL->remoteid, $reason);
         $serviceSSL->delete();
     }
