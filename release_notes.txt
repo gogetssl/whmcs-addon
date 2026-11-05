@@ -33,6 +33,26 @@
   3.x
 ================================================================================
 
+v3.4.1 (2026-11-05)
+-------------------
+Fixed
+  - cPanel installation: before installing, the module checks that the
+    private key stored in WHMCS belongs to the certificate. When it belongs
+    to another CSR (e.g. the certificate was configured or reissued with a
+    CSR generated outside WHMCS), the log now says so and how to fix it,
+    instead of cPanel's "Unable to load key text ... No key with the ID ...
+    exists". The automatic installation does not retry such a certificate
+    and logs the error once; it is installed when a reissue brings a
+    certificate that matches the key.
+  - The stored private key is removed when the certificate is configured
+    or reissued by the admin with a CSR it does not belong to, so the key
+    of an earlier CSR is not reused.
+  - cPanel installation errors show all lines of cPanel's answer, not only
+    the general first sentence ("The certificate could not be installed on
+    the domain ...").
+  - Automatic installation log: the data check shows whether the private
+    key matches the certificate.
+
 v3.4.0 (2026-11-05)
 -------------------
 [!] S/MIME needs GoGetSSL API v2: set the API Partner Code and API password
