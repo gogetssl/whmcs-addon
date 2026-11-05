@@ -286,10 +286,16 @@ foreach ($installTasks as $task) {
             $privateKey = (strpos($rawKey, '-----BEGIN') !== false) ? $rawKey : decrypt($rawKey);
         }
 
+        $keyCheck = '';
+        if (!empty($privateKey) && !empty($cert)) {
+            $keyMatch = \MGModule\SSLCENTERWHMCS\eHelpers\PrivateKey::matchesCertificate($cert, $privateKey);
+            $keyCheck = ' | Key matches certificate: ' . ($keyMatch === null ? 'not checked' : ($keyMatch ? 'yes' : 'NO'));
+        }
+
         $logsRepo->addLog($task->client_id, $task->service_id, 'info',
             '[Install] Data check — Certificate: ' . (empty($cert)       ? 'MISSING' : 'OK (' . strlen($cert) . ' bytes)') .
             ' | CA bundle: '                        . (empty($cabundle)   ? 'MISSING' : 'OK') .
-            ' | Private key: '                      . (empty($privateKey) ? 'MISSING' : 'OK'));
+            ' | Private key: '                      . (empty($privateKey) ? 'MISSING' : 'OK') . $keyCheck);
 
         if (empty($cert)) {
             // Not ready yet — reset to pending without incrementing attempts

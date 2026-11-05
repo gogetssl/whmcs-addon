@@ -288,6 +288,8 @@ class AdminReissueCertificate extends Ajax {
 
         $sslService->setConfigdataKey('servertype', $data['webserver_type']);
         $sslService->setConfigdataKey('csr', $data['csr']);
+        // Reissued with another CSR: the stored key no longer belongs to the certificate
+        \MGModule\SSLCENTERWHMCS\eHelpers\PrivateKey::dropIfNotMatchingCsr($sslService, $data['csr']);
         $sslService->setConfigdataKey('approveremail', $data['approver_email']);
         $sslService->setApproverEmails($data['approver_emails']);
         $sslService->setSansDomains($data['dns_names']);

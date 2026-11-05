@@ -473,6 +473,8 @@ trait SslConfigTrait
         }
         if (!empty($csrCode)) {
             $sslConfig->setCsr($csrCode);
+            // Own CSR: a key stored for an earlier WHMCS-generated CSR does not belong to this certificate
+            \MGModule\SSLCENTERWHMCS\eHelpers\PrivateKey::dropIfNotMatchingCsr($sslConfig, $csrCode);
         }
         $sslConfig->setConfigdataKey('install_type', $installType);
         $sslConfig->setConfigdataKey('is_wildcard', $isWildcard ? 1 : 0);

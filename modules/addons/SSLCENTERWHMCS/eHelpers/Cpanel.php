@@ -281,6 +281,17 @@ class Cpanel
 
     public function installSSL($username, $domain, $cert, $key, $cabundle)
     {
+        $sslLog = ['domain' => $domain, 'cert' => '[' . strlen($cert) . ' bytes]', 'key' => '[' . strlen($key) . ' bytes]', 'cabundle' => '[' . strlen($cabundle) . ' bytes]'];
+
+        // A key of another CSR can never be installed; cPanel then only reports that it cannot find the key.
+        // An empty key is still sent: cPanel then uses the key from the account's own SSL store (CSR generated in cPanel).
+        if (!empty($key) && PrivateKey::matchesCertificate($cert, $key) === false) {
+            $error = 'The private key stored in WHMCS does not match the certificate (it belongs to another CSR). '
+                . 'Reissue the certificate with a CSR generated in WHMCS, or install it manually with the private key of its CSR.';
+            $this->logCall('installSSL', $sslLog, 'Error: ' . $error, 'skipped - key mismatch');
+            throw new \Exception($error);
+        }
+
         $this->initiateConnection($username);
 
         $data = [
@@ -292,7 +303,6 @@ class Cpanel
 
         $response = $this->exec("install_ssl", "/execute/SSL/", $data);
 
-        $sslLog = ['domain' => $domain, 'cert' => '[' . strlen($cert) . ' bytes]', 'key' => '[' . strlen($key) . ' bytes]', 'cabundle' => '[' . strlen($cabundle) . ' bytes]'];
         if (isset($response->errors) && !empty($response->errors)) {
             if (strpos($response->errors[0], 'install_ssl was handled successfully') !== false) {
                 $this->logCall('installSSL', $sslLog,
@@ -302,12 +312,14 @@ class Cpanel
                 );
                 return true;
             }
+            // cPanel puts a general sentence first and the actual reason in the following entries
+            $error = implode(' ', array_filter(array_map('trim', array_map('strval', (array) $response->errors))));
             $this->logCall('installSSL', $sslLog,
-                'Error: ' . $response->errors[0],
+                'Error: ' . $error,
                 'failed',
                 [$this->service['password'] ?? '', $this->service['hash'] ?? '']
             );
-            throw new \Exception($response->errors[0]);
+            throw new \Exception($error);
         }
 
         $this->logCall('installSSL', $sslLog,

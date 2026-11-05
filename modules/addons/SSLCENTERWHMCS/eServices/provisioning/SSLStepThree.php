@@ -509,6 +509,8 @@ class SSLStepThree {
         if (!empty($order['csr']) && empty($this->sslConfig->getCsr())) {
             $this->sslConfig->setCsr($order['csr']);
         }
+        // Own CSR: a key stored for an earlier WHMCS-generated CSR does not belong to this certificate
+        \MGModule\SSLCENTERWHMCS\eHelpers\PrivateKey::dropIfNotMatchingCsr($this->sslConfig, $order['csr'] ?? '');
 
         $this->sslConfig->save();   
         //try to mark previous order as completed if it is autoinvoiced and autocreated product
