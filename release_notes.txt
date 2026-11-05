@@ -33,6 +33,44 @@
   3.x
 ================================================================================
 
+v3.4.0 (2026-11-05)
+-------------------
+[!] S/MIME needs GoGetSSL API v2: set the API Partner Code and API password
+    on the API Configuration page, then click "Re-sync products" in Products
+    Creator so the S/MIME products are listed.
+Added
+  - S/MIME (email signing) certificates through GoGetSSL API v2: Sectigo
+    SMIME Mailbox Validation Multipurpose (MVM) / Strict (MVS) /
+    Organization Validation Multipurpose (OVM) and DigiCert Secure Email for
+    Individual / Business. Products are recognised from the API v2 product
+    list ("category": "smime"), with their terms and prices.
+  - S/MIME configuration form in the client area: email address(es) to
+    secure, optional CSR, and organization + administrator contacts for
+    organization-validated products (pre-filled from the client profile).
+  - S/MIME service page: order status, GoGetSSL and CA order IDs, every
+    email with its validation state, validity dates and "Refresh details".
+    The certificate authority delivers the certificate to the mailbox.
+  - Admin area: S/MIME details on the service's module tab and a "Refresh
+    S/MIME Details" button; Terminate cancels the certificate at GoGetSSL.
+  - Cron: S/MIME orders are refreshed from API v2 by the processing orders,
+    daily status and synchronization jobs; the next due date follows the
+    certificate's end date.
+  - Renewal of an S/MIME service ("Renew order via existing order") puts it
+    back to Awaiting Configuration for a new S/MIME order.
+  - Automatic price download uses the API v2 S/MIME prices.
+Changed
+  - Products Creator: S/MIME products are created without SANs and without
+    "Require Domain" (emails are entered when configuring the certificate).
+Fixed
+  - Products Creator: after the alphabetical sorting of the product list,
+    most products showed the terms (months) and "Enable SANs" setting of
+    another product.
+  - Certificate Activity: "The certificate for the ... domain has been
+    installed correctly.", installation errors and "order placed" entries
+    were shown in English only; they are now translatable (new keys
+    activityLog_Order_* and activityLog_Error_*). Entries already stored in
+    the old wording are translated too.
+
 v3.3.0 (2026-10-22)
 -------------------
 Added
