@@ -33,6 +33,23 @@
   3.x
 ================================================================================
 
+v3.4.2 (2026-11-07)
+-------------------
+Fixed
+  - Email templates with WHMCS translations: the module looked templates up
+    by name only, so a translation row (same name, language set) was taken
+    for the template. When the master row (language empty) was missing,
+    e.g. deleted by deactivating a version up to 3.1.6, it was never
+    recreated and every email of that template failed. Lookups now use the
+    master row only, and a missing master is recreated on activation and
+    upgrade while existing translations are kept.
+  - Deleting a module email template also deletes its translations, so no
+    orphan translation rows are left behind.
+  - Upgrade also recreates the "SSLCenter - Send Certificate" template.
+  - Addon configuration: the email template list shows master templates
+    only, and the page no longer fails when the "SSLCenter - Send
+    Certificate" template is missing.
+
 v3.4.1 (2026-11-05)
 -------------------
 Fixed
