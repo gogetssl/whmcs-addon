@@ -33,6 +33,28 @@
   3.x
 ================================================================================
 
+v3.4.3 (2026-11-07)
+-------------------
+Fixed
+  - Automatic cPanel installation after a manual reissue: a reissue started
+    in the client area or admin area did not start the module's validation,
+    so the HTTP/HTTPS validation file was not uploaded to cPanel and the
+    reissue could not be validated. The reissue now queues the validation;
+    the reissued certificate is installed automatically once issued.
+  - Validation after a reissue waits for the reissued certificate: while
+    the order still returns the certificate from before the reissue, it is
+    not installed (also for the automatic reissue).
+  - Revalidate button for orders with automatic installation: shown when
+    the module's validation is not running (e.g. a reissue made with an
+    earlier version); it restarts the validation and the installation.
+  - Automatic installation email templates (Renewal Invoice, Renewal
+    Started, Renewal Complete, Certificate Autorenewed, Certificate
+    Revoked, DNS Validation Switched to Email, Certificate Installed,
+    Certificate Expired, Auto Reissue Failed, Validation Warning) close with
+    the WHMCS email signature ({$signature}) instead of a hard-coded
+    "Regards, {$company_name}". Applies to new or recreated templates;
+    existing templates are not changed and {$company_name} stays available.
+
 v3.4.2 (2026-11-07)
 -------------------
 Fixed
