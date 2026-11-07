@@ -13,7 +13,7 @@ trait AutoInstallTemplates
             . '<p>Your SSL certificate for <strong>{$domain}</strong> has expired ({$cert_expiry}).</p>'
             . '<p>Please pay renewal invoice <strong>#{$renewal_invoice_id}</strong> to initiate the renewal process.</p>'
             . '<p><a href="{$invoice_url}" style="display:inline-block;padding:10px 22px;background:#e67e22;color:#fff;text-decoration:none;border-radius:4px;font-weight:600;">View Renewal Invoice</a></p>'
-            . '<p>Regards,<br />{$company_name}</p>'
+            . '<p>{$signature}</p>'
         );
     }
 
@@ -64,7 +64,7 @@ trait AutoInstallTemplates
             . '<p>Current expiry: <strong>{$cert_expiry}</strong> ({$days_left} days remaining).</p>'
             . '<p>You will receive a confirmation email once the renewed certificate has been installed.</p>'
             . '<p><a href="{$order_url}" style="display:inline-block;padding:10px 22px;background:#2980b9;color:#fff;text-decoration:none;border-radius:4px;font-weight:600;">View SSL Order</a></p>'
-            . '<p>Regards,<br />{$company_name}</p>'
+            . '<p>{$signature}</p>'
         );
     }
 
@@ -113,7 +113,7 @@ trait AutoInstallTemplates
             '<p>Dear {$client_name},</p>'
             . '<p>Your SSL certificate for <strong>{$domain}</strong> has been renewed and installed successfully. No further action is required.</p>'
             . '<p><a href="{$order_url}" style="display:inline-block;padding:10px 22px;background:#27ae60;color:#fff;text-decoration:none;border-radius:4px;font-weight:600;">View SSL Order</a></p>'
-            . '<p>Regards,<br />{$company_name}</p>'
+            . '<p>{$signature}</p>'
         );
     }
 
@@ -159,7 +159,7 @@ trait AutoInstallTemplates
             . '<p>Your SSL certificate order <strong>{$order_number}</strong> for <strong>{$common_name}</strong> has been autorenewed and a new order has been placed with the Certificate Authority.</p>'
             . '<p>If you need to make updates to the order or download the certificate, visit the order page:</p>'
             . '<p><a href="{$order_link}" style="display:inline-block;padding:10px 22px;background:#2980b9;color:#fff;text-decoration:none;border-radius:4px;font-weight:600;">{$order_link}</a></p>'
-            . '<p>Regards,<br />{$company_name}</p>'
+            . '<p>{$signature}</p>'
         );
     }
 
@@ -209,7 +209,7 @@ trait AutoInstallTemplates
             . '<p>Your SSL certificate for <strong>{$domain}</strong> (serial: <strong>{$serial_number}</strong>, order: <strong>{$order_id}</strong>) has been revoked.</p>'
             . '<p>Your website is no longer protected by a valid SSL certificate. Please contact support immediately to arrange a replacement.</p>'
             . '<p><a href="{$support_url}" style="display:inline-block;padding:10px 22px;background:#c0392b;color:#fff;text-decoration:none;border-radius:4px;font-weight:600;">Contact Support</a></p>'
-            . '<p>Regards,<br />{$company_name}</p>'
+            . '<p>{$signature}</p>'
         );
     }
 
@@ -260,7 +260,7 @@ trait AutoInstallTemplates
             . '<p>Email validation has been initiated instead. An approval email has been sent to:</p>'
             . '<p><strong>{$dcv_email}</strong></p>'
             . '<p><a href="{$order_url}" style="display:inline-block;padding:10px 22px;background:#2980b9;color:#fff;text-decoration:none;border-radius:4px;font-weight:600;">Manage SSL Order</a></p>'
-            . '<p>Regards,<br />{$company_name}</p>'
+            . '<p>{$signature}</p>'
         );
     }
 
@@ -307,7 +307,7 @@ trait AutoInstallTemplates
             '<p>Dear {$client_name},</p>'
             . '<p>Your SSL certificate for <strong>{$domain}</strong> has been successfully issued and installed on your server. No further action is required.</p>'
             . '<p><a href="{$order_url}" style="display:inline-block;padding:10px 22px;background:#27ae60;color:#fff;text-decoration:none;border-radius:4px;font-weight:600;">View SSL Order</a></p>'
-            . '<p>Regards,<br />{$company_name}</p>'
+            . '<p>{$signature}</p>'
         );
     }
 
@@ -353,7 +353,7 @@ trait AutoInstallTemplates
             . '<p>Your SSL certificate for <strong>{$domain}</strong> expired on <strong>{$cert_expiry}</strong>.</p>'
             . '<p>Please renew it as soon as possible to restore HTTPS protection for your website.</p>'
             . '<p><a href="{$order_url}" style="display:inline-block;padding:10px 22px;background:#e74c3c;color:#fff;text-decoration:none;border-radius:4px;font-weight:600;">Renew SSL Certificate</a></p>'
-            . '<p>Regards,<br />{$company_name}</p>'
+            . '<p>{$signature}</p>'
         );
     }
 
@@ -409,7 +409,7 @@ trait AutoInstallTemplates
             . '</table>'
             . '<p>Please contact support so we can resolve this promptly.</p>'
             . '<p><a href="{$order_url}" style="display:inline-block;padding:10px 22px;background:#2980b9;color:#fff;text-decoration:none;border-radius:4px;font-weight:600;">View SSL Order</a></p>'
-            . '<p>Regards,<br />{$company_name}</p>'
+            . '<p>{$signature}</p>'
         );
     }
 
@@ -474,7 +474,7 @@ trait AutoInstallTemplates
             . 'and clicking the link in that email will complete validation immediately.</p>'
             . '<p><a href="{$order_url}" style="display:inline-block;padding:10px 22px;background:#2980b9;color:#fff;text-decoration:none;border-radius:4px;font-weight:600;">Manage SSL Certificate</a></p>'
             . '<p>If you need help, please contact our support team.</p>'
-            . '<p>Regards,<br />{$company_name}</p>'
+            . '<p>{$signature}</p>'
         );
     }
 
