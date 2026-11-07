@@ -33,6 +33,27 @@
   3.x
 ================================================================================
 
+v3.4.4 (2026-11-07)
+-------------------
+Fixed
+  - Automatic cPanel installation with WHM API tokens: WHMCS stores the
+    server's API token (Access Hash) encrypted, and the module sent the
+    encrypted value to WHM, which refused it (403 Access denied). Automatic
+    installation was then not offered and validation files and
+    certificates could not be uploaded. The token is now decrypted first.
+  - Change Validation Method: failed with "This domain name not found in
+    this certificate" when the domains saved in WHMCS included one that
+    GoGetSSL does not accept for the order, typically the free www. version
+    of the domain. Only the order's domains are sent now, and the www.
+    version is left out when GoGetSSL rejects it (the main domain's method
+    covers it). Domains and methods are matched by name.
+  - SSL configuration form: when the order could not be placed, the form
+    stayed frozen without a message; on PHP 8 the module's error logging
+    itself failed. The error is now shown and the form can be sent again.
+  - SSL configuration form: Job Title is required by GoGetSSL and is now
+    marked required and checked before the order is placed; the technical
+    contact's job title falls back to the administrative one.
+
 v3.4.3 (2026-11-07)
 -------------------
 Fixed
