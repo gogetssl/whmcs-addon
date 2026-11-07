@@ -56,6 +56,10 @@ class AdminReissueCertificate extends Ajax {
             throw new Exception('An error occurred.');
         }
 
+        // Certificate before the reissue: the validation must wait for the new one
+        $previousConfigdata = (array) $sslService->configdata;
+        $previousCrt        = isset($previousConfigdata['crt']) ? $previousConfigdata['crt'] : '';
+
         $data = [
             'webserver_type'  => $this->p['webServer'],
             'csr'             => $this->p['csr'],
@@ -310,6 +314,10 @@ class AdminReissueCertificate extends Ajax {
         {
 
         }
+
+        // Automatic cPanel installation: validate (upload the validation file) and install the reissued certificate
+        $reissuedDomain = !empty($decodedCSR['csrResult']['CN']) ? $decodedCSR['csrResult']['CN'] : $sslService->getDomain();
+        \MGModule\SSLCENTERWHMCS\eHelpers\ReissueValidation::queue($sslService, $sslService->userid, $this->p['serviceId'], $reissuedDomain, $previousCrt);
 
         $this->response(true, 'Certificate was successfully reissued.');
 

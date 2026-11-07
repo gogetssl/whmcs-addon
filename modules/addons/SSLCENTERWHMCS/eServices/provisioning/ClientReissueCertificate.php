@@ -572,6 +572,12 @@ class ClientReissueCertificate {
         $this->sslService->setSanDetails($orderDetails['san']);
         $this->sslService->save();
 
+        // Automatic cPanel installation: validate (upload the validation file) and install the reissued certificate
+        \MGModule\SSLCENTERWHMCS\eHelpers\ReissueValidation::queue(
+            $this->sslService, $this->p['userid'], $this->p['serviceid'], $decodedCSR['csrResult']['CN'],
+            isset(((array) $this->sslService->configdata)['crt']) ? ((array) $this->sslService->configdata)['crt'] : ''
+        );
+
         //$configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($this->sslService);
         //$configDataUpdate->run();
 

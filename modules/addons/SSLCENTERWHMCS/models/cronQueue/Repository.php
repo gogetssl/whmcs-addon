@@ -85,6 +85,35 @@ class Repository
     }
 
     /**
+     * Latest task of this type the cron will still process for the service (waiting or running), or null.
+     */
+    public function getActiveTask($serviceId, $type)
+    {
+        return Capsule::table($this->tableName)
+            ->where('service_id', (int) $serviceId)
+            ->where('type', $type)
+            ->where('attempts', '<', 5)
+            ->whereIn('status', ['pending', 'processing'])
+            ->orderBy('id', 'desc')
+            ->first();
+    }
+
+    /**
+     * Starts a task again from the beginning with new data.
+     */
+    public function restartTask($id, array $data)
+    {
+        Capsule::table($this->tableName)->where('id', $id)->update([
+            'status'        => 'pending',
+            'attempts'      => 0,
+            'domain'        => isset($data['domain']) ? $data['domain'] : '',
+            'data'          => json_encode($data),
+            'error_message' => null,
+            'updated_at'    => date('Y-m-d H:i:s'),
+        ]);
+    }
+
+    /**
      * Error that retrying cannot fix: no further attempts.
      */
     public function markFailed($id, $message = '')

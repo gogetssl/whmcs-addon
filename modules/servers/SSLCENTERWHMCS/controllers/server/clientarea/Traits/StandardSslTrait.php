@@ -413,7 +413,10 @@ trait StandardSslTrait
 
         $configdata  = (array) $sslService->configdata;
         $installType = isset($configdata['install_type']) ? (string) $configdata['install_type'] : 'manual';
-        if ($installType === 'autoinstall') {
+        // Automatic installation: the module validates by itself while its validate task runs;
+        // without one (e.g. after a manual reissue in older versions) the client must be able to restart it
+        if ($installType === 'autoinstall'
+            && (new \MGModule\SSLCENTERWHMCS\models\cronQueue\Repository())->getActiveTask($sslService->serviceid, 'validate')) {
             return $state;
         }
 
@@ -477,6 +480,15 @@ trait StandardSslTrait
         $configdata = (array) $sslService->configdata;
         $domain     = !empty($configdata['domain']) ? $configdata['domain'] : $input['params']['domain'];
         $cooldown   = $this->getRevalidateCooldownSeconds();
+
+        // Automatic installation: restart the module's validation (uploads the HTTP/HTTPS validation
+        // file to cPanel, then installs the certificate once it is issued)
+        if (isset($configdata['install_type']) && $configdata['install_type'] === 'autoinstall') {
+            \MGModule\SSLCENTERWHMCS\eHelpers\ReissueValidation::queue(
+                $sslService, $sslService->userid, $sslService->serviceid, $domain,
+                isset($configdata['crt']) ? $configdata['crt'] : '', false
+            );
+        }
 
         try {
             $response = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->revalidate($sslService->remoteid, ['domain' => $domain]);

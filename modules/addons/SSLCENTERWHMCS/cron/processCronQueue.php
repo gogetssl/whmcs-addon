@@ -68,7 +68,23 @@ foreach ($validateTasks as $task) {
         }
         $logsRepo->addLog($task->client_id, $task->service_id, 'info', $statusMsg);
 
-        if ($status === 'active' || $status === 'issued') {
+        if (($status === 'active' || $status === 'issued')
+            && \MGModule\SSLCENTERWHMCS\eHelpers\ReissueValidation::isPreviousCertificate($taskData, isset($orderStatus['crt_code']) ? $orderStatus['crt_code'] : '')) {
+            // Reissue: the API still returns the certificate from before the reissue
+            $taskData['reissue_waits'] = (isset($taskData['reissue_waits']) ? (int) $taskData['reissue_waits'] : 0) + 1;
+            if ($taskData['reissue_waits'] > 96) {
+                $logsRepo->addLog($task->client_id, $task->service_id, 'error',
+                    '[Validate] Reissue: the order still returns the certificate from before the reissue after '
+                    . ($taskData['reissue_waits'] - 1) . ' checks — validation stopped. Check the reissue in your GoGetSSL account.');
+                $cronQueueRepo->markFailed($task->id, 'Reissued certificate not issued');
+            } else {
+                $logsRepo->addLog($task->client_id, $task->service_id, 'info',
+                    '[Validate] Reissue: the reissued certificate is not issued yet — will check again on the next cron run');
+                $cronQueueRepo->updateTaskData($task->id, $taskData);
+                $cronQueueRepo->markPending($task->id, 'Waiting for the reissued certificate');
+            }
+
+        } elseif ($status === 'active' || $status === 'issued') {
 
             $crtCode   = isset($orderStatus['crt_code'])  ? $orderStatus['crt_code']  : '';
             $caCode    = isset($orderStatus['ca_code'])   ? $orderStatus['ca_code']   : '';
@@ -429,6 +445,11 @@ foreach ($reissueTasks as $task) {
         ];
         if (!empty($taskData['tls_item_id'])) {
             $reissueValidateTask['tls_item_id'] = (int) $taskData['tls_item_id'];
+        }
+        $previousConfigdata = (array) $sslConfig->configdata;
+        if (!empty($previousConfigdata['crt'])) {
+            // Wait for the reissued certificate, not the one from before the reissue
+            $reissueValidateTask['previous_crt_md5'] = md5(trim($previousConfigdata['crt']));
         }
         $cronQueueRepo->addTask($task->client_id, $task->service_id, 'validate', $reissueValidateTask);
 
