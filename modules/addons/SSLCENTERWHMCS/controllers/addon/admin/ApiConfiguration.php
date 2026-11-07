@@ -347,7 +347,8 @@ class ApiConfiguration extends main\mgLibs\process\AbstractController
         $field->disabled          = false;
         $field->name              = 'send_certificate_template';
         $field->required          = true;
-        $field->value             = ($input['send_certificate_template'] == NULL) ? \MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::getTemplate('SSLCenter - Send Certificate')->id : $input['send_certificate_template'];
+        $defaultSendCertificateTpl = \MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::getTemplate('SSLCenter - Send Certificate');
+        $field->value             = ($input['send_certificate_template'] == NULL) ? ($defaultSendCertificateTpl ? $defaultSendCertificateTpl->id : '') : $input['send_certificate_template'];
         $field->translateOptions  = false;
         $field->inline            = true;
         $field->colWidth          = 4;

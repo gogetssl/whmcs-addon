@@ -40,9 +40,12 @@ class EmailTemplateService
 
     // ---- Generic lookup helpers ----
 
+    /**
+     * The master template (language ''), never one of its translations.
+     */
     public static function getTemplate($name)
     {
-        return \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName($name)->first();
+        return \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName($name)->master()->orderBy('id')->first();
     }
 
     public static function getTemplateName($id)
@@ -53,13 +56,15 @@ class EmailTemplateService
 
     public static function getGeneralTemplates()
     {
-        return \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereType('product')->get();
+        return \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereType('product')->master()->get();
     }
 
     // ---- Generic internal helpers used by traits ----
 
     protected static function createTemplate($name, $subject, $message, $type = 'product')
     {
+        // Only the master row counts: translations alone cannot be sent, so a missing
+        // master is (re)created even when translation rows of the template exist.
         if (!is_null(self::getTemplate($name))) {
             return;
         }
@@ -90,7 +95,7 @@ class EmailTemplateService
 
     protected static function updateTemplate($name, $subject, $message)
     {
-        $tpl = \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName($name)->first();
+        $tpl = self::getTemplate($name);
 
         if (empty($tpl)) {
             self::createTemplate($name, $subject, $message);
@@ -102,11 +107,12 @@ class EmailTemplateService
         $tpl->save();
     }
 
+    /**
+     * Deletes the template together with all its translations, so no orphan
+     * translation rows are left behind.
+     */
     protected static function deleteTemplate($name)
     {
-        $tpl = self::getTemplate($name);
-        if (!is_null($tpl)) {
-            $tpl->delete();
-        }
+        \MGModule\SSLCENTERWHMCS\eModels\whmcs\EmailTemplate::whereName($name)->delete();
     }
 }

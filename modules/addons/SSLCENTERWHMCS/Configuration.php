@@ -208,6 +208,7 @@ class Configuration extends AbstractConfiguration
         EmailTemplateService::createValidationWarningTemplate();
         // Upgrades only add missing email templates; existing (possibly customised) templates are never overwritten
         EmailTemplateService::createConfigurationTemplate();
+        EmailTemplateService::createCertyficateTemplate();
         EmailTemplateService::createRenewalTemplate();
         EmailTemplateService::createReissueTemplate();
         InvoiceHelper::createInfosTable();

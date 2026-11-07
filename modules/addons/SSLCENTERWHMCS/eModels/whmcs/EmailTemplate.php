@@ -15,6 +15,16 @@ class EmailTemplate extends \Illuminate\Database\Eloquent\Model {
         $query->where('type', '=', $type);
     }
     
+    /**
+     * Master templates only. WHMCS stores each translation as an extra row with the same
+     * name and a language set; sending (SendEmail / sendMessage) needs the master row.
+     */
+    public function scopeMaster($query) {
+        $query->where(function ($q) {
+            $q->where('language', '=', '')->orWhereNull('language');
+        });
+    }
+
     public function scopeWhereId($query, $id) {
         $query->where('id', '=', $id);
     }
