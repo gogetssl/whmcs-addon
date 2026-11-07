@@ -196,6 +196,14 @@ trait StandardSslTrait
 
         $brand = $input['brand'];
 
+        // The dialog lists the domains saved in WHMCS. GoGetSSL rejects the whole request
+        // ("This domain name not found in this certificate") if any of them is not on its order,
+        // e.g. a saved www. SAN, so send only the domains the order really has.
+        $orderMainDomain = $this->limitDcvChangeToOrderDomains($input, $sslService);
+        if (empty($input['newdomains']) || empty($input['newDcvMethods'])) {
+            return array('success' => 0, 'msg' => \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('changeDcvNoOrderDomains'));
+        }
+
         if($brand == 'digicert' || $brand == 'geotrust' || $brand == 'thawte' || $brand == 'rapidssl')
         {
             if(isset($input['newDcvMethods']))
@@ -228,7 +236,7 @@ trait StandardSslTrait
 
                 try
                 {
-                    $response = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->changeDomainValidationMethod($sslService->remoteid, $data);
+                    $response = $this->changeDcvOnOrder($sslService, $newdomains, $new_methods, $orderMainDomain, $data);
                 } catch (\Exception $ex) {
                     if(strpos($ex->getMessage(), 'Function is locked for') !== false ) {
                         if(strpos($domain, '___') !== FALSE)
@@ -247,8 +255,25 @@ trait StandardSslTrait
         {
             $new_methods = [];
             $newdomains = [];
-            foreach($input['newDcvMethods'] as $method) { $new_methods[] = $method; }
-            foreach($input['newdomains'] as $newdomain) { $newdomains[] = str_replace('___', '*', $newdomain); }
+            $positionalMethods = array_values($input['newDcvMethods']);
+            foreach (array_values($input['newdomains']) as $i => $newdomain) {
+                $methodKey = $newdomain;
+                $newdomain = str_replace('___', '*', $newdomain);
+                if (isset($input['newDcvMethods'][$methodKey])) {
+                    $method = $input['newDcvMethods'][$methodKey];
+                } elseif (isset($input['newDcvMethods'][$newdomain])) {
+                    $method = $input['newDcvMethods'][$newdomain];
+                } elseif (!array_filter(array_keys($input['newDcvMethods']), 'is_string') && isset($positionalMethods[$i])) {
+                    $method = $positionalMethods[$i];
+                } else {
+                    continue; // no new method chosen for this domain
+                }
+                $newdomains[]  = $newdomain;
+                $new_methods[] = $method;
+            }
+            if (!$newdomains) {
+                return array('success' => 0, 'msg' => \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('changeDcvNoOrderDomains'));
+            }
             $data = [
                 'new_methods' => implode(',', $new_methods),
                 'domains'     => implode(',', $newdomains)
@@ -256,7 +281,7 @@ trait StandardSslTrait
 
             try
             {
-                $response = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->changeDomainValidationMethod($sslService->remoteid, $data);
+                $response = $this->changeDcvOnOrder($sslService, $newdomains, $new_methods, $orderMainDomain, $data);
             } catch (\Exception $ex) {
                 $message = isset($domain) ? $domain.': '.$ex->getMessage() : $ex->getMessage();
                 return array('success' => 0, 'msg' => $message);
@@ -272,6 +297,153 @@ trait StandardSslTrait
         ));
 
         return array('success' => $response['success'], 'msg' => $response['message']);
+    }
+
+    /**
+     * Calls change_domains_validation_method. GoGetSSL lists the free www. twin of the main domain
+     * (e.g. DomainSSL/PositiveSSL) as a SAN of the order but rejects it here with
+     * "This domain name not found in this certificate"; the main domain's method covers it,
+     * so on that error the request is sent once more without the twin.
+     */
+    protected function changeDcvOnOrder($sslService, array &$domains, array &$methods, $mainDomain, array &$data)
+    {
+        $api = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi();
+
+        try {
+            return $api->changeDomainValidationMethod($sslService->remoteid, $data);
+        } catch (\Exception $ex) {
+            if ($mainDomain === '' || stripos($ex->getMessage(), 'not found in this certificate') === false) {
+                throw $ex;
+            }
+
+            $twins = [
+                'www.' . $mainDomain => true,
+                (strpos($mainDomain, 'www.') === 0 ? substr($mainDomain, 4) : '') => true,
+            ];
+            $keptDomains = [];
+            $keptMethods = [];
+            $dropped     = [];
+            $hasMain     = false;
+            $twinMethod  = null;
+            foreach (array_values($domains) as $i => $domain) {
+                $method = isset($methods[$i]) ? $methods[$i] : end($methods);
+                $name   = strtolower(trim($domain));
+                if (isset($twins[$name])) {
+                    $dropped[]  = $domain;
+                    $twinMethod = $twinMethod === null ? $method : $twinMethod;
+                    continue;
+                }
+                $hasMain       = $hasMain || $name === $mainDomain;
+                $keptDomains[] = $domain;
+                $keptMethods[] = $method;
+            }
+            if (!$dropped) {
+                throw $ex;
+            }
+            // Only the twin was listed (e.g. WHMCS saved www.example.com): change the main domain instead
+            if (!$hasMain) {
+                array_unshift($keptDomains, $mainDomain);
+                array_unshift($keptMethods, $twinMethod);
+            }
+
+            $domains = $keptDomains;
+            $methods = $keptMethods;
+            $data    = [
+                'new_methods' => implode(',', $keptMethods),
+                'domains'     => implode(',', $keptDomains),
+            ];
+            (new LogsRepo())->addLog($sslService->userid, $sslService->serviceid, 'info',
+                '[Change DCV] GoGetSSL does not accept ' . implode(', ', $dropped) . ' on order #' . $sslService->remoteid
+                . ' (covered by ' . $mainDomain . '); sent again without it');
+
+            return $api->changeDomainValidationMethod($sslService->remoteid, $data);
+        }
+    }
+
+    /**
+     * Drops from the change-DCV request every domain that is not on the GoGetSSL order
+     * (main domain + SANs from the API). If the order cannot be read, the request is left unchanged.
+     * Returns the order's main domain (lower case), or '' if it is unknown.
+     */
+    protected function limitDcvChangeToOrderDomains(array &$input, $sslService)
+    {
+        if (!$sslService || empty($sslService->remoteid)) {
+            return '';
+        }
+
+        try {
+            $order = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);
+        } catch (\Exception $ex) {
+            return '';
+        }
+
+        $normalize = function ($domain) {
+            return strtolower(trim(str_replace('___', '*', (string) $domain)));
+        };
+
+        $mainDomain   = !empty($order['domain']) ? $normalize($order['domain']) : '';
+        $orderDomains = [];
+        if ($mainDomain !== '') {
+            $orderDomains[$mainDomain] = true;
+        }
+        if (!empty($order['san']) && is_array($order['san'])) {
+            foreach ($order['san'] as $san) {
+                if (is_array($san) && !empty($san['san_name'])) {
+                    $orderDomains[$normalize($san['san_name'])] = true;
+                }
+            }
+        }
+        if (empty($orderDomains)) {
+            return $mainDomain;
+        }
+
+        // A www. / bare twin of the main domain that the order does not list stands for the main domain
+        $resolve = function ($domain) use ($normalize, $orderDomains, $mainDomain) {
+            $name = $normalize($domain);
+            if (isset($orderDomains[$name])) {
+                return $name;
+            }
+            if ($mainDomain !== '' && ($name === 'www.' . $mainDomain || 'www.' . $name === $mainDomain)) {
+                return $mainDomain;
+            }
+            return null;
+        };
+
+        $skipped = [];
+
+        $domains = [];
+        foreach ((array) (isset($input['newdomains']) ? $input['newdomains'] : []) as $domain) {
+            $name = $resolve($domain);
+            if ($name === null) {
+                $skipped[$normalize($domain)] = true;
+            } elseif (!isset($domains[$name])) {
+                $domains[$name] = $name;
+            }
+        }
+        $input['newdomains'] = $domains;
+
+        $methods = [];
+        foreach ((array) (isset($input['newDcvMethods']) ? $input['newDcvMethods'] : []) as $domain => $method) {
+            if (is_int($domain)) {
+                $methods[$domain] = $method;
+                continue;
+            }
+            $name = $resolve($domain);
+            if ($name === null) {
+                $skipped[$normalize($domain)] = true;
+            } elseif (!isset($methods[$name])) {
+                $methods[$name] = $method;
+            }
+        }
+        $input['newDcvMethods'] = $methods;
+
+        if ($skipped) {
+            (new LogsRepo())->addLog($sslService->userid, $sslService->serviceid, 'info',
+                '[Change DCV] Skipped domains that are not on the GoGetSSL order #' . $sslService->remoteid . ': '
+                . implode(', ', array_keys($skipped)));
+        }
+
+        return $mainDomain;
     }
 
     public function getApprovalEmailsForDomainJSON($input, $vars = array()) {

@@ -397,6 +397,7 @@ $_LANG['serverCA']['home']['sslConfigAutoGenerateCsr']    = 'Generate CSR automa
 $_LANG['serverCA']['home']['sslConfigOwnCsrRequired']      = 'Please paste your CSR code.';
 $_LANG['serverCA']['home']['sslConfigContactRequired']     = 'Please fill in the required contact fields:';
 $_LANG['serverCA']['home']['sslConfigSubmitFailed']        = 'The configuration could not be submitted. Please try again or contact support.';
+$_LANG['serverCA']['home']['changeDcvNoOrderDomains']      = 'None of the selected domains are on this certificate order. Please refresh the page or contact support.';
 $_LANG['serverCA']['home']['sslConfigEmailDcvNeedsCsr']     = 'Please paste your CSR first before selecting email validation.';
 $_LANG['serverCA']['home']['sslConfigEmailDcvCsrNoCn']     = 'Unable to extract domain from CSR. Please check your CSR code.';
 $_LANG['serverCA']['home']['sslConfigDnsFallbackLabel']     = 'Fallback email for DNS validation (optional)';
