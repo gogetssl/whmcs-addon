@@ -269,6 +269,24 @@ trait SslConfigTrait
             throw new \Exception(main\mgLibs\Lang::absoluteT('anErrorOccurred') . ': domain is required');
         }
 
+        // Contact fields the API requires: check before anything is generated or ordered
+        $requiredContact = [
+            'admin_firstname' => 'sslConfigFirstname',
+            'admin_lastname'  => 'sslConfigLastname',
+            'admin_email'     => 'sslConfigEmail',
+            'admin_phone'     => 'sslConfigPhone',
+            'admin_title'     => 'sslConfigTitle',
+        ];
+        $missingContact = [];
+        foreach ($requiredContact as $field => $langKey) {
+            if (!isset($input[$field]) || trim((string) $input[$field]) === '') {
+                $missingContact[] = main\mgLibs\Lang::absoluteT('serverCA', 'home', $langKey);
+            }
+        }
+        if (!empty($missingContact)) {
+            throw new \Exception(main\mgLibs\Lang::absoluteT('serverCA', 'home', 'sslConfigContactRequired') . ' ' . htmlspecialchars(implode(', ', $missingContact), ENT_QUOTES));
+        }
+
         $sanDomainsRaw = isset($input['san_domains']) ? $input['san_domains'] : '';
         $wildcardRaw   = isset($input['wildcard_san']) ? $input['wildcard_san'] : '';
 
@@ -399,7 +417,8 @@ trait SslConfigTrait
             $order['tech_organization'] = isset($input['tech_organization']) ? $input['tech_organization'] : $apiConf->tech_organization;
             $order['tech_addressline1'] = isset($input['tech_addressline1']) ? $input['tech_addressline1'] : $apiConf->tech_addressline1;
             $order['tech_phone']        = isset($input['tech_phone']) ? $input['tech_phone'] : $apiConf->tech_phone;
-            $order['tech_title']        = isset($input['tech_title']) ? $input['tech_title'] : $apiConf->tech_title;
+            $order['tech_title']        = isset($input['tech_title']) && trim($input['tech_title']) !== '' ? $input['tech_title']
+                                        : (!empty($apiConf->tech_title) ? $apiConf->tech_title : $order['admin_title']);
             $order['tech_email']        = isset($input['tech_email']) ? $input['tech_email'] : $apiConf->tech_email;
             $order['tech_city']         = isset($input['tech_city']) ? $input['tech_city'] : $apiConf->tech_city;
             $order['tech_country']      = isset($input['tech_country']) ? $input['tech_country'] : $apiConf->tech_country;

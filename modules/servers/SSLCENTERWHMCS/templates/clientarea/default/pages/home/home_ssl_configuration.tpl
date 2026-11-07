@@ -310,7 +310,7 @@
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    <label>{$MGLANG->T('sslConfigTitle')}</label>
+                    <label>{$MGLANG->T('sslConfigTitle')} <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" name="admin_title" value="">
                 </div>
                 <div class="form-group">
@@ -969,6 +969,9 @@
             } catch (e) {
                 btn.prop('disabled', false);
             }
+        }).fail(function () {
+            $('#MGAlerts').alerts('error', '{$MGLANG->T('sslConfigSubmitFailed')|escape:'javascript'}');
+            btn.prop('disabled', false);
         });
     });
 

@@ -30,6 +30,6 @@ class Register extends main\mgLibs\models\Orm {
                     'message' => $ex->getMessage()
                     ,'code'   => $ex->getCode()
                     ,'token'  => $token
-                ),  $debug,0,0);
+                ),  $debug, '', []);
     }
 }
