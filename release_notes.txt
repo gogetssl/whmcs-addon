@@ -33,6 +33,23 @@
   3.x
 ================================================================================
 
+v3.4.5 (2026-11-09)
+-------------------
+Fixed
+  - Automatic cPanel installation of wildcard certificates: cPanel refused
+    "*.example.com" ("is not one of the domains on your account"). A
+    wildcard certificate is now installed on example.com and on every
+    one-level subdomain of the cPanel account (e.g. mail.example.com). A
+    subdomain that fails is logged; the installation fails only when the
+    certificate could not be installed on any domain. Applies to automatic
+    installation, the client area Install button and the install cron.
+  - OV and EV certificates could not be configured: the SSL configuration
+    form did not send the organization details, so GoGetSSL answered "The
+    org name field is required". OV/EV products now show an Organization
+    Details section (legal name, division, DUNS, LEI, address, phone),
+    prefilled from the client profile; empty fields are taken from the
+    administrative contact.
+
 v3.4.4 (2026-11-07)
 -------------------
 Fixed
