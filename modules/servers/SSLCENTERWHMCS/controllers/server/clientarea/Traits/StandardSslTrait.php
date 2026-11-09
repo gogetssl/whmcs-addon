@@ -518,6 +518,12 @@ trait StandardSslTrait
                 $cpanel->setService($serviceCpanel);
                 $cpanel->installSSL($serviceCpanel->user, $details['domain'], $cert, $key, $cabundle);
                 $logsRepo->addLog($sslService->userid, $sslService->serviceid, 'success', '[Install] Certificate installed for domain: ' . $details['domain']);
+                $installDetails = $cpanel->describeLastInstall();
+                if ($installDetails !== '') {
+                    $logsRepo->addLog($sslService->userid, $sslService->serviceid,
+                        empty($cpanel->getLastInstallReport()['failed']) ? 'info' : 'error',
+                        '[Install] Wildcard certificate ' . $installDetails);
+                }
                 $orderRepo->updateStatus($sslService->serviceid, 'Success');
             }
         } catch (\Exception $e) {

@@ -57,6 +57,12 @@ foreach ($orders as $order)
         $cpanel->installSSL($serviceCpanel->user, $order->domain, $cert, $key, $cabundle);
 
         $logsRepo->addLog($order->client_id, $order->service_id, 'success', '[Install] Certificate installed for domain: ' . $order->domain);
+        $installDetails = $cpanel->describeLastInstall();
+        if ($installDetails !== '') {
+            $logsRepo->addLog($order->client_id, $order->service_id,
+                empty($cpanel->getLastInstallReport()['failed']) ? 'info' : 'error',
+                '[Install] Wildcard certificate ' . $installDetails);
+        }
         $orderRepo->updateStatus($order->service_id, 'Success');
 
     } catch (\Exception $e) {

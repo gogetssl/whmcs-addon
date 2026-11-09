@@ -349,6 +349,12 @@ foreach ($installTasks as $task) {
         $logsRepo->addLog($task->client_id, $task->service_id, 'success',
             '[Install] SSL certificate installed successfully on cPanel — domain: ' . $domain .
             ' | server: ' . $cpanelDetails->hostname);
+        $installDetails = $cpanel->describeLastInstall();
+        if ($installDetails !== '') {
+            $logsRepo->addLog($task->client_id, $task->service_id,
+                empty($cpanel->getLastInstallReport()['failed']) ? 'info' : 'error',
+                '[Install] Wildcard certificate ' . $installDetails);
+        }
 
         if (!empty($taskData['is_renewal'])) {
             $sent = EmailTemplateService::sendRenewalCompleteEmail($task->service_id, $domain);

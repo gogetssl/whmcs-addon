@@ -307,16 +307,97 @@ class Cpanel
         throw new \Exception($response->errors[0]);
     }
 
+    /** Result of the last installSSL() call: ['installed' => [domain, ...], 'failed' => [domain => error]] */
+    private $lastInstallReport = ['installed' => [], 'failed' => []];
+
+    public function getLastInstallReport()
+    {
+        return $this->lastInstallReport;
+    }
+
+    /**
+     * Log text for the last installSSL() call when it covered more than the one domain (wildcard),
+     * e.g. "installed on: example.com, mail.example.com | failed: shop.example.com (reason)"; '' otherwise.
+     */
+    public function describeLastInstall()
+    {
+        $report = $this->lastInstallReport;
+        if (count($report['installed']) <= 1 && empty($report['failed'])) {
+            return '';
+        }
+        $text = 'installed on: ' . (empty($report['installed']) ? '-' : implode(', ', $report['installed']));
+        if (!empty($report['failed'])) {
+            $failed = [];
+            foreach ($report['failed'] as $failedDomain => $error) {
+                $failed[] = $failedDomain . ' (' . $error . ')';
+            }
+            $text .= ' | failed: ' . implode('; ', $failed);
+        }
+        return $text;
+    }
+
+    /**
+     * Installs the certificate on $domain. A wildcard (*.example.com) is not a cPanel domain: it is installed on
+     * example.com and on every subdomain of the account it covers (one level, e.g. mail.example.com). It fails only
+     * when it could not be installed on any of them; see getLastInstallReport() for the per-domain result.
+     */
     public function installSSL($username, $domain, $cert, $key, $cabundle)
     {
-        $sslLog = ['domain' => $domain, 'cert' => '[' . strlen($cert) . ' bytes]', 'key' => '[' . strlen($key) . ' bytes]', 'cabundle' => '[' . strlen($cabundle) . ' bytes]'];
+        $this->lastInstallReport = ['installed' => [], 'failed' => []];
 
         // A key of another CSR can never be installed; cPanel then only reports that it cannot find the key.
         // An empty key is still sent: cPanel then uses the key from the account's own SSL store (CSR generated in cPanel).
         if (!empty($key) && PrivateKey::matchesCertificate($cert, $key) === false) {
+            $sslLog = ['domain' => $domain, 'cert' => '[' . strlen($cert) . ' bytes]', 'key' => '[' . strlen($key) . ' bytes]', 'cabundle' => '[' . strlen($cabundle) . ' bytes]'];
             $this->logCall('installSSL', $sslLog, 'Error: ' . PrivateKeyMismatchException::MESSAGE, 'skipped - key mismatch');
             throw new PrivateKeyMismatchException();
         }
+
+        $domain = strtolower(trim((string) $domain));
+        if (strpos($domain, '*.') !== 0) {
+            $this->installSSLOnDomain($username, $domain, $cert, $key, $cabundle);
+            $this->lastInstallReport['installed'][] = $domain;
+            return true;
+        }
+
+        $baseDomain = substr($domain, 2);
+        $targets    = [$baseDomain];
+        try {
+            foreach ($this->listDomains($username) as $accountDomain) {
+                $accountDomain = strtolower(trim((string) $accountDomain));
+                $suffix        = '.' . $baseDomain;
+                // covered by *.example.com: exactly one label in front of example.com (www. is covered with example.com)
+                if (substr($accountDomain, -strlen($suffix)) === $suffix
+                    && strpos(substr($accountDomain, 0, -strlen($suffix)), '.') === false
+                    && strpos($accountDomain, 'www.') !== 0
+                    && !in_array($accountDomain, $targets, true)) {
+                    $targets[] = $accountDomain;
+                }
+            }
+        } catch (\Exception $e) {
+            $this->lastInstallReport['failed']['(list of subdomains)'] = $e->getMessage();
+        }
+
+        $firstError = null;
+        foreach ($targets as $target) {
+            try {
+                $this->installSSLOnDomain($username, $target, $cert, $key, $cabundle);
+                $this->lastInstallReport['installed'][] = $target;
+            } catch (\Exception $e) {
+                $this->lastInstallReport['failed'][$target] = $e->getMessage();
+                $firstError = $firstError ?: $e;
+            }
+        }
+
+        if (empty($this->lastInstallReport['installed'])) {
+            throw $firstError ?: new \Exception('No domain of ' . $domain . ' was found on the cPanel account ' . $username);
+        }
+        return true;
+    }
+
+    private function installSSLOnDomain($username, $domain, $cert, $key, $cabundle)
+    {
+        $sslLog = ['domain' => $domain, 'cert' => '[' . strlen($cert) . ' bytes]', 'key' => '[' . strlen($key) . ' bytes]', 'cabundle' => '[' . strlen($cabundle) . ' bytes]'];
 
         $this->initiateConnection($username);
 
