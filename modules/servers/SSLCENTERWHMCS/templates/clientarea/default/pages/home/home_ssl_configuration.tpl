@@ -341,6 +341,60 @@
         </div>
     </div>
 
+    {* ===== ORGANIZATION (OV / EV products) ===== *}
+    {if $isOrganizationRequired}
+    <div class="ssl-contact-section" id="ssl-org-section">
+        <h3>{$MGLANG->T('sslConfigOrgTitle')}</h3>
+        <p class="text-muted" style="font-size:13px;">{$MGLANG->T('sslConfigOrgInfo')}</p>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>{$MGLANG->T('sslConfigOrgName')} <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="org_name" value="{if $client}{$client->companyname|escape}{/if}">
+                </div>
+                <div class="form-group">
+                    <label>{$MGLANG->T('sslConfigOrgDivision')}</label>
+                    <input type="text" class="form-control" name="org_division" value="">
+                </div>
+                <div class="form-group">
+                    <label>{$MGLANG->T('sslConfigOrgDuns')}</label>
+                    <input type="text" class="form-control" name="org_duns" value="">
+                </div>
+                <div class="form-group">
+                    <label>{$MGLANG->T('sslConfigOrgLei')}</label>
+                    <input type="text" class="form-control" name="org_lei" value="">
+                </div>
+                <div class="form-group">
+                    <label>{$MGLANG->T('sslConfigPhone')}</label>
+                    <input type="text" class="form-control" name="org_phone" value="{if $client}{$client->phonenumber|escape}{/if}">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>{$MGLANG->T('sslConfigAddress')}</label>
+                    <input type="text" class="form-control" name="org_addressline1" value="{if $client}{$client->address1|escape}{/if}">
+                </div>
+                <div class="form-group">
+                    <label>{$MGLANG->T('sslConfigCity')}</label>
+                    <input type="text" class="form-control" name="org_city" value="{if $client}{$client->city|escape}{/if}">
+                </div>
+                <div class="form-group">
+                    <label>{$MGLANG->T('sslConfigRegion')}</label>
+                    <input type="text" class="form-control" name="org_region" value="{if $client}{$client->state|escape}{/if}">
+                </div>
+                <div class="form-group">
+                    <label>{$MGLANG->T('sslConfigPostalcode')}</label>
+                    <input type="text" class="form-control" name="org_postalcode" value="{if $client}{$client->postcode|escape}{/if}">
+                </div>
+                <div class="form-group">
+                    <label>{$MGLANG->T('sslConfigCountry')}</label>
+                    <input type="text" class="form-control" name="org_country" value="{if $client}{$client->country|escape}{/if}">
+                </div>
+            </div>
+        </div>
+    </div>
+    {/if}
+
     {* ===== TECH CONTACT ===== *}
     <div class="ssl-contact-section">
         <h3>
@@ -931,6 +985,12 @@
             }
             postData['san_domains']   = $('#san_domains_manual').val();
             postData['wildcard_san']  = $('#wildcard_san_manual').val();
+        }
+
+        if ($('#ssl-org-section').length) {
+            $.each(['org_name', 'org_division', 'org_duns', 'org_lei', 'org_phone', 'org_addressline1', 'org_city', 'org_region', 'org_postalcode', 'org_country'], function (i, field) {
+                postData[field] = $('input[name="' + field + '"]').val();
+            });
         }
 
         if (!$('#same_as_admin').is(':checked')) {

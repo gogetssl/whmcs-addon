@@ -434,6 +434,40 @@ trait SslConfigTrait
             $order['tech_country']  = $countriesHelper->getCountryCodeByName($order['tech_country']);
         }
 
+        // OV / EV: the API requires the organization block; empty fields fall back to the administrative contact
+        if ($apiProduct->isOrganizationRequired()) {
+            $orgValue = function ($field, $fallback = '') use ($input) {
+                $value = isset($input[$field]) ? trim((string) $input[$field]) : '';
+                return $value !== '' ? $value : trim((string) $fallback);
+            };
+            $order['org_name']         = $orgValue('org_name', $order['admin_organization']);
+            $order['org_division']     = $orgValue('org_division', $order['admin_title']);
+            $order['org_lei']          = $orgValue('org_lei');
+            $order['org_duns']         = $orgValue('org_duns');
+            $order['org_addressline1'] = $orgValue('org_addressline1', $order['admin_addressline1']);
+            $order['org_city']         = $orgValue('org_city', $order['admin_city']);
+            $order['org_country']      = $orgValue('org_country', $order['admin_country']);
+            $order['org_fax']          = '';
+            $order['org_phone']        = $orgValue('org_phone', $order['admin_phone']);
+            $order['org_postalcode']   = $orgValue('org_postalcode', $order['admin_postalcode']);
+            $order['org_region']       = $orgValue('org_region', $order['admin_region']);
+            if (strlen($order['org_country']) > 2) {
+                $order['org_country'] = \MGModule\SSLCENTERWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountryCodeByName($order['org_country']);
+            }
+
+            $missingOrg = [];
+            foreach (['org_name' => 'sslConfigOrgName', 'org_addressline1' => 'sslConfigAddress', 'org_city' => 'sslConfigCity',
+                      'org_country' => 'sslConfigCountry', 'org_phone' => 'sslConfigPhone', 'org_postalcode' => 'sslConfigPostalcode',
+                      'org_region' => 'sslConfigRegion'] as $field => $langKey) {
+                if ((string) $order[$field] === '') {
+                    $missingOrg[] = main\mgLibs\Lang::absoluteT('serverCA', 'home', $langKey);
+                }
+            }
+            if (!empty($missingOrg)) {
+                throw new \Exception(main\mgLibs\Lang::absoluteT('serverCA', 'home', 'sslConfigOrgRequired') . ' ' . htmlspecialchars(implode(', ', $missingOrg), ENT_QUOTES));
+            }
+        }
+
         $sanEnabledForProduct = $input['params']['configoption3'] === 'on';
         $boughtSans           = isset($input['params']['configoptions']['sans_count']) ? (int) $input['params']['configoptions']['sans_count'] : 0;
         $includedSans         = (int) $input['params']['configoption4'];
