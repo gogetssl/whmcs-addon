@@ -24,11 +24,12 @@ class CodeSigningProduct
 
     const METHODS = [self::METHOD_SHIP_TOKEN, self::METHOD_EXISTING_TOKEN, self::METHOD_HSM];
 
-    // token models accepted for the "existing-token" method
+    // token models accepted for the "existing-token" method (values the API accepts; the API v2
+    // documentation shows TOKEN_5110_*, the API itself requires SAFENET_5110_*)
     const TOKEN_MODELS = [
-        'TOKEN_5110_FIPS'      => 'SafeNet eToken 5110 FIPS',
-        'TOKEN_5110_CC'        => 'SafeNet eToken 5110 CC',
-        'TOKEN_5110_PLUS_FIPS' => 'SafeNet eToken 5110+ FIPS',
+        'SAFENET_5110_FIPS'      => 'SafeNet eToken 5110 FIPS',
+        'SAFENET_5110_CC'        => 'SafeNet eToken 5110 CC',
+        'SAFENET_5110_PLUS_FIPS' => 'SafeNet eToken 5110+ FIPS',
     ];
 
     const DEFAULT_SHIPPING = 'STANDARD';
