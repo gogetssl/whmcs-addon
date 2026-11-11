@@ -44,9 +44,12 @@ class AdminResendCertificate {
         }
         $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();        
         $sendCertyficateTermplate = $apiConf->send_certificate_template;  
+        // {$domain} of the "Send Certificate" template: the certificate's domain (WHMCS does not set it)
+        $certificateDomain = !empty($orderStatus['domain']) ? $orderStatus['domain'] : (isset($this->p['domain']) ? $this->p['domain'] : '');
         if($sendCertyficateTermplate == NULL)
-        {            
+        {
             sendMessage(\MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::SEND_CERTIFICATE_TEMPLATE_ID, $this->p['serviceid'], [
+                'domain' => $certificateDomain,
                 'ssl_certyficate' => nl2br($orderStatus['ca_code']),
                 'crt_code' => nl2br($orderStatus['crt_code']),
             ]);
@@ -55,6 +58,7 @@ class AdminResendCertificate {
         {
             $templateName = \MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::getTemplateName($sendCertyficateTermplate);
             sendMessage($templateName, $this->p['serviceid'], [
+                'domain' => $certificateDomain,
                 'ssl_certyficate' => nl2br($orderStatus['ca_code']),
                 'crt_code' => nl2br($orderStatus['crt_code']),
             ]);

@@ -386,9 +386,12 @@ class Cron extends main\mgLibs\process\AbstractController
 
             $apiConf                  = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
             $sendCertyficateTermplate = $apiConf->send_certificate_template;
+            // {$domain} of the "Send Certificate" template: the certificate's domain (WHMCS does not set it)
+            $certificateDomain = !empty($apiOrder['domain']) ? $apiOrder['domain'] : (string) Capsule::table('tblhosting')->where('id', $service->id)->value('domain');
             if ($sendCertyficateTermplate == NULL)
             {
                 sendMessage(\MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::SEND_CERTIFICATE_TEMPLATE_ID, $service->id, [
+                    'domain' => $certificateDomain,
                     'ssl_certyficate' => nl2br($apiOrder['ca_code']),
                     'crt_code' => nl2br($apiOrder['crt_code']),
                 ]);
@@ -397,6 +400,7 @@ class Cron extends main\mgLibs\process\AbstractController
             {
                 $templateName = \MGModule\SSLCENTERWHMCS\eServices\EmailTemplateService::getTemplateName($sendCertyficateTermplate);
                 sendMessage($templateName, $service->id, [
+                    'domain' => $certificateDomain,
                     'ssl_certyficate' => nl2br($apiOrder['ca_code']),
                     'crt_code' => nl2br($apiOrder['crt_code']),
                 ]);

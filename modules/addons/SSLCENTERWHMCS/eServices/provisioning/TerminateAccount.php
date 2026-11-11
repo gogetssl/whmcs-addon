@@ -60,7 +60,8 @@ class TerminateAccount {
 
     /**
      * Reason sent to GoGetSSL: a cancellation request of the client (Request Cancellation in the client area,
-     * processed by the WHMCS cron or the administrator), otherwise the automatic termination of an unpaid service.
+     * processed by the WHMCS cron or the administrator), a Terminate by an administrator in the admin area,
+     * otherwise the automatic termination of an unpaid service (WHMCS cron).
      */
     private function getCancellationReason() {
         try {
@@ -71,6 +72,13 @@ class TerminateAccount {
             $hasRequest = false;
         }
 
-        return $hasRequest ? 'Order cancelled via WHMCS by the client' : 'Order canceled for non-payment.';
+        if ($hasRequest) {
+            return 'Order cancelled via WHMCS by the client';
+        }
+        if (defined('ADMINAREA') && PHP_SAPI !== 'cli') {
+            return 'Order cancelled via WHMCS by the administrator';
+        }
+
+        return 'Order canceled for non-payment.';
     }
 }
