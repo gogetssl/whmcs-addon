@@ -34,7 +34,7 @@ class TerminateAccount {
             return;
         }
        
-        $reason = 'Order canceled for non-payment.';
+        $reason = $this->getCancellationReason();
 
         if (\MGModule\SSLCENTERWHMCS\eServices\SmimeService::isSmimeOrder($serviceSSL)) {
             $status = strtolower((string) $serviceSSL->getConfigdataKey('ssl_status'));
@@ -56,5 +56,21 @@ class TerminateAccount {
 
         \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->cancelSSLOrder($serviceSSL->remoteid, $reason);
         $serviceSSL->delete();
+    }
+
+    /**
+     * Reason sent to GoGetSSL: a cancellation request of the client (Request Cancellation in the client area,
+     * processed by the WHMCS cron or the administrator), otherwise the automatic termination of an unpaid service.
+     */
+    private function getCancellationReason() {
+        try {
+            $hasRequest = \WHMCS\Database\Capsule::table('tblcancelrequests')
+                ->where('relid', (int) $this->p['serviceid'])
+                ->exists();
+        } catch (\Exception $e) {
+            $hasRequest = false;
+        }
+
+        return $hasRequest ? 'Order cancelled via WHMCS by the client' : 'Order canceled for non-payment.';
     }
 }

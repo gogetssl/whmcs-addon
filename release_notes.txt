@@ -46,24 +46,39 @@ Added
     token (SafeNet eToken 5110 FIPS / CC / 5110+ FIPS) or the client's own
     HSM (CSR). Products Creator adds a "Certificate Delivery" configurable
     option: token shipping is charged once (setup fee, GoGetSSL shipping
-    price); hide a choice in WHMCS to stop offering that method.
+    price); hide a choice in WHMCS to stop offering that method. A new
+    token is shipped only when the client paid its shipping with the
+    order: renewals and products without the option offer the existing
+    token or own HSM.
   - Client area: code signing configuration form (organization,
     administrator contact, delivery details) and a status page (order and
     CA order ID, delivery, validity, Refresh details). Admin area: order
     details and a "Refresh Code Signing Details" button.
   - Status refresh by the CRON jobs, cancellation on Terminate; a renewal
-    is a new code signing order the client configures.
+    is a new code signing order the client configures. A service is ordered
+    only once, also when the form is submitted twice.
 Changed
   - S/MIME and code signing products are sold only for the terms GoGetSSL
     offers: Products Creator, Products Configuration "update prices" and
     the price updater cron disable the other billing cycles (monthly,
     quarterly, semi-annually, and biennially / triennially without a
-    24 / 36 month term). Before, every cycle got the 12-month price.
+    24 / 36 month term), also when Products Configuration is saved.
+    Before, every cycle got the 12-month price. One Time products are not
+    changed.
     [!] S/MIME products created with an earlier version and manual prices
     keep their billing cycles: disable the cycles without a matching term
     in WHMCS, or use "update prices" on Products Configuration.
   - DigiCert code signing services ordered through API v1 earlier stay on
     the SSL certificate flow.
+  - Cancellation reason sent to GoGetSSL: "Order cancelled via WHMCS by
+    the client" when the service has a client cancellation request
+    (before always "Order canceled for non-payment.", which stays for the
+    automatic termination of unpaid services).
+Fixed
+  - Client area SSL summary and the SAN upgrade hook no longer read the
+    API v1 order status of S/MIME orders (a failing lookup could hide the
+    summary).
+  - Admin area: no "Undefined array key" PHP warnings for service details.
 
 v3.4.5 (2026-11-09)
 -------------------
