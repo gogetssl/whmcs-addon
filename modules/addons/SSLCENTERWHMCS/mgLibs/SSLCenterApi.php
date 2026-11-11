@@ -658,6 +658,36 @@ class SSLCenterApi {
         return $response;
     }
 
+    /**
+     * Request or response text for the WHMCS module log without credentials: the auth_key query parameter, the
+     * Authorization header and the password of the login call are replaced, private keys are removed.
+     */
+    protected function logText($text)
+    {
+        $text = (string) $text;
+        $text = preg_replace('/([?&]auth_key=)[^&\s]*/i', '$1********', $text);
+        $text = preg_replace('/^(Authorization:[ \t]*\S+[ \t]+)[^\r\n]*/mi', '$1********', $text);
+        $text = preg_replace('/(^|[?&])(pass|password)=[^&\s]*/i', '$1$2=********', $text);
+        return preg_replace('/-----BEGIN ([A-Z ]*)PRIVATE KEY-----.*?-----END \1PRIVATE KEY-----/s', '[private key removed]', $text);
+    }
+
+    /**
+     * Secret values WHMCS masks anywhere in the log entry (logModuleCall $replaceVars), also in their URL-encoded form.
+     */
+    protected function logSecrets(array $values)
+    {
+        $secrets = array();
+        foreach ($values as $value) {
+            $value = is_scalar($value) ? trim((string) $value) : '';
+            if ($value !== '') {
+                $secrets[] = $value;
+                $secrets[] = rawurlencode($value);
+                $secrets[] = urlencode($value);
+            }
+        }
+        return array_values(array_unique($secrets));
+    }
+
     protected function getV2AuthorizationHeader()
     {
         return $this->buildV2AuthorizationHeader();
@@ -766,7 +796,7 @@ class SSLCenterApi {
         $result = substr($data, $info['header_size']);
         $status = (int) curl_getinfo($c, CURLINFO_HTTP_CODE);
 
-        logModuleCall('SSLCENTERWHMCS', 'Time: '.$info['total_time'].' '.$uri.' [v2]', $info['request_header'].$queryData, $data);
+        logModuleCall('SSLCENTERWHMCS', 'Time: '.$info['total_time'].' '.$uri.' [v2]', $this->logText($info['request_header'].$queryData), $this->logText($data), '', $this->logSecrets(array($this->key, $password)));
 
         if ($result === false)
         {
@@ -869,7 +899,16 @@ class SSLCenterApi {
             echo "\n\n";
         }
 
-        logModuleCall('SSLCENTERWHMCS','Time: '.$info['total_time'].' '.$uri, $info['request_header'].$queryData, $data);
+        $logSecrets = array($this->key);
+        if ($uri === '/auth/' && is_array($postData) && isset($postData['pass'])) {
+            // the login call sends the password and returns the new auth key
+            $logSecrets[] = $postData['pass'];
+            $authResponse = json_decode((string) $result, true);
+            if (is_array($authResponse) && !empty($authResponse['key'])) {
+                $logSecrets[] = $authResponse['key'];
+            }
+        }
+        logModuleCall('SSLCENTERWHMCS','Time: '.$info['total_time'].' '.$uri, $this->logText($info['request_header'].$queryData), $this->logText($data), '', $this->logSecrets($logSecrets));
 
         if ($result === false) {
             throw new SSLCenterException(curl_error($c));
