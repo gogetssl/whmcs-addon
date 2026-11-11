@@ -33,6 +33,23 @@
   3.x
 ================================================================================
 
+v3.5.1 (2026-11-11)
+-------------------
+Fixed
+  - "SSLCenter - Send Certificate" email: the Domain line was empty when
+    the certificate was sent automatically (cron) or with the admin
+    "Resend Certificate" button, because {$domain} was not passed. Both now
+    pass the certificate's domain, also for customised templates. (#286)
+  - Module log: the API client no longer writes credentials to the WHMCS
+    module log (API v1 auth_key, API v2 Authorization header, the login
+    password and the auth key it returns); PEM private keys are removed
+    from logged requests and responses.
+Changed
+  - Cancellation reason sent to GoGetSSL when an administrator clicks
+    Terminate in the admin area: "Order cancelled via WHMCS by the
+    administrator" (before "Order canceled for non-payment.", which stays
+    for the automatic termination of unpaid services).
+
 v3.5.0 (2026-11-11)
 -------------------
 Added
