@@ -574,7 +574,7 @@ class Cron extends main\mgLibs\process\AbstractController
                     // code signing prices from API v2: [{term, selling, retail}] + token shipping fees of "Certificate Delivery"
                     if ($apiProduct !== null && !empty($apiProduct['v2_prices']))
                     {
-                        $this->generateNewPricesFromApiProduct($product->pricing, ['prices' => $apiProduct['v2_prices']]);
+                        $this->generateNewPricesFromApiProduct($product->pricing, ['prices' => $apiProduct['v2_prices']], true);
                     }
                     if ($apiProduct !== null)
                     {
@@ -586,7 +586,7 @@ class Cron extends main\mgLibs\process\AbstractController
                     // S/MIME prices from API v2: [{term, selling, retail}]; no prices from the API = keep the WHMCS prices
                     if ($apiProduct !== null && !empty($apiProduct['v2_prices']))
                     {
-                        $this->generateNewPricesFromApiProduct($product->pricing, ['prices' => $apiProduct['v2_prices']]);
+                        $this->generateNewPricesFromApiProduct($product->pricing, ['prices' => $apiProduct['v2_prices']], true);
                     }
                 }
                 elseif ($apiProduct !== null && $isAcmeProduct)
@@ -633,7 +633,7 @@ class Cron extends main\mgLibs\process\AbstractController
         return $result;
     }
 
-    private function generateNewPricesFromApiProduct($currentPrices, $apiProduct)
+    private function generateNewPricesFromApiProduct($currentPrices, $apiProduct, $restrictToTerms = false)
     {
         $termPrices = $this->extractBasePricesByTerm($apiProduct);
         if (empty($termPrices))
@@ -668,6 +668,12 @@ class Cron extends main\mgLibs\process\AbstractController
 
                 $base = isset($termPrices[$term]) ? (float) $termPrices[$term] : $annual;
                 $update[$cycle] = number_format($base * $currencyRate * $rate, 2, '.', '');
+            }
+
+            if ($restrictToTerms)
+            {
+                // API v2 products: only the billing cycles of the terms the API offers
+                $update = main\eHelpers\SmimeProduct::restrictPricingToTerms($update, $apiProduct['prices']);
             }
 
             Capsule::table("tblpricing")

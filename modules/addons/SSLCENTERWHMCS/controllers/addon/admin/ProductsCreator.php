@@ -144,6 +144,10 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
             if (isset($apiPricingByCurrency[$value['currency']])) {
                 $value = array_merge($value, $apiPricingByCurrency[$value['currency']]);
             }
+            if (($isSmimeProduct || $isCodeSigningProduct) && !empty($apiProduct->v2_prices)) {
+                // API v2 products: only the billing cycles of the terms the API offers
+                $value = \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::restrictPricingToTerms($value, $apiProduct->v2_prices);
+            }
             if ($isAcmeProduct)
             {
                 $value['monthly']      = isset($value['annually']) ? $value['annually'] : '0.00';

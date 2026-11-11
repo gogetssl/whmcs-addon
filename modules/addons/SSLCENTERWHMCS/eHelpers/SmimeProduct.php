@@ -319,6 +319,49 @@ class SmimeProduct
     }
 
     /**
+     * API v2 products (S/MIME, code signing) are sold only for the terms the API offers: the WHMCS billing
+     * cycles without a matching term (monthly, quarterly, semi-annually, and biennially / triennially when the
+     * product has no 24 / 36 month term) are disabled (-1.00) in a tblpricing row (array keyed by cycle).
+     *
+     * @param array $pricing      tblpricing values keyed by cycle
+     * @param array $v2Prices     API v2 prices [{term, selling, retail}]
+     */
+    public static function restrictPricingToTerms(array $pricing, $v2Prices)
+    {
+        $terms = [];
+        foreach ((array) $v2Prices as $price)
+        {
+            $price = (array) $price;
+            if (isset($price['term']) && (int) $price['term'] > 0)
+            {
+                $terms[] = (int) $price['term'];
+            }
+        }
+        if (empty($terms))
+        {
+            return $pricing;
+        }
+
+        $cycleTerms = [
+            'monthly'      => 1,
+            'quarterly'    => 3,
+            'semiannually' => 6,
+            'annually'     => 12,
+            'biennially'   => 24,
+            'triennially'  => 36,
+        ];
+        foreach ($cycleTerms as $cycle => $term)
+        {
+            if (!in_array($term, $terms, true))
+            {
+                $pricing[$cycle] = '-1.00';
+            }
+        }
+
+        return $pricing;
+    }
+
+    /**
      * Maps a GoGetSSL API v2 S/MIME product to the shape of an API v1 product list entry,
      * so the Products Creator, Products Configuration and price updater can use it.
      */

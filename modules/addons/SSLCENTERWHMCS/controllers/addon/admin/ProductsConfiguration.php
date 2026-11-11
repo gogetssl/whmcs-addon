@@ -260,7 +260,12 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
             if (!isset($pricingByCurrency[$pricing->currency])) {
                 continue;
             }
-            $productModel->updateProductPricing($pricing->pricing_id, $pricingByCurrency[$pricing->currency]);
+            $values = $pricingByCurrency[$pricing->currency];
+            if (!$isAcme && !empty($v2Prices)) {
+                // API v2 products: only the billing cycles of the terms the API offers
+                $values = \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::restrictPricingToTerms($values, $v2Prices);
+            }
+            $productModel->updateProductPricing($pricing->pricing_id, $values);
         }
     }
 
