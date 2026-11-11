@@ -45,6 +45,15 @@ class TerminateAccount {
             return;
         }
 
+        if (\MGModule\SSLCENTERWHMCS\eServices\CodeSigningService::isCodeSigningOrder($serviceSSL)) {
+            $status = strtolower((string) $serviceSSL->getConfigdataKey('ssl_status'));
+            if (!in_array($status, ['cancelled', 'expired', 'failed', 'rejected'], true)) {
+                \MGModule\SSLCENTERWHMCS\eServices\CodeSigningService::cancel($serviceSSL, $reason);
+            }
+            $serviceSSL->delete();
+            return;
+        }
+
         \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->cancelSSLOrder($serviceSSL->remoteid, $reason);
         $serviceSSL->delete();
     }

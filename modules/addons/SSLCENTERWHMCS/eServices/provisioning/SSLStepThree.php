@@ -47,6 +47,10 @@ class SSLStepThree {
             $this->redirectToStepOne('This is an S/MIME certificate. Please configure it on the service page.');
             return;
         }
+        if (\MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::isCodeSigningByServiceParams($this->p)) {
+            $this->redirectToStepOne('This is a code signing certificate. Please configure it on the service page.');
+            return;
+        }
 
         try {
 

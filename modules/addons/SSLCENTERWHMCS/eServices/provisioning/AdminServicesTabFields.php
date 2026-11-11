@@ -44,6 +44,10 @@ class AdminServicesTabFields {
                 return $this->getSmimeDetails($sslService);
             }
 
+            if (\MGModule\SSLCENTERWHMCS\eServices\CodeSigningService::isCodeSigningOrder($sslService)) {
+                return $this->getCodeSigningDetails($sslService);
+            }
+
             if(empty($sslService->remoteid)) {
                 throw new Exception('Order id not exist');
             }
@@ -92,6 +96,50 @@ class AdminServicesTabFields {
         } catch (Exception $ex) {
             return ['SSLCenter Error' => $ex->getMessage()];
         }
+    }
+
+    /**
+     * Code signing certificate (API v2) details - saved data, refreshed by the "Refresh Code Signing Details" button and the cron.
+     */
+    private function getCodeSigningDetails($sslService) {
+        $config = json_decode(json_encode($sslService->configdata), true);
+        $config = is_array($config) ? $config : [];
+
+        $method   = isset($config['cs_method']) ? (string) $config['cs_method'] : '';
+        $delivery = '-';
+        if ($method === 'ship-token') {
+            $delivery = 'New hardware token, ' . strtolower(!empty($config['cs_shipping']) ? $config['cs_shipping'] : 'standard') . ' shipping';
+        } elseif ($method === 'existing-token') {
+            $delivery = 'Existing hardware token' . (!empty($config['cs_token_model']) ? ' (' . $config['cs_token_model'] . ')' : '');
+        } elseif ($method === 'hsm') {
+            $delivery = 'Own HSM (CSR provided)';
+        }
+
+        $status = isset($config['ssl_status']) ? (string) $config['ssl_status'] : '';
+
+        $return = [
+            'Product Type'               => 'Code signing certificate (API v2)',
+            'SSLCenter API Order ID'     => htmlspecialchars((string) $sslService->remoteid, ENT_QUOTES),
+            'Code Signing Certificate ID' => (int) $config['cs_item_id'],
+            'CA Order ID'                => !empty($config['partner_order_id']) ? htmlspecialchars($config['partner_order_id'], ENT_QUOTES) : '-',
+            'Configuration Status'       => htmlspecialchars((string) $sslService->status, ENT_QUOTES),
+            'Order Status'               => $status !== '' ? htmlspecialchars(ucfirst($status), ENT_QUOTES) : '-',
+            'Organization'               => !empty($config['cs_organization']) ? htmlspecialchars($config['cs_organization'], ENT_QUOTES) : '-',
+            'Certificate Delivery'       => htmlspecialchars($delivery, ENT_QUOTES),
+            'Term'                       => !empty($config['cs_term']) ? (int) $config['cs_term'] . ' months' : '-',
+        ];
+
+        if (!empty($config['valid_from'])) {
+            $return['Valid From'] = htmlspecialchars($config['valid_from'], ENT_QUOTES);
+        }
+        if (!empty($config['valid_till'])) {
+            $return['Expires'] = htmlspecialchars($config['valid_till'], ENT_QUOTES);
+        }
+        if (!empty($config['cs_refreshed_at'])) {
+            $return['Last Refreshed'] = htmlspecialchars($config['cs_refreshed_at'], ENT_QUOTES);
+        }
+
+        return $return;
     }
 
     /**

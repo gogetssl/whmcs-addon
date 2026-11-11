@@ -9,11 +9,13 @@ use MGModule\SSLCENTERWHMCS\eHelpers\Cpanel;
 use MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription as AcmeHelper;
 use MGModule\SSLCENTERWHMCS\eHelpers\AisSubscription as AisHelper;
 use MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct as SmimeHelper;
+use MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct as CodeSigningHelper;
 use MGModule\SSLCENTERWHMCS\models\orders\Repository as OrderRepo;
 use MGModule\SSLCENTERWHMCS\models\logs\Repository as LogsRepo;
 use MGModule\SSLCENTERWHMCS\controllers\server\clientarea\Traits\AcmeTrait;
 use MGModule\SSLCENTERWHMCS\controllers\server\clientarea\Traits\AisTrait;
 use MGModule\SSLCENTERWHMCS\controllers\server\clientarea\Traits\SmimeTrait;
+use MGModule\SSLCENTERWHMCS\controllers\server\clientarea\Traits\CodeSigningTrait;
 use MGModule\SSLCENTERWHMCS\controllers\server\clientarea\Traits\StandardSslTrait;
 use MGModule\SSLCENTERWHMCS\controllers\server\clientarea\Traits\SslConfigTrait;
 
@@ -22,7 +24,7 @@ use MGModule\SSLCENTERWHMCS\controllers\server\clientarea\Traits\SslConfigTrait;
  */
 class home extends main\mgLibs\process\AbstractController {
 
-    use AcmeTrait, AisTrait, SmimeTrait, StandardSslTrait, SslConfigTrait;
+    use AcmeTrait, AisTrait, SmimeTrait, CodeSigningTrait, StandardSslTrait, SslConfigTrait;
 
     function indexHTML($input, $vars = array()) {
         try {
@@ -46,6 +48,11 @@ class home extends main\mgLibs\process\AbstractController {
             if (SmimeHelper::isSmimeByServiceParams($input['params']))
             {
                 return $this->indexSmimeHTML($input, $vars);
+            }
+
+            if (CodeSigningHelper::isCodeSigningByServiceParams($input['params']))
+            {
+                return $this->indexCodeSigningHTML($input, $vars);
             }
 
             if (AisHelper::isAisByServiceParams($input['params']))

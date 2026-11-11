@@ -28,6 +28,11 @@ class SSLStepOne {
             header('Location: clientarea.php?action=productdetails&id=' . (int) $this->p['serviceid'] . '&smimeconfig=1');
             exit;
         }
+        // code signing certificates too
+        if (\MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::isCodeSigningByServiceParams($this->p) && !empty($this->p['serviceid']) && !headers_sent()) {
+            header('Location: clientarea.php?action=productdetails&id=' . (int) $this->p['serviceid'] . '&csconfig=1');
+            exit;
+        }
 
         $fields['additionalfields'] = [];
         $apiProductId  = $this->p[ConfigOptions::API_PRODUCT_ID];

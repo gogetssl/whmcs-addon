@@ -63,8 +63,9 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
         $isAcmeProduct = \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeProductId($input[C::API_PRODUCT_ID]);
         $pricingApiProduct = $isAcmeProduct ? $this->getAcmePricingApiProduct($input[C::API_PRODUCT_ID], $apiProduct) : $apiProduct;
         $isSmimeProduct = method_exists($apiProduct, 'isSmime') && $apiProduct->isSmime() && (int) $apiProduct->id === (int) $input[C::API_PRODUCT_ID];
-        if ($isSmimeProduct && !empty($apiProduct->v2_prices)) {
-            // S/MIME prices from API v2: [{term, selling, retail}]
+        $isCodeSigningProduct = method_exists($apiProduct, 'isCodeSigning') && $apiProduct->isCodeSigning() && (int) $apiProduct->id === (int) $input[C::API_PRODUCT_ID];
+        if (($isSmimeProduct || $isCodeSigningProduct) && !empty($apiProduct->v2_prices)) {
+            // S/MIME and code signing prices from API v2: [{term, selling, retail}]
             $pricingApiProduct = ['id' => (int) $apiProduct->id, 'prices' => json_decode(json_encode($apiProduct->v2_prices), true)];
         }
         $sanConfig = $this->extractSanConfig($apiProduct);
@@ -103,7 +104,7 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
                 : $this->toInt($this->readValue($input, [C::PRODUCT_INCLUDED_SANS_WILDCARD]), 0);
         }
 
-        if ($isSmimeProduct)
+        if ($isSmimeProduct || $isCodeSigningProduct)
         {
             // S/MIME has no SANs (additional emails are entered on the order form)
             $productData[C::PRODUCT_ENABLE_SAN]             = '';
@@ -163,6 +164,11 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
 
         if($isAcmeProduct && $productData[C::PRODUCT_ENABLE_SAN_WILDCARD] === 'on') {
             main\eServices\ConfigurableOptionService::createForProductWildcard($newProductId, $productData['name'], $pricingApiProduct);
+        }
+
+        if ($isCodeSigningProduct) {
+            // "Certificate Delivery": new token (shipping fee) / existing token / own HSM
+            main\eServices\ConfigurableOptionService::createCodeSigningProvisioning($newProductId, $productData['name'], $apiProduct);
         }
     }
     

@@ -73,6 +73,7 @@ class Products {
                 {
                     $this->products = [];
                     $hasSmime = false;
+                    $hasCodeSigning = false;
                     foreach ($products as $apiProduct) {
 
                         $apiProduct = json_decode($apiProduct->data, true);
@@ -82,10 +83,16 @@ class Products {
                         if (isset($apiProduct['category']) && $apiProduct['category'] === 'smime') {
                             $hasSmime = true;
                         }
+                        if (isset($apiProduct['category']) && $apiProduct['category'] === 'cs') {
+                            $hasCodeSigning = true;
+                        }
                     }
 
                     if (!$hasSmime) {
                         $this->appendSmimeProductsToCache();
+                    }
+                    if (!$hasCodeSigning) {
+                        $this->appendCodeSigningProductsToCache();
                     }
 
                     return $this->products;
@@ -179,6 +186,69 @@ class Products {
 
             $p = new \MGModule\SSLCENTERWHMCS\eModels\sslcenter\Product();
             \MGModule\SSLCENTERWHMCS\eHelpers\Fill::fill($p, $smimeProduct);
+            $this->products[$p->id] = $p;
+        }
+    }
+
+    /**
+     * Product lists cached before code signing support have no code signing data. In the admin area
+     * the supported code signing products are read once from API v2 and added to / merged into the cache.
+     */
+    private function appendCodeSigningProductsToCache() {
+        static $attempted = false;
+        if ($attempted || !defined('ADMINAREA')) {
+            return;
+        }
+        $attempted = true;
+
+        // at most once an hour (API errors)
+        $checkedSetting = 'sslcenter_cs_products_checked';
+        $checked = Capsule::table('tblconfiguration')->where('setting', $checkedSetting)->first();
+        if ($checked && (int) $checked->value > time() - 3600) {
+            return;
+        }
+        if ($checked) {
+            Capsule::table('tblconfiguration')->where('setting', $checkedSetting)->update(['value' => (string) time()]);
+        } else {
+            Capsule::table('tblconfiguration')->insert(['setting' => $checkedSetting, 'value' => (string) time()]);
+        }
+
+        try {
+            $v2Products = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getV2Products();
+        } catch (\Exception $e) {
+            return;
+        }
+
+        if (!is_array($v2Products)) {
+            return;
+        }
+
+        foreach ($v2Products as $v2Product) {
+            if (!is_array($v2Product) || !isset($v2Product['id'], $v2Product['category']) || $v2Product['category'] !== 'cs'
+                || !\MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::isCodeSigningByApiProductId($v2Product['id'])) {
+                continue;
+            }
+
+            $csProduct = \MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::toV1Product($v2Product);
+
+            if (isset($this->products[$csProduct['id']])) {
+                $csProduct = \MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::mergeIntoV1Product(
+                    json_decode(json_encode(get_object_vars($this->products[$csProduct['id']])), true),
+                    $csProduct
+                );
+                Capsule::table('mgfw_SSLCENTER_product_brand')->where('pid', $csProduct['id'])->update([
+                    'data' => json_encode($csProduct),
+                ]);
+            } else {
+                Capsule::table('mgfw_SSLCENTER_product_brand')->insert([
+                    'pid'   => $csProduct['id'],
+                    'brand' => $csProduct['brand'],
+                    'data'  => json_encode($csProduct),
+                ]);
+            }
+
+            $p = new \MGModule\SSLCENTERWHMCS\eModels\sslcenter\Product();
+            \MGModule\SSLCENTERWHMCS\eHelpers\Fill::fill($p, $csProduct);
             $this->products[$p->id] = $p;
         }
     }

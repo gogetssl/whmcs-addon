@@ -93,6 +93,19 @@ function SSLCENTERWHMCS_SSLAdminRefreshSmime($params) {
     return 'success';
 }
 
+function SSLCENTERWHMCS_SSLAdminRefreshCodeSigning($params) {
+    try {
+        $sslService = (new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL())->getByServiceId($params['serviceid']);
+        if (!\MGModule\SSLCENTERWHMCS\eServices\CodeSigningService::isCodeSigningOrder($sslService)) {
+            return 'The code signing certificate has not been ordered yet.';
+        }
+        \MGModule\SSLCENTERWHMCS\eServices\CodeSigningService::refresh($sslService);
+    } catch (\Exception $e) {
+        return $e->getMessage();
+    }
+    return 'success';
+}
+
 function SSLCENTERWHMCS_SSLAdminResendApproverEmail($params) {
     $resendApproverEmail = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\AdminResendApproverEmail($params);
     return $resendApproverEmail->run();
@@ -239,7 +252,8 @@ function SSLCENTERWHMCS_ClientArea(array $params) {
 
 function SSLCENTERWHMCS_ClientAreaCustomButtonArray($params = []) {
     if (\MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeByServiceParams((array) $params)
-        || \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::isSmimeByServiceParams((array) $params)) {
+        || \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::isSmimeByServiceParams((array) $params)
+        || \MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::isCodeSigningByServiceParams((array) $params)) {
         return [];
     }
 

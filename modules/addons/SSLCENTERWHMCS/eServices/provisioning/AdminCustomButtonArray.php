@@ -12,6 +12,13 @@ class AdminCustomButtonArray {
             ];
         }
 
+        // code signing certificates (API v2)
+        if (!empty($params) && \MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::isCodeSigningByServiceParams($params)) {
+            return [
+                'Refresh Code Signing Details' => 'SSLAdminRefreshCodeSigning',
+            ];
+        }
+
         return [
             'Manage SSL'            => 'SSLAdminManageSSL',
             'Resend Approver Email' => 'SSLAdminResendApproverEmail',

@@ -253,6 +253,23 @@ class SSLCenterApi {
             \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::rememberProductIds($smimeIds);
         }
 
+        // hardware code signing products (API v2 category "cs"); DigiCert ones are also in the API v1 list
+        foreach ($v2Products as $v2Product) {
+            if (!is_array($v2Product) || !isset($v2Product['id'], $v2Product['category']) || $v2Product['category'] !== 'cs'
+                || !\MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::isCodeSigningByApiProductId($v2Product['id'])) {
+                continue;
+            }
+
+            $csProduct = \MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::toV1Product($v2Product);
+            if (isset($positions[$csProduct['id']])) {
+                $key = $positions[$csProduct['id']];
+                $response['products'][$key] = \MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::mergeIntoV1Product($response['products'][$key], $csProduct);
+                continue;
+            }
+
+            $response['products'][] = $csProduct;
+        }
+
         return $response;
     }
 
@@ -276,6 +293,24 @@ class SSLCenterApi {
         $payload = ['reason' => !empty($reason) ? $reason : 'Cancelled'];
 
         return $this->callV2('/certificates/smime/' . (int) $itemId . '/cancel', 'POST', $payload);
+    }
+
+    /**
+     * POST /certificates/cs - $data: product{id (string), term}, provisioning{method, model | csr | shipping{id, contact}},
+     * contacts{organization, administrator}
+     */
+    public function createCodeSigning(array $data) {
+        return $this->callV2('/certificates/cs', 'POST', $data);
+    }
+
+    public function getCodeSigningDetails($itemId) {
+        return $this->callV2('/certificates/cs/' . (int) $itemId, 'GET');
+    }
+
+    public function cancelCodeSigning($itemId, $reason = '') {
+        $payload = ['reason' => !empty($reason) ? $reason : 'Cancelled'];
+
+        return $this->callV2('/certificates/cs/' . (int) $itemId . '/cancel', 'POST', $payload);
     }
 
     public function getProductDetails($productId) {

@@ -569,7 +569,19 @@ class Cron extends main\mgLibs\process\AbstractController
                 $apiProduct = isset($apiProductsById[(int) $product->{C::API_PRODUCT_ID}]) ? $apiProductsById[(int) $product->{C::API_PRODUCT_ID}] : null;
                 $isAcmeProduct = \MGModule\SSLCENTERWHMCS\eHelpers\AcmeSubscription::isAcmeProductId((int) $product->{C::API_PRODUCT_ID});
 
-                if (main\eHelpers\SmimeProduct::isSmimeByApiProductId((int) $product->{C::API_PRODUCT_ID}))
+                if (main\eHelpers\CodeSigningProduct::isCodeSigningByApiProductId((int) $product->{C::API_PRODUCT_ID}))
+                {
+                    // code signing prices from API v2: [{term, selling, retail}] + token shipping fees of "Certificate Delivery"
+                    if ($apiProduct !== null && !empty($apiProduct['v2_prices']))
+                    {
+                        $this->generateNewPricesFromApiProduct($product->pricing, ['prices' => $apiProduct['v2_prices']]);
+                    }
+                    if ($apiProduct !== null)
+                    {
+                        main\eServices\ConfigurableOptionService::syncCodeSigningShippingPrices((int) $product->id, $apiProduct);
+                    }
+                }
+                elseif (main\eHelpers\SmimeProduct::isSmimeByApiProductId((int) $product->{C::API_PRODUCT_ID}))
                 {
                     // S/MIME prices from API v2: [{term, selling, retail}]; no prices from the API = keep the WHMCS prices
                     if ($apiProduct !== null && !empty($apiProduct['v2_prices']))
@@ -1208,34 +1220,44 @@ class Cron extends main\mgLibs\process\AbstractController
     }
 
     /**
-     * Service IDs of S/MIME services (API v2) - skipped by the API v1 order jobs.
+     * Service IDs of API v2 certificate services (S/MIME, code signing) - skipped by the API v1 order jobs.
      */
     private function getSmimeServiceIds()
     {
         static $ids = null;
         if ($ids === null)
         {
+            $ids = [];
             try
             {
-                $ids = main\eHelpers\SmimeProduct::getServiceIds();
+                $ids = array_merge($ids, main\eHelpers\SmimeProduct::getServiceIds());
             }
             catch (\Exception $e)
             {
-                $ids = [];
             }
+            try
+            {
+                $ids = array_merge($ids, main\eHelpers\CodeSigningProduct::getServiceIds());
+            }
+            catch (\Exception $e)
+            {
+            }
+            $ids = array_values(array_unique($ids));
         }
 
         return $ids;
     }
 
     /**
-     * Refreshes an S/MIME certificate from API v2 and returns the fields the jobs read from
+     * Refreshes an API v2 certificate (S/MIME or code signing) and returns the fields the jobs read from
      * the API v1 order status: status, valid_from, valid_till, end_date. Null when not ordered yet.
      */
     private function getSmimeOrderStatus($serviceID)
     {
         $sslService = (new main\eRepository\whmcs\service\SSL())->getByServiceId((int) $serviceID);
-        if (!main\eServices\SmimeService::isSmimeOrder($sslService))
+        $isSmime       = main\eServices\SmimeService::isSmimeOrder($sslService);
+        $isCodeSigning = !$isSmime && main\eServices\CodeSigningService::isCodeSigningOrder($sslService);
+        if (!$isSmime && !$isCodeSigning)
         {
             return null;
         }
@@ -1243,7 +1265,14 @@ class Cron extends main\mgLibs\process\AbstractController
         $status = strtolower((string) $sslService->getConfigdataKey('ssl_status'));
         if (!in_array($status, ['cancelled', 'expired'], true))
         {
-            main\eServices\SmimeService::refresh($sslService);
+            if ($isSmime)
+            {
+                main\eServices\SmimeService::refresh($sslService);
+            }
+            else
+            {
+                main\eServices\CodeSigningService::refresh($sslService);
+            }
         }
 
         $validTill = (string) $sslService->getConfigdataKey('valid_till');
@@ -1274,7 +1303,7 @@ class Cron extends main\mgLibs\process\AbstractController
             }
             catch (\Exception $e)
             {
-                main\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS: S/MIME details refresh failed for service #' . (int) $sslOrder->serviceid . ': ' . $e->getMessage());
+                main\eHelpers\Whmcs::savelogActivitySSLCenter('SSLCENTER WHMCS: S/MIME / code signing details refresh failed for service #' . (int) $sslOrder->serviceid . ': ' . $e->getMessage());
             }
         }
 

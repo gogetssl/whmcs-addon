@@ -422,8 +422,9 @@ class Invoice
 
         $serviceId = $invoiceInfo->service_id;
 
-        // S/MIME: the renewal service is a new S/MIME order the client configures (no API v1 renewal)
-        if (\MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::isSmimeByServiceId($serviceId))
+        // S/MIME / code signing: the renewal service is a new API v2 order the client configures (no API v1 renewal)
+        if (\MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::isSmimeByServiceId($serviceId)
+            || \MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::isCodeSigningByServiceId($serviceId))
         {
             return false;
         }

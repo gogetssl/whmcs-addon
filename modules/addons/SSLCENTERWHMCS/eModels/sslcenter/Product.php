@@ -35,6 +35,11 @@ class Product {
         return isset($this->category) && $this->category === 'smime';
     }
 
+    public function isCodeSigning() {
+        return isset($this->category) && $this->category === 'cs'
+            && \MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::isCodeSigningByApiProductId($this->id);
+    }
+
     public function isSanEnabled() {
         return $this->san_enabled === 1;
     }
