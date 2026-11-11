@@ -362,6 +362,54 @@ class SmimeProduct
     }
 
     /**
+     * Disables (-1.00) the billing cycles of a WHMCS product that have no matching API term, for S/MIME and
+     * code signing products with API v2 prices. Only recurring products: a One Time product keeps its price
+     * in the "monthly" column, free products have none.
+     */
+    public static function restrictProductBillingCycles($productId)
+    {
+        try
+        {
+            $product = Capsule::table('tblproducts')
+                ->select(['configoption1', 'paytype', 'servertype'])
+                ->where('id', (int) $productId)
+                ->first();
+            if (!$product || $product->servertype !== 'SSLCENTERWHMCS' || $product->paytype !== 'recurring')
+            {
+                return;
+            }
+
+            $apiProductId = (int) $product->configoption1;
+            if (!static::isSmimeByApiProductId($apiProductId) && !CodeSigningProduct::isCodeSigningByApiProductId($apiProductId))
+            {
+                return;
+            }
+
+            $apiProduct = \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products::getInstance()->getProduct($apiProductId);
+            if (!$apiProduct || (int) $apiProduct->id !== $apiProductId || empty($apiProduct->v2_prices))
+            {
+                return;
+            }
+
+            $cycles   = ['monthly', 'quarterly', 'semiannually', 'annually', 'biennially', 'triennially'];
+            $result   = static::restrictPricingToTerms(array_fill_keys($cycles, ''), $apiProduct->v2_prices);
+            $disabled = array_filter($result, function ($value) { return $value === '-1.00'; });
+            if (empty($disabled))
+            {
+                return;
+            }
+
+            Capsule::table('tblpricing')
+                ->where('type', 'product')
+                ->where('relid', (int) $productId)
+                ->update($disabled);
+        }
+        catch (\Exception $e)
+        {
+        }
+    }
+
+    /**
      * Maps a GoGetSSL API v2 S/MIME product to the shape of an API v1 product list entry,
      * so the Products Creator, Products Configuration and price updater can use it.
      */

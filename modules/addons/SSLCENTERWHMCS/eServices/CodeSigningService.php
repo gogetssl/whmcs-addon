@@ -50,7 +50,7 @@ class CodeSigningService
         $apiProduct = (new \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products())->getProduct($apiProductId);
         $apiProduct = ($apiProduct && (int) $apiProduct->id === $apiProductId) ? $apiProduct : null;
 
-        $provisioning = static::buildProvisioning($params, $apiProduct, $input);
+        $provisioning = static::buildProvisioning($params, $apiProduct, $input, static::isRenewal($sslService));
 
         $contacts = static::validateContacts(
             isset($input['organization']) ? (array) $input['organization'] : [],
@@ -83,7 +83,26 @@ class CodeSigningService
             'contacts'     => $contacts,
         ];
 
-        $response = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->createCodeSigning($payload);
+        // one order per service: a second submit (double click, two tabs) must not order again
+        $locked = Capsule::table('tblsslorders')
+            ->where('id', $sslService->id)
+            ->where('status', 'Awaiting Configuration')
+            ->update(['status' => 'Configuration Submitted']);
+        if (!$locked)
+        {
+            throw new Exception(Lang::absoluteT('csAlreadyOrdered'));
+        }
+
+        try
+        {
+            $response = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->createCodeSigning($payload);
+        }
+        catch (\Exception $e)
+        {
+            // not ordered: the client can correct the data and submit again
+            Capsule::table('tblsslorders')->where('id', $sslService->id)->update(['status' => 'Awaiting Configuration']);
+            throw $e;
+        }
 
         $orderId = isset($response['order']['id']) ? (int) $response['order']['id'] : 0;
         $item    = isset($response['items'][0]) ? (array) $response['items'][0] : [];
@@ -91,6 +110,11 @@ class CodeSigningService
 
         if ($orderId <= 0 || $itemId <= 0)
         {
+            // the order may exist at GoGetSSL: keep the service locked and the response for the administrator
+            $sslService->status = 'Configuration Submitted';
+            $sslService->setConfigdataKey('cs_create_response', json_encode($response));
+            $sslService->save();
+            static::log($sslService, 'error', 'Code signing order response without order / certificate ID: ' . json_encode($response));
             throw new Exception(Lang::absoluteT('csMissingOrderId'));
         }
 
@@ -183,12 +207,40 @@ class CodeSigningService
     }
 
     /**
-     * Provisioning methods the client may choose for the service: the method of the "Certificate Delivery"
-     * configurable option when the product has one, otherwise every method the API product offers.
+     * Renewal of a code signing certificate: the service was reset by Renew ("cs_renewal") or created
+     * for the renewal of another service (renew as a new order). No token shipping was paid for it.
+     */
+    public static function isRenewal($sslService)
+    {
+        if (!$sslService)
+        {
+            return false;
+        }
+        if (!empty($sslService->getConfigdataKey('cs_renewal')))
+        {
+            return true;
+        }
+
+        try
+        {
+            return Capsule::table('mgfw_SSLCENTER_invoices_info')->where('new_service_id', (int) $sslService->serviceid)->exists();
+        }
+        catch (\Exception $e)
+        {
+            return false;
+        }
+    }
+
+    /**
+     * Provisioning methods the client may choose for the service:
+     * - the method of the "Certificate Delivery" configurable option (paid with the order), fixed;
+     * - a renewal, or a service without that option: the client's existing token or own HSM. A new token is
+     *   shipped only when its shipping was paid with the order (GoGetSSL charges the shipping to the reseller).
+     * An option value the product does not offer (changed in WHMCS) stops the order: the client contacts support.
      *
      * @return array ['methods' => string[], 'fixed' => ['method' => .., 'shipping' => ..] | null, 'shipping_options' => array]
      */
-    public static function getAvailableProvisioning(array $params, $apiProduct)
+    public static function getAvailableProvisioning(array $params, $apiProduct, $isRenewal = false)
     {
         $apiMethods = ($apiProduct && !empty($apiProduct->cs_methods)) ? array_values((array) $apiProduct->cs_methods) : CodeSigningProduct::METHODS;
         $apiMethods = array_values(array_intersect(CodeSigningProduct::METHODS, $apiMethods));
@@ -203,18 +255,28 @@ class CodeSigningService
             }
         }
 
-        $fixed = CodeSigningProduct::getProvisioningFromConfigOptions($params);
-        if ($fixed !== null && in_array($fixed['method'], $apiMethods, true))
+        $optionValue = isset($params['configoptions'][CodeSigningProduct::OPTION_PROVISIONING]) ? trim((string) $params['configoptions'][CodeSigningProduct::OPTION_PROVISIONING]) : '';
+        $fixed       = $optionValue !== '' ? CodeSigningProduct::parseProvisioningValue($optionValue) : null;
+        if ($optionValue !== '' && ($fixed === null || !in_array($fixed['method'], $apiMethods, true)))
+        {
+            throw new Exception(Lang::absoluteT('csProvisioningInvalid'));
+        }
+
+        if ($fixed !== null && !$isRenewal)
         {
             return ['methods' => [$fixed['method']], 'fixed' => $fixed, 'shipping_options' => $shippingOptions];
         }
 
-        return ['methods' => $apiMethods, 'fixed' => null, 'shipping_options' => $shippingOptions];
+        return [
+            'methods'          => array_values(array_diff($apiMethods, [CodeSigningProduct::METHOD_SHIP_TOKEN])),
+            'fixed'            => null,
+            'shipping_options' => $shippingOptions,
+        ];
     }
 
-    private static function buildProvisioning(array $params, $apiProduct, array $input)
+    private static function buildProvisioning(array $params, $apiProduct, array $input, $isRenewal = false)
     {
-        $available = static::getAvailableProvisioning($params, $apiProduct);
+        $available = static::getAvailableProvisioning($params, $apiProduct, $isRenewal);
 
         if ($available['fixed'] !== null)
         {
@@ -224,7 +286,7 @@ class CodeSigningService
         else
         {
             $method   = isset($input['method']) ? strtolower(trim((string) $input['method'])) : '';
-            $shipping = CodeSigningProduct::DEFAULT_SHIPPING;
+            $shipping = null;
         }
 
         if (!in_array($method, $available['methods'], true))

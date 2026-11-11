@@ -124,6 +124,9 @@
             <div class="panel panel-default card mb-3">
                 <div class="panel-heading card-header"><strong>{$MGLANG->T('csDeliverySection')}</strong></div>
                 <div class="panel-body card-body">
+                    {if $csIsRenewal}
+                        <p class="text-muted">{$MGLANG->T('csRenewalInfo')}</p>
+                    {/if}
                     {if $csFixedMethod}
                         <input type="hidden" id="cs-method" name="cs_method" value="{$csFixedMethod|escape:'htmlall'}">
                         <p>
@@ -221,13 +224,14 @@
     var btnText = btn.textContent;
     var method  = document.getElementById('cs-method');
 
-    function toggleBlock(checkbox, block) {
-        var visible = !checkbox.checked;
+    var adminSame = document.getElementById('cs-admin-same');
+    var shipSame  = document.getElementById('cs-ship-same');
+
+    // only visible fields are required: a hidden required field blocks the submit without a message
+    function setBlock(block, visible) {
         block.style.display = visible ? '' : 'none';
         $(block).find('input').each(function () {
-            if (this.parentNode.querySelector('.text-danger')) {
-                this.required = visible;
-            }
+            this.required = visible && !!this.parentNode.querySelector('.text-danger');
         });
     }
 
@@ -237,19 +241,26 @@
             this.style.display = (this.getAttribute('data-method') === current) ? '' : 'none';
         });
         document.getElementById('cs-csr').required = (current === 'hsm');
+        setBlock(document.getElementById('cs-ship-address'), current === 'ship-token' && !shipSame.checked);
     }
 
-    var adminSame = document.getElementById('cs-admin-same');
-    var shipSame  = document.getElementById('cs-ship-same');
-    adminSame.addEventListener('change', function () { toggleBlock(adminSame, document.getElementById('cs-admin-address')); });
-    shipSame.addEventListener('change', function () { toggleBlock(shipSame, document.getElementById('cs-ship-address')); });
+    adminSame.addEventListener('change', function () { setBlock(document.getElementById('cs-admin-address'), !adminSame.checked); });
+    shipSame.addEventListener('change', showMethod);
     if (method.tagName === 'SELECT') {
         method.addEventListener('change', showMethod);
     }
     showMethod();
 
+    function showAlert(type, message) {
+        var box = document.createElement('div');
+        box.className = 'alert alert-' + type;
+        box.textContent = message;
+        alerts.innerHTML = '';
+        alerts.appendChild(box);
+    }
+
     function showError(message) {
-        alerts.innerHTML = '<div class="alert alert-danger">' + message + '</div>';
+        showAlert('danger', message);
         window.scrollTo(0, alerts.getBoundingClientRect().top + window.pageYOffset - 80);
     }
 
@@ -279,7 +290,7 @@
                         btn.textContent = btnText;
                     } else {
                         var msg = (payload.data && payload.data.message) ? payload.data.message : '{/literal}{$MGLANG->T('csOrderedSuccessfully')|escape:'javascript'}{literal}';
-                        alerts.innerHTML = '<div class="alert alert-success">' + msg + '</div>';
+                        showAlert('success', msg);
                         setTimeout(function () {
                             window.location.href = 'clientarea.php?action=productdetails&id={/literal}{$serviceid}{literal}';
                         }, 1500);

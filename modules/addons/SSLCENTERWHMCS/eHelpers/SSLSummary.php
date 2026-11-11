@@ -169,8 +169,21 @@ class SSLSummary
     private function loadSSLOrdersFromAPI()
     {
         $this->apiOrders = array();
+        // S/MIME and code signing (API v2) orders have no API v1 order status
+        $apiV2ServiceIds = [];
+        try
+        {
+            $apiV2ServiceIds = array_merge(main\eHelpers\SmimeProduct::getServiceIds(), main\eHelpers\CodeSigningProduct::getServiceIds());
+        }
+        catch (\Exception $e)
+        {
+        }
         foreach ($this->services as $service)
         {
+            if (in_array((int) $service->id, $apiV2ServiceIds, true))
+            {
+                continue;
+            }
             $SSLOrder = new main\eModels\whmcs\service\SSL();
 
             $ssl = $SSLOrder->getWhere(array('serviceid' => $service->id, 'userid' => $service->clientID))->first();

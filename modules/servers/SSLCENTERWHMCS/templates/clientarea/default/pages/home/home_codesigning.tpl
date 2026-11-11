@@ -110,7 +110,11 @@
                 try {
                     var payload = JSON.parse(ret);
                     if (payload.result === 'error') {
-                        alerts.innerHTML = '<div class="alert alert-danger">' + (payload.error || '{/literal}{$MGLANG->T('csErrorOccurred')|escape:'javascript'}{literal}') + '</div>';
+                        var box = document.createElement('div');
+                        box.className = 'alert alert-danger';
+                        box.textContent = payload.error || '{/literal}{$MGLANG->T('csErrorOccurred')|escape:'javascript'}{literal}';
+                        alerts.innerHTML = '';
+                        alerts.appendChild(box);
                         btn.disabled = false;
                     } else {
                         window.location.reload();

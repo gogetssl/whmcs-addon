@@ -23,10 +23,8 @@ class ConfigurableOptionService {
         if (empty($methods)) {
             $methods = \MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::METHODS;
         }
+        // no shipping options from the API = no shipping price to charge: no "new token" choice
         $shippingOptions = self::toArray(self::readValue($apiProduct, ['cs_shipping_options']));
-        if (empty($shippingOptions)) {
-            $shippingOptions = [['id' => \MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::DEFAULT_SHIPPING, 'label' => 'Standard Shipping', 'selling' => 0]];
-        }
 
         $subOptions = [];
         if (in_array(\MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::METHOD_SHIP_TOKEN, $methods, true)) {

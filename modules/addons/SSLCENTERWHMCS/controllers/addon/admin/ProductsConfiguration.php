@@ -200,6 +200,11 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
         foreach ($productsForApiPricingSync as $productId => $apiProductId) {
             $this->applyApiPricingForWhmcsProduct($productId, $apiProductId);
         }
+
+        // S/MIME and code signing: only the billing cycles of the terms the API offers
+        foreach (array_keys((array) $input['product']) as $productId) {
+            \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::restrictProductBillingCycles((int) $productId);
+        }
         
         return true;
     }
@@ -260,12 +265,7 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
             if (!isset($pricingByCurrency[$pricing->currency])) {
                 continue;
             }
-            $values = $pricingByCurrency[$pricing->currency];
-            if (!$isAcme && !empty($v2Prices)) {
-                // API v2 products: only the billing cycles of the terms the API offers
-                $values = \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::restrictPricingToTerms($values, $v2Prices);
-            }
-            $productModel->updateProductPricing($pricing->pricing_id, $values);
+            $productModel->updateProductPricing($pricing->pricing_id, $pricingByCurrency[$pricing->currency]);
         }
     }
 

@@ -59,7 +59,7 @@ class SSL extends \Illuminate\Database\Eloquent\Model
     public function getConfigdataKey($key)
     {
         $c = (array) $this->configdata;
-        return $c[$key];
+        return isset($c[$key]) ? $c[$key] : null;
     }
 
     public function getCsr()

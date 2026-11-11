@@ -113,6 +113,8 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
             $productData[C::PRODUCT_INCLUDED_SANS_WILDCARD] = 0;
             // no domain on the order form: the emails are entered when the certificate is configured
             $productData['showdomainoptions'] = 0;
+            // the delivery option (token shipping fee) must not be changed by a configurable options upgrade
+            $productData['configoptionsupgrade'] = 0;
             if (empty($productData['description']))
             {
                 $productData['description'] = $this->readProductDescription($apiProduct);
@@ -144,10 +146,6 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
             if (isset($apiPricingByCurrency[$value['currency']])) {
                 $value = array_merge($value, $apiPricingByCurrency[$value['currency']]);
             }
-            if (($isSmimeProduct || $isCodeSigningProduct) && !empty($apiProduct->v2_prices)) {
-                // API v2 products: only the billing cycles of the terms the API offers
-                $value = \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::restrictPricingToTerms($value, $apiProduct->v2_prices);
-            }
             if ($isAcmeProduct)
             {
                 $value['monthly']      = isset($value['annually']) ? $value['annually'] : '0.00';
@@ -168,6 +166,11 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
 
         if($isAcmeProduct && $productData[C::PRODUCT_ENABLE_SAN_WILDCARD] === 'on') {
             main\eServices\ConfigurableOptionService::createForProductWildcard($newProductId, $productData['name'], $pricingApiProduct);
+        }
+
+        if ($isSmimeProduct || $isCodeSigningProduct) {
+            // API v2 products: only the billing cycles of the terms the API offers
+            \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::restrictProductBillingCycles($newProductId);
         }
 
         if ($isCodeSigningProduct) {

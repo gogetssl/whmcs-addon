@@ -874,3 +874,5 @@ $_LANG['csShippingNotAvailable']                     = 'The token shipping optio
 $_LANG['csInvalidEmail']                             = 'Invalid email address: %s';
 $_LANG['csInvalidCountry']                           = 'Invalid country code: %s. Use the 2-letter code, for example LV.';
 $_LANG['csFieldRequired']                            = '%s is required.';
+$_LANG['serverCA']['home']['csRenewalInfo']                = 'This is a renewal: the certificate is issued for your existing hardware token or your own HSM. If you need a new token, please contact our support team.';
+$_LANG['csProvisioningInvalid']                            = 'The certificate delivery option of this service is not valid. Please contact our support team.';

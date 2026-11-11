@@ -40,7 +40,8 @@ class Renew {
         }
         // code signing (API v2) has no renewal call: always a new order the client configures
         if (\MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::isCodeSigningByServiceId($this->p['serviceid'])) {
-            return $this->renewSmime('Code signing');
+            // "cs_renewal": no new token is shipped for the renewal (its shipping is not on the renewal invoice)
+            return $this->renewSmime('Code signing', json_encode(['cs_renewal' => true]));
         }
         if(isset($apiConf->renew_new_order) && $apiConf->renew_new_order == '1')
         {
@@ -96,7 +97,7 @@ class Renew {
      * S/MIME renewal = a new S/MIME order: the service goes back to Awaiting Configuration and
      * the client receives the configuration email (API v2 has no S/MIME renewal call).
      */
-    private function renewSmime($productLabel = 'S/MIME')
+    private function renewSmime($productLabel = 'S/MIME', $newConfigdata = '')
     {
         $repo     = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
         $sslModel = $repo->getByServiceId($this->p['serviceid']);
@@ -119,7 +120,7 @@ class Renew {
 
         Capsule::table('tblsslorders')->where('serviceid', $this->p['serviceid'])->update(array(
             'remoteid'       => '',
-            'configdata'     => '',
+            'configdata'     => $newConfigdata,
             'completiondate' => '0000-00-00 00:00:00',
             'status'         => 'Awaiting Configuration'
         ));

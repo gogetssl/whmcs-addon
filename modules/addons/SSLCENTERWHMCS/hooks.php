@@ -488,6 +488,11 @@ function SSLCENTER_unableDowngradeConfigOption($vars)
         if (is_null($sslService) && $sslService->module != 'SSLCENTERWHMCS')
             return;
 
+        // S/MIME and code signing (API v2) have no SAN upgrades and no API v1 order status
+        if (\MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::isSmimeByServiceId($serviceID)
+            || \MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::isCodeSigningByServiceId($serviceID))
+            return;
+
         try
         {
             $orderStatus = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($sslService->remoteid);

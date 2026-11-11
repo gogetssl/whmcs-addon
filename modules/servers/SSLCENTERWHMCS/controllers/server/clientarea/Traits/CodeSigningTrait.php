@@ -94,7 +94,9 @@ trait CodeSigningTrait
         $apiProduct   = (new main\eRepository\sslcenter\Products())->getProduct($apiProductId);
         $apiProduct   = ($apiProduct && (int) $apiProduct->id === $apiProductId) ? $apiProduct : null;
 
-        $available = CodeSigningService::getAvailableProvisioning($input['params'], $apiProduct);
+        $sslService = (new main\eRepository\whmcs\service\SSL())->getByServiceId((int) $input['params']['serviceid']);
+        $vars['csIsRenewal'] = CodeSigningService::isRenewal($sslService);
+        $available = CodeSigningService::getAvailableProvisioning($input['params'], $apiProduct, $vars['csIsRenewal']);
 
         $methods = [];
         foreach ($available['methods'] as $method)
@@ -106,10 +108,6 @@ trait CodeSigningTrait
         if ($available['fixed'] !== null && $available['fixed']['method'] === CodeSigningProduct::METHOD_SHIP_TOKEN)
         {
             $shippingLabel = $this->getCodeSigningShippingLabel($available['fixed']['shipping'], $available['shipping_options']);
-        }
-        else if (in_array(CodeSigningProduct::METHOD_SHIP_TOKEN, $available['methods'], true))
-        {
-            $shippingLabel = $this->getCodeSigningShippingLabel(CodeSigningProduct::DEFAULT_SHIPPING, $available['shipping_options']);
         }
 
         $vars['csMethods']       = $methods;

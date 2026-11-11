@@ -499,3 +499,4 @@ $_LANG['csShip_city']                                = 'Shipping city';
 $_LANG['csShip_region']                              = 'Shipping state / region';
 $_LANG['csShip_postal_code']                         = 'Shipping postal code';
 $_LANG['csShip_country']                             = 'Shipping country (2-letter code)';
+$_LANG['csProvisioningInvalid']                            = 'The certificate delivery option of this service is not valid. Please contact our support team.';
