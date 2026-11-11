@@ -33,6 +33,38 @@
   3.x
 ================================================================================
 
+v3.5.0 (2026-11-11)
+-------------------
+Added
+  - Code signing certificates through GoGetSSL API v2: DigiCert Code
+    Signing, DigiCert EV Code Signing, GoGetSSL Code Signing and GoGetSSL
+    EV Code Signing (hardware code signing; cloud code signing is not
+    supported). Setup: API Configuration needs the API v2 Partner Code;
+    Products Creator > Re-sync products, then create the products.
+  - Certificate delivery (provisioning) methods: a new hardware token
+    shipped by the certificate authority, the client's existing hardware
+    token (SafeNet eToken 5110 FIPS / CC / 5110+ FIPS) or the client's own
+    HSM (CSR). Products Creator adds a "Certificate Delivery" configurable
+    option: token shipping is charged once (setup fee, GoGetSSL shipping
+    price); hide a choice in WHMCS to stop offering that method.
+  - Client area: code signing configuration form (organization,
+    administrator contact, delivery details) and a status page (order and
+    CA order ID, delivery, validity, Refresh details). Admin area: order
+    details and a "Refresh Code Signing Details" button.
+  - Status refresh by the CRON jobs, cancellation on Terminate; a renewal
+    is a new code signing order the client configures.
+Changed
+  - S/MIME and code signing products are sold only for the terms GoGetSSL
+    offers: Products Creator, Products Configuration "update prices" and
+    the price updater cron disable the other billing cycles (monthly,
+    quarterly, semi-annually, and biennially / triennially without a
+    24 / 36 month term). Before, every cycle got the 12-month price.
+    [!] S/MIME products created with an earlier version and manual prices
+    keep their billing cycles: disable the cycles without a matching term
+    in WHMCS, or use "update prices" on Products Configuration.
+  - DigiCert code signing services ordered through API v1 earlier stay on
+    the SSL certificate flow.
+
 v3.4.5 (2026-11-09)
 -------------------
 Fixed
