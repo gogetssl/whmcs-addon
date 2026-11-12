@@ -537,6 +537,11 @@ class SSLStepThree {
         if ($tlsItemId > 0) {
             $this->sslConfig->setConfigdataKey('tls_item_id', $tlsItemId);
         }
+        // OV / EV: the organization the order was placed with, shown on the certificate page until it is issued
+        $orgDetails = \MGModule\SSLCENTERWHMCS\eHelpers\OrganizationDetails::fromOrder($order);
+        if ($orgDetails !== null) {
+            $this->sslConfig->setConfigdataKey(\MGModule\SSLCENTERWHMCS\eHelpers\OrganizationDetails::CONFIGDATA_KEY, $orgDetails);
+        }
         if ($x9Usages !== null) {
             $storedUsages = \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::normalizeUsages(isset($addedSSLOrder['x9_usages']) ? $addedSSLOrder['x9_usages'] : null);
             $this->sslConfig->setConfigdataKey(\MGModule\SSLCENTERWHMCS\eHelpers\X9Product::CONFIGDATA_USAGES, $storedUsages !== null ? $storedUsages : $x9Usages);

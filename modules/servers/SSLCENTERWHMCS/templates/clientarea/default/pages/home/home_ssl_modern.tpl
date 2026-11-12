@@ -662,6 +662,12 @@
         <div class="panel panel-info" style="margin-top:10px;">
             <div class="panel-heading"><strong>{$MGLANG->T('dcvInstructions')|default:'Validation Instructions'}</strong></div>
             <div class="panel-body">
+                {if $installType != 'autoinstall' && ($certType == 'OV' || $certType == 'EV')}
+                <div class="alert alert-info" style="font-size:13px;">
+                    <strong>{$MGLANG->T('orgValidationTitle')|default:'Organization validation'}</strong><br>
+                    {$MGLANG->T('orgValidationInfo')|default:'Besides the domain validation below, the CA validates your organization: it will email and call the administrative contact to confirm the organization details and that the contact is authorized. The certificate is issued when both validations are complete.'}
+                </div>
+                {/if}
                 {if $dcv_method == 'http' || $dcv_method == 'https'}
                 <p>{$MGLANG->T('httpValidationInfo')|default:'Create the file below on your web server at the exact path shown. The CA will fetch this URL to verify domain ownership.'}</p>
                 {if isset($approver_method[$dcv_method]) && isset($approver_method[$dcv_method].filename)}

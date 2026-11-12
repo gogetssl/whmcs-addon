@@ -556,6 +556,11 @@ trait SslConfigTrait
         if ($tlsItemId > 0) {
             $sslConfig->setConfigdataKey('tls_item_id', $tlsItemId);
         }
+        // OV / EV: the organization the order was placed with, shown on the certificate page until it is issued
+        $orgDetails = \MGModule\SSLCENTERWHMCS\eHelpers\OrganizationDetails::fromOrder($order);
+        if ($orgDetails !== null) {
+            $sslConfig->setConfigdataKey(\MGModule\SSLCENTERWHMCS\eHelpers\OrganizationDetails::CONFIGDATA_KEY, $orgDetails);
+        }
         if ($x9Usages !== null) {
             // the choices the API stored (returned with the order), else the sent ones
             $storedUsages = \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::normalizeUsages(isset($addedSSLOrder['x9_usages']) ? $addedSSLOrder['x9_usages'] : null);

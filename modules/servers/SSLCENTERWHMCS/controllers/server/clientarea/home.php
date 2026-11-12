@@ -592,6 +592,16 @@ class home extends main\mgLibs\process\AbstractController {
                 }
             }
 
+            // Not issued yet: the organization the order was placed with
+            if (!$certOrg) {
+                $orgDetails = isset($sslService) ? main\eHelpers\OrganizationDetails::getOfService($sslService) : null;
+                if ($orgDetails !== null) {
+                    $certOrg     = $orgDetails['org_name'];
+                    $certOrgUnit = $orgDetails['org_division'] !== '' ? $orgDetails['org_division'] : null;
+                    $certAddress = main\eHelpers\OrganizationDetails::describeAddress($orgDetails) ?: null;
+                }
+            }
+
             // Type: DV / OV / EV - from the API product (validation level); before issuance the certificate has no
             // organization yet, so an OV/EV order must not show DV and the DV validation texts
             $certType = 'DV';
