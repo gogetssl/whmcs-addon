@@ -33,6 +33,49 @@
   3.x
 ================================================================================
 
+v3.6.0 (2026-11-12)
+-------------------
+Added
+  - DigiCert X9 PKI for TLS (GoGetSSL API product 192): an OV TLS
+    certificate for the X9 financial-services PKI, ordered through GoGetSSL
+    API v2; validation, status, certificate download, reissue and
+    cancellation use the same flow as the other SSL certificates. Setup:
+    API Configuration needs the API v2 Partner Code; Products Creator >
+    Re-sync products, then create the product.
+  - X9 configuration (client area form and the older 3-step form): a
+    "Certificate Usage" section with the extended key usage (server and
+    client authentication, server authentication only, client
+    authentication only) and an optional key encipherment / key agreement
+    flag. The choice is shown on the certificate page and on the admin
+    service page ("Key Usage (X9)"). A certificate for client
+    authentication only cannot use automatic installation. Wildcard names
+    are refused.
+  - X9 SANs: Products Creator adds an "Additional Single domain SAN's"
+    option with the API maximum (249) and the GoGetSSL price per SAN for
+    each billing cycle; Products Configuration "update prices" and the
+    price updater cron keep these prices. Only the billing cycles of the
+    GoGetSSL terms are enabled.
+  - X9 renewal: a new order with the same key usage; ordered within the
+    last 30 days of the previous certificate it is linked to it so the
+    remaining days are carried over.
+  - OV and EV certificate page: the organization (name, unit, address)
+    and the administrative / technical contacts the client submitted are
+    shown before the certificate is issued, and manual orders get an
+    "Organization validation" note (the CA validates the organization and
+    calls the administrative contact besides the domain validation).
+  - Admin service page: Organization, Organization Address and
+    Organization Phone rows from the submitted data.
+Changed
+  - Certificate page "Type": OV / EV is taken from the product before the
+    certificate is issued (before, every certificate showed DV until it
+    was issued).
+  - The organization and contacts the client submits are stored with the
+    order (both configuration forms). The CRON jobs and the client "Sync"
+    button only fill in missing values from GoGetSSL and no longer
+    overwrite submitted contacts. Orders placed with earlier versions get
+    the contacts and organization address from GoGetSSL at the next sync;
+    the organization name then comes from the issued certificate.
+
 v3.5.1 (2026-11-11)
 -------------------
 Fixed
