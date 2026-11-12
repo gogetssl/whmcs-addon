@@ -191,6 +191,8 @@ trait SslConfigTrait
         $vars['certTypeConfig']      = $apiProduct->isOrganizationRequired() ? 'OV' : 'DV';
         $vars['productDomain']       = $input['params']['domain'];
         $vars['isOrganizationRequired'] = $apiProduct->isOrganizationRequired();
+        // DigiCert X9 PKI for TLS: key usage choices
+        $vars['isX9']                   = method_exists($apiProduct, 'isX9') && $apiProduct->isX9();
 
         return array(
             'tpl'  => 'home_ssl_configuration',
@@ -294,6 +296,21 @@ trait SslConfigTrait
         if (is_array($wildcardRaw))   { $wildcardRaw   = implode("\n", $wildcardRaw); }
 
         $isWildcard = strpos($mainDomain, '*.') === 0 || !empty(trim($wildcardRaw));
+
+        // DigiCert X9 PKI for TLS: key usage choices; a client-authentication-only certificate cannot be installed on a web server
+        $x9Usages = null;
+        if (\MGModule\SSLCENTERWHMCS\eHelpers\X9Product::isX9ByServiceParams($input['params'])) {
+            $x9Usages = \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::usagesFromInput(
+                isset($input['x9_usage']) ? $input['x9_usage'] : '',
+                isset($input['x9_key_encipherment']) ? $input['x9_key_encipherment'] : ''
+            );
+            if ($installType === 'autoinstall' && !$x9Usages['server_authentication']) {
+                throw new \Exception(main\mgLibs\Lang::absoluteT('serverCA', 'home', 'x9AutoinstallNeedsServerAuth'));
+            }
+            if ($isWildcard) {
+                throw new \Exception(main\mgLibs\Lang::absoluteT('serverCA', 'home', 'x9NoWildcard'));
+            }
+        }
 
         // AutoInstall: the main domain and every SAN must be on one of the client's own active cPanel accounts
         if ($installType === 'autoinstall') {
@@ -489,6 +506,10 @@ trait SslConfigTrait
             $order['approver_emails'] = implode(',', $approverEmails);
         }
 
+        if ($x9Usages !== null) {
+            $order['x9_usages'] = $x9Usages;
+        }
+
         $addedSSLOrder = $orderType === 'renew'
             ? \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLRenewOrder($order)
             : \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLOrder($order);
@@ -534,6 +555,11 @@ trait SslConfigTrait
         $sslConfig->setConfigdataKey('configssl', 1);
         if ($tlsItemId > 0) {
             $sslConfig->setConfigdataKey('tls_item_id', $tlsItemId);
+        }
+        if ($x9Usages !== null) {
+            // the choices the API stored (returned with the order), else the sent ones
+            $storedUsages = \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::normalizeUsages(isset($addedSSLOrder['x9_usages']) ? $addedSSLOrder['x9_usages'] : null);
+            $sslConfig->setConfigdataKey(\MGModule\SSLCENTERWHMCS\eHelpers\X9Product::CONFIGDATA_USAGES, $storedUsages !== null ? $storedUsages : $x9Usages);
         }
         $sslConfig->save();
 

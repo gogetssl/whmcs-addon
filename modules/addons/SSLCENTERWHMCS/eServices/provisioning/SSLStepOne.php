@@ -83,6 +83,25 @@ class SSLStepOne {
         if ($apiProduct->isOrganizationRequired()) {
             $fields['additionalfields'][\MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Organization::getTitle()] = \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Organization::getFields();
         }
+        // DigiCert X9 PKI for TLS: key usage choices
+        if (method_exists($apiProduct, 'isX9') && $apiProduct->isX9()) {
+            $lang = \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance();
+            $fields['additionalfields'][$lang->T('confX9UsageTitle')] = [
+                'x9_usage'            => [
+                    'FriendlyName' => $lang->T('confX9Usage'),
+                    'Type'         => 'dropdown',
+                    'Options'      => implode(',', [$lang->T('confX9UsageServerClient'), $lang->T('confX9UsageServer'), $lang->T('confX9UsageClient')]),
+                    'Description'  => $lang->T('confX9UsageDescription'),
+                    'Required'     => true,
+                ],
+                'x9_key_encipherment' => [
+                    'FriendlyName' => $lang->T('confX9KeyEncipherment'),
+                    'Type'         => 'yesno',
+                    'Description'  => $lang->T('confX9KeyEnciphermentDescription'),
+                    'Required'     => false,
+                ],
+            ];
+        }
         $countriesForGenerateCsrForm = \MGModule\SSLCENTERWHMCS\eRepository\whmcs\config\Countries::getInstance()->getCountriesForMgAddonDropdown();
         
         //get selected default country for CSR Generator

@@ -270,6 +270,22 @@ class SSLCenterApi {
             $response['products'][] = $csProduct;
         }
 
+        // DigiCert X9 PKI for TLS: API v2 only (category "tls"), ordered with POST /certificates/tls
+        foreach ($v2Products as $v2Product) {
+            if (!is_array($v2Product) || !isset($v2Product['id'])
+                || !\MGModule\SSLCENTERWHMCS\eHelpers\X9Product::isX9ByApiProductId($v2Product['id'])) {
+                continue;
+            }
+
+            $x9Product = \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::toV1Product($v2Product);
+            if (isset($positions[$x9Product['id']])) {
+                $response['products'][$positions[$x9Product['id']]] = array_merge($response['products'][$positions[$x9Product['id']]], $x9Product);
+                continue;
+            }
+
+            $response['products'][] = $x9Product;
+        }
+
         return $response;
     }
 
@@ -313,6 +329,25 @@ class SSLCenterApi {
         return $this->callV2('/certificates/cs/' . (int) $itemId . '/cancel', 'POST', $payload);
     }
 
+    /**
+     * POST /certificates/tls - API v2 TLS order (used for the API v2 only DigiCert X9 PKI for TLS):
+     * product{id (string), term}, csr, common_name{name, validation_method}, alternative_names[], usages{},
+     * renewal{}, contacts{organization, administrator, technical}
+     */
+    public function createTlsCertificate(array $data) {
+        return $this->callV2('/certificates/tls', 'POST', $data);
+    }
+
+    /**
+     * DigiCert X9 PKI for TLS: the API v1 order array of the SSL forms is sent as an API v2 order;
+     * the response has the API v1 shape (order_id, items) the forms read.
+     */
+    protected function addX9Order(array $data) {
+        $request = \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::toV2Order($data);
+
+        return \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::toV1OrderResponse($this->createTlsCertificate($request));
+    }
+
     public function getProductDetails($productId) {
         return $this->call('/products/details/' . $productId, $getData);
     }
@@ -354,10 +389,21 @@ class SSLCenterApi {
     }
 
     public function addSSLOrder($data) {
+        if (is_array($data) && isset($data['product_id']) && \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::isX9ByApiProductId($data['product_id'])) {
+            return $this->addX9Order($data);
+        }
+        unset($data['x9_usages'], $data['x9_renewal']);
+
         return $this->call('/orders/add_ssl_order/', $getData, $data);
     }
 
     public function addSSLRenewOrder($data) {
+        // X9 has no API v1 renewal: a renewal is a new API v2 order (with "renewal" when the previous item is known)
+        if (is_array($data) && isset($data['product_id']) && \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::isX9ByApiProductId($data['product_id'])) {
+            return $this->addX9Order($data);
+        }
+        unset($data['x9_usages'], $data['x9_renewal']);
+
         return $this->call('/orders/add_ssl_renew_order/', $getData, $data);
     }
 

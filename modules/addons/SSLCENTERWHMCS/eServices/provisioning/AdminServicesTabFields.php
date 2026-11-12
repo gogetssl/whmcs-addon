@@ -75,7 +75,11 @@ class AdminServicesTabFields {
             {
                 $return['Approver email'] = $orderDetails['approver_method']->email;
             }
-            $return['Order Status Description'] = $orderDetails['order_status_description'] ? : '-';  
+            $return['Order Status Description'] = $orderDetails['order_status_description'] ? : '-';
+            $x9Usages = \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::getUsagesOfService($sslService);
+            if ($x9Usages !== null) {
+                $return['Key Usage (X9)'] = \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::describeUsages($x9Usages);
+            }
             
             if($orderDetails['ssl_status'] == 'active') {                
                 $return['Valid From'] = $orderDetails['valid_from'];

@@ -586,6 +586,16 @@ class Cron extends main\mgLibs\process\AbstractController
                         main\eServices\ConfigurableOptionService::syncCodeSigningShippingPrices((int) $product->id, $apiProduct);
                     }
                 }
+                elseif (main\eHelpers\X9Product::isX9ByApiProductId((int) $product->{C::API_PRODUCT_ID}))
+                {
+                    // DigiCert X9 PKI for TLS (API v2 only): prices per term + price per SAN from API v2
+                    if ($apiProduct !== null && !empty($apiProduct['v2_prices']))
+                    {
+                        $this->generateNewPricesFromApiProduct($product->pricing, ['prices' => $apiProduct['v2_prices']]);
+                        main\eHelpers\SmimeProduct::restrictProductBillingCycles((int) $product->id);
+                        main\eHelpers\X9Product::syncSanOption((int) $product->id, $apiProduct);
+                    }
+                }
                 elseif (main\eHelpers\SmimeProduct::isSmimeByApiProductId((int) $product->{C::API_PRODUCT_ID}))
                 {
                     // S/MIME prices from API v2: [{term, selling, retail}]; no prices from the API = keep the WHMCS prices

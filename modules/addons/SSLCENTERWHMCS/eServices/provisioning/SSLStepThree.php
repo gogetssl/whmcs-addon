@@ -76,6 +76,23 @@ class SSLStepThree {
         }
     }
     
+    /**
+     * The X9 "Extended key usage" dropdown of the configuration form shows translated texts: back to
+     * server_client / server / client.
+     */
+    private function getX9UsageChoice($value) {
+        $lang  = \MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance();
+        $value = trim((string) $value);
+        if ($value === $lang->T('confX9UsageServer') || $value === \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::USAGE_SERVER) {
+            return \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::USAGE_SERVER;
+        }
+        if ($value === $lang->T('confX9UsageClient') || $value === \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::USAGE_CLIENT) {
+            return \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::USAGE_CLIENT;
+        }
+
+        return \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::USAGE_SERVER_CLIENT;
+    }
+
     private function setMainDomainDcvMethod($post) {
         $this->p['fields']['dcv_method']  = $post['dcvmethodMainDomain']; 
     }
@@ -227,6 +244,16 @@ class SSLStepThree {
             $order['org_phone']        = $org['org_phone'];
             $order['org_postalcode']   = $org['org_postalcode'];
             $order['org_region']       = $org['org_regions'];
+        }
+
+        // DigiCert X9 PKI for TLS: key usage choices of the configuration form
+        $x9Usages = null;
+        if (\MGModule\SSLCENTERWHMCS\eHelpers\X9Product::isX9ByServiceParams($this->p)) {
+            $x9Usages = \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::usagesFromInput(
+                $this->getX9UsageChoice(isset($this->p['fields']['x9_usage']) ? $this->p['fields']['x9_usage'] : ''),
+                isset($this->p['fields']['x9_key_encipherment']) ? $this->p['fields']['x9_key_encipherment'] : ''
+            );
+            $order['x9_usages'] = $x9Usages;
         }
 
         $sanEnabledForWHMCSProduct = $this->p[ConfigOptions::PRODUCT_ENABLE_SAN] === 'on';
@@ -509,6 +536,10 @@ class SSLStepThree {
         $this->sslConfig->setConfigdataKey('jobtitle',           $order['admin_title'] ?? '');
         if ($tlsItemId > 0) {
             $this->sslConfig->setConfigdataKey('tls_item_id', $tlsItemId);
+        }
+        if ($x9Usages !== null) {
+            $storedUsages = \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::normalizeUsages(isset($addedSSLOrder['x9_usages']) ? $addedSSLOrder['x9_usages'] : null);
+            $this->sslConfig->setConfigdataKey(\MGModule\SSLCENTERWHMCS\eHelpers\X9Product::CONFIGDATA_USAGES, $storedUsages !== null ? $storedUsages : $x9Usages);
         }
         if (!empty($order['csr']) && empty($this->sslConfig->getCsr())) {
             $this->sslConfig->setCsr($order['csr']);

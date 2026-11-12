@@ -380,7 +380,8 @@ class SmimeProduct
             }
 
             $apiProductId = (int) $product->configoption1;
-            if (!static::isSmimeByApiProductId($apiProductId) && !CodeSigningProduct::isCodeSigningByApiProductId($apiProductId))
+            if (!static::isSmimeByApiProductId($apiProductId) && !CodeSigningProduct::isCodeSigningByApiProductId($apiProductId)
+                && !X9Product::isX9ByApiProductId($apiProductId))
             {
                 return;
             }

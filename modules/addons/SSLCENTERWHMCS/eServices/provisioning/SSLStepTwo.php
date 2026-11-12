@@ -324,7 +324,8 @@ class SSLStepTwo {
 
         $b = [
             'order_type', 'sans_domains', 'org_name', 'org_division', 'org_lei', 'org_duns', 'org_addressline1',
-            'org_city', 'org_country', 'org_fax', 'org_phone', 'org_postalcode', 'org_regions'
+            'org_city', 'org_country', 'org_fax', 'org_phone', 'org_postalcode', 'org_regions',
+            'x9_usage', 'x9_key_encipherment'
         ];
         
         

@@ -74,6 +74,7 @@ class Products {
                     $this->products = [];
                     $hasSmime = false;
                     $hasCodeSigning = false;
+                    $hasX9 = false;
                     foreach ($products as $apiProduct) {
 
                         $apiProduct = json_decode($apiProduct->data, true);
@@ -86,6 +87,9 @@ class Products {
                         if (isset($apiProduct['category']) && $apiProduct['category'] === 'cs') {
                             $hasCodeSigning = true;
                         }
+                        if (!empty($apiProduct['x9'])) {
+                            $hasX9 = true;
+                        }
                     }
 
                     if (!$hasSmime) {
@@ -93,6 +97,9 @@ class Products {
                     }
                     if (!$hasCodeSigning) {
                         $this->appendCodeSigningProductsToCache();
+                    }
+                    if (!$hasX9) {
+                        $this->appendX9ProductsToCache();
                     }
 
                     return $this->products;
@@ -249,6 +256,63 @@ class Products {
 
             $p = new \MGModule\SSLCENTERWHMCS\eModels\sslcenter\Product();
             \MGModule\SSLCENTERWHMCS\eHelpers\Fill::fill($p, $csProduct);
+            $this->products[$p->id] = $p;
+        }
+    }
+
+    /**
+     * Product lists cached before X9 support have no DigiCert X9 PKI for TLS (API v2 only). In the admin area
+     * it is read once from API v2 and added to the cache (at most once an hour).
+     */
+    private function appendX9ProductsToCache() {
+        static $attempted = false;
+        if ($attempted || !defined('ADMINAREA')) {
+            return;
+        }
+        $attempted = true;
+
+        $checkedSetting = 'sslcenter_x9_products_checked';
+        $checked = Capsule::table('tblconfiguration')->where('setting', $checkedSetting)->first();
+        if ($checked && (int) $checked->value > time() - 3600) {
+            return;
+        }
+        if ($checked) {
+            Capsule::table('tblconfiguration')->where('setting', $checkedSetting)->update(['value' => (string) time()]);
+        } else {
+            Capsule::table('tblconfiguration')->insert(['setting' => $checkedSetting, 'value' => (string) time()]);
+        }
+
+        try {
+            $v2Products = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getV2Products();
+        } catch (\Exception $e) {
+            return;
+        }
+        if (!is_array($v2Products)) {
+            return;
+        }
+
+        foreach ($v2Products as $v2Product) {
+            if (!is_array($v2Product) || !isset($v2Product['id'])
+                || !\MGModule\SSLCENTERWHMCS\eHelpers\X9Product::isX9ByApiProductId($v2Product['id'])) {
+                continue;
+            }
+
+            $x9Product = \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::toV1Product($v2Product);
+            if (Capsule::table('mgfw_SSLCENTER_product_brand')->where('pid', $x9Product['id'])->exists()) {
+                Capsule::table('mgfw_SSLCENTER_product_brand')->where('pid', $x9Product['id'])->update([
+                    'brand' => $x9Product['brand'],
+                    'data'  => json_encode($x9Product),
+                ]);
+            } else {
+                Capsule::table('mgfw_SSLCENTER_product_brand')->insert([
+                    'pid'   => $x9Product['id'],
+                    'brand' => $x9Product['brand'],
+                    'data'  => json_encode($x9Product),
+                ]);
+            }
+
+            $p = new \MGModule\SSLCENTERWHMCS\eModels\sslcenter\Product();
+            \MGModule\SSLCENTERWHMCS\eHelpers\Fill::fill($p, $x9Product);
             $this->products[$p->id] = $p;
         }
     }

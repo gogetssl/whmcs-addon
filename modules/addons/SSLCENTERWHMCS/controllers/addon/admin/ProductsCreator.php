@@ -64,7 +64,8 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
         $pricingApiProduct = $isAcmeProduct ? $this->getAcmePricingApiProduct($input[C::API_PRODUCT_ID], $apiProduct) : $apiProduct;
         $isSmimeProduct = method_exists($apiProduct, 'isSmime') && $apiProduct->isSmime() && (int) $apiProduct->id === (int) $input[C::API_PRODUCT_ID];
         $isCodeSigningProduct = method_exists($apiProduct, 'isCodeSigning') && $apiProduct->isCodeSigning() && (int) $apiProduct->id === (int) $input[C::API_PRODUCT_ID];
-        if (($isSmimeProduct || $isCodeSigningProduct) && !empty($apiProduct->v2_prices)) {
+        $isX9Product = method_exists($apiProduct, 'isX9') && $apiProduct->isX9() && (int) $apiProduct->id === (int) $input[C::API_PRODUCT_ID];
+        if (($isSmimeProduct || $isCodeSigningProduct || $isX9Product) && !empty($apiProduct->v2_prices)) {
             // S/MIME and code signing prices from API v2: [{term, selling, retail}]
             $pricingApiProduct = ['id' => (int) $apiProduct->id, 'prices' => json_decode(json_encode($apiProduct->v2_prices), true)];
         }
@@ -121,6 +122,17 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
             }
         }
 
+        if ($isX9Product)
+        {
+            // DigiCert X9 PKI for TLS: single-name SANs (and IP addresses) only, no wildcards
+            $productData[C::PRODUCT_ENABLE_SAN_WILDCARD]    = '';
+            $productData[C::PRODUCT_INCLUDED_SANS_WILDCARD] = 0;
+            if (empty($productData['description']))
+            {
+                $productData['description'] = $this->readProductDescription($apiProduct);
+            }
+        }
+
         if(isset($input['issued_ssl_message']) && !empty($input['issued_ssl_message']))
         {
             $productData['configoption23'] = $input['issued_ssl_message'];
@@ -168,7 +180,12 @@ class ProductsCreator extends main\mgLibs\process\AbstractController {
             main\eServices\ConfigurableOptionService::createForProductWildcard($newProductId, $productData['name'], $pricingApiProduct);
         }
 
-        if ($isSmimeProduct || $isCodeSigningProduct) {
+        if ($isX9Product) {
+            // SAN option: up to the API maximum, price per SAN from API v2 (automatic price download)
+            \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::syncSanOption($newProductId, $apiProduct);
+        }
+
+        if ($isSmimeProduct || $isCodeSigningProduct || $isX9Product) {
             // API v2 products: only the billing cycles of the terms the API offers
             \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::restrictProductBillingCycles($newProductId);
         }

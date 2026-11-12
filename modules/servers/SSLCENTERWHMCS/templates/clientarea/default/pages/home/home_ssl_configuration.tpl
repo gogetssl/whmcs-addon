@@ -395,6 +395,30 @@
     </div>
     {/if}
 
+    {* ===== KEY USAGE (DigiCert X9 PKI for TLS) ===== *}
+    {if $isX9}
+    <div class="ssl-contact-section" id="ssl-x9-section">
+        <h3>{$MGLANG->T('x9UsageTitle')}</h3>
+        <p class="text-muted" style="font-size:13px;">{$MGLANG->T('x9UsageInfo')}</p>
+        <div class="form-group">
+            <label for="x9_usage">{$MGLANG->T('x9UsageLabel')}</label>
+            <select class="form-control" name="x9_usage" id="x9_usage">
+                <option value="server_client" selected>{$MGLANG->T('x9UsageServerClient')}</option>
+                <option value="server">{$MGLANG->T('x9UsageServer')}</option>
+                <option value="client">{$MGLANG->T('x9UsageClient')}</option>
+            </select>
+            <p class="help-block" id="x9_client_only_note" style="display:none;">{$MGLANG->T('x9ClientOnlyNote')}</p>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" name="x9_key_encipherment" id="x9_key_encipherment" value="1">
+                {$MGLANG->T('x9KeyEnciphermentLabel')}
+            </label>
+            <p class="help-block">{$MGLANG->T('x9KeyEnciphermentInfo')}</p>
+        </div>
+    </div>
+    {/if}
+
     {* ===== TECH CONTACT ===== *}
     <div class="ssl-contact-section">
         <h3>
@@ -893,6 +917,20 @@
         $('#tech-contact-fields').toggle(!$(this).is(':checked'));
     });
 
+    // ---- X9 key usage: a client-authentication-only certificate cannot be installed on a web server ----
+    $('#x9_usage').on('change', function () {
+        var clientOnly = $(this).val() === 'client';
+        $('#x9_client_only_note').toggle(clientOnly);
+        if (clientOnly) {
+            if ($('#install_type').val() === 'autoinstall' && $('#btn-manual').length) {
+                $('#btn-manual').trigger('click');
+            }
+            $('#btn-autoinstall').prop('disabled', true);
+        } else {
+            $('#btn-autoinstall').prop('disabled', false);
+        }
+    });
+
     // ---- Submit ----
     $('#btn-submit-ssl-config').on('click', function () {
         var btn = $(this);
@@ -991,6 +1029,11 @@
             $.each(['org_name', 'org_division', 'org_duns', 'org_lei', 'org_phone', 'org_addressline1', 'org_city', 'org_region', 'org_postalcode', 'org_country'], function (i, field) {
                 postData[field] = $('input[name="' + field + '"]').val();
             });
+        }
+
+        if ($('#ssl-x9-section').length) {
+            postData['x9_usage']            = $('#x9_usage').val();
+            postData['x9_key_encipherment'] = $('#x9_key_encipherment').is(':checked') ? 1 : 0;
         }
 
         if (!$('#same_as_admin').is(':checked')) {

@@ -428,6 +428,9 @@
                     </tr>
                     <tr><td>{$MGLANG->T('sslTypeLabel')|default:'Type'}</td><td>{$certType|escape}</td></tr>
                     <tr><td>{$MGLANG->T('sslWildcardLabel')|default:'Wildcard'}</td><td>{if $certIsWildcard}{$MGLANG->T('sslYes')|default:'Yes'}{else}{$MGLANG->T('sslNo')|default:'No'}{/if}</td></tr>
+                    {if $x9KeyUsage}
+                    <tr><td>{$MGLANG->T('x9KeyUsageLabel')|default:'Key usage'}</td><td>{$x9KeyUsage|escape}</td></tr>
+                    {/if}
                     {if $purchasedDate}
                     <tr><td>{$MGLANG->T('sslPurchasedLabel')|default:'Purchased'}</td><td>{$purchasedDate}</td></tr>
                     {/if}

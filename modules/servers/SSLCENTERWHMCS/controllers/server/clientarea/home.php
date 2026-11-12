@@ -520,6 +520,18 @@ class home extends main\mgLibs\process\AbstractController {
         }
         $vars['installTargetState'] = \MGModule\SSLCENTERWHMCS\eHelpers\InstallTarget::getState(isset($sslService) ? $sslService : null);
 
+        // DigiCert X9 PKI for TLS: the key usage choices; a client-authentication-only certificate is not installed on a web server
+        $x9Usages = isset($sslService) && $sslService ? main\eHelpers\X9Product::getUsagesOfService($sslService) : null;
+        if ($x9Usages !== null) {
+            $vars['x9KeyUsage'] = main\eHelpers\X9Product::describeUsages($x9Usages, function ($key, $default) {
+                return main\mgLibs\Lang::absoluteT('serverCA', 'home', $key);
+            });
+            if (!main\eHelpers\X9Product::allowsServerInstallation($x9Usages)) {
+                $vars['btnInstallCrt']        = false;
+                $vars['installTargetOptions'] = [];
+            }
+        }
+
         // Modern view: every configured standard SSL order. Orders configured before 2.9.0 have no SSLCENTER_orders
         // record, but are shown in the same view.
         $moduleOrderRow = null;

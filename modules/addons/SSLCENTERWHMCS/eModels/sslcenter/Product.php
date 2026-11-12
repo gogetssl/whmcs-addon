@@ -40,6 +40,10 @@ class Product {
             && \MGModule\SSLCENTERWHMCS\eHelpers\CodeSigningProduct::isCodeSigningByApiProductId($this->id);
     }
 
+    public function isX9() {
+        return !empty($this->x9) && \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::isX9ByApiProductId($this->id);
+    }
+
     public function isSanEnabled() {
         return $this->san_enabled === 1;
     }

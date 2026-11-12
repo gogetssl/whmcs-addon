@@ -201,7 +201,7 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
             $this->applyApiPricingForWhmcsProduct($productId, $apiProductId);
         }
 
-        // S/MIME and code signing: only the billing cycles of the terms the API offers
+        // S/MIME, code signing and X9: only the billing cycles of the terms the API offers
         foreach (array_keys((array) $input['product']) as $productId) {
             \MGModule\SSLCENTERWHMCS\eHelpers\SmimeProduct::restrictProductBillingCycles((int) $productId);
         }
@@ -266,6 +266,11 @@ class ProductsConfiguration extends main\mgLibs\process\AbstractController {
                 continue;
             }
             $productModel->updateProductPricing($pricing->pricing_id, $pricingByCurrency[$pricing->currency]);
+        }
+
+        // X9: the price per SAN from API v2 too
+        if (\MGModule\SSLCENTERWHMCS\eHelpers\X9Product::isX9ByApiProductId((int) $this->readValue($apiProduct, ['id']))) {
+            \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::syncSanOption((int) $productId, $this->getApiProductForWhmcsProduct($productId), true);
         }
     }
 

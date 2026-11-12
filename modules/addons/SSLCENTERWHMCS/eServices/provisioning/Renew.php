@@ -264,7 +264,19 @@ class Renew {
             return 'beforeConfiguration';
         }
         
-        $addSSLRenewOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLRenewOrder($this->getOrderParams());
+        $renewOrderParams = $this->getOrderParams();
+        if (\MGModule\SSLCENTERWHMCS\eHelpers\X9Product::isX9ByApiProductId($this->p[ConfigOptions::API_PRODUCT_ID])) {
+            // DigiCert X9 PKI for TLS: a new API v2 order with the same key usage choices, linked to the previous certificate
+            $x9Usages = \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::getUsagesOfService($this->sslService);
+            if ($x9Usages !== null) {
+                $renewOrderParams['x9_usages'] = $x9Usages;
+            }
+            $x9Renewal = \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::getRenewalData($this->sslService);
+            if ($x9Renewal !== null) {
+                $renewOrderParams['x9_renewal'] = $x9Renewal;
+            }
+        }
+        $addSSLRenewOrder = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSSLRenewOrder($renewOrderParams);
         $tlsItemId = \MGModule\SSLCENTERWHMCS\mgLibs\SSLCenterApi::extractItemId($addSSLRenewOrder);
         $service = Capsule::table('tblhosting')->where('id', $this->p['serviceid'])->first();
 
