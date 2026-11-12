@@ -592,9 +592,13 @@ class home extends main\mgLibs\process\AbstractController {
                 }
             }
 
-            // Type: DV / OV / EV (derive from product brand or domain structure)
+            // Type: DV / OV / EV - from the API product (validation level); before issuance the certificate has no
+            // organization yet, so an OV/EV order must not show DV and the DV validation texts
             $certType = 'DV';
-            if ($certOrg) {
+            $productValidation = isset($productssl['product']) && is_array($productssl['product']) ? $productssl['product'] : [];
+            if (isset($productValidation['product_type']) && $productValidation['product_type'] === 'extended_validation') {
+                $certType = 'EV';
+            } elseif (!empty($productValidation['org_required']) || $certOrg) {
                 $certType = 'OV';
             }
 

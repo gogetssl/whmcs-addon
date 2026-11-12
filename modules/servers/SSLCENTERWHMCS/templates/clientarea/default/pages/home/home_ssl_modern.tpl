@@ -631,7 +631,7 @@
                 {/if}
 
                 {* 2.3.3 Single Domain OV *}
-                {if !$certIsWildcard && $certType == 'OV'}
+                {if !$certIsWildcard && ($certType == 'OV' || $certType == 'EV')}
                 <p>{$MGLANG->T('autoinstallOvIntro')|default:'AutoInstallSSL is currently performing domain validation for your certificate.'}</p>
                 <p><strong>{$MGLANG->T('autoinstallOvNextStep')|default:'Your next step:'}</strong><br>
                 {$MGLANG->T('autoinstallOvMsg')|default:'Perform Organization Validation, the CA will be emailing and calling the admin contact to confirm the organization is accurate and the contact is authorized.'}</p>
@@ -639,7 +639,7 @@
                 {/if}
 
                 {* 2.3.4 Wildcard Domain OV *}
-                {if $certIsWildcard && $certType == 'OV'}
+                {if $certIsWildcard && ($certType == 'OV' || $certType == 'EV')}
                 <p><strong>{$MGLANG->T('thankYou')|default:'Thank You'}</strong></p>
                 <p>{$MGLANG->T('autoinstallWildcardOvIntro')|default:'AutoInstallSSL is currently performing domain validation for your certificate.'}</p>
                 <p><strong>{$MGLANG->T('autoinstallWildcardOvNextSteps')|default:'Here are your next steps:'}</strong><br>
