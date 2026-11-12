@@ -122,6 +122,11 @@ class UpdateConfigData
                 }
             }
 
+            // orders placed before the submitted contacts / organization were stored: fill the missing ones from the
+            // API order status (stored, submitted values are kept)
+            \MGModule\SSLCENTERWHMCS\eHelpers\OrganizationDetails::fillMissingContacts($sslOrder, $order);
+            \MGModule\SSLCENTERWHMCS\eHelpers\OrganizationDetails::fillMissingOrganization($sslOrder, $order);
+
             $sslOrder->save();
        // }
 

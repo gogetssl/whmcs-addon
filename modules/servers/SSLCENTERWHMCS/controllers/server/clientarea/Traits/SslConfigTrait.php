@@ -556,7 +556,8 @@ trait SslConfigTrait
         if ($tlsItemId > 0) {
             $sslConfig->setConfigdataKey('tls_item_id', $tlsItemId);
         }
-        // OV / EV: the organization the order was placed with, shown on the certificate page until it is issued
+        // what the customer submitted: contacts, and for OV / EV the organization; shown on the certificate pages
+        \MGModule\SSLCENTERWHMCS\eHelpers\OrganizationDetails::storeContacts($sslConfig, $order);
         $orgDetails = \MGModule\SSLCENTERWHMCS\eHelpers\OrganizationDetails::fromOrder($order);
         if ($orgDetails !== null) {
             $sslConfig->setConfigdataKey(\MGModule\SSLCENTERWHMCS\eHelpers\OrganizationDetails::CONFIGDATA_KEY, $orgDetails);

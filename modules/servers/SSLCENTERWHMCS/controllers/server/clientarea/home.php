@@ -83,22 +83,8 @@ class home extends main\mgLibs\process\AbstractController {
                     $apicertdata = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()
                         ->getApi()->getOrderStatus($sslService->remoteid);
                     $configDataUpdate = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\UpdateConfigData($sslService, $apicertdata);
+                    // also fills contacts / organization the service has not stored; submitted values are kept
                     $configDataUpdate->run();
-
-                    $contactFields = [
-                        'admin_firstname', 'admin_lastname', 'admin_email', 'admin_phone', 'admin_organization', 'admin_title',
-                        'tech_firstname',  'tech_lastname',  'tech_email',  'tech_phone',  'tech_organization',  'tech_title',
-                    ];
-                    $hasContact = false;
-                    foreach ($contactFields as $field) {
-                        if (!empty($apicertdata[$field])) {
-                            $sslService->setConfigdataKey($field, $apicertdata[$field]);
-                            $hasContact = true;
-                        }
-                    }
-                    if ($hasContact) {
-                        $sslService->save();
-                    }
                 } catch (\Exception $e) {}
                 header('Location: ' . $CONFIG['SystemURL'] . '/clientarea.php?action=productdetails&id=' . $serviceId . '&synced=1');
                 exit;
@@ -592,14 +578,13 @@ class home extends main\mgLibs\process\AbstractController {
                 }
             }
 
-            // Not issued yet: the organization the order was placed with
-            if (!$certOrg) {
-                $orgDetails = isset($sslService) ? main\eHelpers\OrganizationDetails::getOfService($sslService) : null;
-                if ($orgDetails !== null) {
-                    $certOrg     = $orgDetails['org_name'];
-                    $certOrgUnit = $orgDetails['org_division'] !== '' ? $orgDetails['org_division'] : null;
-                    $certAddress = main\eHelpers\OrganizationDetails::describeAddress($orgDetails) ?: null;
-                }
+            // Organization: what the customer submitted at enrollment; the issued certificate only fills what was not stored
+            $orgDetails = isset($sslService) ? main\eHelpers\OrganizationDetails::getOfService($sslService) : null;
+            if ($orgDetails !== null) {
+                $submittedAddress = main\eHelpers\OrganizationDetails::describeAddress($orgDetails);
+                $certOrg     = $orgDetails['org_name'] !== '' ? $orgDetails['org_name'] : $certOrg;
+                $certOrgUnit = $orgDetails['org_division'] !== '' ? $orgDetails['org_division'] : $certOrgUnit;
+                $certAddress = $submittedAddress !== '' ? $submittedAddress : $certAddress;
             }
 
             // Type: DV / OV / EV - from the API product (validation level); before issuance the certificate has no

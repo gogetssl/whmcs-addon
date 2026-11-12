@@ -537,7 +537,7 @@ class SSLStepThree {
         if ($tlsItemId > 0) {
             $this->sslConfig->setConfigdataKey('tls_item_id', $tlsItemId);
         }
-        // OV / EV: the organization the order was placed with, shown on the certificate page until it is issued
+        // OV / EV: the organization the customer submitted, shown on the certificate pages
         $orgDetails = \MGModule\SSLCENTERWHMCS\eHelpers\OrganizationDetails::fromOrder($order);
         if ($orgDetails !== null) {
             $this->sslConfig->setConfigdataKey(\MGModule\SSLCENTERWHMCS\eHelpers\OrganizationDetails::CONFIGDATA_KEY, $orgDetails);

@@ -80,6 +80,17 @@ class AdminServicesTabFields {
             if ($x9Usages !== null) {
                 $return['Key Usage (X9)'] = \MGModule\SSLCENTERWHMCS\eHelpers\X9Product::describeUsages($x9Usages);
             }
+            // OV / EV: the organization the customer submitted at enrollment
+            $orgDetails = \MGModule\SSLCENTERWHMCS\eHelpers\OrganizationDetails::getOfService($sslService);
+            if ($orgDetails !== null) {
+                $return['Organization'] = htmlspecialchars($orgDetails['org_name'] !== '' ? $orgDetails['org_name'] : '-', ENT_QUOTES, 'UTF-8')
+                    . ($orgDetails['org_division'] !== '' ? ' (' . htmlspecialchars($orgDetails['org_division'], ENT_QUOTES, 'UTF-8') . ')' : '');
+                $orgAddress = \MGModule\SSLCENTERWHMCS\eHelpers\OrganizationDetails::describeAddress($orgDetails);
+                $return['Organization Address'] = $orgAddress !== '' ? htmlspecialchars($orgAddress, ENT_QUOTES, 'UTF-8') : '-';
+                if ($orgDetails['org_phone'] !== '') {
+                    $return['Organization Phone'] = htmlspecialchars($orgDetails['org_phone'], ENT_QUOTES, 'UTF-8');
+                }
+            }
             
             if($orderDetails['ssl_status'] == 'active') {                
                 $return['Valid From'] = $orderDetails['valid_from'];
