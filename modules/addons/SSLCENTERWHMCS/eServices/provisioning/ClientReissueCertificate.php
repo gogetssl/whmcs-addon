@@ -121,12 +121,7 @@ class ClientReissueCertificate {
         $ssl = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
         $ssldata = $ssl->getByServiceId($this->p['serviceid']);
         $this->vars['csrreissue'] = $ssldata->configdata->csr;
-        $sandetails = (array)$ssl->getByServiceId($this->p['serviceid'])->getSanDomains();
-        $this->vars['sandetails'] = $sandetails;
-        $this->vars['sans_domains'] = $sandetails['sans_domains'];
-
-        $sanSingle = [];
-        $sanWildcard = [];
+        $this->vars['sandetails'] = [];
 
         $this->vars['privKey'] = '';
         if(isset($ssldata->configdata->private_key) && !empty($ssldata->configdata->private_key))
@@ -134,24 +129,12 @@ class ClientReissueCertificate {
             $this->vars['privKey'] = $ssldata->configdata->private_key;
         }
 
-        $allSans = $ssldata->configdata->san_details;
-
-        foreach ($allSans as $san)
-        {
-            if (strpos($san->san_name, '*.') !== false) {
-                $sanWildcard[] = $san->san_name;
-            } else {
-                $sanSingle[] = $san->san_name;
-            }
-        }
-
-        $sanSingle = implode(PHP_EOL, $sanSingle);
-        $sanWildcard = implode(PHP_EOL, $sanWildcard);
-
-        if(!isset($this->vars['sandetails']['wildcard_san']) || empty($this->vars['sandetails']['wildcard_san'])) {
-            $this->vars['sandetails']['sans_domains'] = $sanSingle;
-            $this->vars['sandetails']['wildcard_san'] = $sanWildcard;
-        }
+        // the SAN names the certificate has now: a reissue keeps them unless the client removes them
+        $paidSans = \MGModule\SSLCENTERWHMCS\eHelpers\SanList::getPaid($this->sslService, $this->getApi());
+        $this->vars['sandetails']['sans_domains'] = implode(PHP_EOL, $paidSans['single']);
+        $this->vars['sandetails']['wildcard_san'] = implode(PHP_EOL, $paidSans['wildcard']);
+        $this->vars['sansCurrentCount']         = count($paidSans['single']);
+        $this->vars['sansCurrentCountWildcard'] = count($paidSans['wildcard']);
 
         return $this->build(self::STEP_ONE);
 
@@ -190,6 +173,7 @@ class ClientReissueCertificate {
         }
 
         $mainDomain                   = $decodeCSR['csrResult']['CN'];
+        $this->guardRemovedSans($mainDomain);
         $domains                      = $mainDomain . PHP_EOL . $this->post['sans_domains'];
         $parseDomains                 = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains(strtolower($domains));
         $domainsWildcard              = $this->post['sans_domains_wildcard'];
@@ -279,8 +263,11 @@ class ClientReissueCertificate {
             $decodedCSR   = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->post['csr']);
         }
 
-        if ($this->getSansLimit()) {
+        $this->guardRemovedSans(isset($decodedCSR['csrResult']['CN']) ? $decodedCSR['csrResult']['CN'] : '');
+
+        if ($this->getSansLimit() || $this->getSansLimitWildcard()) {
             $this->validateSanDomains();
+            $this->validateSansDomainsWildcard();
             $sansDomains             = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($this->post['sans_domains']);
             $sansDomainsWildcard = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($this->post['sans_domains_wildcard']);
             $sansDomains = array_merge($sansDomains, $sansDomainsWildcard);
@@ -369,48 +356,19 @@ class ClientReissueCertificate {
         $singleDomainsCount = $orderStatus['single_san_count'];
         $wildcardDomainsCount = $orderStatus['wildcard_san_count'];
 
-        if(empty($this->post['sans_domains']))
-        {
-            $newSanDomainSingleCount = 0;
-        }
-        else
-        {
-            $newSanDomainSingleCount = count(explode(PHP_EOL,$this->post['sans_domains']));
-        }
-
-        if(empty($this->post['sans_domains_wildcard']))
-        {
-            $newSanDomainWildcardCount = 0;
-        }
-        else
-        {
-            $newSanDomainWildcardCount = count(explode(PHP_EOL,$this->post['sans_domains_wildcard']));
-        }
-
-        if(!empty($this->post['sans_domains']) || !empty($this->post['sans_domains_wildcard'])) {
-            if ($newSanDomainSingleCount > $singleDomainsCount || $newSanDomainWildcardCount > $wildcardDomainsCount) {
-                $singleToAdd = $newSanDomainSingleCount - $singleDomainsCount;
-                if ($singleToAdd < 0) {
-                    $singleToAdd = 0;
-                }
-                $wildcardToAdd = $newSanDomainWildcardCount - $wildcardDomainsCount;
-                if ($wildcardToAdd < 0) {
-                    $wildcardToAdd = 0;
-                }
-                $allToAdd = $singleToAdd + $wildcardToAdd;
-
-                if ($singleToAdd <= 0) {
-                    $allToAdd = 0;
-                }
-
-                \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSslSan(
-                    $this->sslService->remoteid,
-                    $allToAdd,
-                    $singleToAdd,
-                    $wildcardToAdd
-                );
-            }
-        }
+        $toBuy = \MGModule\SSLCENTERWHMCS\eHelpers\SanList::getSlotsToBuy(
+            isset($decodedCSR['csrResult']['CN']) ? $decodedCSR['csrResult']['CN'] : '',
+            \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains((string) $this->post['sans_domains']),
+            \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains((string) $this->post['sans_domains_wildcard']),
+            $singleDomainsCount,
+            $wildcardDomainsCount
+        );
+        \MGModule\SSLCENTERWHMCS\eHelpers\SanList::buySlots(
+            \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(),
+            $this->sslService->remoteid,
+            $toBuy['single'],
+            $toBuy['wildcard']
+        );
 
         $reissueData = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->reIssueOrder($this->sslService->remoteid, $data);
         $orderDetails = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->getOrderStatus($this->sslService->remoteid);
@@ -570,6 +528,7 @@ class ClientReissueCertificate {
         $this->sslService->setApproverEmails($data['approver_emails']);
         //$this->sslService->setSansDomains($data['dns_names']);
         $this->sslService->setSanDetails($orderDetails['san']);
+        \MGModule\SSLCENTERWHMCS\eHelpers\SanList::storePurchased($this->sslService, $orderDetails, false);
         $this->sslService->save();
 
         // Automatic cPanel installation: validate (upload the validation file) and install the reissued certificate
@@ -676,11 +635,7 @@ class ClientReissueCertificate {
             }
         }
 
-        $includedSans = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS_WILDCARD];
-        $boughtSans   = (int) $this->p['configoptions']['sans_wildcard_count'];
-
-        $sansLimit = $includedSans + $boughtSans;
-        if (count($sansDomainsWildcard) > $sansLimit) {
+        if (count($sansDomainsWildcard) > $this->getSansLimitWildcard()) {
             throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('sanLimitExceededWildcard'));
         }
     }
@@ -739,26 +694,51 @@ class ClientReissueCertificate {
 
     }
 
-    private function getSansLimit() {
-        $sanEnabledForWHMCSProduct = $this->p[ConfigOptions::PRODUCT_ENABLE_SAN] === 'on';
-        if (!$sanEnabledForWHMCSProduct) {
-            return 0;
-        }
-        $includedSans = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS];
-        $boughtSans   = (int) $this->p['configoptions'][ConfigOptions::OPTION_SANS_COUNT];
-        return $includedSans + $boughtSans;
+    private $reissueLimits = null;
+    private $api = null;
 
+    private function getApi() {
+        if ($this->api === null) {
+            $this->api = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi();
+        }
+        return $this->api;
+    }
+
+    /**
+     * SAN limits of the reissue: the product limits (Enable SANs, included + bought), but never fewer than the
+     * names the certificate already has.
+     */
+    private function getReissueLimits() {
+        if ($this->reissueLimits === null) {
+            $this->reissueLimits = \MGModule\SSLCENTERWHMCS\eHelpers\SanList::getReissueLimits($this->p, $this->sslService, $this->getApi());
+        }
+        return $this->reissueLimits;
+    }
+
+    private function getSansLimit() {
+        $limits = $this->getReissueLimits();
+        return $limits['single'];
     }
 
     private function getSansLimitWildcard() {
-        $sanEnabledForWHMCSProduct = $this->p[ConfigOptions::PRODUCT_ENABLE_SAN_WILDCARD] === 'on';
-        if (!$sanEnabledForWHMCSProduct) {
-            return 0;
-        }
-        $includedSans = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS_WILDCARD];
-        $boughtSans   = (int) $this->p['configoptions']['sans_wildcard_count'];
-        return $includedSans + $boughtSans;
+        $limits = $this->getReissueLimits();
+        return $limits['wildcard'];
+    }
 
+    /**
+     * A reissue keeps the SAN names of the certificate: names left out are removed only when the client confirms it.
+     */
+    private function guardRemovedSans($mainDomain) {
+        $submitted = array_merge(
+            \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains((string) $this->post['sans_domains']),
+            \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains((string) $this->post['sans_domains_wildcard']),
+            [(string) $mainDomain]
+        );
+        $removed = \MGModule\SSLCENTERWHMCS\eHelpers\SanList::getRemoved($this->sslService, $submitted, $this->getApi());
+        if (!empty($removed) && empty($this->post['confirm_remove_sans'])) {
+            $this->vars['removedSans'] = $removed;
+            throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::getInstance()->T('reissueSansRemoved') . ' ' . htmlspecialchars(implode(', ', $removed), ENT_QUOTES));
+        }
     }
 
 }

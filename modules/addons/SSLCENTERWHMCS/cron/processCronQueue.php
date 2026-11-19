@@ -437,6 +437,16 @@ foreach ($reissueTasks as $task) {
             }
         }
 
+        // multi-domain certificates: the reissue keeps every SAN name, each with its current validation
+        $sanReissueData = \MGModule\SSLCENTERWHMCS\eHelpers\SanList::buildAutomaticReissueData(
+            $sslConfig, \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()
+        );
+        if (!empty($sanReissueData)) {
+            $reissueData = array_merge($reissueData, $sanReissueData);
+            $logsRepo->addLog($task->client_id, $task->service_id, 'info',
+                '[Reissue] Keeping SAN names: ' . str_replace(',', ', ', $sanReissueData['dns_names']));
+        }
+
         \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()
             ->getApi()->reIssueOrder($apiOrderId, $reissueData);
 

@@ -11,6 +11,7 @@
             <input type="hidden" name="csr" value="{$smarty.post.csr}">
             <input type="hidden" name="sans_domains" value="{$smarty.post.sans_domains}">
             <input type="hidden" name="sans_domains_wildcard" value="{$smarty.post.sans_domains_wildcard}">
+            <input type="hidden" name="confirm_remove_sans" value="{if $smarty.post.confirm_remove_sans}1{/if}">
             <input type="hidden" name="privateKey" value="{$privateKey}">
             <div class="loading">
                 Loading...

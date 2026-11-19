@@ -94,6 +94,7 @@ class UpdateConfigData
             }
             
             $sslOrder->setSanDetails($order['san']);
+            \MGModule\SSLCENTERWHMCS\eHelpers\SanList::storePurchased($sslOrder, $order, false);
             $sslOrder->setConfigdataKey("approveremail", $order['approver_email']);
 
             if (!empty($order['csr_code']) && empty($sslOrder->getCsr())) {

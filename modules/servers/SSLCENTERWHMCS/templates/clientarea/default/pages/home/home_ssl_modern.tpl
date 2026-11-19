@@ -196,6 +196,16 @@
         </div>
     </div>
 
+    {if $sanFreeSlots > 0}
+    <div class="alert alert-info" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div>
+            <strong>{$MGLANG->T('sanSlotsTitle')|default:'Domain names to add'}</strong><br>
+            {$MGLANG->T('sanSlotsInfo')|default:'Your certificate can include %count% more domain name(s). Reissue it with the new names to add them; the current names are kept.'|replace:'%count%':$sanFreeSlots}
+        </div>
+        <a href="{$addSansUrl}" class="btn btn-primary btn-sm">{$MGLANG->T('sanSlotsButton')|default:'Add domain names'}</a>
+    </div>
+    {/if}
+
     {* ---- 3 Cards ---- *}
     <div class="ssl-mod-cards">
 

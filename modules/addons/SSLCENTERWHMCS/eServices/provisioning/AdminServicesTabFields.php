@@ -236,13 +236,13 @@ class AdminServicesTabFields {
     private function getServiceVars() {
         global $CONFIG;
         
-        $includedSans = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS];
-        $boughtSans   = (int) $this->p['configoptions'][ConfigOptions::OPTION_SANS_COUNT];
-        $sansLimit = $boughtSans;
-
-        $includedSansWildcard = (int) $this->p[ConfigOptions::PRODUCT_INCLUDED_SANS_WILDCARD];
-        $boughtSansWildcard   = (int) $this->p['configoptions'][ConfigOptions::OPTION_SANS_WILDCARD_COUNT];
-        $sansLimitWildcard = $boughtSansWildcard;
+        // reissue modal: the product limits (never fewer than the names of the certificate) and the current names
+        $sslRepo    = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+        $sslService = $sslRepo->getByServiceId($this->p['serviceid']);
+        $paidSans   = \MGModule\SSLCENTERWHMCS\eHelpers\SanList::getPaid($sslService);
+        $limits     = \MGModule\SSLCENTERWHMCS\eHelpers\SanList::getProductLimits($this->p);
+        $sansLimit         = max($limits['single'], count($paidSans['single']));
+        $sansLimitWildcard = max($limits['wildcard'], count($paidSans['wildcard']));
         
         require dirname(dirname(dirname(dirname(dirname(__DIR__))))).DIRECTORY_SEPARATOR.'configuration.php';
 
@@ -258,6 +258,8 @@ class AdminServicesTabFields {
             'userid'    => $this->p['userid'],
             'sansLimit' => $sansLimit,
             'sansLimitWildcard' => $sansLimitWildcard,
+            'sanNames'          => implode("\n", $paidSans['single']),
+            'sanNamesWildcard'  => implode("\n", $paidSans['wildcard']),
             'adminpath' => $adminpath,
             'version'   => substr($CONFIG['Version'],0,1)
         ];

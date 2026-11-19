@@ -197,6 +197,13 @@ $_LANG['reissueOneCsr']          = 'CSR';
 $_LANG['reissueOneCsr']          = 'CSR';
 $_LANG['reissueOneSanDomains']   = 'SAN Domains';
 $_LANG['reissueOneSanDomainsWildcard'] = 'Wildcard SAN Domains';
+$_LANG['reissueSansHint']          = 'One domain per line. The certificate is reissued with every name listed here: keep the current names and add the new ones.';
+$_LANG['reissueSansFree']          = 'Unused SAN slots:';
+$_LANG['reissueSansRemoved']       = 'These names are on the certificate now and would be removed by this reissue. Add them back to the SAN list, or confirm below that they should be removed:';
+$_LANG['reissueSansRemoveConfirm'] = 'Remove these names from the certificate:';
+$_LANG['sanSlotsTitle']            = 'Domain names to add';
+$_LANG['sanSlotsInfo']             = 'Your certificate can include %count% more domain name(s). Reissue it with the new names to add them; the current names are kept.';
+$_LANG['sanSlotsButton']           = 'Add domain names';
 
 $_LANG['reissueTwoTitle']                            = 'Reissue - Certificate Approver Email';
 $_LANG['reissueSelectVerificationMethodTitle']       = 'Reissue - Certificate Validation';

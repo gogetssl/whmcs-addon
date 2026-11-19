@@ -184,6 +184,7 @@ class Configuration extends AbstractConfiguration
         EmailTemplateService::createCertInstalledTemplate();
         EmailTemplateService::createCertExpiredTemplate();
         EmailTemplateService::createValidationWarningTemplate();
+        EmailTemplateService::createAddSansTemplate();
         InvoiceHelper::createInfosTable();
         InvoiceHelper::createPendingPaymentInvoice();
     }
@@ -236,6 +237,7 @@ class Configuration extends AbstractConfiguration
         EmailTemplateService::createRenewalStartedTemplate();
         EmailTemplateService::createRenewalCompleteTemplate();
         EmailTemplateService::createRenewalAutorenewedTemplate();
+        EmailTemplateService::createAddSansTemplate();
 
         if (version_compare($version, '1.0.32', '<='))
         {

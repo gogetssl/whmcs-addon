@@ -96,6 +96,22 @@ trait StandardTemplates
         self::deleteTemplate(self::EXPIRATION_TEMPLATE_ID);
     }
 
+    /**
+     * "Buy more SANs": sent after a paid SAN upgrade, the client adds the new names with a reissue.
+     */
+    public static function createAddSansTemplate()
+    {
+        self::createTemplate(
+            self::ADD_SANS_TEMPLATE_ID,
+            'Add the new domain names to your SSL certificate - {$domain}',
+            '<p>Dear {$client_name},</p>'
+            . '<p>Thank you for your order. Your SSL certificate for <strong>{$domain}</strong> can now include {$san_free} more domain name(s) (SAN).</p>'
+            . '<p>To add them, open the certificate in our client area and reissue it with the new names. The names the certificate already has are kept.</p>'
+            . '<p><a href="{$add_sans_url}" style="display:inline-block;padding:10px 22px;background:#2a7ae2;color:#fff;text-decoration:none;border-radius:4px;font-weight:600;">Add domain names</a></p>'
+            . '<p>{$signature}</p>'
+        );
+    }
+
     public static function createReissueTemplate()
     {
         self::createTemplate(

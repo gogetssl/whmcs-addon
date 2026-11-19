@@ -28,6 +28,19 @@
                 </div>
             </div>
 
+            {if $sansLimit || $sansLimitWildCard}
+                <div class="form-group">
+                    <div class="col-sm-10 col-sm-offset-2">
+                        <div class="alert alert-info" style="margin-bottom:0;">
+                            {$MGLANG->T('reissueSansHint')|default:'One domain per line. The certificate is reissued with every name listed here: keep the current names and add the new ones.'}
+                            {if $sansLimit > $sansCurrentCount}
+                                <br><strong>{$MGLANG->T('reissueSansFree')|default:'Unused SAN slots:'} {$sansLimit-$sansCurrentCount}</strong>
+                            {/if}
+                        </div>
+                    </div>
+                </div>
+            {/if}
+
             {if $sansLimit}
                 <div class="form-group">
                     <label class="col-sm-2 control-label">{$MGLANG->T('reissueOneSanDomains')} ({$sansLimit})</label>
@@ -42,6 +55,18 @@
                     <label class="col-sm-2 control-label">{$MGLANG->T('reissueOneSanDomainsWildcard')} ({$sansLimitWildCard})</label>
                     <div class="col-sm-10">
                         <textarea name="sans_domains_wildcard" rows="4" class="form-control">{if !$smarty.post.sans_domains_wildcard}{$sandetails.wildcard_san}{else}{$smarty.post.sans_domains_wildcard}{/if}</textarea>
+                    </div>
+                </div>
+            {/if}
+            {if $removedSans}
+                <div class="form-group">
+                    <div class="col-sm-10 col-sm-offset-2">
+                        <div class="checkbox alert alert-warning" style="margin:0;padding-left:30px;">
+                            <label>
+                                <input type="checkbox" name="confirm_remove_sans" value="1">
+                                {$MGLANG->T('reissueSansRemoveConfirm')|default:'Remove these names from the certificate:'} <strong>{', '|implode:$removedSans|escape}</strong>
+                            </label>
+                        </div>
                     </div>
                 </div>
             {/if}

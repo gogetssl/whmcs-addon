@@ -529,6 +529,22 @@ function SSLCENTER_unableDowngradeConfigOption($vars)
 }
 add_hook('ClientAreaPageUpgrade', 1, 'SSLCENTER_unableDowngradeConfigOption');
 
+// "Buy more SANs": a paid SAN upgrade buys the new SAN slots at GoGetSSL and tells the client to add the names
+add_hook('AfterConfigOptionsUpgrade', 1, function ($vars)
+{
+    try {
+        require_once __DIR__ . DS . 'Loader.php';
+        new \MGModule\SSLCENTERWHMCS\Loader();
+        \MGModule\SSLCENTERWHMCS\Addon::I(true);
+
+        if (!empty($vars['upgradeid'])) {
+            \MGModule\SSLCENTERWHMCS\eServices\SanUpgradeService::afterConfigOptionsUpgrade((int) $vars['upgradeid']);
+        }
+    } catch (\Exception $e) {
+        logActivity('SSLCenter SAN upgrade error: ' . $e->getMessage());
+    }
+});
+
 function SSLCENTER_overideProductPricingBasedOnCommission($vars)
 {
     

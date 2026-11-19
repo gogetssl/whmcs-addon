@@ -308,7 +308,7 @@
                         <div class="form-group mg-js-step-one">
                             <label  class="col-sm-3 control-label">SAN Single Domains ({$sansLimit})</label>
                             <div class="col-sm-9">
-                                <textarea rows="3" class="form-control" name="sanDomains" id="modalReissueSansInput"></textarea>
+                                <textarea rows="3" class="form-control" name="sanDomains" id="modalReissueSansInput">{$sanNames|escape}</textarea>
                             </div>
                         </div>
                     {/if}
@@ -320,7 +320,7 @@
                         <div class="form-group mg-js-step-one">
                             <label  class="col-sm-3 control-label">SAN Wildcard Domains ({$sansLimitWildcard})</label>
                             <div class="col-sm-9">
-                                <textarea rows="3" class="form-control" name="sanDomainsWildcard" id="modalReissueSansWildcardInput"></textarea>
+                                <textarea rows="3" class="form-control" name="sanDomainsWildcard" id="modalReissueSansWildcardInput">{$sanNamesWildcard|escape}</textarea>
                             </div>
                         </div>
                     {/if}

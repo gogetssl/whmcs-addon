@@ -796,6 +796,14 @@ class home extends main\mgLibs\process\AbstractController {
             $vars['certIssued']             = in_array($certState, ['active', 'active_installed', 'expired', 'cancelled', 'reissue']);
             $vars['showValidationWarning']  = $showValidationWarning;
 
+            // unused SAN slots (e.g. bought with an upgrade): the client adds the names with a reissue
+            $vars['sanFreeSlots'] = 0;
+            if (isset($sslService) && $sslService && in_array($certState, ['active', 'active_installed'])) {
+                $freeSlots            = \MGModule\SSLCENTERWHMCS\eHelpers\SanList::getFreeSlots($input['params'], $sslService);
+                $vars['sanFreeSlots'] = $freeSlots['single'] + $freeSlots['wildcard'];
+                $vars['addSansUrl']   = 'clientarea.php?action=productdetails&id=' . (int) $serviceId . '&modop=custom&a=ClientAreaCustomReissueCertificate';
+            }
+
             return array(
                 'tpl'  => 'home_ssl_modern',
                 'vars' => $vars,

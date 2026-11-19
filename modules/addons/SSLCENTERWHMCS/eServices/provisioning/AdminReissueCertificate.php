@@ -68,9 +68,8 @@ class AdminReissueCertificate extends Ajax {
 
         $sansDomains = [];
 
-        $sanEnabledForWHMCSProduct = $this->serviceParams[ConfigOptions::PRODUCT_ENABLE_SAN] === 'on';
-
-        if ($sanEnabledForWHMCSProduct AND count($_POST['approveremails'])) {
+        // SANs whenever the product or the certificate has them (a product with SANs switched off must not drop them)
+        if (($this->getSansLimit() || $this->getSansLimitWildcard()) AND count($_POST['approveremails'])) {
             $this->validateSanDomains();
             $sansDomains             = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($this->p['sanDomains']);
             $sansDomainsWildCard     = \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains($this->p['sanDomainsWildcard']);
@@ -109,48 +108,26 @@ class AdminReissueCertificate extends Ajax {
         $singleDomainsCount = $orderStatus['single_san_count'];
         $wildcardDomainsCount = $orderStatus['wildcard_san_count'];
 
-        if(empty($this->p['sanDomains']))
-        {
-            $newSanDomainSingleCount = 0;
+        $csrCommonName = '';
+        try {
+            $decodedForSans = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(false)->decodeCSR($this->p['csr']);
+            $csrCommonName  = isset($decodedForSans['csrResult']['CN']) ? $decodedForSans['csrResult']['CN'] : '';
+        } catch (\Exception $e) {
+            $csrCommonName = isset($sslService->configdata->domain) ? $sslService->configdata->domain : '';
         }
-        else
-        {
-            $newSanDomainSingleCount = count(explode(PHP_EOL,$this->p['sanDomains']));
-        }
-
-        if(empty($this->p['sanDomainsWildcard']))
-        {
-            $newSanDomainWildcardCount = 0;
-        }
-        else
-        {
-            $newSanDomainWildcardCount = count(explode(PHP_EOL,$this->p['sanDomainsWildcard']));
-        }
-
-        if(!empty($this->p['sanDomains']) || !empty($this->p['sanDomainsWildcard'])) {
-            if ($newSanDomainSingleCount > $singleDomainsCount || $newSanDomainWildcardCount > $wildcardDomainsCount) {
-                $singleToAdd = $newSanDomainSingleCount - $singleDomainsCount;
-                if ($singleToAdd < 0) {
-                    $singleToAdd = 0;
-                }
-                $wildcardToAdd = $newSanDomainWildcardCount - $wildcardDomainsCount;
-                if ($wildcardToAdd < 0) {
-                    $wildcardToAdd = 0;
-                }
-                $allToAdd = $singleToAdd + $wildcardToAdd;
-
-                if ($singleToAdd <= 0) {
-                    $allToAdd = 0;
-                }
-
-                \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->addSslSan(
-                    $sslService->remoteid,
-                    $allToAdd,
-                    $singleToAdd,
-                    $wildcardToAdd
-                );
-            }
-        }
+        $toBuy = \MGModule\SSLCENTERWHMCS\eHelpers\SanList::getSlotsToBuy(
+            $csrCommonName,
+            \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains((string) $this->p['sanDomains']),
+            \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains((string) $this->p['sanDomainsWildcard']),
+            $singleDomainsCount,
+            $wildcardDomainsCount
+        );
+        \MGModule\SSLCENTERWHMCS\eHelpers\SanList::buySlots(
+            \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi(),
+            $sslService->remoteid,
+            $toBuy['single'],
+            $toBuy['wildcard']
+        );
 
         $reissueData = \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()->reIssueOrder($sslService->remoteid, $data);
         sleep(2);
@@ -297,6 +274,7 @@ class AdminReissueCertificate extends Ajax {
         $sslService->setConfigdataKey('approveremail', $data['approver_email']);
         $sslService->setApproverEmails($data['approver_emails']);
         $sslService->setSansDomains($data['dns_names']);
+        \MGModule\SSLCENTERWHMCS\eHelpers\SanList::storePurchased($sslService, $orderDetails, false);
         $sslService->save();
 
         try
@@ -424,11 +402,7 @@ class AdminReissueCertificate extends Ajax {
             }
         }
 
-        $includedSans = (int) $this->serviceParams[ConfigOptions::PRODUCT_INCLUDED_SANS_WILDCARD];
-        $boughtSans   = (int) $this->serviceParams['configoptions']['sans_wildcard_count'];
-
-        $sansLimit = $includedSans + $boughtSans;
-        if (count($sansDomainsWildcard) > $sansLimit) {
+        if (count($sansDomainsWildcard) > $this->getSansLimitWildcard()) {
             throw new Exception(\MGModule\SSLCENTERWHMCS\mgLibs\Lang::T('sanLimitExceededWildcard'));
         }
     }
@@ -439,21 +413,32 @@ class AdminReissueCertificate extends Ajax {
         }
     }
 
-    private function getSansLimit() {
-        $sanEnabledForWHMCSProduct = $this->serviceParams[ConfigOptions::PRODUCT_ENABLE_SAN] === 'on';
-        if (!$sanEnabledForWHMCSProduct) {
-            return 0;
-        }
-        $includedSans = (int) $this->serviceParams[ConfigOptions::PRODUCT_INCLUDED_SANS];
-        $boughtSans   = (int) $this->serviceParams['configoptions'][ConfigOptions::OPTION_SANS_COUNT];
-        return $includedSans + $boughtSans;
+    private $reissueLimits = null;
 
+    /**
+     * SAN limits of the reissue: the product limits, but never fewer than the names the certificate already has.
+     */
+    private function getReissueLimits() {
+        if ($this->reissueLimits === null) {
+            if (empty($this->serviceParams)) {
+                $this->moduleBuildParams();
+            }
+            $sslRepo    = new \MGModule\SSLCENTERWHMCS\eRepository\whmcs\service\SSL();
+            $sslService = $sslRepo->getByServiceId($this->p['serviceId']);
+            $this->reissueLimits = \MGModule\SSLCENTERWHMCS\eHelpers\SanList::getReissueLimits(
+                $this->serviceParams, $sslService, \MGModule\SSLCENTERWHMCS\eProviders\ApiProvider::getInstance()->getApi()
+            );
+        }
+        return $this->reissueLimits;
+    }
+
+    private function getSansLimit() {
+        $limits = $this->getReissueLimits();
+        return $limits['single'];
     }
 
     private function getSansLimitWildcard() {
-        $includedSans = (int) $this->serviceParams[ConfigOptions::PRODUCT_INCLUDED_SANS_WILDCARD];
-        $boughtSans   = (int) $this->serviceParams['configoptions']['sans_wildcard_count'];
-        return $includedSans + $boughtSans;
-
+        $limits = $this->getReissueLimits();
+        return $limits['wildcard'];
     }
 }

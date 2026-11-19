@@ -37,6 +37,7 @@ class EmailTemplateService
     const CERT_EXPIRED_TEMPLATE_ID           = 'SSLCenter - Certificate Expired';
     const CERT_INSTALLED_TEMPLATE_ID         = 'SSLCenter - Certificate Installed';
     const VALIDATION_WARNING_TEMPLATE_ID     = 'SSLCenter - Validation Warning';
+    const ADD_SANS_TEMPLATE_ID               = 'SSLCenter - Add SAN Names';
 
     // ---- Generic lookup helpers ----
 
