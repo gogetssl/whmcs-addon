@@ -33,6 +33,41 @@
   3.x
 ================================================================================
 
+v3.7.0 (2026-11-20)
+-------------------
+Fixed
+  - Reissue of multi-domain (SAN) certificates could drop the SAN names:
+    the client "Reissue Certificate" page and the admin Reissue window
+    showed the SAN field only when the product had "Enable SANs" switched
+    on with included or bought SANs above 0, so the certificate was
+    reissued with the main domain only. The SAN fields are now shown
+    whenever the product or the certificate has SANs, pre-filled with the
+    current names (the admin field was always empty before). The SAN limit
+    is never lower than the number of names the certificate already has,
+    and wildcard SANs are sent on their own.
+  - Automatic reissue (cron, automatic cPanel installation) sent no SAN
+    list. It now sends every SAN name with its current validation method.
+  - Reissue: the number of new SAN slots to buy at GoGetSSL ignores empty
+    lines.
+Added
+  - A reissue that would remove names the certificate has now stops with
+    the list of those names; the client adds them back or confirms the
+    removal.
+  - Buy more SANs: when a SAN upgrade (configurable options upgrade) is
+    paid, the new SAN slots are bought at GoGetSSL right away (for issued
+    certificates; otherwise with the next reissue) and the client gets
+    the new email "SSLCenter - Add SAN Names" with a link to add the names.
+  - Certificate page: unused SAN slots are shown with an "Add domain
+    names" button that opens the reissue page.
+Changed
+  - SAN names on regular (single-domain) SSL: the free www / non-www
+    version of the common name is added by the certificate authority and
+    is not counted or sent as a SAN. On multi-domain products the www or
+    non-www version is an ordinary SAN and is kept like the others.
+  - The order sync stores the purchased SAN counts of the GoGetSSL order.
+  [!] Open System Settings > Addon Modules once after upgrading, so the
+      new email template "SSLCenter - Add SAN Names" is created.
+
 v3.6.0 (2026-11-12)
 -------------------
 Added
