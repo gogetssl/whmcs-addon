@@ -33,6 +33,16 @@
   3.x
 ================================================================================
 
+v3.7.1 (2026-11-20)
+-------------------
+Fixed
+  - "Allow To Use CSR Generator" switched off was ignored on the client SSL
+    Configuration page (since 3.1.0): "Generate CSR automatically" was
+    always shown and a CSR was generated when none was pasted. With the
+    setting off, manual enrollment now asks only for the client's own CSR
+    (also checked on the server) and the CSR generator requests are
+    refused. Automatic cPanel installation still generates the CSR itself.
+
 v3.7.0 (2026-11-20)
 -------------------
 Fixed
