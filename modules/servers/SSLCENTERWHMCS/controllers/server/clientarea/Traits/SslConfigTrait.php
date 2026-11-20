@@ -226,6 +226,10 @@ trait SslConfigTrait
 
     public function generateCsrJSON($input, $vars = array())
     {
+        $apiConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+        if (empty($apiConf->display_csr_generator)) {
+            throw new \Exception(main\mgLibs\Lang::absoluteT('serverCA', 'home', 'sslConfigOwnCsrRequired'));
+        }
         $post   = (array) $input;
         $params = (array) $input['params'];
         $gen    = new \MGModule\SSLCENTERWHMCS\eServices\provisioning\GenerateCSR($params, $post);
@@ -251,6 +255,15 @@ trait SslConfigTrait
         $orderType   = isset($input['order_type']) ? $input['order_type'] : 'new';
 
         $ownCsr = ($installType === 'manual') ? trim(isset($input['own_csr']) ? $input['own_csr'] : '') : '';
+
+        // "Allow To Use CSR Generator" off: a manual order needs the client's own CSR
+        // (automatic cPanel installation always generates the CSR and key itself)
+        if ($installType !== 'autoinstall' && $ownCsr === '') {
+            $csrGenConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+            if (empty($csrGenConf->display_csr_generator)) {
+                throw new \Exception(main\mgLibs\Lang::absoluteT('serverCA', 'home', 'sslConfigOwnCsrRequired'));
+            }
+        }
 
         $mainDomain = '';
         if ($installType === 'autoinstall') {

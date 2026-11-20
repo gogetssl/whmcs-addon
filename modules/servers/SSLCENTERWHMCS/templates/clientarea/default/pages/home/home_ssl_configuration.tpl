@@ -152,12 +152,14 @@
                     style="font-family:monospace;font-size:12px;resize:vertical;"></textarea>
                 <span class="help-block" style="font-size:12px;color:#888;">{$MGLANG->T('sslConfigOwnCsrHint')|default:'Paste your existing CSR. The domain will be extracted automatically from the CSR.'}</span>
             </div>
+            {if $displayCsrGenerator}
             <div class="form-group">
                 <label class="normal" style="font-weight:normal;">
                     <input type="checkbox" id="manual_auto_generate_csr" style="margin-right:6px;">
                     {$MGLANG->T('sslConfigAutoGenerateCsr')|default:'Generate CSR automatically'}
                 </label>
             </div>
+            {/if}
             <div class="form-group" id="manual-domain-group" style="display:none;">
                 <label>{$MGLANG->T('sslConfigCsrCommonName')|default:'Common Name (domain)'} <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="manual_domain" name="manual_domain"

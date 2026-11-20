@@ -148,6 +148,12 @@ add_hook('ClientAreaHeadOutput', 1, function($params)
 
     if ($params['filename'] === 'configuressl' && $params['loggedin'] == '1' && isset($_REQUEST['action']) && $_REQUEST['action'] === 'generateCsr')
     {
+        $csrGenConf = (new \MGModule\SSLCENTERWHMCS\models\apiConfiguration\Repository())->get();
+        if (empty($csrGenConf->display_csr_generator))
+        {
+            echo json_encode(['success' => false, 'msg' => 'The CSR generator is disabled.']);
+            die();
+        }
         $GenerateCsr = new MGModule\SSLCENTERWHMCS\eServices\provisioning\GenerateCSR($params, $_POST);
         echo $GenerateCsr->run();
         die();
