@@ -357,6 +357,7 @@ class ClientReissueCertificate {
         $wildcardDomainsCount = $orderStatus['wildcard_san_count'];
 
         $toBuy = \MGModule\SSLCENTERWHMCS\eHelpers\SanList::getSlotsToBuy(
+            $this->sslService,
             isset($decodedCSR['csrResult']['CN']) ? $decodedCSR['csrResult']['CN'] : '',
             \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains((string) $this->post['sans_domains']),
             \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains((string) $this->post['sans_domains_wildcard']),

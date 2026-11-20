@@ -116,6 +116,7 @@ class AdminReissueCertificate extends Ajax {
             $csrCommonName = isset($sslService->configdata->domain) ? $sslService->configdata->domain : '';
         }
         $toBuy = \MGModule\SSLCENTERWHMCS\eHelpers\SanList::getSlotsToBuy(
+            $sslService,
             $csrCommonName,
             \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains((string) $this->p['sanDomains']),
             \MGModule\SSLCENTERWHMCS\eHelpers\SansDomains::parseDomains((string) $this->p['sanDomainsWildcard']),

@@ -10,8 +10,9 @@ use MGModule\SSLCENTERWHMCS\eServices\provisioning\ConfigOptions;
  *
  * - current names: the synced san_details of the order, without the main domain
  * - purchased counts: single_san_count / wildcard_san_count of the GoGetSSL order (synced into configdata)
- * - free names: names the CA adds without a SAN slot (www.<domain>, and <domain> for *.<domain>); they are never
- *   counted or sent as SANs
+ * - free names: on regular (single-domain) SSL the CA adds www.<domain> / <domain> (from the CSR common name) itself;
+ *   they are never counted or sent as SANs. Multi-domain (SAN) products have no free names: the www or non-www
+ *   version is an ordinary SAN there
  * - limits: what the WHMCS product allows (included + bought), never less than the names the order already has
  */
 class SanList
@@ -99,7 +100,8 @@ class SanList
     }
 
     /**
-     * Names the CA adds to a certificate without a SAN slot.
+     * Names the CA adds to a regular (single-domain) certificate without a SAN slot: the www / non-www version of
+     * the common name. Multi-domain products have none (see getFreeNamesOf()).
      */
     public static function getFreeNames($mainDomain)
     {
@@ -117,15 +119,47 @@ class SanList
     }
 
     /**
-     * Paid SAN names of the order: the current names without the free ones (the CA adds those itself).
+     * True for multi-domain (SAN) products: the API product has SANs, or the order has purchased SANs.
+     */
+    public static function isMultiDomain($sslService)
+    {
+        $c         = self::configdata($sslService);
+        $productId = isset($c['product_id']) ? (int) $c['product_id'] : 0;
+        if ($productId > 0) {
+            try {
+                $product = (new \MGModule\SSLCENTERWHMCS\eRepository\sslcenter\Products())->getProduct($productId);
+                if ($product && (int) $product->id === $productId && isset($product->san_enabled)) {
+                    return (bool) $product->san_enabled;
+                }
+            } catch (\Exception $e) {
+                // unknown product: decided by the purchased SANs
+            }
+        }
+        return !empty($c[self::CONFIGDATA_SINGLE_COUNT]) || !empty($c[self::CONFIGDATA_WILDCARD_COUNT]);
+    }
+
+    /**
+     * Free names of an order: the www / non-www version of the common name on regular SSL, none on multi-domain.
+     *
+     * @param string|null $mainDomain common name (e.g. of a new CSR); default the order's domain
+     */
+    public static function getFreeNamesOf($sslService, $mainDomain = null)
+    {
+        if (self::isMultiDomain($sslService)) {
+            return [];
+        }
+        return self::getFreeNames($mainDomain !== null ? $mainDomain : self::mainDomain(self::configdata($sslService)));
+    }
+
+    /**
+     * Paid SAN names of the order: the current names without the free ones of regular SSL (the CA adds those).
      *
      * @return array ['single' => string[], 'wildcard' => string[]]
      */
     public static function getPaid($sslService, $api = null)
     {
-        $c         = self::configdata($sslService);
-        $free      = self::getFreeNames(self::mainDomain($c));
         $purchased = self::getPurchased($sslService, $api);
+        $free      = self::getFreeNamesOf($sslService);
 
         $single = $wildcard = [];
         foreach (array_keys(self::getDetails($sslService)) as $name) {
@@ -224,9 +258,9 @@ class SanList
      *
      * @return array ['single' => int, 'wildcard' => int]
      */
-    public static function getSlotsToBuy($mainDomain, array $singleNames, array $wildcardNames, $purchasedSingle, $purchasedWildcard)
+    public static function getSlotsToBuy($sslService, $mainDomain, array $singleNames, array $wildcardNames, $purchasedSingle, $purchasedWildcard)
     {
-        $free   = self::getFreeNames($mainDomain);
+        $free   = self::getFreeNamesOf($sslService, $mainDomain);
         $single = array_filter($singleNames, function ($n) use ($free) { return !in_array(strtolower(trim($n)), $free, true); });
         return [
             'single'   => max(0, count($single) - (int) $purchasedSingle),
